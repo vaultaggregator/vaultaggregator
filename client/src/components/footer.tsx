@@ -11,7 +11,7 @@ export default function Footer() {
                 <BarChart3 className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold" data-testid="text-footer-title">YieldTracker</h3>
+                <h3 className="text-xl font-bold" data-testid="text-footer-title">Vault Aggregator</h3>
                 <p className="text-gray-400 text-sm" data-testid="text-footer-subtitle">DeFi Yield Aggregator</p>
               </div>
             </div>
@@ -99,7 +99,7 @@ export default function Footer() {
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
           <p data-testid="text-copyright">
-            &copy; 2024 YieldTracker. All rights reserved. Data provided by DeFi Llama.
+            &copy; 2024 Vault Aggregator. All rights reserved. Data provided by DeFi Llama.
           </p>
         </div>
       </div>

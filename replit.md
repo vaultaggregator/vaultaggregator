@@ -1,6 +1,6 @@
 # Overview
 
-YieldTracker is a DeFi yield aggregation platform that allows users to discover, track, and compare yield farming opportunities across multiple blockchain networks and protocols. The application provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments for various liquidity pools and yield farming opportunities.
+Vault Aggregator is a DeFi yield aggregation platform that allows users to discover, track, and compare yield farming opportunities across multiple blockchain networks and protocols. The application provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments for various liquidity pools and yield farming opportunities.
 
 The platform features a modern React frontend with shadcn/ui components and a Node.js/Express backend, using PostgreSQL with Drizzle ORM for data persistence. It integrates with DeFi Llama's API to automatically sync yield data and includes an admin panel for data management.
 

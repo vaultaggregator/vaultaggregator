@@ -19,7 +19,7 @@ export default function Header({ onAdminClick }: HeaderProps) {
               <BarChart3 className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900" data-testid="text-site-title">YieldTracker</h1>
+              <h1 className="text-xl font-bold text-gray-900" data-testid="text-site-title">Vault Aggregator</h1>
               <p className="text-xs text-gray-500" data-testid="text-site-subtitle">DeFi Yield Aggregator</p>
             </div>
           </div>
