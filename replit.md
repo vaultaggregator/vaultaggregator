@@ -10,6 +10,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Cleaner codebase**: Removed unused imports, interfaces, and server endpoints related to web scraping
 - **Complete API System**: Implemented secure API key authentication system with protected endpoints, admin management interface, and rate limiting
 - **Network Selector UI**: Fixed network selector to display networks horizontally next to "Networks:" label for better visual layout
+- **Dark Theme Improvements**: Enhanced hero section gradient for dark mode and set dark theme as the default application theme
 
 # User Preferences
 
