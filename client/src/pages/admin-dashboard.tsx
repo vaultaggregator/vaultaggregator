@@ -89,10 +89,10 @@ function CategorySelector({
 
 export default function AdminDashboard() {
   const [search, setSearch] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
-  const [selectedChain, setSelectedChain] = useState<string>("all");
-  const [visibilityFilter, setVisibilityFilter] = useState<string>("all"); // New visibility filter
-  const [dataSourceFilter, setDataSourceFilter] = useState<string>("all"); // Data source filter (defillama, morpho)
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+  const [selectedChains, setSelectedChains] = useState<string[]>([]);
+  const [visibilityFilters, setVisibilityFilters] = useState<string[]>([]); // visibility filters as checkboxes
+  const [dataSourceFilters, setDataSourceFilters] = useState<string[]>([]); // Data source filters (defillama, morpho)
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -115,10 +115,10 @@ export default function AdminDashboard() {
   }>({
     queryKey: ["/api/admin/pools", { 
       search, 
-      platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
-      chainId: selectedChain === "all" ? "" : selectedChain,
-      visibility: visibilityFilter === "all" ? "" : visibilityFilter,
-      dataSource: dataSourceFilter === "all" ? "" : dataSourceFilter,
+      platformIds: selectedPlatforms.join(','),
+      chainIds: selectedChains.join(','),
+      visibilities: visibilityFilters.join(','),
+      dataSources: dataSourceFilters.join(','),
       limit: pageSize,
       offset: currentPage * pageSize
     }],
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(0);
-  }, [search, selectedPlatform, selectedChain, visibilityFilter, dataSourceFilter]);
+  }, [search, selectedPlatforms, selectedChains, visibilityFilters, dataSourceFilters]);
 
   // Inline EditableField component
   function EditableField({ value, onSave, className = "", ...props }: {
@@ -604,7 +604,8 @@ export default function AdminDashboard() {
             <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="space-y-6">
+              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -616,55 +617,138 @@ export default function AdminDashboard() {
                 />
               </div>
               
-              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
-                <SelectTrigger data-testid="select-platform">
-                  <SelectValue placeholder="All Platforms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Platforms</SelectItem>
-                  {platforms.map((platform) => (
-                    <SelectItem key={platform.id} value={platform.id}>
-                      {platform.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={selectedChain} onValueChange={setSelectedChain}>
-                <SelectTrigger data-testid="select-chain">
-                  <SelectValue placeholder="All Chains" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Chains</SelectItem>
-                  {chains.map((chain) => (
-                    <SelectItem key={chain.id} value={chain.id}>
-                      {chain.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={dataSourceFilter} onValueChange={setDataSourceFilter}>
-                <SelectTrigger data-testid="select-data-source">
-                  <SelectValue placeholder="All Data Sources" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Data Sources</SelectItem>
-                  <SelectItem value="defillama">DeFi Llama API</SelectItem>
-                  <SelectItem value="morpho">Morpho API</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-                <SelectTrigger data-testid="select-visibility">
-                  <SelectValue placeholder="All Pools" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Pools</SelectItem>
-                  <SelectItem value="visible">Visible Pools Only</SelectItem>
-                  <SelectItem value="hidden">Hidden Pools Only</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Filter Groups */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                {/* Platforms */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Platforms</h4>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {platforms.map((platform) => (
+                      <label key={platform.id} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedPlatforms.includes(platform.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedPlatforms([...selectedPlatforms, platform.id]);
+                            } else {
+                              setSelectedPlatforms(selectedPlatforms.filter(id => id !== platform.id));
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          data-testid={`checkbox-platform-${platform.id}`}
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{platform.displayName}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chains */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Chains</h4>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {chains.map((chain) => (
+                      <label key={chain.id} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedChains.includes(chain.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedChains([...selectedChains, chain.id]);
+                            } else {
+                              setSelectedChains(selectedChains.filter(id => id !== chain.id));
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          data-testid={`checkbox-chain-${chain.id}`}
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{chain.displayName}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Data Sources */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Data Sources</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dataSourceFilters.includes('defillama')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setDataSourceFilters([...dataSourceFilters, 'defillama']);
+                          } else {
+                            setDataSourceFilters(dataSourceFilters.filter(source => source !== 'defillama'));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        data-testid="checkbox-data-source-defillama"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">DeFi Llama API</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dataSourceFilters.includes('morpho')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setDataSourceFilters([...dataSourceFilters, 'morpho']);
+                          } else {
+                            setDataSourceFilters(dataSourceFilters.filter(source => source !== 'morpho'));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        data-testid="checkbox-data-source-morpho"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Morpho API</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Visibility */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">Visibility</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibilityFilters.includes('visible')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setVisibilityFilters([...visibilityFilters, 'visible']);
+                          } else {
+                            setVisibilityFilters(visibilityFilters.filter(vis => vis !== 'visible'));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        data-testid="checkbox-visibility-visible"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Visible Pools</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={visibilityFilters.includes('hidden')}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setVisibilityFilters([...visibilityFilters, 'hidden']);
+                          } else {
+                            setVisibilityFilters(visibilityFilters.filter(vis => vis !== 'hidden'));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        data-testid="checkbox-visibility-hidden"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Hidden Pools</span>
+                    </label>
+                  </div>
+                </div>
+                
+              </div>
             </div>
           </CardContent>
         </Card>

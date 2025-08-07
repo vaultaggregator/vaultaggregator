@@ -7,7 +7,7 @@ import {
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or, sql } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User methods (existing)
@@ -43,11 +43,11 @@ export interface IStorage {
     offset?: number;
   }): Promise<PoolWithRelations[]>;
   getAdminPools(options: {
-    chainId?: string;
-    platformId?: string;
+    chainIds?: string[];
+    platformIds?: string[];
     search?: string;
-    visibility?: string;
-    dataSource?: string;
+    visibilities?: string[];
+    dataSources?: string[];
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}>;
@@ -239,15 +239,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAdminPools(options: {
-    chainId?: string;
-    platformId?: string;
+    chainIds?: string[];
+    platformIds?: string[];
     search?: string;
-    visibility?: string;
-    dataSource?: string;
+    visibilities?: string[];
+    dataSources?: string[];
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}> {
-    const { chainId, platformId, search, visibility, dataSource, limit, offset } = options;
+    const { chainIds, platformIds, search, visibilities, dataSources, limit, offset } = options;
 
     // Build the base query
     let query = db
@@ -265,12 +265,12 @@ export class DatabaseStorage implements IStorage {
 
     const conditions = [eq(pools.isActive, true)];
 
-    if (chainId) {
-      conditions.push(eq(pools.chainId, chainId));
+    if (chainIds && chainIds.length > 0) {
+      conditions.push(inArray(pools.chainId, chainIds));
     }
 
-    if (platformId) {
-      conditions.push(eq(pools.platformId, platformId));
+    if (platformIds && platformIds.length > 0) {
+      conditions.push(inArray(pools.platformId, platformIds));
     }
 
     if (search) {
@@ -281,21 +281,35 @@ export class DatabaseStorage implements IStorage {
       conditions.push(searchCondition);
     }
 
-    if (visibility === 'visible') {
-      conditions.push(eq(pools.isVisible, true));
-    } else if (visibility === 'hidden') {
-      conditions.push(eq(pools.isVisible, false));
+    if (visibilities && visibilities.length > 0) {
+      const visibilityConditions = [];
+      if (visibilities.includes('visible')) {
+        visibilityConditions.push(eq(pools.isVisible, true));
+      }
+      if (visibilities.includes('hidden')) {
+        visibilityConditions.push(eq(pools.isVisible, false));
+      }
+      if (visibilityConditions.length > 0) {
+        conditions.push(or(...visibilityConditions));
+      }
     }
 
-    if (dataSource === 'defillama') {
-      // Pools from DeFi Llama don't have rawData with source='morpho'
-      conditions.push(or(
-        sql`${pools.rawData} IS NULL`,
-        sql`${pools.rawData}->>'source' != 'morpho'`
-      ));
-    } else if (dataSource === 'morpho') {
-      // Pools from Morpho have rawData with source='morpho'
-      conditions.push(sql`${pools.rawData}->>'source' = 'morpho'`);
+    if (dataSources && dataSources.length > 0) {
+      const dataSourceConditions = [];
+      if (dataSources.includes('defillama')) {
+        // Pools from DeFi Llama don't have rawData with source='morpho'
+        dataSourceConditions.push(or(
+          sql`${pools.rawData} IS NULL`,
+          sql`${pools.rawData}->>'source' != 'morpho'`
+        ));
+      }
+      if (dataSources.includes('morpho')) {
+        // Pools from Morpho have rawData with source='morpho'
+        dataSourceConditions.push(sql`${pools.rawData}->>'source' = 'morpho'`);
+      }
+      if (dataSourceConditions.length > 0) {
+        conditions.push(or(...dataSourceConditions));
+      }
     }
 
     if (conditions.length > 0) {
