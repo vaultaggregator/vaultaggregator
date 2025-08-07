@@ -149,6 +149,11 @@ export class DatabaseStorage implements IStorage {
     return platform || undefined;
   }
 
+  async getPlatformBySlug(slug: string): Promise<Platform | undefined> {
+    const [platform] = await db.select().from(platforms).where(eq(platforms.slug, slug));
+    return platform || undefined;
+  }
+
   async getChainByName(name: string): Promise<Chain | undefined> {
     const [chain] = await db.select().from(chains).where(eq(chains.name, name));
     return chain || undefined;

@@ -46,14 +46,24 @@ export class LidoService {
       // Create or update Lido platform
       let lidoPlatform = await storage.getPlatformByName('lido');
       if (!lidoPlatform) {
-        lidoPlatform = await storage.createPlatform({
-          name: 'lido',
-          displayName: 'Lido',
-          slug: 'lido',
-          logoUrl: 'https://lido.fi/static/images/lido-logo.svg',
-          website: 'https://lido.fi',
-          isActive: true
-        });
+        // Try to get by slug first to handle existing platforms
+        try {
+          lidoPlatform = await storage.createPlatform({
+            name: 'lido',
+            displayName: 'Lido',
+            slug: 'lido',
+            logoUrl: 'https://lido.fi/static/images/lido-logo.svg',
+            website: 'https://lido.fi',
+            isActive: true
+          });
+        } catch (error) {
+          // If platform exists with slug, try to get it
+          console.log('Platform already exists, fetching existing Lido platform...');
+          lidoPlatform = await storage.getPlatformBySlug('lido');
+          if (!lidoPlatform) {
+            throw error; // Re-throw if still can't find it
+          }
+        }
       }
 
       // Get or create Ethereum chain

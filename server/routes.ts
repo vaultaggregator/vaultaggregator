@@ -1160,9 +1160,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manual sync route for admin
   app.post("/api/sync", async (req, res) => {
     try {
+      console.log("Starting manual sync for all data sources...");
+      
+      // Import all sync functions
       const { syncData } = await import("./services/defi-llama");
-      await syncData();
-      res.json({ message: "Data sync completed successfully" });
+      const { syncMorphoData } = await import("./services/morpho-data");
+      const { lidoService } = await import("./services/lidoService");
+      
+      // Run all syncs in parallel
+      const syncResults = await Promise.allSettled([
+        syncData(),
+        syncMorphoData(),
+        lidoService.syncLidoData()
+      ]);
+      
+      const results = {
+        defiLlama: syncResults[0].status === 'fulfilled' ? 'success' : `failed: ${syncResults[0].reason}`,
+        morpho: syncResults[1].status === 'fulfilled' ? 'success' : `failed: ${syncResults[1].reason}`,
+        lido: syncResults[2].status === 'fulfilled' ? 'success' : `failed: ${syncResults[2].reason}`
+      };
+      
+      console.log("Manual sync results:", results);
+      res.json({ 
+        message: "Data sync completed",
+        results
+      });
     } catch (error) {
       console.error("Error during manual sync:", error);
       res.status(500).json({ message: "Failed to sync data" });
