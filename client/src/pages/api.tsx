@@ -52,6 +52,30 @@ export default function API() {
       }
     },
     {
+      id: "public-morpho-vaults",
+      method: "GET", 
+      path: "/api/public/pools?platform=morpho",
+      description: "Get all Morpho vault pools with real-time APY and TVL data",
+      parameters: [
+        { name: "platform", type: "string", description: "Filter by 'morpho' platform", example: "morpho" },
+        { name: "chain", type: "string", description: "Filter by blockchain (ethereum, arbitrum, base, polygon)", example: "ethereum" }
+      ],
+      response: {
+        "pools": [
+          {
+            "id": "vault-id",
+            "platform": { "name": "Morpho", "displayName": "Morpho" },
+            "chain": { "name": "ethereum", "displayName": "Ethereum" },
+            "tokenPair": "USDC Vault",
+            "apy": "8.45",
+            "tvl": "12500000",
+            "poolAddress": "0x...",
+            "source": "morpho-api"
+          }
+        ]
+      }
+    },
+    {
       id: "public-platforms",
       method: "GET",
       path: "/api/public/platforms",
@@ -198,6 +222,68 @@ export default function API() {
         "hiddenPools": 22,
         "avgApy": 8.7,
         "totalTvl": "2,400,000,000"
+      }
+    },
+    {
+      id: "morpho-vault-details", 
+      method: "GET",
+      path: "/api/v1/pools/{id}/morpho",
+      description: "Get detailed Morpho vault or market data for a specific pool",
+      parameters: [
+        { name: "id", type: "string", required: true, description: "Pool ID for Morpho vault or market" }
+      ],
+      response: {
+        "pool": {
+          "id": "pool-123",
+          "tokenPair": "USDC Vault",
+          "apy": "8.45",
+          "tvl": "12500000",
+          "platform": { "name": "Morpho", "displayName": "Morpho" }
+        },
+        "morphoData": {
+          "type": "vault",
+          "address": "0x...",
+          "state": {
+            "apy": 0.0845,
+            "netApy": 0.0823,
+            "totalAssetsUsd": 12500000,
+            "fee": 0.001
+          },
+          "asset": {
+            "symbol": "USDC",
+            "decimals": 6
+          }
+        },
+        "additionalInfo": {
+          "isAuthentic": true,
+          "dataType": "vault",
+          "source": "morpho-api"
+        }
+      }
+    },
+    {
+      id: "morpho-chart-data",
+      method: "GET", 
+      path: "/api/v1/pools/{id}/morpho-chart",
+      description: "Get historical APY chart data for Morpho pools",
+      parameters: [
+        { name: "id", type: "string", required: true, description: "Pool ID for Morpho vault" }
+      ],
+      response: {
+        "hasData": true,
+        "data": [
+          {
+            "date": "2025-08-01",
+            "apy": 8.45,
+            "tvl": 12500000
+          }
+        ],
+        "summary": {
+          "dataPoints": 30,
+          "averageApy": 8.23,
+          "minApy": 7.89,
+          "maxApy": 9.12
+        }
       }
     }
   ];

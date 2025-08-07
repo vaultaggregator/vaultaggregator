@@ -457,7 +457,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Morpho integration endpoints
+  app.get("/api/pools/:id/morpho", async (req, res) => {
+    try {
+      const { MorphoService } = await import("./services/morphoService");
+      
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
 
+      // Check if this is a Morpho pool
+      if (pool.platform.name.toLowerCase() !== "morpho") {
+        return res.json({
+          pool,
+          morphoData: null,
+          message: "This is not a Morpho pool"
+        });
+      }
+
+      // Extract the raw data if it exists
+      const rawData = pool.rawData as any;
+      let morphoData = null;
+
+      if (rawData?.source === "morpho") {
+        if (rawData.type === "vault" && rawData.vaultData) {
+          morphoData = rawData.vaultData;
+        } else if (rawData.type === "market" && rawData.marketData) {
+          morphoData = rawData.marketData;
+        }
+      }
+
+      res.json({
+        pool,
+        morphoData,
+        additionalInfo: {
+          isAuthentic: !!morphoData,
+          dataType: rawData?.type || "unknown",
+          source: "morpho-api"
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching Morpho data:", error);
+      res.status(500).json({ message: "Failed to fetch Morpho pool data" });
+    }
+  });
+
+  app.get("/api/pools/:id/morpho-chart", async (req, res) => {
+    try {
+      const { MorphoService } = await import("./services/morphoService");
+      
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      // Check if this is a Morpho pool
+      if (pool.platform.name.toLowerCase() !== "morpho") {
+        return res.json({
+          hasData: false,
+          message: "This is not a Morpho pool"
+        });
+      }
+
+      // Extract the raw data to get historical APY data
+      const rawData = pool.rawData as any;
+      let historicalData: any[] = [];
+
+      if (rawData?.source === "morpho" && rawData.type === "vault" && rawData.vaultData?.dailyApys) {
+        historicalData = rawData.vaultData.dailyApys
+          .slice(0, 30) // Last 30 data points
+          .map((point: any) => ({
+            date: new Date(point.timestamp * 1000).toISOString().split('T')[0],
+            apy: point.apy * 100, // Convert to percentage
+            tvl: rawData.vaultData.state?.totalAssetsUsd || 0
+          }));
+      }
+
+      if (historicalData.length === 0) {
+        return res.json({
+          hasData: false,
+          message: "No historical data available for this Morpho pool"
+        });
+      }
+
+      res.json({
+        hasData: true,
+        data: historicalData,
+        poolInfo: {
+          source: "morpho",
+          type: rawData?.type,
+          address: pool.poolAddress
+        },
+        summary: {
+          dataPoints: historicalData.length,
+          averageApy: historicalData.reduce((sum, point) => sum + point.apy, 0) / historicalData.length,
+          minApy: Math.min(...historicalData.map(p => p.apy)),
+          maxApy: Math.max(...historicalData.map(p => p.apy))
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching Morpho chart data:", error);
+      res.status(500).json({ message: "Failed to fetch Morpho chart data" });
+    }
+  });
+
+  // Manual sync endpoints for admin use
+  app.post("/api/admin/sync/morpho", requireAuth, async (req, res) => {
+    try {
+      const { syncMorphoData } = await import("./services/morpho-data");
+      await syncMorphoData();
+      res.json({ success: true, message: "Morpho data synchronization completed" });
+    } catch (error) {
+      console.error("Error syncing Morpho data:", error);
+      res.status(500).json({ message: "Failed to sync Morpho data" });
+    }
+  });
 
   app.post("/api/pools", async (req, res) => {
     try {
