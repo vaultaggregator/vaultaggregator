@@ -47,6 +47,7 @@ export interface IStorage {
     platformId?: string;
     search?: string;
     visibility?: string;
+    dataSource?: string;
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}>;
@@ -242,10 +243,11 @@ export class DatabaseStorage implements IStorage {
     platformId?: string;
     search?: string;
     visibility?: string;
+    dataSource?: string;
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}> {
-    const { chainId, platformId, search, visibility, limit, offset } = options;
+    const { chainId, platformId, search, visibility, dataSource, limit, offset } = options;
 
     // Build the base query
     let query = db
@@ -283,6 +285,17 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(pools.isVisible, true));
     } else if (visibility === 'hidden') {
       conditions.push(eq(pools.isVisible, false));
+    }
+
+    if (dataSource === 'defillama') {
+      // Pools from DeFi Llama don't have rawData with source='morpho'
+      conditions.push(or(
+        sql`${pools.rawData} IS NULL`,
+        sql`${pools.rawData}->>'source' != 'morpho'`
+      ));
+    } else if (dataSource === 'morpho') {
+      // Pools from Morpho have rawData with source='morpho'
+      conditions.push(sql`${pools.rawData}->>'source' = 'morpho'`);
     }
 
     if (conditions.length > 0) {

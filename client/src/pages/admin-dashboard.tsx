@@ -92,6 +92,7 @@ export default function AdminDashboard() {
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const [selectedChain, setSelectedChain] = useState<string>("all");
   const [visibilityFilter, setVisibilityFilter] = useState<string>("all"); // New visibility filter
+  const [dataSourceFilter, setDataSourceFilter] = useState<string>("all"); // Data source filter (defillama, morpho)
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -117,6 +118,7 @@ export default function AdminDashboard() {
       platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
       chainId: selectedChain === "all" ? "" : selectedChain,
       visibility: visibilityFilter === "all" ? "" : visibilityFilter,
+      dataSource: dataSourceFilter === "all" ? "" : dataSourceFilter,
       limit: pageSize,
       offset: currentPage * pageSize
     }],
@@ -152,7 +154,7 @@ export default function AdminDashboard() {
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(0);
-  }, [search, selectedPlatform, selectedChain, visibilityFilter]);
+  }, [search, selectedPlatform, selectedChain, visibilityFilter, dataSourceFilter]);
 
   // Inline EditableField component
   function EditableField({ value, onSave, className = "", ...props }: {
@@ -602,7 +604,7 @@ export default function AdminDashboard() {
             <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -639,6 +641,17 @@ export default function AdminDashboard() {
                       {chain.displayName}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={dataSourceFilter} onValueChange={setDataSourceFilter}>
+                <SelectTrigger data-testid="select-data-source">
+                  <SelectValue placeholder="All Data Sources" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Data Sources</SelectItem>
+                  <SelectItem value="defillama">DeFi Llama API</SelectItem>
+                  <SelectItem value="morpho">Morpho API</SelectItem>
                 </SelectContent>
               </Select>
               
