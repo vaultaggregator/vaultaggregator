@@ -108,7 +108,7 @@ export default function Home() {
   const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk', children: React.ReactNode }) => (
     <button
       onClick={() => handleSort(field)}
-      className="flex items-center justify-center space-x-1 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors w-full"
+      className="flex items-center justify-center space-x-1 text-sm font-semibold text-foreground hover:text-blue-600 transition-colors w-full"
       data-testid={`sort-${field}`}
     >
       <span>{children}</span>
@@ -122,8 +122,8 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Data</h2>
-          <p className="text-gray-600 mb-4">Failed to load yield opportunities. Please try again.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-4">Error Loading Data</h2>
+          <p className="text-muted-foreground mb-4">Failed to load yield opportunities. Please try again.</p>
           <Button onClick={() => refetch()} data-testid="button-retry">
             Retry
           </Button>
@@ -133,15 +133,15 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header onAdminClick={() => {}} />
       <HeroSection />
       <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Table Header */}
-        <div className="bg-white rounded-t-xl shadow-sm border border-gray-200 border-b-0">
-          <div className="px-6 py-4 flex items-center bg-gray-50 rounded-t-xl">
+        <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0">
+          <div className="px-6 py-4 flex items-center bg-muted rounded-t-xl">
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="w-12"></div> {/* Space for logo */}
               <div className="min-w-0 flex-1">
@@ -166,16 +166,16 @@ export default function Home() {
                 <SortHeader field="risk">Risk</SortHeader>
               </div>
               <div className="w-20 text-center">
-                <span className="font-semibold text-gray-700 flex justify-center">Actions</span>
+                <span className="font-semibold text-foreground flex justify-center">Actions</span>
               </div>
             </div>
           </div>
         </div>
 
         {isLoading && page === 0 ? (
-          <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl">
+          <div className="bg-card border border-border border-t-0 rounded-b-xl">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="border-b border-gray-100 last:border-b-0 p-6">
+              <div key={i} className="border-b border-border last:border-b-0 p-6">
                 <div className="flex items-center">
                   <div className="flex items-center space-x-4 flex-1">
                     <Skeleton className="w-12 h-12 rounded-xl" />
@@ -215,11 +215,11 @@ export default function Home() {
         ) : pools.length === 0 ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📊</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Yield Opportunities Found</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-xl font-semibold text-foreground mb-2">No Yield Opportunities Found</h3>
+              <p className="text-muted-foreground mb-4">
                 {Object.keys(filters).length > 0 
                   ? "Try adjusting your filters to find more opportunities."
                   : "No yield opportunities are currently available. Please check back later."
@@ -238,9 +238,9 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl overflow-hidden">
+            <div className="bg-card border border-border border-t-0 rounded-b-xl overflow-hidden">
               {sortedPools.map((opportunity, index) => (
-                <div key={opportunity.id} className={`border-b border-gray-100 last:border-b-0 ${index === sortedPools.length - 1 ? 'rounded-b-xl' : ''}`}>
+                <div key={opportunity.id} className={`border-b border-border last:border-b-0 ${index === sortedPools.length - 1 ? 'rounded-b-xl' : ''}`}>
                   <YieldOpportunityCard 
                     opportunity={opportunity} 
                     showHeaders={false}

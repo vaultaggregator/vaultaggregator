@@ -28,10 +28,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
 
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'low': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'low': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
+      case 'medium': return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400';
+      case 'high': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -49,7 +49,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
   };
 
   return (
-    <Card className={`bg-white ${showHeaders ? 'rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-gray-50 transition-colors'}`}>
+    <Card className={`bg-card ${showHeaders ? 'rounded-xl shadow-sm border border-border hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
       <CardContent className="p-6">
         <div className="flex items-center">
           {/* Left section - Platform and Token info */}
@@ -77,7 +77,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-3 mb-1">
-                <h3 className="font-bold text-xl text-gray-900 truncate" data-testid={`text-token-pair-${opportunity.id}`}>
+                <h3 className="font-bold text-xl text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
                 {showNetworkName && (
@@ -91,7 +91,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </Badge>
                 )}
               </div>
-              <p className="text-sm font-medium text-gray-600 truncate" data-testid={`text-platform-${opportunity.id}`}>
+              <p className="text-sm font-medium text-muted-foreground truncate" data-testid={`text-platform-${opportunity.id}`}>
                 {opportunity.platform.displayName}
               </p>
             </div>
@@ -100,31 +100,31 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Center section - Key metrics */}
           <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
             <div className="w-20 text-center">
-              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">24h APY</p>}
+              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">24h APY</p>}
               <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {formatApy(opportunity.apy)}
               </p>
             </div>
             <div className="w-20 text-center">
-              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">30d APY</p>}
+              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">30d APY</p>}
               <p className="text-lg font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                 {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
               </p>
             </div>
             <div className="w-24 text-center">
-              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">TVL</p>}
+              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">TVL</p>}
               <p className="text-lg font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {formatTvl(opportunity.tvl)}
               </p>
             </div>
             <div className="w-28 text-center">
-              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">Since</p>}
-              <p className="text-sm font-semibold text-gray-700" data-testid={`text-operating-since-${opportunity.id}`}>
+              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">Since</p>}
+              <p className="text-sm font-semibold text-foreground" data-testid={`text-operating-since-${opportunity.id}`}>
                 {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
               </p>
             </div>
             <div className="w-16 text-center">
-              {showHeaders && <p className="text-sm text-gray-600 mb-2 font-medium">Risk</p>}
+              {showHeaders && <p className="text-sm text-muted-foreground mb-2 font-medium">Risk</p>}
               <Badge 
                 variant="secondary"
                 className={`text-sm font-medium px-3 py-1 ${getRiskColor(opportunity.riskLevel)}`}

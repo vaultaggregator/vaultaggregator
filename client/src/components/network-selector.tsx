@@ -59,7 +59,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
   };
 
   return (
-    <section className="bg-white shadow-sm py-6 border-b border-gray-100">
+    <section className="bg-card dark:bg-card shadow-sm py-6 border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Networks Section */}
@@ -86,7 +86,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                   flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
                   ${!filters.chainId 
                     ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                    : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
                   }
                 `}
                 data-testid="button-all-networks"
@@ -106,7 +106,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                     flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
                     ${filters.chainId === chain.id 
                       ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                      : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
                     }
                   `}
                   data-testid={`button-network-${chain.name}`}
@@ -144,7 +144,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                       flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
                       ${filters.categoryId === category.id 
                         ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                        : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
                       }
                     `}
                     data-testid={`button-category-${category.slug}`}
