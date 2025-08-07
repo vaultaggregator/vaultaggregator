@@ -54,13 +54,25 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Left section - Platform and Token info */}
           <div className="flex items-center space-x-4 min-w-0 flex-1">
             <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-md"
-              style={{
-                background: `linear-gradient(135deg, ${opportunity.chain.color}80, ${opportunity.chain.color})`
-              }}
+              className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden shadow-md"
               data-testid={`logo-${opportunity.platform.name}`}
             >
-              {getPlatformInitials(opportunity.platform.displayName)}
+              {opportunity.platform.logoUrl ? (
+                <img 
+                  src={opportunity.platform.logoUrl} 
+                  alt={opportunity.platform.displayName}
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                <div 
+                  className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-sm"
+                  style={{
+                    background: `linear-gradient(135deg, ${opportunity.chain.color}80, ${opportunity.chain.color})`
+                  }}
+                >
+                  {getPlatformInitials(opportunity.platform.displayName)}
+                </div>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-3 mb-1">
