@@ -297,25 +297,32 @@ export class DatabaseStorage implements IStorage {
     avgApy: number;
     totalTvl: string;
   }> {
-    const result = await db.execute(`
+    // Get stats for visible pools only
+    const visibleResult = await db.execute(`
       SELECT 
-        COUNT(*) as total_pools,
-        COUNT(*) FILTER (WHERE is_visible = true AND is_active = true) as active_pools,
-        COUNT(*) FILTER (WHERE is_visible = false OR is_active = false) as hidden_pools,
+        COUNT(*) as visible_pools,
         COALESCE(AVG(apy::numeric), 0) as avg_apy,
         COALESCE(SUM(tvl::numeric), 0) as total_tvl
       FROM pools
-      WHERE is_active = true
+      WHERE is_visible = true AND is_active = true
     `);
 
-    const stats = result.rows[0];
+    // Get total hidden pools count
+    const hiddenResult = await db.execute(`
+      SELECT COUNT(*) as hidden_pools
+      FROM pools
+      WHERE is_visible = false OR is_active = false
+    `);
+
+    const visibleStats = visibleResult.rows[0];
+    const hiddenStats = hiddenResult.rows[0];
 
     return {
-      totalPools: Number(stats.total_pools) || 0,
-      activePools: Number(stats.active_pools) || 0,
-      hiddenPools: Number(stats.hidden_pools) || 0,
-      avgApy: Number(stats.avg_apy) || 0,
-      totalTvl: (Number(stats.total_tvl) || 0).toLocaleString(),
+      totalPools: Number(visibleStats.visible_pools) || 0,
+      activePools: Number(visibleStats.visible_pools) || 0,
+      hiddenPools: Number(hiddenStats.hidden_pools) || 0,
+      avgApy: Number(visibleStats.avg_apy) || 0,
+      totalTvl: (Number(visibleStats.total_tvl) || 0).toLocaleString(),
     };
   }
 }
