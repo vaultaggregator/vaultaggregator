@@ -147,6 +147,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DeFi Llama integration endpoints
+  app.get("/api/pools/:id/defillama", async (req, res) => {
+    try {
+      const { DefiLlamaService } = await import("./services/defiLlamaService");
+      
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      // Try to find additional data from DeFi Llama
+      const defiLlamaData = await DefiLlamaService.searchPools({
+        project: pool.platform.name,
+        chain: pool.chain.name,
+        symbol: pool.tokenPair
+      });
+
+      res.json({
+        pool,
+        defiLlamaData: defiLlamaData.slice(0, 5), // Return top 5 matches
+        additionalInfo: {
+          hasHistoricalData: defiLlamaData.length > 0,
+          matchCount: defiLlamaData.length
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching DeFi Llama data:", error);
+      res.status(500).json({ message: "Failed to fetch additional pool data" });
+    }
+  });
+
+  app.get("/api/pools/:id/chart", async (req, res) => {
+    try {
+      const { DefiLlamaService } = await import("./services/defiLlamaService");
+      
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      // Search for matching pools in DeFi Llama
+      const defiLlamaPools = await DefiLlamaService.searchPools({
+        project: pool.platform.name,
+        chain: pool.chain.name
+      });
+
+      if (defiLlamaPools.length === 0) {
+        return res.json({ 
+          hasData: false, 
+          message: "No historical data available",
+          mockData: [
+            { date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], apy: parseFloat(pool.apy || '0') * 0.95, tvl: parseFloat(pool.tvl || '0') * 0.9 },
+            { date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], apy: parseFloat(pool.apy || '0') * 1.02, tvl: parseFloat(pool.tvl || '0') * 0.95 },
+            { date: new Date().toISOString().split('T')[0], apy: parseFloat(pool.apy || '0'), tvl: parseFloat(pool.tvl || '0') }
+          ]
+        });
+      }
+
+      // Get the best matching pool
+      const bestMatch = defiLlamaPools[0];
+      const historicalData = await DefiLlamaService.getPoolHistoricalData(bestMatch.pool);
+
+      if (historicalData.length === 0) {
+        return res.json({ 
+          hasData: false, 
+          message: "No historical data available for this pool",
+          poolInfo: bestMatch
+        });
+      }
+
+      // Format the data for our chart
+      const chartData = historicalData
+        .slice(-30) // Last 30 data points
+        .map(point => ({
+          date: new Date(point.timestamp).toISOString().split('T')[0],
+          apy: point.apy,
+          tvl: point.tvlUsd
+        }));
+
+      res.json({
+        hasData: true,
+        data: chartData,
+        poolInfo: bestMatch,
+        summary: {
+          dataPoints: chartData.length,
+          averageApy: chartData.reduce((sum, point) => sum + point.apy, 0) / chartData.length,
+          minApy: Math.min(...chartData.map(p => p.apy)),
+          maxApy: Math.max(...chartData.map(p => p.apy))
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+      res.status(500).json({ message: "Failed to fetch chart data" });
+    }
+  });
+
   app.post("/api/pools", async (req, res) => {
     try {
       const poolData = insertPoolSchema.parse(req.body);

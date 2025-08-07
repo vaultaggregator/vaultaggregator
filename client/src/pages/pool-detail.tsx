@@ -1,11 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
+
+interface ChartData {
+  date: string;
+  apy: number;
+  tvl: number;
+}
+
+interface ChartResponse {
+  hasData: boolean;
+  data?: ChartData[];
+  mockData?: ChartData[];
+  message?: string;
+  poolInfo?: any;
+  summary?: {
+    dataPoints: number;
+    averageApy: number;
+    minApy: number;
+    maxApy: number;
+  };
+}
+
+interface DefiLlamaResponse {
+  pool: YieldOpportunity;
+  defiLlamaData: any[];
+  additionalInfo: {
+    hasHistoricalData: boolean;
+    matchCount: number;
+  };
+}
 
 export default function PoolDetail() {
   const { poolId } = useParams<{ poolId: string }>();
@@ -13,6 +43,18 @@ export default function PoolDetail() {
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: ['/api/pools', poolId],
     enabled: !!poolId,
+  });
+
+  const { data: chartData, isLoading: chartLoading } = useQuery<ChartResponse>({
+    queryKey: ['/api/pools', poolId, 'chart'],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: defiLlamaData, isLoading: defiLlamaLoading } = useQuery<DefiLlamaResponse>({
+    queryKey: ['/api/pools', poolId, 'defillama'],
+    enabled: !!poolId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const formatTvl = (tvl: string): string => {
@@ -234,6 +276,154 @@ export default function PoolDetail() {
           </Card>
         </div>
 
+        {/* APY Historical Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
+              APY Performance History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {chartLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600">Loading chart data...</span>
+              </div>
+            ) : chartData && (chartData.hasData || chartData.mockData) ? (
+              <div>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData.data || chartData.mockData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="#666"
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis 
+                        stroke="#666"
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => `${value.toFixed(1)}%`}
+                      />
+                      <Tooltip 
+                        labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                        formatter={(value: any, name: string) => [
+                          name === 'apy' ? `${Number(value).toFixed(2)}%` : formatTvl(value.toString()),
+                          name === 'apy' ? 'APY' : 'TVL'
+                        ]}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="apy" 
+                        stroke="#3b82f6" 
+                        fill="#3b82f6" 
+                        fillOpacity={0.1}
+                        strokeWidth={2}
+                        name="APY"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                {chartData.summary && (
+                  <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">Average APY</p>
+                      <p className="text-lg font-semibold text-blue-600">{chartData.summary.averageApy.toFixed(2)}%</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">Min APY</p>
+                      <p className="text-lg font-semibold text-red-600">{chartData.summary.minApy.toFixed(2)}%</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">Max APY</p>
+                      <p className="text-lg font-semibold text-green-600">{chartData.summary.maxApy.toFixed(2)}%</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500">Data Points</p>
+                      <p className="text-lg font-semibold text-gray-700">{chartData.summary.dataPoints}</p>
+                    </div>
+                  </div>
+                )}
+                {!chartData.hasData && chartData.mockData && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      📊 This chart shows simulated data for demonstration purposes. Real historical data from DeFi Llama is not available for this pool.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-gray-500">
+                <Activity className="w-12 h-12 mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Historical Data Available</p>
+                <p className="text-sm text-center max-w-md">
+                  Historical performance data is not available for this pool. This may be because it's a new pool or not tracked in our data sources.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* DeFi Llama Additional Information */}
+        {defiLlamaData && defiLlamaData.defiLlamaData && defiLlamaData.defiLlamaData.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
+                Related Pools from DeFi Llama
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {defiLlamaData.defiLlamaData.slice(0, 3).map((llamaPool: any, index: number) => (
+                  <div key={index} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{llamaPool.symbol}</h4>
+                        <p className="text-sm text-gray-600">{llamaPool.project} on {llamaPool.chain}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-green-600">{llamaPool.apy?.toFixed(2)}%</p>
+                        <p className="text-sm text-gray-500">APY</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex justify-between text-sm">
+                      <span className="text-gray-600">
+                        TVL: {llamaPool.tvlUsd ? formatTvl(llamaPool.tvlUsd.toString()) : 'N/A'}
+                      </span>
+                      {llamaPool.apyBase && (
+                        <span className="text-gray-600">
+                          Base: {llamaPool.apyBase.toFixed(2)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {defiLlamaData.additionalInfo.matchCount > 3 && (
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-500">
+                    +{defiLlamaData.additionalInfo.matchCount - 3} more similar pools found
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Pool Details */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Pool Information */}
@@ -263,6 +453,25 @@ export default function PoolDetail() {
                   {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
                 </Badge>
               </div>
+              {defiLlamaData?.defiLlamaData?.[0] && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">DeFi Llama Match</h4>
+                    <div className="text-sm space-y-1">
+                      {defiLlamaData.defiLlamaData[0].apyBase && (
+                        <p className="text-gray-600">Base APY: <span className="font-medium">{defiLlamaData.defiLlamaData[0].apyBase.toFixed(2)}%</span></p>
+                      )}
+                      {defiLlamaData.defiLlamaData[0].apyReward && (
+                        <p className="text-gray-600">Reward APY: <span className="font-medium">{defiLlamaData.defiLlamaData[0].apyReward.toFixed(2)}%</span></p>
+                      )}
+                      {defiLlamaData.defiLlamaData[0].underlyingTokens && (
+                        <p className="text-gray-600">Underlying Tokens: <span className="font-medium">{defiLlamaData.defiLlamaData[0].underlyingTokens.join(', ')}</span></p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -283,7 +492,15 @@ export default function PoolDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 italic">No additional notes available for this pool.</p>
+                <div className="space-y-4">
+                  <p className="text-gray-500 italic">No additional notes available for this pool.</p>
+                  {defiLlamaLoading && (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <span className="ml-3 text-gray-600">Loading additional data...</span>
+                    </div>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>
