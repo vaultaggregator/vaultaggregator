@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, RefreshCw, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
 
@@ -37,8 +39,31 @@ interface DefiLlamaResponse {
   };
 }
 
+interface ScrapedData {
+  name: string;
+  apy: number;
+  avgApy30d?: number;
+  tvl: string;
+  riskRating?: string;
+  category?: string;
+  audited?: boolean;
+  website?: string;
+  twitter?: string;
+  outlook?: string;
+  confidence?: string;
+}
+
+interface ScrapedResponse {
+  pool: YieldOpportunity;
+  scrapedData: ScrapedData;
+  source: string;
+  timestamp: string;
+}
+
 export default function PoolDetail() {
   const { poolId } = useParams<{ poolId: string }>();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: ['/api/pools', poolId],
@@ -55,6 +80,34 @@ export default function PoolDetail() {
     queryKey: ['/api/pools', poolId, 'defillama'],
     enabled: !!poolId,
     staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // New query for scraped data from DeFi Llama website
+  const { data: scrapedData, isLoading: scrapedLoading } = useQuery<ScrapedResponse>({
+    queryKey: ['/api/pools', poolId, 'scrape'],
+    enabled: false, // Only fetch when explicitly requested
+  });
+
+  // Mutation for manually triggering a scrape
+  const scrapeMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest(`/api/pools/${poolId}/scrape`);
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Data Updated",
+        description: "Latest information fetched from DeFi Llama website",
+      });
+      queryClient.setQueryData(['/api/pools', poolId, 'scrape'], data);
+    },
+    onError: (error) => {
+      console.error("Scraping error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch latest data from DeFi Llama",
+        variant: "destructive",
+      });
+    },
   });
 
   const formatTvl = (tvl: string): string => {
@@ -202,16 +255,33 @@ export default function PoolDetail() {
                 </div>
               </div>
 
-              {/* External Link Button */}
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="hover:bg-blue-50"
-                data-testid="button-external-link"
-              >
-                <ExternalLink className="w-5 h-5 mr-2" />
-                Visit Platform
-              </Button>
+              {/* Action Buttons */}
+              <div className="flex space-x-3">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={() => scrapeMutation.mutate()}
+                  disabled={scrapeMutation.isPending}
+                  className="hover:bg-green-50"
+                  data-testid="button-fetch-latest"
+                >
+                  {scrapeMutation.isPending ? (
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5 mr-2" />
+                  )}
+                  Fetch Latest Data
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="hover:bg-blue-50"
+                  data-testid="button-external-link"
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  Visit Platform
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -410,6 +480,123 @@ export default function PoolDetail() {
                   <p className="text-sm text-gray-500">
                     +{defiLlamaData.additionalInfo.matchCount - 3} more similar pools found
                   </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Scraped DeFi Llama Data */}
+        {scrapedData && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Activity className="w-5 h-5 mr-2 text-green-600" />
+                  Latest Data from DeFi Llama Website
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {new Date(scrapedData.timestamp).toLocaleDateString()} {new Date(scrapedData.timestamp).toLocaleTimeString()}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Current APY</p>
+                  <p className="text-2xl font-bold text-green-600" data-testid="text-scraped-apy">
+                    {scrapedData.scrapedData.apy.toFixed(2)}%
+                  </p>
+                </div>
+                
+                {scrapedData.scrapedData.avgApy30d && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-600">30d Average APY</p>
+                    <p className="text-2xl font-bold text-blue-600" data-testid="text-scraped-avg-apy">
+                      {scrapedData.scrapedData.avgApy30d.toFixed(2)}%
+                    </p>
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Total Value Locked</p>
+                  <p className="text-2xl font-bold text-purple-600" data-testid="text-scraped-tvl">
+                    {scrapedData.scrapedData.tvl}
+                  </p>
+                </div>
+                
+                {scrapedData.scrapedData.riskRating && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-600">Risk Rating</p>
+                    <Badge 
+                      variant="outline" 
+                      className="text-lg px-3 py-1"
+                      data-testid="badge-scraped-risk"
+                    >
+                      <Shield className="w-4 h-4 mr-1" />
+                      {scrapedData.scrapedData.riskRating}
+                    </Badge>
+                  </div>
+                )}
+                
+                {scrapedData.scrapedData.category && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-gray-600">Category</p>
+                    <p className="text-lg font-semibold text-gray-700" data-testid="text-scraped-category">
+                      {scrapedData.scrapedData.category}
+                    </p>
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Audited</p>
+                  <Badge 
+                    variant={scrapedData.scrapedData.audited ? "default" : "secondary"}
+                    data-testid="badge-scraped-audited"
+                  >
+                    {scrapedData.scrapedData.audited ? "✓ Yes" : "✗ No"}
+                  </Badge>
+                </div>
+              </div>
+              
+              {scrapedData.scrapedData.outlook && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-2">Outlook</h4>
+                  <p className="text-blue-800 text-sm" data-testid="text-scraped-outlook">
+                    {scrapedData.scrapedData.outlook}
+                  </p>
+                  {scrapedData.scrapedData.confidence && (
+                    <p className="text-blue-700 text-xs mt-2 font-medium">
+                      Confidence: {scrapedData.scrapedData.confidence}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {(scrapedData.scrapedData.website || scrapedData.scrapedData.twitter) && (
+                <div className="mt-6 flex space-x-3">
+                  {scrapedData.scrapedData.website && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => window.open(scrapedData.scrapedData.website, '_blank')}
+                      data-testid="button-scraped-website"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Website
+                    </Button>
+                  )}
+                  {scrapedData.scrapedData.twitter && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.open(scrapedData.scrapedData.twitter, '_blank')}
+                      data-testid="button-scraped-twitter"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Twitter
+                    </Button>
+                  )}
                 </div>
               )}
             </CardContent>
