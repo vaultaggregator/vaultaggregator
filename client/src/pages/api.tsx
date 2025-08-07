@@ -8,14 +8,108 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code2, Key, BookOpen, Zap, Shield, Globe } from "lucide-react";
 
 export default function API() {
-  const [selectedEndpoint, setSelectedEndpoint] = useState("pools");
+  const [selectedEndpoint, setSelectedEndpoint] = useState("public-stats");
 
-  const endpoints = [
+  // Public API endpoints (no authentication required)
+  const publicEndpoints = [
+    {
+      id: "public-stats",
+      method: "GET",
+      path: "/api/public/stats",
+      description: "Get platform-wide statistics including total pools, average APY, and TVL",
+      parameters: [],
+      response: {
+        "totalPools": 3,
+        "activePools": 3,
+        "avgApy": 6.21,
+        "totalTvl": "34,031,083,802",
+        "lastUpdated": "2025-08-07T16:20:17.243Z"
+      }
+    },
+    {
+      id: "public-chains",
+      method: "GET",
+      path: "/api/public/chains",
+      description: "List all supported blockchain networks",
+      parameters: [],
+      response: {
+        "chains": [
+          {
+            "id": "23532a30-59bb-4822-a2c9-03e58d34c3ce",
+            "name": "ethereum",
+            "displayName": "Ethereum",
+            "color": "#627EEA",
+            "isActive": true
+          },
+          {
+            "id": "b0b0e11c-a0d0-4b52-99f4-b8f6b0c730dc",
+            "name": "arbitrum",
+            "displayName": "Arbitrum",
+            "color": "#96BEDC",
+            "isActive": true
+          }
+        ]
+      }
+    },
+    {
+      id: "public-platforms",
+      method: "GET",
+      path: "/api/public/platforms",
+      description: "List all supported DeFi protocols and platforms",
+      parameters: [],
+      response: {
+        "platforms": [
+          {
+            "id": "platform-123",
+            "name": "morpho-blue",
+            "displayName": "Morpho Blue",
+            "website": "https://morpho.org",
+            "isActive": true
+          }
+        ]
+      }
+    },
+    {
+      id: "public-top-pools",
+      method: "GET",
+      path: "/api/public/top-pools",
+      description: "Get top performing yield pools (limited to 50 pools maximum)",
+      parameters: [
+        { name: "limit", type: "number", required: false, description: "Number of pools to return (default: 10, max: 50)" }
+      ],
+      response: {
+        "pools": [
+          {
+            "id": "12409481-f9e9-4dba-b0f8-c8b7c95deb62",
+            "tokenPair": "USDC",
+            "apy": "10.3247",
+            "tvl": "9556322.00",
+            "riskLevel": "low",
+            "platform": {
+              "name": "morpho-blue",
+              "displayName": "morpho-blue"
+            },
+            "chain": {
+              "name": "ethereum",
+              "displayName": "Ethereum",
+              "color": "#627EEA"
+            },
+            "lastUpdated": "2025-08-07T12:55:29.513Z"
+          }
+        ],
+        "count": 2,
+        "maxLimit": 50
+      }
+    }
+  ];
+
+  // Authenticated API endpoints (require API key)
+  const authenticatedEndpoints = [
     {
       id: "pools",
       method: "GET",
       path: "/api/v1/pools",
-      description: "Retrieve all yield pools with filtering options",
+      description: "Retrieve all yield pools with advanced filtering and search options",
       parameters: [
         { name: "chainId", type: "string", required: false, description: "Filter by blockchain network" },
         { name: "platformId", type: "string", required: false, description: "Filter by protocol platform" },
@@ -108,7 +202,8 @@ export default function API() {
     }
   ];
 
-  const currentEndpoint = endpoints.find(e => e.id === selectedEndpoint);
+  const allEndpoints = [...publicEndpoints, ...authenticatedEndpoints];
+  const currentEndpoint = allEndpoints.find(e => e.id === selectedEndpoint);
 
   return (
     <div className="min-h-screen bg-background">
@@ -126,6 +221,32 @@ export default function API() {
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card data-testid="card-api-public">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <Globe className="w-4 h-4 mr-2" />
+                Public API
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-foreground">{publicEndpoints.length}</p>
+              <p className="text-sm text-muted-foreground">No authentication required</p>
+            </CardContent>
+          </Card>
+          
+          <Card data-testid="card-api-authenticated">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                <Key className="w-4 h-4 mr-2" />
+                Authenticated API
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-foreground">{authenticatedEndpoints.length}</p>
+              <p className="text-sm text-muted-foreground">Requires API key</p>
+            </CardContent>
+          </Card>
+          
           <Card data-testid="card-api-version">
             <CardHeader className="pb-4">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
@@ -185,33 +306,66 @@ export default function API() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {endpoints.map((endpoint) => (
-                    <button
-                      key={endpoint.id}
-                      onClick={() => setSelectedEndpoint(endpoint.id)}
-                      className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                        selectedEndpoint === endpoint.id
-                          ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
-                          : 'hover:bg-muted border-border'
-                      }`}
-                      data-testid={`button-endpoint-${endpoint.id}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Badge 
-                            className={`text-xs ${
-                              endpoint.method === 'GET' 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
-                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                            }`}
-                          >
-                            {endpoint.method}
-                          </Badge>
-                          <p className="font-mono text-sm mt-1">{endpoint.path}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                  <Tabs defaultValue="public" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsTrigger value="public">Public API</TabsTrigger>
+                      <TabsTrigger value="authenticated">Authenticated API</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="public" className="space-y-2">
+                      {publicEndpoints.map((endpoint) => (
+                        <button
+                          key={endpoint.id}
+                          onClick={() => setSelectedEndpoint(endpoint.id)}
+                          className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                            selectedEndpoint === endpoint.id
+                              ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+                              : 'hover:bg-muted border-border'
+                          }`}
+                          data-testid={`button-endpoint-${endpoint.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                                  {endpoint.method}
+                                </Badge>
+                                <Globe className="w-3 h-3 text-green-600" />
+                              </div>
+                              <p className="font-mono text-sm">{endpoint.path}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </TabsContent>
+
+                    <TabsContent value="authenticated" className="space-y-2">
+                      {authenticatedEndpoints.map((endpoint) => (
+                        <button
+                          key={endpoint.id}
+                          onClick={() => setSelectedEndpoint(endpoint.id)}
+                          className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                            selectedEndpoint === endpoint.id
+                              ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+                              : 'hover:bg-muted border-border'
+                          }`}
+                          data-testid={`button-endpoint-${endpoint.id}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge className="text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                                  {endpoint.method}
+                                </Badge>
+                                <Key className="w-3 h-3 text-blue-600" />
+                              </div>
+                              <p className="font-mono text-sm">{endpoint.path}</p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </TabsContent>
+                  </Tabs>
                 </CardContent>
               </Card>
 
@@ -367,7 +521,7 @@ headers = {
 response = requests.get('${window.location.origin}/api/v1/stats', headers=headers)
 stats = response.json()
 
-print(f"Total TVL: ${stats['totalTvl']}")
+print(f"Total TVL: {stats['totalTvl']}")
 print(f"Average APY: {stats['avgApy']}%")`}</code>
                   </pre>
                 </div>

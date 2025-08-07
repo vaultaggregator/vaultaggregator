@@ -160,7 +160,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create user" });
     }
   });
-  // Public API routes (require API key authentication)
+  
+  // Public API endpoints (no authentication required)
+  app.get("/api/public/stats", async (req, res) => {
+    try {
+      const stats = await storage.getStats();
+      // Return basic stats without sensitive information
+      res.json({
+        totalPools: stats.totalPools,
+        activePools: stats.activePools,
+        avgApy: stats.avgApy,
+        totalTvl: stats.totalTvl,
+        lastUpdated: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error fetching public stats:", error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/public/chains", async (req, res) => {
+    try {
+      const chains = await storage.getActiveChains();
+      // Return basic chain information
+      res.json({
+        chains: chains.map(chain => ({
+          id: chain.id,
+          name: chain.name,
+          displayName: chain.displayName,
+          color: chain.color,
+          isActive: chain.isActive
+        }))
+      });
+    } catch (error) {
+      console.error("Error fetching public chains:", error);
+      res.status(500).json({ error: "Failed to fetch chains" });
+    }
+  });
+
+  app.get("/api/public/platforms", async (req, res) => {
+    try {
+      const platforms = await storage.getActivePlatforms();
+      // Return basic platform information
+      res.json({
+        platforms: platforms.map(platform => ({
+          id: platform.id,
+          name: platform.name,
+          displayName: platform.displayName,
+          website: platform.website,
+          isActive: platform.isActive
+        }))
+      });
+    } catch (error) {
+      console.error("Error fetching public platforms:", error);
+      res.status(500).json({ error: "Failed to fetch platforms" });
+    }
+  });
+
+  app.get("/api/public/top-pools", async (req, res) => {
+    try {
+      const { limit = '10' } = req.query;
+      const pools = await storage.getPools({
+        onlyVisible: true,
+        limit: Math.min(parseInt(limit as string), 50), // Max 50 pools for public API
+        offset: 0,
+      });
+
+      // Return limited pool information for public access
+      const publicPools = pools.map(pool => ({
+        id: pool.id,
+        tokenPair: pool.tokenPair,
+        apy: pool.apy,
+        tvl: pool.tvl,
+        riskLevel: pool.riskLevel,
+        platform: {
+          name: pool.platform.name,
+          displayName: pool.platform.displayName
+        },
+        chain: {
+          name: pool.chain.name,
+          displayName: pool.chain.displayName,
+          color: pool.chain.color
+        },
+        lastUpdated: pool.lastUpdated
+      }));
+
+      res.json({
+        pools: publicPools,
+        count: publicPools.length,
+        maxLimit: 50
+      });
+    } catch (error) {
+      console.error("Error fetching public top pools:", error);
+      res.status(500).json({ error: "Failed to fetch top pools" });
+    }
+  });
+
+  // Authenticated API routes (require API key authentication)
   app.get("/api/v1/pools", requireApiKey, async (req, res) => {
     try {
       const { chainId, platformId, search, limit = "50", offset = "0" } = req.query;
