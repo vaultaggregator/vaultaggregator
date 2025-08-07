@@ -15,7 +15,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showAdmin, setShowAdmin] = useState(false);
   const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState<'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const limit = 12;
 
@@ -46,12 +46,12 @@ export default function Home() {
     setPage(prev => prev + 1);
   };
 
-  const handleSort = (field: 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk') => {
+  const handleSort = (field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(field);
-      setSortOrder('desc');
+      setSortOrder(field === 'name' ? 'asc' : 'desc');
     }
   };
 
@@ -61,6 +61,10 @@ export default function Home() {
     let aValue: any, bValue: any;
     
     switch (sortBy) {
+      case 'name':
+        aValue = a.platform.displayName.toLowerCase();
+        bValue = b.platform.displayName.toLowerCase();
+        return sortOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
       case 'apy':
         aValue = parseFloat(a.apy);
         bValue = parseFloat(b.apy);
@@ -93,7 +97,7 @@ export default function Home() {
     }
   });
 
-  const SortHeader = ({ field, children }: { field: 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk', children: React.ReactNode }) => (
+  const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk', children: React.ReactNode }) => (
     <button
       onClick={() => handleSort(field)}
       className="flex items-center space-x-1 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
@@ -133,7 +137,7 @@ export default function Home() {
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="w-12"></div> {/* Space for logo */}
               <div className="min-w-0 flex-1">
-                <span className="font-semibold text-gray-700">Name</span>
+                <SortHeader field="name">Name</SortHeader>
               </div>
             </div>
             
@@ -146,9 +150,6 @@ export default function Home() {
             
             <div className="flex items-center space-x-4">
               <SortHeader field="risk">Risk</SortHeader>
-              <div className="w-24 text-center">
-                <span className="font-semibold text-gray-700">Actions</span>
-              </div>
             </div>
           </div>
         </div>

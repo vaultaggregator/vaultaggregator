@@ -128,29 +128,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
               </Badge>
             </div>
             
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleFavorite}
-                className="text-gray-400 hover:text-red-500 p-2"
-                data-testid={`button-favorite-${opportunity.id}`}
-              >
-                <Heart 
-                  className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} 
-                />
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="hover:bg-blue-50"
-                data-testid={`button-view-details-${opportunity.id}`}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Details
-              </Button>
-            </div>
+
           </div>
         </div>
 
