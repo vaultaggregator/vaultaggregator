@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Heart, ExternalLink } from "lucide-react";
+
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,8 +12,6 @@ interface YieldOpportunityCardProps {
 }
 
 export default function YieldOpportunityCard({ opportunity, showHeaders = true, showNetworkName = true }: YieldOpportunityCardProps) {
-  const [isFavorited, setIsFavorited] = useState(false);
-
   const formatTvl = (tvl: string): string => {
     const num = parseFloat(tvl);
     if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
@@ -47,10 +45,6 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
-
-  const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
   };
 
   return (
@@ -128,17 +122,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             <div className="w-20 flex items-center justify-center">
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={toggleFavorite}
-                  className="text-gray-400 hover:text-red-500 p-2"
-                  data-testid={`button-favorite-${opportunity.id}`}
-                >
-                  <Heart 
-                    className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} 
-                  />
-                </Button>
+
                 
                 <Button 
                   variant="outline" 
