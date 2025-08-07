@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
-import FilterControls from "@/components/filter-controls";
+import NetworkSelector from "@/components/network-selector";
 import YieldOpportunityCard from "@/components/yield-opportunity-card";
 import AdminPanel from "@/components/admin-panel";
 import Footer from "@/components/footer";
@@ -136,7 +136,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Header onAdminClick={() => {}} />
       <HeroSection />
-      <FilterControls filters={filters} onFilterChange={handleFilterChange} />
+      <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Table Header */}
