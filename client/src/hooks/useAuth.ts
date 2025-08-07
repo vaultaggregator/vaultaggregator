@@ -21,6 +21,7 @@ export function useAuth() {
         method: "POST",
         body: JSON.stringify({ username, password }),
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       
       if (!response.ok) {
@@ -37,7 +38,10 @@ export function useAuth() {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", { 
+        method: "POST",
+        credentials: "include",
+      });
       
       if (!response.ok) {
         const error = await response.json();

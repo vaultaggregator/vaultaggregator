@@ -42,6 +42,7 @@ export default function AdminDashboard() {
         method: "PUT",
         body: JSON.stringify({ isVisible }),
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       
       if (!response.ok) {

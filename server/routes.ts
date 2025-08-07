@@ -17,6 +17,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Middleware to check if user is authenticated admin
   const requireAuth = (req: any, res: any, next: any) => {
+    console.log("Auth check:", { 
+      sessionId: req.sessionID, 
+      userId: req.session?.userId, 
+      hasSession: !!req.session,
+      cookies: req.headers.cookie 
+    });
     if (req.session?.userId) {
       next();
     } else {
@@ -185,6 +191,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/pools/:id/visibility", requireAuth, async (req, res) => {
     try {
       const { isVisible } = req.body;
+      console.log("Updating pool visibility:", { poolId: req.params.id, isVisible, userId: (req.session as any).userId });
+      
       if (typeof isVisible !== 'boolean') {
         return res.status(400).json({ message: "isVisible must be a boolean" });
       }
@@ -193,6 +201,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pool) {
         return res.status(404).json({ message: "Pool not found" });
       }
+      
+      console.log("Pool visibility updated successfully:", { poolId: pool.id, isVisible: pool.isVisible });
       res.json(pool);
     } catch (error) {
       console.error("Error updating pool visibility:", error);
