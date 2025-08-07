@@ -98,7 +98,16 @@ export default function AdminDashboard() {
   const queryClient = useQueryClient();
 
   // Fetch admin pools (includes hidden ones)
-  const { data: pools = [], isLoading: poolsLoading, error } = useQuery<PoolWithRelations[]>({
+  const { data: poolsResponse, isLoading: poolsLoading, error } = useQuery<{
+    pools: PoolWithRelations[];
+    pagination: {
+      total: number;
+      limit: number;
+      offset: number;
+      hasMore: boolean;
+      showing: number;
+    };
+  }>({
     queryKey: ["/api/admin/pools", { 
       search, 
       platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
@@ -107,8 +116,19 @@ export default function AdminDashboard() {
     staleTime: 5000, // Reduced stale time to see updates faster
     retry: 1,
   });
+
+  const pools = poolsResponse?.pools || [];
+  const pagination = poolsResponse?.pagination;
   
-  console.log("Admin pools query:", { pools: pools?.length, error, isLoading: poolsLoading, visibleCount: pools.filter(p => p.isVisible).length, hiddenCount: pools.filter(p => !p.isVisible).length });
+  console.log("Admin pools query:", { 
+    pools: pools?.length, 
+    error, 
+    isLoading: poolsLoading, 
+    visibleCount: pools.filter(p => p.isVisible).length, 
+    hiddenCount: pools.filter(p => !p.isVisible).length,
+    total: pagination?.total,
+    showing: pagination?.showing
+  });
 
   const { data: platforms = [] } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
@@ -470,19 +490,35 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Total Pools
+                    Database Total
                   </p>
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {pools.length}
+                    {pagination?.total || pools.length}
                   </p>
                 </div>
                 <Eye className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Showing
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {pagination?.showing || pools.length}
+                  </p>
+                </div>
+                <Eye className="h-8 w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>

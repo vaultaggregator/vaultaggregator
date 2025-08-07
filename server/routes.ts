@@ -264,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chainId, 
         platformId, 
         search, 
-        limit = '1000', 
+        limit = '5000', // Increased default limit to show all pools
         offset = '0' 
       } = req.query;
 
@@ -279,8 +279,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset: parseInt(offset as string),
       });
 
-      console.log(`Returning ${pools.length} admin pools`);
-      res.json(pools);
+      // Get total count for pagination info
+      const stats = await storage.getStats();
+      const totalPools = stats.totalPools + stats.hiddenPools;
+
+      console.log(`Returning ${pools.length} admin pools out of ${totalPools} total`);
+      
+      res.json({
+        pools,
+        pagination: {
+          total: totalPools,
+          limit: parseInt(limit as string),
+          offset: parseInt(offset as string),
+          hasMore: (parseInt(offset as string) + pools.length) < totalPools,
+          showing: pools.length
+        }
+      });
     } catch (error) {
       console.error("Error fetching admin pools:", error);
       res.status(500).json({ message: "Failed to fetch pools" });
