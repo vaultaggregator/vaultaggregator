@@ -1,4 +1,5 @@
 import { BarChart3, Twitter, Github, MessageSquare } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
@@ -48,24 +49,24 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-dashboard">
+                <Link href="/dashboard" className="hover:text-white transition-colors duration-200" data-testid="link-dashboard">
                   Dashboard
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-analytics">
+                <Link href="/analytics" className="hover:text-white transition-colors duration-200" data-testid="link-analytics">
                   Analytics
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-api">
+                <Link href="/api" className="hover:text-white transition-colors duration-200" data-testid="link-api">
                   API
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-docs">
+                <Link href="/documentation" className="hover:text-white transition-colors duration-200" data-testid="link-docs">
                   Documentation
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -74,24 +75,24 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-help">
+                <Link href="/help-center" className="hover:text-white transition-colors duration-200" data-testid="link-help">
                   Help Center
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-contact">
+                <Link href="/contact" className="hover:text-white transition-colors duration-200" data-testid="link-contact">
                   Contact Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-privacy">
+                <Link href="/privacy-policy" className="hover:text-white transition-colors duration-200" data-testid="link-privacy">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors duration-200" data-testid="link-terms">
+                <Link href="/terms" className="hover:text-white transition-colors duration-200" data-testid="link-terms">
                   Terms of Service
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

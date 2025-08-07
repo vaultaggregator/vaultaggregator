@@ -5,6 +5,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
+import Dashboard from "@/pages/dashboard";
+import Analytics from "@/pages/analytics";
+import Chains from "@/pages/chains";
+import API from "@/pages/api";
+import Documentation from "@/pages/documentation";
+import HelpCenter from "@/pages/help-center";
+import Contact from "@/pages/contact";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import Terms from "@/pages/terms";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
@@ -17,6 +26,15 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/chains" component={Chains} />
+      <Route path="/api" component={API} />
+      <Route path="/documentation" component={Documentation} />
+      <Route path="/help-center" component={HelpCenter} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms" component={Terms} />
       <Route path="/pool/:poolId" component={PoolDetail} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
