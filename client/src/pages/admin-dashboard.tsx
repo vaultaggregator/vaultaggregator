@@ -25,11 +25,11 @@ export default function AdminDashboard() {
   // Fetch admin pools (includes hidden ones)
   const { data: pools = [], isLoading: poolsLoading, error } = useQuery<PoolWithRelations[]>({
     queryKey: ["/api/admin/pools", { search, platformId: selectedPlatform, chainId: selectedChain }],
-    staleTime: 30000,
+    staleTime: 5000, // Reduced stale time to see updates faster
     retry: 1,
   });
   
-  console.log("Admin pools query:", { pools: pools?.length, error, isLoading: poolsLoading });
+  console.log("Admin pools query:", { pools: pools?.length, error, isLoading: poolsLoading, visibleCount: pools.filter(p => p.isVisible).length, hiddenCount: pools.filter(p => !p.isVisible).length });
 
   const { data: platforms = [] } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
@@ -55,18 +55,23 @@ export default function AdminDashboard() {
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Toggle success:", data);
+      // Force refetch all related queries
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ["/api/admin/pools"] });
       toast({
         title: "Success",
-        description: "Pool visibility updated",
+        description: `Pool visibility ${data.isVisible ? 'enabled' : 'disabled'}`,
       });
     },
     onError: (error: any) => {
+      console.error("Toggle error:", error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: error.message || "Failed to update pool visibility",
         variant: "destructive",
       });
@@ -324,12 +329,13 @@ export default function AdminDashboard() {
                           <div className="flex items-center justify-center space-x-2">
                             <Switch
                               checked={pool.isVisible}
-                              onCheckedChange={(checked) => 
+                              onCheckedChange={(checked) => {
+                                console.log("Toggle clicked:", { poolId: pool.id, currentVisible: pool.isVisible, newVisible: checked });
                                 toggleVisibilityMutation.mutate({ 
                                   poolId: pool.id, 
                                   isVisible: checked 
-                                })
-                              }
+                                });
+                              }}
                               disabled={toggleVisibilityMutation.isPending}
                               data-testid={`switch-visibility-${pool.id}`}
                             />
