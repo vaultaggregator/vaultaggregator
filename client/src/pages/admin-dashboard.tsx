@@ -15,8 +15,8 @@ import type { PoolWithRelations, Platform, Chain } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [search, setSearch] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
-  const [selectedChain, setSelectedChain] = useState<string>("");
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
+  const [selectedChain, setSelectedChain] = useState<string>("all");
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -24,7 +24,11 @@ export default function AdminDashboard() {
 
   // Fetch admin pools (includes hidden ones)
   const { data: pools = [], isLoading: poolsLoading, error } = useQuery<PoolWithRelations[]>({
-    queryKey: ["/api/admin/pools", { search, platformId: selectedPlatform, chainId: selectedChain }],
+    queryKey: ["/api/admin/pools", { 
+      search, 
+      platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
+      chainId: selectedChain === "all" ? "" : selectedChain 
+    }],
     staleTime: 5000, // Reduced stale time to see updates faster
     retry: 1,
   });
@@ -208,7 +212,7 @@ export default function AdminDashboard() {
                   <SelectValue placeholder="All Platforms" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Platforms</SelectItem>
+                  <SelectItem value="all">All Platforms</SelectItem>
                   {platforms.map((platform) => (
                     <SelectItem key={platform.id} value={platform.id}>
                       {platform.displayName}
@@ -222,7 +226,7 @@ export default function AdminDashboard() {
                   <SelectValue placeholder="All Chains" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Chains</SelectItem>
+                  <SelectItem value="all">All Chains</SelectItem>
                   {chains.map((chain) => (
                     <SelectItem key={chain.id} value={chain.id}>
                       {chain.displayName}

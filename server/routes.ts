@@ -172,6 +172,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset = '0' 
       } = req.query;
 
+      console.log("Admin pools request:", { chainId, platformId, search, limit, offset });
+
       const pools = await storage.getPools({
         chainId: chainId as string,
         platformId: platformId as string,
@@ -181,6 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         offset: parseInt(offset as string),
       });
 
+      console.log(`Returning ${pools.length} admin pools`);
       res.json(pools);
     } catch (error) {
       console.error("Error fetching admin pools:", error);
