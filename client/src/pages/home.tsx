@@ -133,7 +133,7 @@ export default function Home() {
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="w-12"></div> {/* Space for logo */}
               <div className="min-w-0 flex-1">
-                <span className="font-semibold text-gray-700">Platform & Token Pair</span>
+                <span className="font-semibold text-gray-700">Name</span>
               </div>
             </div>
             
