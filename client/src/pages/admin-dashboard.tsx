@@ -234,7 +234,8 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle>Pool Management</CardTitle>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Toggle pool visibility to control what users see on the main site
+              Toggle switches to control which pools are visible to guest visitors on the main site. 
+              Hidden pools will not appear on the homepage.
             </p>
           </CardHeader>
           <CardContent>
@@ -320,17 +321,22 @@ export default function AdminDashboard() {
                           </Badge>
                         </td>
                         <td className="py-3 px-2 text-center">
-                          <Switch
-                            checked={pool.isVisible}
-                            onCheckedChange={(checked) => 
-                              toggleVisibilityMutation.mutate({ 
-                                poolId: pool.id, 
-                                isVisible: checked 
-                              })
-                            }
-                            disabled={toggleVisibilityMutation.isPending}
-                            data-testid={`switch-visibility-${pool.id}`}
-                          />
+                          <div className="flex items-center justify-center space-x-2">
+                            <Switch
+                              checked={pool.isVisible}
+                              onCheckedChange={(checked) => 
+                                toggleVisibilityMutation.mutate({ 
+                                  poolId: pool.id, 
+                                  isVisible: checked 
+                                })
+                              }
+                              disabled={toggleVisibilityMutation.isPending}
+                              data-testid={`switch-visibility-${pool.id}`}
+                            />
+                            <span className="text-xs text-gray-500">
+                              {pool.isVisible ? "Visible" : "Hidden"}
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     ))}
