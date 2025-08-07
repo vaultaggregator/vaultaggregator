@@ -63,6 +63,7 @@ export interface IStorage {
   addPoolToCategory(poolId: string, categoryId: string): Promise<PoolCategory>;
   removePoolFromCategory(poolId: string, categoryId: string): Promise<boolean>;
   getPoolCategories(poolId: string): Promise<Category[]>;
+  updatePoolCategories(poolId: string, categoryIds: string[]): Promise<void>;
 
   // Stats methods
   getStats(): Promise<{
@@ -397,26 +398,18 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getPoolCategories(poolId: string): Promise<Category[]> {
-    const result = await db
-      .select({
-        id: categories.id,
-        name: categories.name,
-        displayName: categories.displayName,
-        slug: categories.slug,
-        iconUrl: categories.iconUrl,
-        description: categories.description,
-        color: categories.color,
-        isActive: categories.isActive,
-        sortOrder: categories.sortOrder,
-        createdAt: categories.createdAt,
-      })
-      .from(poolCategories)
-      .innerJoin(categories, eq(poolCategories.categoryId, categories.id))
-      .where(eq(poolCategories.poolId, poolId))
-      .orderBy(categories.sortOrder, categories.displayName);
+  async updatePoolCategories(poolId: string, categoryIds: string[]): Promise<void> {
+    // First, remove all existing categories for this pool
+    await db.delete(poolCategories).where(eq(poolCategories.poolId, poolId));
     
-    return result;
+    // Then add the new categories
+    if (categoryIds.length > 0) {
+      const insertData = categoryIds.map(categoryId => ({
+        poolId,
+        categoryId,
+      }));
+      await db.insert(poolCategories).values(insertData);
+    }
   }
 
   async getStats(): Promise<{

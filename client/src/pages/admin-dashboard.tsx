@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -14,7 +14,77 @@ import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, Arr
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
 type SortDirection = 'asc' | 'desc' | null;
-import type { PoolWithRelations, Platform, Chain } from "@shared/schema";
+import type { PoolWithRelations, Platform, Chain, Category } from "@shared/schema";
+
+// CategorySelector component
+function CategorySelector({ 
+  poolId, 
+  categories, 
+  onCategoryChange 
+}: { 
+  poolId: string; 
+  categories: Category[]; 
+  onCategoryChange: (poolId: string, categoryIds: string[]) => void;
+}) {
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Fetch current pool categories
+  const { data: poolCategories = [] } = useQuery<Category[]>({
+    queryKey: [`/api/pools/${poolId}/categories`],
+    staleTime: 30000,
+  });
+
+  // Update selected categories when data loads
+  useEffect(() => {
+    setSelectedCategories(poolCategories.map(cat => cat.id));
+  }, [poolCategories]);
+
+  const handleCategoryToggle = (categoryId: string) => {
+    const newSelection = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter(id => id !== categoryId)
+      : [...selectedCategories, categoryId];
+    
+    setSelectedCategories(newSelection);
+    onCategoryChange(poolId, newSelection);
+  };
+
+  const selectedCategoryNames = categories
+    .filter(cat => selectedCategories.includes(cat.id))
+    .map(cat => cat.displayName)
+    .join(", ");
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full text-left px-2 py-1 text-sm border rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        data-testid={`button-categories-${poolId}`}
+      >
+        {selectedCategoryNames || "No categories"}
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-10 top-full left-0 mt-1 w-64 bg-white dark:bg-gray-800 border rounded-md shadow-lg max-h-48 overflow-y-auto">
+          {categories.map(category => (
+            <label
+              key={category.id}
+              className="flex items-center px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+            >
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(category.id)}
+                onChange={() => handleCategoryToggle(category.id)}
+                className="mr-2"
+              />
+              <span className="text-sm">{category.displayName}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [search, setSearch] = useState("");
@@ -46,6 +116,10 @@ export default function AdminDashboard() {
 
   const { data: chains = [] } = useQuery<Chain[]>({
     queryKey: ["/api/chains"],
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ["/api/admin/categories"],
   });
 
   // Inline EditableField component
@@ -211,6 +285,39 @@ export default function AdminDashboard() {
 
   const updatePlatformName = (platformId: string, displayName: string) => {
     updatePlatformMutation.mutate({ platformId, displayName });
+  };
+
+  // Pool categories mutation
+  const updatePoolCategoriesMutation = useMutation({
+    mutationFn: async ({ poolId, categoryIds }: { poolId: string; categoryIds: string[] }) => {
+      const response = await fetch(`/api/admin/pools/${poolId}/categories`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ categoryIds }),
+      });
+      if (!response.ok) throw new Error("Failed to update pool categories");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
+      toast({
+        title: "Success",
+        description: "Pool categories updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update pool categories",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updatePoolCategories = (poolId: string, categoryIds: string[]) => {
+    updatePoolCategoriesMutation.mutate({ poolId, categoryIds });
   };
 
   const handleLogout = async () => {
@@ -538,6 +645,9 @@ export default function AdminDashboard() {
                           {getSortIcon('risk')}
                         </div>
                       </th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                        Categories
+                      </th>
                       <th 
                         className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => handleSort('visible')}
@@ -600,6 +710,13 @@ export default function AdminDashboard() {
                           >
                             {pool.riskLevel}
                           </Badge>
+                        </td>
+                        <td className="py-3 px-2">
+                          <CategorySelector
+                            poolId={pool.id}
+                            categories={categories}
+                            onCategoryChange={updatePoolCategories}
+                          />
                         </td>
                         <td className="py-3 px-2 text-center">
                           <div className="flex items-center justify-center space-x-2">

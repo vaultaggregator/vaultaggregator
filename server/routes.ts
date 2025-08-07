@@ -404,6 +404,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pool-Category assignment routes
+  app.get("/api/pools/:poolId/categories", async (req, res) => {
+    try {
+      const categories = await storage.getPoolCategories(req.params.poolId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching pool categories:", error);
+      res.status(500).json({ message: "Failed to fetch pool categories" });
+    }
+  });
+
+  app.put("/api/admin/pools/:poolId/categories", requireAuth, async (req, res) => {
+    try {
+      const { categoryIds } = req.body;
+      
+      if (!Array.isArray(categoryIds)) {
+        return res.status(400).json({ message: "categoryIds must be an array" });
+      }
+
+      await storage.updatePoolCategories(req.params.poolId, categoryIds);
+      const updatedCategories = await storage.getPoolCategories(req.params.poolId);
+      res.json(updatedCategories);
+    } catch (error) {
+      console.error("Error updating pool categories:", error);
+      res.status(500).json({ message: "Failed to update pool categories" });
+    }
+  });
+
   // Category icon upload routes
   app.post("/api/admin/categories/:id/icon/upload", requireAuth, async (req, res) => {
     try {
