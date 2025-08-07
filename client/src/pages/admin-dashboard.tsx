@@ -10,13 +10,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
+type SortDirection = 'asc' | 'desc' | null;
 import type { PoolWithRelations, Platform, Chain } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const [selectedChain, setSelectedChain] = useState<string>("all");
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -209,8 +214,74 @@ export default function AdminDashboard() {
     }
   };
 
-  const visiblePools = pools.filter(pool => pool.isVisible);
-  const hiddenPools = pools.filter(pool => !pool.isVisible);
+  // Sorting handlers
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortField(null);
+        setSortDirection(null);
+      } else {
+        setSortDirection('asc');
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return <ArrowUpDown className="w-4 h-4" />;
+    if (sortDirection === 'asc') return <ArrowUp className="w-4 h-4" />;
+    if (sortDirection === 'desc') return <ArrowDown className="w-4 h-4" />;
+    return <ArrowUpDown className="w-4 h-4" />;
+  };
+
+  // Sort pools
+  const sortedPools = [...pools].sort((a, b) => {
+    if (!sortField || !sortDirection) return 0;
+    
+    let aValue: any, bValue: any;
+    
+    switch (sortField) {
+      case 'platform':
+        aValue = a.platform.displayName.toLowerCase();
+        bValue = b.platform.displayName.toLowerCase();
+        break;
+      case 'chain':
+        aValue = a.chain.displayName.toLowerCase();
+        bValue = b.chain.displayName.toLowerCase();
+        break;
+      case 'apy':
+        aValue = parseFloat(a.apy || '0');
+        bValue = parseFloat(b.apy || '0');
+        break;
+      case 'tvl':
+        aValue = parseFloat(a.tvl || '0');
+        bValue = parseFloat(b.tvl || '0');
+        break;
+      case 'risk':
+        const riskOrder = { low: 1, medium: 2, high: 3 };
+        aValue = riskOrder[a.riskLevel as keyof typeof riskOrder] || 2;
+        bValue = riskOrder[b.riskLevel as keyof typeof riskOrder] || 2;
+        break;
+      case 'visible':
+        aValue = a.isVisible ? 1 : 0;
+        bValue = b.isVisible ? 1 : 0;
+        break;
+      default:
+        return 0;
+    }
+    
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const visiblePools = sortedPools.filter(pool => pool.isVisible);
+  const hiddenPools = sortedPools.filter(pool => !pool.isVisible);
 
   // Redirect if not authenticated
   if (!userLoading && !user) {
@@ -392,28 +463,70 @@ export default function AdminDashboard() {
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
                         Pool
                       </th>
-                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Platform
+                      <th 
+                        className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('platform')}
+                        data-testid="sort-platform"
+                      >
+                        <div className="flex items-center gap-2">
+                          Platform
+                          {getSortIcon('platform')}
+                        </div>
                       </th>
-                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Chain
+                      <th 
+                        className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('chain')}
+                        data-testid="sort-chain"
+                      >
+                        <div className="flex items-center gap-2">
+                          Chain
+                          {getSortIcon('chain')}
+                        </div>
                       </th>
-                      <th className="text-right py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        APY
+                      <th 
+                        className="text-right py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('apy')}
+                        data-testid="sort-apy"
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          APY
+                          {getSortIcon('apy')}
+                        </div>
                       </th>
-                      <th className="text-right py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        TVL
+                      <th 
+                        className="text-right py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('tvl')}
+                        data-testid="sort-tvl"
+                      >
+                        <div className="flex items-center justify-end gap-2">
+                          TVL
+                          {getSortIcon('tvl')}
+                        </div>
                       </th>
-                      <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Risk
+                      <th 
+                        className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('risk')}
+                        data-testid="sort-risk"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          Risk
+                          {getSortIcon('risk')}
+                        </div>
                       </th>
-                      <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Visible
+                      <th 
+                        className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('visible')}
+                        data-testid="sort-visible"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          Visible
+                          {getSortIcon('visible')}
+                        </div>
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {pools.map((pool) => (
+                    {sortedPools.map((pool) => (
                       <tr 
                         key={pool.id} 
                         className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
