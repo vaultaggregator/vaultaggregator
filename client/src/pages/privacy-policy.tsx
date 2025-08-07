@@ -1,9 +1,13 @@
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Eye, Lock, Database, Globe, Users } from "lucide-react";
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900" data-testid="text-privacy-title">
@@ -303,6 +307,8 @@ export default function PrivacyPolicy() {
           </Card>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

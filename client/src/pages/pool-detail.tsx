@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,7 +97,9 @@ export default function PoolDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-64 mb-8"></div>
@@ -109,13 +113,17 @@ export default function PoolDetail() {
             </div>
           </div>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   if (error || !pool) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
             <Button variant="ghost" className="mb-6">
@@ -130,12 +138,16 @@ export default function PoolDetail() {
             </CardContent>
           </Card>
         </div>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with back button */}
         <div className="mb-8">
@@ -507,6 +519,8 @@ export default function PoolDetail() {
           </Card>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }
