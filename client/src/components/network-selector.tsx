@@ -97,9 +97,6 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                 1 filter active
               </Badge>
             )}
-            <div className="text-sm text-gray-500">
-              {chains.length} networks available
-            </div>
           </div>
         </div>
       </div>
