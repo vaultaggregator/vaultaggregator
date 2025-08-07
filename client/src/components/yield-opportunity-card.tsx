@@ -1,5 +1,6 @@
 
 import { ExternalLink } from "lucide-react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -136,15 +137,17 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               <div className="flex items-center space-x-2">
 
                 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="hover:bg-blue-50"
-                  data-testid={`button-view-details-${opportunity.id}`}
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Details
-                </Button>
+                <Link href={`/pool/${opportunity.id}`}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="hover:bg-blue-50"
+                    data-testid={`button-view-details-${opportunity.id}`}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Details
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

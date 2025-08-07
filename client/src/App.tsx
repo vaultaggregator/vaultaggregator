@@ -10,12 +10,14 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
 import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
+import PoolDetail from "@/pages/pool-detail";
 
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/pool/:poolId" component={PoolDetail} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
