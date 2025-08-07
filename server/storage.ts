@@ -1,10 +1,10 @@
 import { 
-  pools, platforms, chains, tokens, notes, users, categories, poolCategories,
+  pools, platforms, chains, tokens, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   type Pool, type Platform, type Chain, type Token, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
-  type CategoryWithPoolCount
+  type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, ilike, or, sql } from "drizzle-orm";
@@ -81,6 +81,15 @@ export interface IStorage {
     avgApy: number;
     totalTvl: string;
   }>;
+
+  // API Key methods
+  createApiKey(apiKey: InsertApiKey): Promise<ApiKey>;
+  getApiKeyByKey(key: string): Promise<ApiKey | undefined>;
+  getApiKeys(): Promise<ApiKey[]>;
+  updateApiKey(id: string, apiKey: Partial<InsertApiKey>): Promise<ApiKey | undefined>;
+  deleteApiKey(id: string): Promise<boolean>;
+  logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void>;
+  getApiKeyUsage(keyId: string, hours?: number): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -545,6 +554,53 @@ export class DatabaseStorage implements IStorage {
       avgApy: Number(visibleStats.avg_apy) || 0,
       totalTvl: (Number(visibleStats.total_tvl) || 0).toLocaleString(),
     };
+  }
+
+  // API Key methods
+  async createApiKey(apiKey: InsertApiKey): Promise<ApiKey> {
+    const [newApiKey] = await db.insert(apiKeys).values(apiKey).returning();
+    return newApiKey;
+  }
+
+  async getApiKeyByKey(key: string): Promise<ApiKey | undefined> {
+    const [apiKey] = await db.select().from(apiKeys).where(eq(apiKeys.key, key));
+    return apiKey || undefined;
+  }
+
+  async getApiKeys(): Promise<ApiKey[]> {
+    return await db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt));
+  }
+
+  async updateApiKey(id: string, apiKey: Partial<InsertApiKey>): Promise<ApiKey | undefined> {
+    const [updatedApiKey] = await db.update(apiKeys).set({
+      ...apiKey,
+      updatedAt: new Date(),
+    }).where(eq(apiKeys.id, id)).returning();
+    return updatedApiKey || undefined;
+  }
+
+  async deleteApiKey(id: string): Promise<boolean> {
+    const result = await db.delete(apiKeys).where(eq(apiKeys.id, id));
+    return result.rowCount > 0;
+  }
+
+  async logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void> {
+    await db.insert(apiKeyUsage).values(usage);
+  }
+
+  async getApiKeyUsage(keyId: string, hours: number = 1): Promise<number> {
+    const hoursAgo = new Date(Date.now() - hours * 60 * 60 * 1000);
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(apiKeyUsage)
+      .where(
+        and(
+          eq(apiKeyUsage.apiKeyId, keyId),
+          sql`timestamp > ${hoursAgo}`
+        )
+      );
+    
+    return Number(result[0]?.count) || 0;
   }
 }
 

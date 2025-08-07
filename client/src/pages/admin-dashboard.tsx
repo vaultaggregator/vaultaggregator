@@ -505,6 +505,14 @@ export default function AdminDashboard() {
               >
                 Categories
               </Button>
+              <Button 
+                onClick={() => navigate("/admin-api-keys")} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-api-keys"
+              >
+                API Keys
+              </Button>
 
               <Button 
                 onClick={handleLogout} 

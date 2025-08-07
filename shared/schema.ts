@@ -10,6 +10,29 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
 });
 
+// API Keys table for external API access
+export const apiKeys = pgTable("api_keys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  tier: varchar("tier", { length: 50 }).notNull().default("free"), // free, pro
+  requestsPerHour: integer("requests_per_hour").notNull().default(1000),
+  usageCount: integer("usage_count").notNull().default(0),
+  lastUsed: timestamp("last_used"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const apiKeyUsage = pgTable("api_key_usage", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id").references(() => apiKeys.id).notNull(),
+  endpoint: varchar("endpoint", { length: 255 }).notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+});
+
 export const chains = pgTable("chains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
@@ -145,6 +168,17 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertApiKeyUsageSchema = createInsertSchema(apiKeyUsage).omit({
+  id: true,
+  timestamp: true,
+});
+
 export const insertChainSchema = createInsertSchema(chains).omit({
   id: true,
   createdAt: true,
@@ -193,6 +227,12 @@ export const insertPoolCategorySchema = createInsertSchema(poolCategories).omit(
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+
+export type ApiKeyUsage = typeof apiKeyUsage.$inferSelect;
+export type InsertApiKeyUsage = z.infer<typeof insertApiKeyUsageSchema>;
 
 export type Chain = typeof chains.$inferSelect;
 export type InsertChain = z.infer<typeof insertChainSchema>;

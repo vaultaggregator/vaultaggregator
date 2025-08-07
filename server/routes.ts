@@ -1,8 +1,9 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema } from "@shared/schema";
 import { z } from "zod";
+import crypto from "crypto";
 
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -28,6 +29,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     } else {
       res.status(401).json({ message: "Authentication required" });
+    }
+  };
+
+  // API Key authentication middleware
+  const requireApiKey = async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+    const apiKey = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (!apiKey) {
+      return res.status(401).json({ 
+        error: "API key required", 
+        message: "Include your API key in the Authorization header as 'Bearer YOUR_API_KEY'" 
+      });
+    }
+
+    try {
+      const keyData = await storage.getApiKeyByKey(apiKey);
+      if (!keyData || !keyData.isActive) {
+        return res.status(401).json({ 
+          error: "Invalid API key", 
+          message: "The provided API key is invalid or inactive" 
+        });
+      }
+
+      // Check rate limits
+      const usageCount = await storage.getApiKeyUsage(keyData.id, 1); // Last hour
+      if (usageCount >= keyData.requestsPerHour) {
+        return res.status(429).json({ 
+          error: "Rate limit exceeded", 
+          message: `You have exceeded the rate limit of ${keyData.requestsPerHour} requests per hour` 
+        });
+      }
+
+      // Log the API usage
+      await storage.logApiKeyUsage({
+        apiKeyId: keyData.id,
+        endpoint: req.path,
+        ipAddress: req.ip || req.connection.remoteAddress || "unknown",
+        userAgent: req.headers['user-agent'] || null,
+      });
+
+      // Update the API key usage count and last used timestamp
+      await storage.updateApiKey(keyData.id, {
+        usageCount: keyData.usageCount + 1,
+        lastUsed: new Date(),
+      });
+
+      (req as any).apiKey = keyData;
+      next();
+    } catch (error) {
+      console.error("API key validation error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   };
   // Auth routes
@@ -107,6 +160,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create user" });
     }
   });
+  // Public API routes (require API key authentication)
+  app.get("/api/v1/pools", requireApiKey, async (req, res) => {
+    try {
+      const { chainId, platformId, search, limit = "50", offset = "0" } = req.query;
+      
+      const pools = await storage.getPools({
+        chainId: chainId as string,
+        platformId: platformId as string,
+        search: search as string,
+        onlyVisible: true,
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+      });
+
+      res.json({ pools });
+    } catch (error) {
+      console.error("Error fetching pools:", error);
+      res.status(500).json({ error: "Failed to fetch pools" });
+    }
+  });
+
+  app.get("/api/v1/pools/:id", requireApiKey, async (req, res) => {
+    try {
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      res.json(pool);
+    } catch (error) {
+      console.error("Error fetching pool:", error);
+      res.status(500).json({ error: "Failed to fetch pool" });
+    }
+  });
+
+  app.get("/api/v1/chains", requireApiKey, async (req, res) => {
+    try {
+      const chains = await storage.getActiveChains();
+      res.json({ chains });
+    } catch (error) {
+      console.error("Error fetching chains:", error);
+      res.status(500).json({ error: "Failed to fetch chains" });
+    }
+  });
+
+  app.get("/api/v1/platforms", requireApiKey, async (req, res) => {
+    try {
+      const platforms = await storage.getActivePlatforms();
+      res.json({ platforms });
+    } catch (error) {
+      console.error("Error fetching platforms:", error);
+      res.status(500).json({ error: "Failed to fetch platforms" });
+    }
+  });
+
+  app.get("/api/v1/stats", requireApiKey, async (req, res) => {
+    try {
+      const stats = await storage.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      res.status(500).json({ error: "Failed to fetch stats" });
+    }
+  });
+
   // Pool routes
   app.get("/api/pools", async (req, res) => {
     try {
@@ -834,6 +951,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error during manual sync:", error);
       res.status(500).json({ message: "Failed to sync data" });
+    }
+  });
+
+  // API Key management endpoints (admin only)
+  app.post("/api/admin/api-keys", requireAuth, async (req, res) => {
+    try {
+      const { name, tier = "free" } = req.body;
+      if (!name) {
+        return res.status(400).json({ error: "Name is required" });
+      }
+
+      // Generate a secure API key
+      const apiKey = `va_${crypto.randomBytes(32).toString('hex')}`;
+      
+      const requestsPerHour = tier === "pro" ? 10000 : 1000;
+
+      const newApiKey = await storage.createApiKey({
+        key: apiKey,
+        name,
+        tier,
+        requestsPerHour,
+        usageCount: 0,
+        isActive: true,
+      });
+
+      res.json({ apiKey: newApiKey });
+    } catch (error) {
+      console.error("Error creating API key:", error);
+      res.status(500).json({ error: "Failed to create API key" });
+    }
+  });
+
+  app.get("/api/admin/api-keys", requireAuth, async (req, res) => {
+    try {
+      const apiKeys = await storage.getApiKeys();
+      // Don't expose the actual key in the list
+      const sanitizedKeys = apiKeys.map(key => ({
+        ...key,
+        key: `${key.key.slice(0, 10)}...`,
+      }));
+      res.json({ apiKeys: sanitizedKeys });
+    } catch (error) {
+      console.error("Error fetching API keys:", error);
+      res.status(500).json({ error: "Failed to fetch API keys" });
+    }
+  });
+
+  app.delete("/api/admin/api-keys/:id", requireAuth, async (req, res) => {
+    try {
+      const success = await storage.deleteApiKey(req.params.id);
+      if (success) {
+        res.json({ message: "API key deleted successfully" });
+      } else {
+        res.status(404).json({ error: "API key not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting API key:", error);
+      res.status(500).json({ error: "Failed to delete API key" });
     }
   });
 

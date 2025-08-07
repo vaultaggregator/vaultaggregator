@@ -24,6 +24,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
 import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
+import AdminApiKeys from "@/pages/admin-api-keys";
 import PoolDetail from "@/pages/pool-detail";
 
 
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/admin-networks" component={AdminNetworks} />
       <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route path="/admin-categories" component={AdminCategories} />
+      <Route path="/admin-api-keys" component={AdminApiKeys} />
       <Route component={NotFound} />
     </Switch>
   );

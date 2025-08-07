@@ -14,7 +14,7 @@ export default function API() {
     {
       id: "pools",
       method: "GET",
-      path: "/api/pools",
+      path: "/api/v1/pools",
       description: "Retrieve all yield pools with filtering options",
       parameters: [
         { name: "chainId", type: "string", required: false, description: "Filter by blockchain network" },
@@ -40,7 +40,7 @@ export default function API() {
     {
       id: "pool-detail",
       method: "GET",
-      path: "/api/pools/{id}",
+      path: "/api/v1/pools/{id}",
       description: "Get detailed information about a specific pool",
       parameters: [
         { name: "id", type: "string", required: true, description: "Unique pool identifier" }
@@ -52,13 +52,14 @@ export default function API() {
         "tvl": "1500000.00",
         "riskLevel": "medium",
         "poolAddress": "0x...",
-        "rawData": { "additional": "protocol-specific data" }
+        "platform": { "name": "uniswap-v3", "displayName": "Uniswap V3" },
+        "chain": { "name": "ethereum", "displayName": "Ethereum" }
       }
     },
     {
       id: "chains",
       method: "GET", 
-      path: "/api/chains",
+      path: "/api/v1/chains",
       description: "List all supported blockchain networks",
       parameters: [],
       response: {
@@ -76,7 +77,7 @@ export default function API() {
     {
       id: "platforms",
       method: "GET",
-      path: "/api/platforms", 
+      path: "/api/v1/platforms", 
       description: "List all supported DeFi protocols",
       parameters: [],
       response: {
@@ -94,14 +95,15 @@ export default function API() {
     {
       id: "stats",
       method: "GET",
-      path: "/api/stats",
+      path: "/api/v1/stats",
       description: "Get platform-wide statistics",
       parameters: [],
       response: {
         "totalPools": 392,
         "activePools": 387,
-        "totalTvl": "2400000000",
-        "averageApy": "8.7"
+        "hiddenPools": 22,
+        "avgApy": 8.7,
+        "totalTvl": "2,400,000,000"
       }
     }
   ];
@@ -109,15 +111,15 @@ export default function API() {
   const currentEndpoint = endpoints.find(e => e.id === selectedEndpoint);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <Header />
       <div className="p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900" data-testid="text-api-title">
+          <h1 className="text-3xl font-bold text-foreground" data-testid="text-api-title">
             API Documentation
           </h1>
-          <p className="text-gray-600 mt-2" data-testid="text-api-subtitle">
+          <p className="text-muted-foreground mt-2" data-testid="text-api-subtitle">
             Integrate Vault Aggregator data into your applications
           </p>
         </div>
@@ -126,39 +128,39 @@ export default function API() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card data-testid="card-api-version">
             <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                 <Code2 className="w-4 h-4 mr-2 text-blue-600" />
                 API Version
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-gray-900">v1.0</p>
-              <Badge className="mt-2 bg-green-100 text-green-800">Stable</Badge>
+              <p className="text-2xl font-bold text-foreground">v1.0</p>
+              <Badge className="mt-2 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Stable</Badge>
             </CardContent>
           </Card>
 
           <Card data-testid="card-rate-limit">
             <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                 <Zap className="w-4 h-4 mr-2 text-orange-600" />
                 Rate Limit
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-gray-900">1000/hr</p>
-              <p className="text-sm text-gray-600 mt-1">Per API key</p>
+              <p className="text-2xl font-bold text-foreground">1000/hr</p>
+              <p className="text-sm text-muted-foreground mt-1">Per API key</p>
             </CardContent>
           </Card>
 
           <Card data-testid="card-uptime">
             <CardHeader className="pb-4">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
                 <Shield className="w-4 h-4 mr-2 text-green-600" />
                 Uptime
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-bold text-gray-900">99.9%</p>
+              <p className="text-2xl font-bold text-foreground">99.9%</p>
               <p className="text-sm text-green-600 mt-1">Last 30 days</p>
             </CardContent>
           </Card>
@@ -189,8 +191,8 @@ export default function API() {
                       onClick={() => setSelectedEndpoint(endpoint.id)}
                       className={`w-full text-left p-3 rounded-lg border transition-colors ${
                         selectedEndpoint === endpoint.id
-                          ? 'bg-blue-50 border-blue-200'
-                          : 'hover:bg-gray-50 border-gray-200'
+                          ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+                          : 'hover:bg-muted border-border'
                       }`}
                       data-testid={`button-endpoint-${endpoint.id}`}
                     >
@@ -198,7 +200,9 @@ export default function API() {
                         <div>
                           <Badge 
                             className={`text-xs ${
-                              endpoint.method === 'GET' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                              endpoint.method === 'GET' 
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300' 
+                                : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
                             }`}
                           >
                             {endpoint.method}
@@ -216,16 +220,16 @@ export default function API() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center">
-                      <Badge className="mr-3 bg-green-100 text-green-800">
+                      <Badge className="mr-3 bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
                         {currentEndpoint?.method}
                       </Badge>
-                      <code className="text-lg">{currentEndpoint?.path}</code>
+                      <code className="text-lg text-foreground">{currentEndpoint?.path}</code>
                     </CardTitle>
                     <Button variant="outline" size="sm" data-testid="button-try-endpoint">
                       Try it out
                     </Button>
                   </div>
-                  <p className="text-gray-600 mt-2">{currentEndpoint?.description}</p>
+                  <p className="text-muted-foreground mt-2">{currentEndpoint?.description}</p>
                 </CardHeader>
                 
                 <CardContent className="space-y-6">
@@ -235,9 +239,9 @@ export default function API() {
                       <h4 className="font-semibold mb-3">Parameters</h4>
                       <div className="space-y-3">
                         {currentEndpoint.parameters.map((param, index) => (
-                          <div key={index} className="border rounded-lg p-3">
+                          <div key={index} className="border border-border rounded-lg p-3">
                             <div className="flex items-center gap-2 mb-2">
-                              <code className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                              <code className="font-mono text-sm bg-muted px-2 py-1 rounded">
                                 {param.name}
                               </code>
                               <Badge variant={param.required ? "default" : "secondary"}>
@@ -245,7 +249,7 @@ export default function API() {
                               </Badge>
                               <Badge variant="outline">{param.type}</Badge>
                             </div>
-                            <p className="text-sm text-gray-600">{param.description}</p>
+                            <p className="text-sm text-muted-foreground">{param.description}</p>
                           </div>
                         ))}
                       </div>
@@ -273,12 +277,12 @@ export default function API() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Vault Aggregator API uses API keys for authentication. Include your API key in the request headers.
                 </p>
                 
                 <div className="bg-gray-900 text-gray-100 p-4 rounded-lg">
-                  <pre><code>{`curl -X GET "https://api.vault-aggregator.com/api/pools" \\
+                  <pre><code>{`curl -X GET "${window.location.origin}/api/v1/pools" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code></pre>
                 </div>
@@ -292,7 +296,14 @@ export default function API() {
                         <li>• Basic pool data</li>
                         <li>• Community support</li>
                       </ul>
-                      <Button variant="outline" className="mt-3 w-full">Get Free Key</Button>
+                      <Button 
+                        variant="outline" 
+                        className="mt-3 w-full"
+                        onClick={() => window.open('/admin/login', '_blank')}
+                        data-testid="button-get-free-key"
+                      >
+                        Get Free Key
+                      </Button>
                     </CardContent>
                   </Card>
 
@@ -305,7 +316,13 @@ export default function API() {
                         <li>• Priority support</li>
                         <li>• Webhook notifications</li>
                       </ul>
-                      <Button className="mt-3 w-full">Upgrade to Pro</Button>
+                      <Button 
+                        className="mt-3 w-full"
+                        onClick={() => window.open('/admin/login', '_blank')}
+                        data-testid="button-upgrade-to-pro"
+                      >
+                        Upgrade to Pro
+                      </Button>
                     </CardContent>
                   </Card>
                 </div>
@@ -323,7 +340,7 @@ export default function API() {
                   <h4 className="font-semibold mb-3">JavaScript / Node.js</h4>
                   <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
                     <code>{`// Fetch all pools with high APY
-const response = await fetch('https://api.vault-aggregator.com/api/pools?limit=10', {
+const response = await fetch('${window.location.origin}/api/v1/pools?limit=10', {
   headers: {
     'Authorization': 'Bearer YOUR_API_KEY',
     'Content-Type': 'application/json'
@@ -347,11 +364,11 @@ headers = {
     'Content-Type': 'application/json'
 }
 
-response = requests.get('https://api.vault-aggregator.com/api/stats', headers=headers)
+response = requests.get('${window.location.origin}/api/v1/stats', headers=headers)
 stats = response.json()
 
 print(f"Total TVL: ${stats['totalTvl']}")
-print(f"Average APY: {stats['averageApy']}%")`}</code>
+print(f"Average APY: {stats['avgApy']}%")`}</code>
                   </pre>
                 </div>
 
@@ -359,7 +376,7 @@ print(f"Average APY: {stats['averageApy']}%")`}</code>
                   <h4 className="font-semibold mb-3">cURL</h4>
                   <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
                     <code>{`# Get Ethereum pools only
-curl -X GET "https://api.vault-aggregator.com/api/pools?chainId=ethereum" \\
+curl -X GET "${window.location.origin}/api/v1/pools?chainId=ethereum" \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`}</code>
                   </pre>
@@ -377,7 +394,7 @@ curl -X GET "https://api.vault-aggregator.com/api/pools?chainId=ethereum" \\
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   Get real-time notifications when pool data changes or new opportunities become available.
                 </p>
 
