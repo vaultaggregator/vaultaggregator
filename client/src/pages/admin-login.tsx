@@ -32,7 +32,7 @@ export default function AdminLogin() {
         title: "Success",
         description: "Logged in successfully",
       });
-      navigate("/admin");
+      navigate("/admin-dashboard");
     } catch (error: any) {
       toast({
         title: "Login Failed",
