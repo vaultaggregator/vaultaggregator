@@ -16,6 +16,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Enhanced API Documentation**: Added new endpoints for Morpho-specific data including vault details, market information, and historical APY charts
 - **Checkbox Filters**: Replaced dropdown filters with checkbox-based multi-select filters in admin panel for better UX and multiple selection capabilities
 - **Data Source Filtering**: Fixed Morpho pool identification to properly distinguish between DeFi Llama and Morpho data sources using project field
+- **Duplicate Pool Cleanup**: Removed 200 duplicate pools that had empty defi_llama_id fields, ensuring data consistency and eliminating vault duplication in the admin panel
 
 # User Preferences
 
