@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, Info, ExternalLink } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
@@ -861,20 +861,7 @@ export default function AdminDashboard() {
                               className="font-medium text-gray-900 dark:text-white"
                               data-testid={`edit-token-pair-${pool.id}`}
                             />
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Data Source: {
-                                  pool.project === 'defillama' ? 'DeFi Llama API' :
-                                  pool.project === 'morpho' ? 'Morpho API' :
-                                  pool.project === 'lido' ? 'Lido API' :
-                                  pool.project ? `${pool.project.charAt(0).toUpperCase() + pool.project.slice(1)} API` :
-                                  'Unknown Source'
-                                }</p>
-                              </TooltipContent>
-                            </Tooltip>
+
                           </div>
                         </td>
                         <td className="py-3 px-2">
