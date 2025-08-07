@@ -108,7 +108,7 @@ export default function Home() {
   const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk', children: React.ReactNode }) => (
     <button
       onClick={() => handleSort(field)}
-      className="flex items-center space-x-1 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
+      className="flex items-center justify-center space-x-1 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors w-full"
       data-testid={`sort-${field}`}
     >
       <span>{children}</span>
@@ -166,7 +166,7 @@ export default function Home() {
                 <SortHeader field="risk">Risk</SortHeader>
               </div>
               <div className="w-20 text-center">
-                <span className="font-semibold text-gray-700">Actions</span>
+                <span className="font-semibold text-gray-700 flex justify-center">Actions</span>
               </div>
             </div>
           </div>
