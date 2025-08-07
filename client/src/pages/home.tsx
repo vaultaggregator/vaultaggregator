@@ -141,7 +141,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Table Header */}
         <div className="bg-white rounded-t-xl shadow-sm border border-gray-200 border-b-0">
-          <div className="px-6 py-4 flex items-center justify-between bg-gray-50 rounded-t-xl">
+          <div className="px-6 py-4 flex items-center bg-gray-50 rounded-t-xl">
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="w-12"></div> {/* Space for logo */}
               <div className="min-w-0 flex-1">
@@ -176,7 +176,7 @@ export default function Home() {
           <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="border-b border-gray-100 last:border-b-0 p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center">
                   <div className="flex items-center space-x-4 flex-1">
                     <Skeleton className="w-12 h-12 rounded-xl" />
                     <div className="flex-1">

@@ -55,7 +55,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
   return (
     <Card className={`bg-white ${showHeaders ? 'rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-gray-50 transition-colors'}`}>
       <CardContent className="p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           {/* Left section - Platform and Token info */}
           <div className="flex items-center space-x-4 min-w-0 flex-1">
             <div 
