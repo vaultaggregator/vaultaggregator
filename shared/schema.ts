@@ -172,10 +172,18 @@ export const insertNoteSchema = createInsertSchema(notes).omit({
   updatedAt: true,
 });
 
-export const insertCategorySchema = createInsertSchema(categories).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertCategorySchema = createInsertSchema(categories)
+  .omit({
+    id: true,
+    createdAt: true,
+  })
+  .partial({
+    slug: true,
+    sortOrder: true,
+    isActive: true,
+    iconUrl: true,
+    description: true,
+  });
 
 export const insertPoolCategorySchema = createInsertSchema(poolCategories).omit({
   id: true,

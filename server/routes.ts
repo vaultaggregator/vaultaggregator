@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertCategorySchema } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -327,14 +327,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/categories", requireAuth, async (req, res) => {
     try {
-      const categoryData = insertCategorySchema.parse(req.body);
+      // First validate basic required fields
+      const { name, displayName, description, color, iconUrl, sortOrder, isActive } = req.body;
+      
+      if (!name || !displayName) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: [{ message: "Name and display name are required" }] 
+        });
+      }
+      
+      // Auto-generate slug from name
+      const slug = name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      const categoryData = {
+        name,
+        displayName,
+        slug,
+        description: description || null,
+        color: color || "#3B82F6",
+        iconUrl: iconUrl || null,
+        sortOrder: sortOrder || 0,
+        isActive: isActive !== undefined ? isActive : true
+      };
+      
       const category = await storage.createCategory(categoryData);
       res.status(201).json(category);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
-      }
       console.error("Error creating category:", error);
+      if (error instanceof Error && error.message.includes('unique')) {
+        return res.status(400).json({ message: "Category name or slug already exists" });
+      }
       res.status(500).json({ message: "Failed to create category" });
     }
   });

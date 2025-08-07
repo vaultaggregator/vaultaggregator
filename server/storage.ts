@@ -341,12 +341,8 @@ export class DatabaseStorage implements IStorage {
     return category || undefined;
   }
 
-  async createCategory(category: InsertCategory): Promise<Category> {
-    const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    const [newCategory] = await db.insert(categories).values({
-      ...category,
-      slug,
-    }).returning();
+  async createCategory(category: any): Promise<Category> {
+    const [newCategory] = await db.insert(categories).values(category).returning();
     return newCategory;
   }
 
