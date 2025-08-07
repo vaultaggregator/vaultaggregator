@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ReferenceLine } from 'recharts';
 import type { YieldOpportunity } from "@/types";
 
 interface ChartData {
@@ -325,6 +325,22 @@ export default function PoolDetail() {
                         }}
                       />
                       <Legend />
+                      {/* Max APY Reference Line */}
+                      <ReferenceLine 
+                        y={chartData.summary?.maxApy || Math.max(...(chartData.data || chartData.mockData || []).map((d: any) => d.apy))} 
+                        stroke="#f59e0b" 
+                        strokeDasharray="5 5"
+                        strokeWidth={2}
+                        label={{ 
+                          value: `Max: ${(chartData.summary?.maxApy || Math.max(...(chartData.data || chartData.mockData || []).map((d: any) => d.apy))).toFixed(2)}%`, 
+                          position: "topRight",
+                          style: { 
+                            fill: '#f59e0b', 
+                            fontWeight: 'bold', 
+                            fontSize: '12px'
+                          }
+                        }}
+                      />
                       <Area 
                         type="monotone" 
                         dataKey="apy" 
