@@ -47,6 +47,10 @@ const CHAIN_MAPPING: Record<string, { name: string; displayName: string; color: 
   'mode': { name: 'mode', displayName: 'Mode', color: '#DFFE00' },
   'manta': { name: 'manta', displayName: 'Manta', color: '#000000' },
   'mantle': { name: 'mantle', displayName: 'Mantle', color: '#000000' },
+  'fraxtal': { name: 'fraxtal', displayName: 'Fraxtal', color: '#000000' },
+  'cronos': { name: 'cronos', displayName: 'Cronos', color: '#002D74' },
+  'gnosis': { name: 'gnosis', displayName: 'Gnosis', color: '#04795B' },
+  'sonic': { name: 'sonic', displayName: 'Sonic', color: '#1E40AF' },
 };
 
 function mapRiskLevel(ilRisk?: string, stablecoin?: boolean): 'low' | 'medium' | 'high' {
@@ -91,6 +95,10 @@ export async function syncData(): Promise<void> {
     );
 
     console.log(`Filtered to ${filteredPools.length} quality pools`);
+    
+    // Log how many Beefy pools we have
+    const beefyPools = filteredPools.filter(p => p.project.toLowerCase() === 'beefy');
+    console.log(`Found ${beefyPools.length} Beefy pools in filtered results`);
 
     // Ensure chains exist
     const chains = new Set(filteredPools.map(pool => pool.chain?.toLowerCase()).filter(Boolean));
@@ -136,13 +144,15 @@ export async function syncData(): Promise<void> {
     let errorCount = 0;
 
     // Sync pools
-    for (const pool of filteredPools.slice(0, 200)) { // Limit to 200 pools for initial sync
+    for (const pool of filteredPools) { // Process all filtered pools
       try {
         const chainId = chainMap.get(pool.chain?.toLowerCase());
         const platformId = platformMap.get(pool.project?.toLowerCase().replace(/\s+/g, '-'));
 
         if (!chainId || !platformId) {
-          console.warn(`Skipping pool ${pool.pool} - missing chain or platform mapping`);
+          if (pool.project?.toLowerCase() === 'beefy') {
+            console.warn(`Skipping Beefy pool ${pool.pool} - missing chain (${pool.chain}) or platform mapping`);
+          }
           continue;
         }
 
