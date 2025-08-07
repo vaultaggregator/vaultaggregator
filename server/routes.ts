@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
-import { webScraperService } from "./services/webScraperService";
+
 import session from "express-session";
 import bcrypt from "bcrypt";
 
@@ -244,79 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // New endpoint: Scrape DeFi Llama pool data directly from web page
-  app.get("/api/pools/:id/scrape", async (req, res) => {
-    try {
-      const poolId = req.params.id;
-      
-      // Get the pool from database first to get the DeFi Llama ID
-      const pool = await storage.getPoolById(poolId);
-      if (!pool) {
-        return res.status(404).json({ message: "Pool not found" });
-      }
-      
-      if (!pool.defiLlamaId) {
-        return res.status(400).json({ message: "Pool does not have a DeFi Llama ID" });
-      }
-      
-      // Scrape data from DeFi Llama website
-      const scrapedData = await webScraperService.scrapeDefiLlamaPool(pool.defiLlamaId);
-      
-      if (!scrapedData) {
-        return res.status(500).json({ message: "Failed to scrape data from DeFi Llama" });
-      }
-      
-      res.json({
-        pool,
-        scrapedData,
-        source: "DeFi Llama Web Scraping",
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error scraping pool data:", error);
-      res.status(500).json({ message: "Failed to scrape pool data" });
-    }
-  });
 
-  // Bulk scrape multiple pools
-  app.post("/api/pools/bulk-scrape", async (req, res) => {
-    try {
-      const { poolIds } = req.body;
-      
-      if (!Array.isArray(poolIds)) {
-        return res.status(400).json({ message: "poolIds must be an array" });
-      }
-      
-      // Get pools from database to get DeFi Llama IDs
-      const pools = await Promise.all(
-        poolIds.map(id => storage.getPoolById(id))
-      );
-      
-      const validPools = pools.filter(pool => pool && pool.defiLlamaId);
-      const defiLlamaIds = validPools.map(pool => pool!.defiLlamaId!);
-      
-      // Scrape data for all pools
-      const scrapedResults = await webScraperService.scrapeMultiplePools(defiLlamaIds);
-      
-      // Combine pool data with scraped data
-      const results = validPools.map(pool => ({
-        poolId: pool!.id,
-        pool,
-        scrapedData: scrapedResults[pool!.defiLlamaId!],
-        source: "DeFi Llama Web Scraping"
-      }));
-      
-      res.json({
-        results,
-        timestamp: new Date().toISOString(),
-        totalRequested: poolIds.length,
-        totalScraped: results.length
-      });
-    } catch (error) {
-      console.error("Error bulk scraping pool data:", error);
-      res.status(500).json({ message: "Failed to bulk scrape pool data" });
-    }
-  });
 
   app.post("/api/pools", async (req, res) => {
     try {

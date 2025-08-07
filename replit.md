@@ -4,6 +4,11 @@ YieldTracker is a DeFi yield aggregation platform that allows users to discover,
 
 The platform features a modern React frontend with shadcn/ui components and a Node.js/Express backend, using PostgreSQL with Drizzle ORM for data persistence. It integrates with DeFi Llama's API to automatically sync yield data and includes an admin panel for data management.
 
+## Recent Changes (August 2025)
+- **Removed web scraping functionality**: Eliminated all "Fetch Latest Data" features including the button, scraping endpoints, and web scraper service per user request
+- **Simplified UI**: Pool detail pages now focus on core yield data from the DeFi Llama API without additional scraping capabilities
+- **Cleaner codebase**: Removed unused imports, interfaces, and server endpoints related to web scraping
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
