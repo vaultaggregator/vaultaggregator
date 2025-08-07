@@ -219,14 +219,34 @@ export default function AdminDashboard() {
       
       return response.json();
     },
-    onSuccess: (data) => {
-      console.log("Toggle success:", data);
-      // Force refetch all related queries
+    onSuccess: (data, variables) => {
+      console.log("Toggle success:", data, variables);
+      
+      // Update the specific pool in the cache immediately
+      queryClient.setQueryData<{pools: PoolWithRelations[], pagination: any}>(
+        ["/api/admin/pools", { 
+          search, 
+          platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
+          chainId: selectedChain === "all" ? "" : selectedChain 
+        }],
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            pools: oldData.pools.map(pool => 
+              pool.id === variables.poolId 
+                ? { ...pool, isVisible: variables.isVisible }
+                : pool
+            )
+          };
+        }
+      );
+      
+      // Invalidate all related queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-      // Force immediate refetch
-      queryClient.refetchQueries({ queryKey: ["/api/admin/pools"] });
+      
       toast({
         title: "Success",
         description: `Pool visibility ${data.isVisible ? 'enabled' : 'disabled'}`,
