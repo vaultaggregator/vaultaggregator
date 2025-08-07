@@ -157,6 +157,8 @@ export default function AdminDashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
   const dataSources = dataSourcesResponse?.dataSources || [];
+  
+  console.log("Data sources:", { dataSourcesResponse, dataSources });
 
   // Reset current page when filters change
   useEffect(() => {
