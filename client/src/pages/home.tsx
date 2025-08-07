@@ -244,6 +244,7 @@ export default function Home() {
                   <YieldOpportunityCard 
                     opportunity={opportunity} 
                     showHeaders={false}
+                    showNetworkName={!filters.chainId}
                   />
                 </div>
               ))}

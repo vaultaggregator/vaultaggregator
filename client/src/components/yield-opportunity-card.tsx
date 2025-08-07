@@ -8,9 +8,10 @@ import type { YieldOpportunity } from "@/types";
 interface YieldOpportunityCardProps {
   opportunity: YieldOpportunity;
   showHeaders?: boolean;
+  showNetworkName?: boolean;
 }
 
-export default function YieldOpportunityCard({ opportunity, showHeaders = true }: YieldOpportunityCardProps) {
+export default function YieldOpportunityCard({ opportunity, showHeaders = true, showNetworkName = true }: YieldOpportunityCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
 
   const formatTvl = (tvl: string): string => {
@@ -72,14 +73,16 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
                 <h3 className="font-bold text-xl text-gray-900 truncate" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
-                <Badge 
-                  variant="outline"
-                  className="text-xs font-medium px-2 py-1"
-                  style={getChainColor(opportunity.chain.color)}
-                  data-testid={`badge-chain-${opportunity.id}`}
-                >
-                  {opportunity.chain.displayName}
-                </Badge>
+                {showNetworkName && (
+                  <Badge 
+                    variant="outline"
+                    className="text-xs font-medium px-2 py-1"
+                    style={getChainColor(opportunity.chain.color)}
+                    data-testid={`badge-chain-${opportunity.id}`}
+                  >
+                    {opportunity.chain.displayName}
+                  </Badge>
+                )}
               </div>
               <p className="text-sm font-medium text-gray-600 truncate" data-testid={`text-platform-${opportunity.id}`}>
                 {opportunity.platform.displayName}
