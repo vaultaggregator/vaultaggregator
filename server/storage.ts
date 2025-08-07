@@ -290,6 +290,16 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 
+  async updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined> {
+    const [updatedPlatform] = await db.update(platforms).set(platform).where(eq(platforms.id, id)).returning();
+    return updatedPlatform || undefined;
+  }
+
+  async updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined> {
+    const [updatedChain] = await db.update(chains).set(chain).where(eq(chains.id, id)).returning();
+    return updatedChain || undefined;
+  }
+
   async getStats(): Promise<{
     totalPools: number;
     activePools: number;

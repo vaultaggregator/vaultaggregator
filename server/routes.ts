@@ -235,13 +235,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/platforms/:id", requireAuth, async (req, res) => {
     try {
-      const { displayName } = req.body;
+      const { displayName, name, website } = req.body;
       
-      if (!displayName || typeof displayName !== 'string') {
-        return res.status(400).json({ message: "displayName must be a string" });
-      }
+      const updateData: any = {};
+      if (displayName) updateData.displayName = displayName;
+      if (name) updateData.name = name;
+      if (website !== undefined) updateData.website = website;
 
-      const platform = await storage.updatePlatform(req.params.id, { displayName });
+      const platform = await storage.updatePlatform(req.params.id, updateData);
       if (!platform) {
         return res.status(404).json({ message: "Platform not found" });
       }
@@ -310,6 +311,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating chain:", error);
       res.status(500).json({ message: "Failed to update chain" });
+    }
+  });
+
+  // Platform logo upload endpoints
+  app.post("/api/objects/upload", requireAuth, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting platform logo upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  app.put("/api/platform-logos", requireAuth, async (req, res) => {
+    try {
+      const { platformId, logoUrl } = req.body;
+      
+      if (!platformId || !logoUrl) {
+        return res.status(400).json({ message: "platformId and logoUrl are required" });
+      }
+
+      // Convert the GCS URL to a public object path
+      const logoPath = logoUrl.replace(/.*\/objects\/uploads\//, '/objects/uploads/');
+      
+      const platform = await storage.updatePlatform(platformId, { logoUrl: logoPath });
+      if (!platform) {
+        return res.status(404).json({ message: "Platform not found" });
+      }
+      
+      res.json(platform);
+    } catch (error) {
+      console.error("Error updating platform logo:", error);
+      res.status(500).json({ message: "Failed to update platform logo" });
+    }
+  });
+
+  // Serve private objects (platform logos)
+  app.get("/objects/uploads/:objectPath(*)", async (req, res) => {
+    try {
+      const { ObjectStorageService, objectStorageClient } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      const parseObjectPath = (path: string): { bucketName: string; objectName: string; } => {
+        if (!path.startsWith("/")) {
+          path = `/${path}`;
+        }
+        const pathParts = path.split("/");
+        if (pathParts.length < 3) {
+          throw new Error("Invalid path: must contain at least a bucket name");
+        }
+        const bucketName = pathParts[1];
+        const objectName = pathParts.slice(2).join("/");
+        return { bucketName, objectName };
+      };
+      
+      const privateObjectDir = objectStorageService.getPrivateObjectDir();
+      const fullPath = `${privateObjectDir}/uploads/${req.params.objectPath}`;
+      const { bucketName, objectName } = parseObjectPath(fullPath);
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+      
+      const [exists] = await file.exists();
+      if (!exists) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      await objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error serving private object:", error);
+      res.status(500).json({ error: "Error serving file" });
     }
   });
 

@@ -150,10 +150,14 @@ export default function AdminDashboard() {
 
   const updateTokenPairMutation = useMutation({
     mutationFn: async ({ poolId, tokenPair }: { poolId: string; tokenPair: string }) => {
-      return await apiRequest(`/api/admin/pools/${poolId}`, {
+      const response = await fetch(`/api/admin/pools/${poolId}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ tokenPair }),
       });
+      if (!response.ok) throw new Error("Failed to update token pair");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
@@ -174,10 +178,14 @@ export default function AdminDashboard() {
 
   const updatePlatformMutation = useMutation({
     mutationFn: async ({ platformId, displayName }: { platformId: string; displayName: string }) => {
-      return await apiRequest(`/api/admin/platforms/${platformId}`, {
+      const response = await fetch(`/api/admin/platforms/${platformId}`, {
         method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ displayName }),
       });
+      if (!response.ok) throw new Error("Failed to update platform name");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
@@ -321,6 +329,14 @@ export default function AdminDashboard() {
                 data-testid="button-networks"
               >
                 Networks
+              </Button>
+              <Button 
+                onClick={() => navigate("/admin-platforms")} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-platforms"
+              >
+                Platforms
               </Button>
               <Button 
                 onClick={handleLogout} 

@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
+import AdminPlatforms from "@/pages/admin-platforms";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin-networks" component={AdminNetworks} />
+      <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route component={NotFound} />
     </Switch>
   );
