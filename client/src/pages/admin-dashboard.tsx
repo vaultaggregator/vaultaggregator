@@ -90,6 +90,7 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<string>("all");
   const [selectedChain, setSelectedChain] = useState<string>("all");
+  const [visibilityFilter, setVisibilityFilter] = useState<string>("all"); // New visibility filter
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -114,6 +115,7 @@ export default function AdminDashboard() {
       search, 
       platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
       chainId: selectedChain === "all" ? "" : selectedChain,
+      visibility: visibilityFilter === "all" ? "" : visibilityFilter,
       limit: pageSize,
       offset: currentPage * pageSize
     }],
@@ -145,6 +147,11 @@ export default function AdminDashboard() {
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/admin/categories"],
   });
+
+  // Reset current page when filters change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [search, selectedPlatform, selectedChain, visibilityFilter]);
 
   // Inline EditableField component
   function EditableField({ value, onSave, className = "", ...props }: {
@@ -586,7 +593,7 @@ export default function AdminDashboard() {
             <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
@@ -623,6 +630,17 @@ export default function AdminDashboard() {
                       {chain.displayName}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
+                <SelectTrigger data-testid="select-visibility">
+                  <SelectValue placeholder="All Pools" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Pools</SelectItem>
+                  <SelectItem value="visible">Visible Pools Only</SelectItem>
+                  <SelectItem value="hidden">Hidden Pools Only</SelectItem>
                 </SelectContent>
               </Select>
             </div>

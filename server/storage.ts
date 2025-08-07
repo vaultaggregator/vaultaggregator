@@ -46,6 +46,7 @@ export interface IStorage {
     chainId?: string;
     platformId?: string;
     search?: string;
+    visibility?: string;
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}>;
@@ -231,10 +232,11 @@ export class DatabaseStorage implements IStorage {
     chainId?: string;
     platformId?: string;
     search?: string;
+    visibility?: string;
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}> {
-    const { chainId, platformId, search, limit, offset } = options;
+    const { chainId, platformId, search, visibility, limit, offset } = options;
 
     // Build the base query
     let query = db
@@ -266,6 +268,12 @@ export class DatabaseStorage implements IStorage {
         ilike(pools.tokenPair, `%${search}%`)
       )!;
       conditions.push(searchCondition);
+    }
+
+    if (visibility === 'visible') {
+      conditions.push(eq(pools.isVisible, true));
+    } else if (visibility === 'hidden') {
+      conditions.push(eq(pools.isVisible, false));
     }
 
     if (conditions.length > 0) {

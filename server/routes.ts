@@ -339,17 +339,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chainId, 
         platformId, 
         search, 
+        visibility,
         limit = '50', // Much smaller default for better performance
         offset = '0' 
       } = req.query;
 
-      console.log("Admin pools request:", { chainId, platformId, search, limit, offset });
+      console.log("Admin pools request:", { chainId, platformId, search, visibility, limit, offset });
 
       // Get pools with pagination
       const poolsResponse = await storage.getAdminPools({
         chainId: chainId as string,
         platformId: platformId as string,
         search: search as string,
+        visibility: visibility as string,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
       });
