@@ -864,7 +864,13 @@ export default function AdminDashboard() {
                                 <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Pool ID: {pool.poolId}</p>
+                                <p>Data Source: {
+                                  pool.project === 'defillama' ? 'DeFi Llama API' :
+                                  pool.project === 'morpho' ? 'Morpho API' :
+                                  pool.project === 'lido' ? 'Lido API' :
+                                  pool.project ? `${pool.project.charAt(0).toUpperCase() + pool.project.slice(1)} API` :
+                                  'Unknown Source'
+                                }</p>
                               </TooltipContent>
                             </Tooltip>
                           </div>

@@ -1,9 +1,11 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
+import { db } from "./db";
+import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull } from "drizzle-orm";
 
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -1265,34 +1267,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get available data sources dynamically
   app.get("/api/admin/data-sources", requireAuth, async (req, res) => {
     try {
-      // Get all unique data sources from pool raw_data
-      const result = await db
-        .select({
-          source: sql<string>`DISTINCT jsonb_extract_path_text(${pools.rawData}, 'source')`,
-        })
-        .from(pools)
-        .where(and(
-          eq(pools.isActive, true),
-          sql`jsonb_extract_path_text(${pools.rawData}, 'source') IS NOT NULL`
-        ));
-
-      const dataSources = result
-        .map(row => row.source)
-        .filter(source => source && source !== 'null')
-        .map(source => {
-          // Map source names to display names
-          const sourceMap: Record<string, string> = {
-            'defillama': 'DeFi Llama API',
-            'morpho': 'Morpho API',
-            'lido': 'Lido API'
-          };
-          return {
-            key: source,
-            name: sourceMap[source] || source.charAt(0).toUpperCase() + source.slice(1) + ' API'
-          };
-        })
-        .sort((a, b) => a.name.localeCompare(b.name));
-
+      // Get all unique data sources from pool project field via storage
+      const dataSources = await storage.getDataSources();
       res.json({ dataSources });
     } catch (error) {
       console.error("Error fetching data sources:", error);

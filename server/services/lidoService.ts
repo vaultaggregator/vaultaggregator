@@ -76,6 +76,7 @@ export class LidoService {
         visibility: 'visible' as const,
         riskLevel: 'medium' as const,
         defiLlamaId: `lido-steth-${Date.now()}`, // Custom ID for Lido pools
+        project: 'lido', // Data source identifier
         isActive: true,
         rawData: {
           source: 'lido',
@@ -94,6 +95,7 @@ export class LidoService {
         // Update existing pool
         await storage.updatePool(existingPool.id, {
           apy: poolData.apy,
+          project: poolData.project,
           rawData: poolData.rawData
         });
         console.log(`Updated Lido stETH pool with APY: ${smaData.data.smaApr}%`);

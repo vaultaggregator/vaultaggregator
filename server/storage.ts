@@ -94,6 +94,9 @@ export interface IStorage {
   deleteApiKey(id: string): Promise<boolean>;
   logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void>;
   getApiKeyUsage(keyId: string, hours?: number): Promise<number>;
+  
+  // Data source methods  
+  getDataSources(): Promise<Array<{key: string, name: string}>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -649,6 +652,40 @@ export class DatabaseStorage implements IStorage {
       );
     
     return Number(result[0]?.count) || 0;
+  }
+  
+  async getDataSources(): Promise<Array<{key: string, name: string}>> {
+    const result = await db
+      .select({
+        source: sql<string>`DISTINCT ${pools.project}`,
+      })
+      .from(pools)
+      .where(
+        and(
+          eq(pools.isActive, true),
+          sql`${pools.project} IS NOT NULL`,
+          sql`${pools.project} != ''`
+        )
+      );
+
+    const dataSources = result
+      .map(row => row.source)
+      .filter(source => source && source !== 'null' && source.trim() !== '')
+      .map(source => {
+        // Map source names to display names
+        const sourceMap: Record<string, string> = {
+          'defillama': 'DeFi Llama API',
+          'morpho': 'Morpho API', 
+          'lido': 'Lido API'
+        };
+        return {
+          key: source,
+          name: sourceMap[source] || source.charAt(0).toUpperCase() + source.slice(1) + ' API'
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return dataSources;
   }
 }
 

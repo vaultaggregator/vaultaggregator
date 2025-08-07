@@ -165,6 +165,7 @@ export async function syncData(): Promise<void> {
           riskLevel: mapRiskLevel(pool.ilRisk, (pool as any).stablecoin),
           poolAddress: pool.pool,
           defiLlamaId: pool.pool,
+          project: 'defillama', // Data source identifier
           rawData: pool,
           isVisible: true,
           isActive: true,

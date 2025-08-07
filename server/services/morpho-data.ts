@@ -57,6 +57,7 @@ export async function syncMorphoData(): Promise<void> {
           tvl: vault.state.totalAssetsUsd ? vault.state.totalAssetsUsd.toString() : "0",
           poolAddress: vault.address,
           defiLlamaId: `morpho-vault-${vault.address}`, // Use this as unique identifier
+          project: "morpho", // Data source identifier
           riskLevel: "medium",
           rawData: {
             source: "morpho",
@@ -96,6 +97,7 @@ export async function syncMorphoData(): Promise<void> {
           tvl: market.state.supplyAssetsUsd ? market.state.supplyAssetsUsd.toString() : "0",
           poolAddress: market.uniqueKey,
           defiLlamaId: `morpho-market-${market.uniqueKey}`, // Use this as unique identifier
+          project: "morpho", // Data source identifier  
           riskLevel: "medium",
           rawData: {
             source: "morpho",

@@ -94,6 +94,7 @@ export const pools = pgTable("pools", {
   riskLevel: text("risk_level").notNull().default("medium"), // low, medium, high
   poolAddress: text("pool_address"),
   defiLlamaId: text("defi_llama_id"),
+  project: text("project"), // Data source identifier (defillama, morpho, lido)
   rawData: jsonb("raw_data"),
   isVisible: boolean("is_visible").notNull().default(true),
   isActive: boolean("is_active").notNull().default(true),
