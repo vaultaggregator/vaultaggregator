@@ -151,6 +151,13 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/categories"],
   });
 
+  // Fetch available data sources dynamically
+  const { data: dataSourcesResponse } = useQuery<{ dataSources: { key: string; name: string; }[] }>({
+    queryKey: ["/api/admin/data-sources"],
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+  });
+  const dataSources = dataSourcesResponse?.dataSources || [];
+
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(0);
@@ -674,38 +681,27 @@ export default function AdminDashboard() {
                 <div className="space-y-3">
                   <h4 className="font-semibold text-gray-900 dark:text-white">Data Sources</h4>
                   <div className="space-y-2">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dataSourceFilters.includes('defillama')}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setDataSourceFilters([...dataSourceFilters, 'defillama']);
-                          } else {
-                            setDataSourceFilters(dataSourceFilters.filter(source => source !== 'defillama'));
-                          }
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        data-testid="checkbox-data-source-defillama"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">DeFi Llama API</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={dataSourceFilters.includes('morpho')}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setDataSourceFilters([...dataSourceFilters, 'morpho']);
-                          } else {
-                            setDataSourceFilters(dataSourceFilters.filter(source => source !== 'morpho'));
-                          }
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        data-testid="checkbox-data-source-morpho"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Morpho API</span>
-                    </label>
+                    {dataSources.map(dataSource => (
+                      <label key={dataSource.key} className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={dataSourceFilters.includes(dataSource.key)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setDataSourceFilters([...dataSourceFilters, dataSource.key]);
+                            } else {
+                              setDataSourceFilters(dataSourceFilters.filter(source => source !== dataSource.key));
+                            }
+                          }}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          data-testid={`checkbox-data-source-${dataSource.key}`}
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{dataSource.name}</span>
+                      </label>
+                    ))}
+                    {dataSources.length === 0 && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Loading data sources...</span>
+                    )}
                   </div>
                 </div>
 

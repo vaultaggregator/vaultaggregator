@@ -1262,6 +1262,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get available data sources dynamically
+  app.get("/api/admin/data-sources", requireAuth, async (req, res) => {
+    try {
+      // Get all unique data sources from pool raw_data
+      const result = await db
+        .select({
+          source: sql<string>`DISTINCT jsonb_extract_path_text(${pools.rawData}, 'source')`,
+        })
+        .from(pools)
+        .where(and(
+          eq(pools.isActive, true),
+          sql`jsonb_extract_path_text(${pools.rawData}, 'source') IS NOT NULL`
+        ));
+
+      const dataSources = result
+        .map(row => row.source)
+        .filter(source => source && source !== 'null')
+        .map(source => {
+          // Map source names to display names
+          const sourceMap: Record<string, string> = {
+            'defillama': 'DeFi Llama API',
+            'morpho': 'Morpho API',
+            'lido': 'Lido API'
+          };
+          return {
+            key: source,
+            name: sourceMap[source] || source.charAt(0).toUpperCase() + source.slice(1) + ' API'
+          };
+        })
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      res.json({ dataSources });
+    } catch (error) {
+      console.error("Error fetching data sources:", error);
+      res.status(500).json({ error: "Failed to fetch data sources" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

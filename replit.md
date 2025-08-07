@@ -18,6 +18,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Data Source Filtering**: Fixed Morpho pool identification to properly distinguish between DeFi Llama and Morpho data sources using project field
 - **Duplicate Pool Cleanup**: Removed 200 duplicate pools that had empty defi_llama_id fields, ensuring data consistency and eliminating vault duplication in the admin panel
 - **Lido API Integration**: Added Lido as a third data source for stETH staking APR data, including both SMA (7-day average) and latest APR endpoints
+- **Dynamic Data Sources**: Fixed admin panel to automatically detect and display all available data sources instead of hardcoded values, ensuring Lido and future APIs appear automatically
 
 # User Preferences
 
