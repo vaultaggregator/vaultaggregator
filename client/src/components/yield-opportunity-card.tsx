@@ -87,17 +87,29 @@ export default function YieldOpportunityCard({ opportunity }: YieldOpportunityCa
           </div>
 
           {/* Center section - Key metrics */}
-          <div className="flex items-center space-x-8 mx-8">
+          <div className="flex items-center space-x-6 mx-6">
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1 font-medium">APY</p>
-              <p className="text-2xl font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+              <p className="text-xs text-gray-600 mb-1 font-medium">24h APY</p>
+              <p className="text-xl font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {formatApy(opportunity.apy)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1 font-medium">TVL</p>
-              <p className="text-2xl font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+              <p className="text-xs text-gray-600 mb-1 font-medium">30d APY</p>
+              <p className="text-xl font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
+                {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-600 mb-1 font-medium">TVL</p>
+              <p className="text-xl font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {formatTvl(opportunity.tvl)}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-gray-600 mb-1 font-medium">Operating Since</p>
+              <p className="text-sm font-semibold text-gray-700" data-testid={`text-operating-since-${opportunity.id}`}>
+                {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
               </p>
             </div>
           </div>

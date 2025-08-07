@@ -80,14 +80,22 @@ export default function Home() {
                       <Skeleton className="h-4 w-24" />
                     </div>
                   </div>
-                  <div className="flex items-center space-x-8 mx-8">
+                  <div className="flex items-center space-x-6 mx-6">
                     <div className="text-center">
-                      <Skeleton className="h-3 w-8 mb-1 mx-auto" />
-                      <Skeleton className="h-8 w-16" />
+                      <Skeleton className="h-3 w-12 mb-1 mx-auto" />
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                    <div className="text-center">
+                      <Skeleton className="h-3 w-12 mb-1 mx-auto" />
+                      <Skeleton className="h-6 w-16" />
                     </div>
                     <div className="text-center">
                       <Skeleton className="h-3 w-8 mb-1 mx-auto" />
-                      <Skeleton className="h-8 w-20" />
+                      <Skeleton className="h-6 w-20" />
+                    </div>
+                    <div className="text-center">
+                      <Skeleton className="h-3 w-16 mb-1 mx-auto" />
+                      <Skeleton className="h-4 w-12" />
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">

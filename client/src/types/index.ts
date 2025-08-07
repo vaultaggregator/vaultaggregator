@@ -23,6 +23,11 @@ export interface YieldOpportunity {
   }>;
   isVisible: boolean;
   lastUpdated: string;
+  rawData?: {
+    apyMean30d?: number;
+    count?: number;
+    [key: string]: any;
+  };
 }
 
 export interface FilterOptions {
