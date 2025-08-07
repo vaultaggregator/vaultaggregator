@@ -354,7 +354,7 @@ export default function PoolDetail() {
                   </ResponsiveContainer>
                 </div>
                 {chartData.summary && (
-                  <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Average APY</p>
                       <p className="text-lg font-semibold text-blue-600">{chartData.summary.averageApy.toFixed(2)}%</p>
@@ -366,10 +366,6 @@ export default function PoolDetail() {
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Max APY</p>
                       <p className="text-lg font-semibold text-green-600">{chartData.summary.maxApy.toFixed(2)}%</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">Data Points</p>
-                      <p className="text-lg font-semibold text-gray-700">{chartData.summary.dataPoints}</p>
                     </div>
                   </div>
                 )}
