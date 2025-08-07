@@ -1,32 +1,7 @@
 import { storage } from "../storage";
 import type { InsertPool, InsertPlatform, InsertChain } from "@shared/schema";
 
-interface DefiLlamaYield {
-  chain: string;
-  project: string;
-  symbol: string;
-  tvlUsd: number;
-  apy: number;
-  apyBase?: number;
-  apyReward?: number;
-  pool: string;
-  poolMeta?: string;
-  il7d?: number;
-  apyPct1D?: number;
-  apyPct7D?: number;
-  apyPct30D?: number;
-  stablecoin?: boolean;
-  ilRisk?: string;
-  exposure?: string;
-  predictions?: {
-    predictedClass: string;
-    predictedProbability: number;
-    binnedConfidence: number;
-  };
-}
-
 interface DefiLlamaPool {
-  id: string;
   chain: string;
   project: string;
   symbol: string;
@@ -41,12 +16,21 @@ interface DefiLlamaPool {
   count?: number;
   outlier?: boolean;
   ilRisk?: string;
-  category?: string;
+  stablecoin?: boolean;
+  exposure?: string;
+  apyPct1D?: number;
+  apyPct7D?: number;
+  apyPct30D?: number;
+  predictions?: {
+    predictedClass: string;
+    predictedProbability: number;
+    binnedConfidence: number;
+  };
 }
 
 const DEFI_LLAMA_BASE_URL = "https://yields.llama.fi";
 
-// Chain mapping for consistency
+// Chain mapping for consistency - expanded to support more networks from the API
 const CHAIN_MAPPING: Record<string, { name: string; displayName: string; color: string }> = {
   'ethereum': { name: 'ethereum', displayName: 'Ethereum', color: '#627EEA' },
   'arbitrum': { name: 'arbitrum', displayName: 'Arbitrum', color: '#96BEDC' },
@@ -57,6 +41,12 @@ const CHAIN_MAPPING: Record<string, { name: string; displayName: string; color: 
   'fantom': { name: 'fantom', displayName: 'Fantom', color: '#1969FF' },
   'solana': { name: 'solana', displayName: 'Solana', color: '#00FFA3' },
   'base': { name: 'base', displayName: 'Base', color: '#0052FF' },
+  'linea': { name: 'linea', displayName: 'Linea', color: '#121212' },
+  'scroll': { name: 'scroll', displayName: 'Scroll', color: '#FFEEDA' },
+  'blast': { name: 'blast', displayName: 'Blast', color: '#FCFC03' },
+  'mode': { name: 'mode', displayName: 'Mode', color: '#DFFE00' },
+  'manta': { name: 'manta', displayName: 'Manta', color: '#000000' },
+  'mantle': { name: 'mantle', displayName: 'Mantle', color: '#000000' },
 };
 
 function mapRiskLevel(ilRisk?: string, stablecoin?: boolean): 'low' | 'medium' | 'high' {
@@ -164,13 +154,13 @@ export async function syncData(): Promise<void> {
           tvl: pool.tvlUsd.toString(),
           riskLevel: mapRiskLevel(pool.ilRisk, (pool as any).stablecoin),
           poolAddress: pool.pool,
-          defiLlamaId: pool.id,
+          defiLlamaId: pool.pool,
           rawData: pool,
           isVisible: true,
           isActive: true,
         };
 
-        await storage.upsertPool(pool.id, poolData);
+        await storage.upsertPool(pool.pool, poolData);
         syncedCount++;
 
         if (syncedCount % 50 === 0) {
