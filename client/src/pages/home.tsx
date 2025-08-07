@@ -9,12 +9,14 @@ import { useQuery } from "@tanstack/react-query";
 import type { YieldOpportunity, FilterOptions } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown } from "lucide-react";
 
 export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showAdmin, setShowAdmin] = useState(false);
   const [page, setPage] = useState(0);
+  const [sortBy, setSortBy] = useState<'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const limit = 12;
 
   const { data: pools = [], isLoading, error, refetch } = useQuery<YieldOpportunity[]>({
@@ -44,6 +46,66 @@ export default function Home() {
     setPage(prev => prev + 1);
   };
 
+  const handleSort = (field: 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk') => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+  };
+
+  const sortedPools = pools.sort((a, b) => {
+    if (!sortBy) return 0;
+    
+    let aValue: any, bValue: any;
+    
+    switch (sortBy) {
+      case 'apy':
+        aValue = parseFloat(a.apy);
+        bValue = parseFloat(b.apy);
+        break;
+      case 'apy30d':
+        aValue = a.rawData?.apyMean30d || 0;
+        bValue = b.rawData?.apyMean30d || 0;
+        break;
+      case 'tvl':
+        aValue = parseFloat(a.tvl);
+        bValue = parseFloat(b.tvl);
+        break;
+      case 'operatingSince':
+        aValue = a.rawData?.count || 0;
+        bValue = b.rawData?.count || 0;
+        break;
+      case 'risk':
+        const riskOrder = { low: 3, medium: 2, high: 1 };
+        aValue = riskOrder[a.riskLevel];
+        bValue = riskOrder[b.riskLevel];
+        break;
+      default:
+        return 0;
+    }
+    
+    if (sortOrder === 'asc') {
+      return aValue - bValue;
+    } else {
+      return bValue - aValue;
+    }
+  });
+
+  const SortHeader = ({ field, children }: { field: 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk', children: React.ReactNode }) => (
+    <button
+      onClick={() => handleSort(field)}
+      className="flex items-center space-x-1 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
+      data-testid={`sort-${field}`}
+    >
+      <span>{children}</span>
+      {sortBy === field && (
+        sortOrder === 'desc' ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />
+      )}
+    </button>
+  );
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -65,10 +127,36 @@ export default function Home() {
       <FilterControls filters={filters} onFilterChange={handleFilterChange} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Table Header */}
+        <div className="bg-white rounded-t-xl shadow-sm border border-gray-200 border-b-0">
+          <div className="px-6 py-4 flex items-center justify-between bg-gray-50 rounded-t-xl">
+            <div className="flex items-center space-x-4 min-w-0 flex-1">
+              <div className="w-12"></div> {/* Space for logo */}
+              <div className="min-w-0 flex-1">
+                <span className="font-semibold text-gray-700">Platform & Token Pair</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-6 mx-6">
+              <SortHeader field="apy">24h APY</SortHeader>
+              <SortHeader field="apy30d">30d APY</SortHeader>
+              <SortHeader field="tvl">TVL</SortHeader>
+              <SortHeader field="operatingSince">Operating Since</SortHeader>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <SortHeader field="risk">Risk</SortHeader>
+              <div className="w-24 text-center">
+                <span className="font-semibold text-gray-700">Actions</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {isLoading && page === 0 ? (
-          <div className="space-y-4">
+          <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div key={i} className="border-b border-gray-100 last:border-b-0 p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4 flex-1">
                     <Skeleton className="w-12 h-12 rounded-xl" />
@@ -81,28 +169,13 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-6 mx-6">
-                    <div className="text-center">
-                      <Skeleton className="h-3 w-12 mb-1 mx-auto" />
-                      <Skeleton className="h-6 w-16" />
-                    </div>
-                    <div className="text-center">
-                      <Skeleton className="h-3 w-12 mb-1 mx-auto" />
-                      <Skeleton className="h-6 w-16" />
-                    </div>
-                    <div className="text-center">
-                      <Skeleton className="h-3 w-8 mb-1 mx-auto" />
-                      <Skeleton className="h-6 w-20" />
-                    </div>
-                    <div className="text-center">
-                      <Skeleton className="h-3 w-16 mb-1 mx-auto" />
-                      <Skeleton className="h-4 w-12" />
-                    </div>
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-16" />
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-4 w-12" />
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="text-center">
-                      <Skeleton className="h-3 w-8 mb-2 mx-auto" />
-                      <Skeleton className="h-6 w-16 rounded-md" />
-                    </div>
+                    <Skeleton className="h-6 w-16 rounded-md" />
                     <div className="flex items-center space-x-2">
                       <Skeleton className="w-8 h-8 rounded" />
                       <Skeleton className="h-8 w-20 rounded-md" />
@@ -138,9 +211,14 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="space-y-4">
-              {pools.map((pool) => (
-                <YieldOpportunityCard key={pool.id} opportunity={pool} />
+            <div className="bg-white border border-gray-200 border-t-0 rounded-b-xl overflow-hidden">
+              {sortedPools.map((opportunity, index) => (
+                <div key={opportunity.id} className={`border-b border-gray-100 last:border-b-0 ${index === sortedPools.length - 1 ? 'rounded-b-xl' : ''}`}>
+                  <YieldOpportunityCard 
+                    opportunity={opportunity} 
+                    showHeaders={false}
+                  />
+                </div>
               ))}
             </div>
 

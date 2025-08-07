@@ -7,9 +7,10 @@ import type { YieldOpportunity } from "@/types";
 
 interface YieldOpportunityCardProps {
   opportunity: YieldOpportunity;
+  showHeaders?: boolean;
 }
 
-export default function YieldOpportunityCard({ opportunity }: YieldOpportunityCardProps) {
+export default function YieldOpportunityCard({ opportunity, showHeaders = true }: YieldOpportunityCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
 
   const formatTvl = (tvl: string): string => {
@@ -52,7 +53,7 @@ export default function YieldOpportunityCard({ opportunity }: YieldOpportunityCa
   };
 
   return (
-    <Card className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500">
+    <Card className={`bg-white ${showHeaders ? 'rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-gray-50 transition-colors'}`}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           {/* Left section - Platform and Token info */}
@@ -89,25 +90,25 @@ export default function YieldOpportunityCard({ opportunity }: YieldOpportunityCa
           {/* Center section - Key metrics */}
           <div className="flex items-center space-x-6 mx-6">
             <div className="text-center">
-              <p className="text-xs text-gray-600 mb-1 font-medium">24h APY</p>
+              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">24h APY</p>}
               <p className="text-xl font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {formatApy(opportunity.apy)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-gray-600 mb-1 font-medium">30d APY</p>
+              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">30d APY</p>}
               <p className="text-xl font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                 {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-gray-600 mb-1 font-medium">TVL</p>
+              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">TVL</p>}
               <p className="text-xl font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {formatTvl(opportunity.tvl)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs text-gray-600 mb-1 font-medium">Operating Since</p>
+              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">Operating Since</p>}
               <p className="text-sm font-semibold text-gray-700" data-testid={`text-operating-since-${opportunity.id}`}>
                 {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
               </p>
@@ -117,7 +118,7 @@ export default function YieldOpportunityCard({ opportunity }: YieldOpportunityCa
           {/* Right section - Risk, actions and notes */}
           <div className="flex items-center space-x-4">
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-2 font-medium">Risk</p>
+              {showHeaders && <p className="text-sm text-gray-600 mb-2 font-medium">Risk</p>}
               <Badge 
                 variant="secondary"
                 className={`text-sm font-medium px-3 py-1 ${getRiskColor(opportunity.riskLevel)}`}
