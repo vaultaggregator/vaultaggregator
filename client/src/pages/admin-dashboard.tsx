@@ -242,15 +242,25 @@ export default function AdminDashboard() {
                 Welcome, {(user as any)?.username}
               </p>
             </div>
-            <Button 
-              onClick={handleLogout} 
-              variant="outline" 
-              size="sm"
-              data-testid="button-logout"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex space-x-3">
+              <Button 
+                onClick={() => navigate("/admin-networks")} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-networks"
+              >
+                Networks
+              </Button>
+              <Button 
+                onClick={handleLogout} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-logout"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </div>

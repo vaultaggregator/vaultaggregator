@@ -253,6 +253,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Network icon upload routes
+  app.post("/api/admin/chains/:id/icon/upload", requireAuth, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      const iconName = `${req.params.id}-${Date.now()}.png`;
+      const uploadURL = await objectStorageService.getNetworkIconUploadURL(iconName);
+      
+      res.json({ uploadURL, iconName });
+    } catch (error) {
+      console.error("Error getting network icon upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  app.put("/api/admin/chains/:id/icon", requireAuth, async (req, res) => {
+    try {
+      const { iconUrl } = req.body;
+      
+      if (!iconUrl || typeof iconUrl !== 'string') {
+        return res.status(400).json({ message: "iconUrl must be a string" });
+      }
+
+      // Convert the GCS URL to a public object path
+      const iconPath = iconUrl.replace(/.*\/network-icons\//, '/public-objects/network-icons/');
+      
+      const chain = await storage.updateChain(req.params.id, { iconUrl: iconPath });
+      if (!chain) {
+        return res.status(404).json({ message: "Network not found" });
+      }
+      
+      res.json(chain);
+    } catch (error) {
+      console.error("Error updating network icon:", error);
+      res.status(500).json({ message: "Failed to update network icon" });
+    }
+  });
+
+  // Admin chain update route
+  app.put("/api/admin/chains/:id", requireAuth, async (req, res) => {
+    try {
+      const { isActive } = req.body;
+      
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ message: "isActive must be a boolean" });
+      }
+
+      const chain = await storage.updateChain(req.params.id, { isActive });
+      if (!chain) {
+        return res.status(404).json({ message: "Chain not found" });
+      }
+      
+      res.json(chain);
+    } catch (error) {
+      console.error("Error updating chain:", error);
+      res.status(500).json({ message: "Failed to update chain" });
+    }
+  });
+
+  // Serve public objects (including network icons)
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      const filePath = req.params.filePath;
+      const file = await objectStorageService.searchPublicObject(filePath);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.put("/api/pools/:id", async (req, res) => {
     try {
       const poolData = insertPoolSchema.partial().parse(req.body);

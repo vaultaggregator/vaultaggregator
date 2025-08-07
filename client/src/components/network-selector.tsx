@@ -84,7 +84,15 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                 `}
                 data-testid={`button-network-${chain.name}`}
               >
-                <span className="text-sm">{getNetworkIcon(chain.displayName)}</span>
+                {chain.iconUrl ? (
+                  <img 
+                    src={chain.iconUrl} 
+                    alt={chain.displayName}
+                    className="w-4 h-4 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-sm">{getNetworkIcon(chain.displayName)}</span>
+                )}
                 <span className="font-medium">{chain.displayName}</span>
               </Button>
             ))}

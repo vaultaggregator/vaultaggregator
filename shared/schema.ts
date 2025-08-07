@@ -15,6 +15,7 @@ export const chains = pgTable("chains", {
   name: text("name").notNull().unique(),
   displayName: text("display_name").notNull(),
   color: text("color").notNull().default("#3B82F6"),
+  iconUrl: text("icon_url"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
