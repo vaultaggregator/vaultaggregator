@@ -65,7 +65,10 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
           {/* Networks Section */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-gray-700">Networks:</h2>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg">🌐</span>
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Networks:</h2>
+              </div>
               {/* Filter Status */}
               {(filters.chainId || filters.categoryId) && (
                 <Badge variant="secondary" className="px-3 py-1">
@@ -126,8 +129,9 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
           {/* Categories Section */}
           {categories.filter(cat => cat.isActive).length > 0 && (
             <div>
-              <div className="flex items-center space-x-3 mb-3">
-                <h2 className="text-sm font-semibold text-gray-700">Categories:</h2>
+              <div className="flex items-center space-x-2 mb-3">
+                <span className="text-lg">📂</span>
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Categories:</h2>
               </div>
               <div className="flex flex-wrap gap-2">
                 {categories.filter(cat => cat.isActive).map((category) => (
