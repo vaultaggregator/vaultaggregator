@@ -325,6 +325,11 @@ export class DatabaseStorage implements IStorage {
       totalTvl: (Number(visibleStats.total_tvl) || 0).toLocaleString(),
     };
   }
+
+  async updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined> {
+    const [updatedPlatform] = await db.update(platforms).set(platform).where(eq(platforms.id, id)).returning();
+    return updatedPlatform || undefined;
+  }
 }
 
 export const storage = new DatabaseStorage();

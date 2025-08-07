@@ -69,8 +69,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-3 mb-1">
-                <h3 className="font-bold text-lg text-gray-900 truncate" data-testid={`text-platform-${opportunity.id}`}>
-                  {opportunity.platform.displayName}
+                <h3 className="font-bold text-xl text-gray-900 truncate" data-testid={`text-token-pair-${opportunity.id}`}>
+                  {opportunity.tokenPair}
                 </h3>
                 <Badge 
                   variant="outline"
@@ -81,8 +81,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
                   {opportunity.chain.displayName}
                 </Badge>
               </div>
-              <p className="font-mono text-base font-semibold text-gray-700 truncate" data-testid={`text-token-pair-${opportunity.id}`}>
-                {opportunity.tokenPair}
+              <p className="text-sm font-medium text-gray-600 truncate" data-testid={`text-platform-${opportunity.id}`}>
+                {opportunity.platform.displayName}
               </p>
             </div>
           </div>

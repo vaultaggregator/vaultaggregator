@@ -213,6 +213,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/admin/pools/:id", requireAuth, async (req, res) => {
+    try {
+      const { tokenPair } = req.body;
+      
+      if (!tokenPair || typeof tokenPair !== 'string') {
+        return res.status(400).json({ message: "tokenPair must be a string" });
+      }
+
+      const pool = await storage.updatePool(req.params.id, { tokenPair });
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      res.json(pool);
+    } catch (error) {
+      console.error("Error updating pool:", error);
+      res.status(500).json({ message: "Failed to update pool" });
+    }
+  });
+
+  app.put("/api/admin/platforms/:id", requireAuth, async (req, res) => {
+    try {
+      const { displayName } = req.body;
+      
+      if (!displayName || typeof displayName !== 'string') {
+        return res.status(400).json({ message: "displayName must be a string" });
+      }
+
+      const platform = await storage.updatePlatform(req.params.id, { displayName });
+      if (!platform) {
+        return res.status(404).json({ message: "Platform not found" });
+      }
+      
+      res.json(platform);
+    } catch (error) {
+      console.error("Error updating platform:", error);
+      res.status(500).json({ message: "Failed to update platform" });
+    }
+  });
+
   app.put("/api/pools/:id", async (req, res) => {
     try {
       const poolData = insertPoolSchema.partial().parse(req.body);

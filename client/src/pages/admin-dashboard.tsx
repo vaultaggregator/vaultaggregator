@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X } from "lucide-react";
 import type { PoolWithRelations, Platform, Chain } from "@shared/schema";
 
 export default function AdminDashboard() {
@@ -42,6 +42,67 @@ export default function AdminDashboard() {
   const { data: chains = [] } = useQuery<Chain[]>({
     queryKey: ["/api/chains"],
   });
+
+  // Inline EditableField component
+  function EditableField({ value, onSave, className = "", ...props }: {
+    value: string;
+    onSave: (newValue: string) => void;
+    className?: string;
+    [key: string]: any;
+  }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editValue, setEditValue] = useState(value);
+
+    const handleSave = () => {
+      if (editValue.trim() !== value) {
+        onSave(editValue.trim());
+      }
+      setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+      setEditValue(value);
+      setIsEditing(false);
+    };
+
+    if (isEditing) {
+      return (
+        <div className="flex items-center space-x-2">
+          <Input
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="h-8 text-sm"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSave();
+              if (e.key === 'Escape') handleCancel();
+            }}
+            autoFocus
+            {...props}
+          />
+          <Button size="sm" variant="ghost" onClick={handleSave} className="h-8 w-8 p-0">
+            <Check className="h-4 w-4" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={handleCancel} className="h-8 w-8 p-0">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center space-x-2 group">
+        <span className={className}>{value}</span>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setIsEditing(true)}
+          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Edit3 className="h-3 w-3" />
+        </Button>
+      </div>
+    );
+  }
 
   const toggleVisibilityMutation = useMutation({
     mutationFn: async ({ poolId, isVisible }: { poolId: string; isVisible: boolean }) => {
@@ -81,6 +142,63 @@ export default function AdminDashboard() {
       });
     },
   });
+
+  const updateTokenPairMutation = useMutation({
+    mutationFn: async ({ poolId, tokenPair }: { poolId: string; tokenPair: string }) => {
+      return await apiRequest(`/api/admin/pools/${poolId}`, {
+        method: "PUT",
+        body: JSON.stringify({ tokenPair }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
+      toast({
+        title: "Success",
+        description: "Token pair updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update token pair",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updatePlatformMutation = useMutation({
+    mutationFn: async ({ platformId, displayName }: { platformId: string; displayName: string }) => {
+      return await apiRequest(`/api/admin/platforms/${platformId}`, {
+        method: "PUT",
+        body: JSON.stringify({ displayName }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
+      toast({
+        title: "Success",
+        description: "Platform name updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update platform name",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateTokenPair = (poolId: string, tokenPair: string) => {
+    updateTokenPairMutation.mutate({ poolId, tokenPair });
+  };
+
+  const updatePlatformName = (platformId: string, displayName: string) => {
+    updatePlatformMutation.mutate({ platformId, displayName });
+  };
 
   const handleLogout = async () => {
     try {
@@ -292,14 +410,20 @@ export default function AdminDashboard() {
                         data-testid={`row-pool-${pool.id}`}
                       >
                         <td className="py-3 px-2">
-                          <div className="font-medium text-gray-900 dark:text-white">
-                            {pool.tokenPair}
-                          </div>
+                          <EditableField
+                            value={pool.tokenPair}
+                            onSave={(newValue) => updateTokenPair(pool.id, newValue)}
+                            className="font-medium text-gray-900 dark:text-white"
+                            data-testid={`edit-token-pair-${pool.id}`}
+                          />
                         </td>
                         <td className="py-3 px-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-400">
-                            {pool.platform.displayName}
-                          </span>
+                          <EditableField
+                            value={pool.platform.displayName}
+                            onSave={(newValue) => updatePlatformName(pool.platformId, newValue)}
+                            className="text-sm text-gray-600 dark:text-gray-400"
+                            data-testid={`edit-platform-name-${pool.id}`}
+                          />
                         </td>
                         <td className="py-3 px-2">
                           <Badge 
