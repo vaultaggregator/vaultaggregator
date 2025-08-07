@@ -35,17 +35,51 @@ export class WebScraperService {
       const titleElement = document.querySelector('h1') || document.querySelector('title');
       const name = titleElement?.textContent?.trim() || 'Unknown Pool';
       
-      // Extract APY - look for percentage values
-      const apyText = this.extractTextByPattern(document, /APY(\s*)([\d.]+)%/i);
-      const apy = apyText ? parseFloat(apyText) : 0;
+      // Try multiple patterns to extract APY since DeFi Llama pages vary
+      const apyPatterns = [
+        /APY[:\s]*(\d+\.?\d*)\s*%/i,
+        /(\d+\.?\d*)\s*%\s*APY/i,
+        /"apy":(\d+\.?\d*)/i,
+        /current.*?(\d+\.?\d*)\s*%/i
+      ];
+      let apy = 0;
+      for (const pattern of apyPatterns) {
+        const apyText = this.extractTextByPattern(document, pattern);
+        if (apyText && parseFloat(apyText) > 0) {
+          apy = parseFloat(apyText);
+          break;
+        }
+      }
       
-      // Extract 30d Average APY
-      const avgApyText = this.extractTextByPattern(document, /30d\s+Avg\s+APY(\s*)([\d.]+)%/i);
-      const avgApy30d = avgApyText ? parseFloat(avgApyText) : undefined;
+      // Extract 30d Average APY with multiple patterns
+      const avgApyPatterns = [
+        /30d\s*(?:avg|average)[:\s]*(\d+\.?\d*)\s*%/i,
+        /average[:\s]*(\d+\.?\d*)\s*%/i
+      ];
+      let avgApy30d: number | undefined;
+      for (const pattern of avgApyPatterns) {
+        const avgApyText = this.extractTextByPattern(document, pattern);
+        if (avgApyText && parseFloat(avgApyText) > 0) {
+          avgApy30d = parseFloat(avgApyText);
+          break;
+        }
+      }
       
-      // Extract TVL
-      const tvlText = this.extractTextByPattern(document, /Total\s+Value\s+Locked(\s*)\$?([\d.]+[bkmBKM]?)/i);
-      const tvl = tvlText ? this.normalizeTVL(tvlText) : '0';
+      // Extract TVL with multiple patterns
+      const tvlPatterns = [
+        /TVL[:\s]*\$?([\d,.]+[bkmBKM]?)/i,
+        /Total\s*Value\s*Locked[:\s]*\$?([\d,.]+[bkmBKM]?)/i,
+        /"tvlUsd":(\d+\.?\d*)/i,
+        /\$\s*([\d,.]+[bkmBKM]?)\s*TVL/i
+      ];
+      let tvl = '0';
+      for (const pattern of tvlPatterns) {
+        const tvlText = this.extractTextByPattern(document, pattern);
+        if (tvlText && tvlText !== '0') {
+          tvl = this.normalizeTVL(tvlText);
+          break;
+        }
+      }
       
       // Extract risk rating
       const riskText = this.extractTextByPattern(document, /Risk\s+Rating(\s*)([A-F][+-]?)/i);
@@ -108,9 +142,15 @@ export class WebScraperService {
   
   private normalizeTVL(tvlString: string): string {
     // Convert abbreviated numbers to full format
-    const cleanTvl = tvlString.replace(/\$/, '').trim();
+    const cleanTvl = tvlString.replace(/[$,]/g, '').trim();
+    
+    if (!cleanTvl) return '0';
+    
     const lastChar = cleanTvl.slice(-1).toLowerCase();
-    const number = parseFloat(cleanTvl.slice(0, -1));
+    const numberStr = cleanTvl.slice(0, -1);
+    const number = parseFloat(numberStr);
+    
+    if (isNaN(number)) return cleanTvl;
     
     switch (lastChar) {
       case 'k':
@@ -120,7 +160,9 @@ export class WebScraperService {
       case 'b':
         return (number * 1000000000).toString();
       default:
-        return cleanTvl;
+        // If no suffix, try to parse the whole string as a number
+        const fullNumber = parseFloat(cleanTvl);
+        return isNaN(fullNumber) ? '0' : fullNumber.toString();
     }
   }
   

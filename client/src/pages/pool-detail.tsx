@@ -100,11 +100,14 @@ export default function PoolDetail() {
       });
       queryClient.setQueryData(['/api/pools', poolId, 'scrape'], data);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Scraping error:", error);
+      const errorMessage = error.message?.includes("DeFi Llama ID") 
+        ? "This pool doesn't have a DeFi Llama ID for scraping"
+        : "Failed to fetch latest data from DeFi Llama website";
       toast({
-        title: "Error",
-        description: "Failed to fetch latest data from DeFi Llama",
+        title: "Unable to Fetch Data",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -257,21 +260,23 @@ export default function PoolDetail() {
 
               {/* Action Buttons */}
               <div className="flex space-x-3">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={() => scrapeMutation.mutate()}
-                  disabled={scrapeMutation.isPending}
-                  className="hover:bg-green-50"
-                  data-testid="button-fetch-latest"
-                >
-                  {scrapeMutation.isPending ? (
-                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  ) : (
-                    <Download className="w-5 h-5 mr-2" />
-                  )}
-                  Fetch Latest Data
-                </Button>
+                {pool.defiLlamaId && (
+                  <Button 
+                    variant="outline" 
+                    size="lg" 
+                    onClick={() => scrapeMutation.mutate()}
+                    disabled={scrapeMutation.isPending}
+                    className="hover:bg-green-50"
+                    data-testid="button-fetch-latest"
+                  >
+                    {scrapeMutation.isPending ? (
+                      <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-5 h-5 mr-2" />
+                    )}
+                    Fetch Latest Data
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="lg" 
