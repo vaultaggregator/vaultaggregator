@@ -139,6 +139,25 @@ export class ObjectStorageService {
     });
   }
 
+  async getCategoryIconUploadURL(iconName: string): Promise<string> {
+    const publicObjectSearchPaths = this.getPublicObjectSearchPaths();
+    if (publicObjectSearchPaths.length === 0) {
+      throw new Error("No public object search paths configured");
+    }
+
+    // Use the first public path for category icons
+    const iconPath = `${publicObjectSearchPaths[0]}/category-icons/${iconName}`;
+    const { bucketName, objectName } = parseObjectPath(iconPath);
+
+    // Sign URL for PUT method with TTL
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "PUT",
+      ttlSec: 900,
+    });
+  }
+
   // Gets the upload URL for an object entity (platform logo).
   async getObjectEntityUploadURL(): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();

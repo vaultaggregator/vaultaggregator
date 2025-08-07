@@ -33,6 +33,7 @@ export interface YieldOpportunity {
 export interface FilterOptions {
   chainId?: string;
   platformId?: string;
+  categoryId?: string;
   search?: string;
   sortBy?: 'apy' | 'tvl' | 'platform';
 }
@@ -60,4 +61,18 @@ export interface Platform {
   slug: string;
   logoUrl?: string;
   isActive: boolean;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  displayName: string;
+  slug: string;
+  iconUrl?: string;
+  description?: string;
+  color: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  poolCount: number;
 }

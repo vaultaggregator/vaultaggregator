@@ -1,11 +1,13 @@
 import { 
-  pools, platforms, chains, tokens, notes, users,
+  pools, platforms, chains, tokens, notes, users, categories, poolCategories,
   type Pool, type Platform, type Chain, type Token, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertNote,
-  type PoolWithRelations, type User, type InsertUser
+  type PoolWithRelations, type User, type InsertUser,
+  type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
+  type CategoryWithPoolCount
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, ilike, or } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User methods (existing)
@@ -51,6 +53,16 @@ export interface IStorage {
   createNote(note: InsertNote): Promise<Note>;
   updateNote(id: string, note: Partial<InsertNote>): Promise<Note | undefined>;
   deleteNote(id: string): Promise<boolean>;
+
+  // Category methods
+  getAllCategories(): Promise<CategoryWithPoolCount[]>;
+  getCategory(id: string): Promise<Category | undefined>;
+  createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined>;
+  deleteCategory(id: string): Promise<boolean>;
+  addPoolToCategory(poolId: string, categoryId: string): Promise<PoolCategory>;
+  removePoolFromCategory(poolId: string, categoryId: string): Promise<boolean>;
+  getPoolCategories(poolId: string): Promise<Category[]>;
 
   // Stats methods
   getStats(): Promise<{
@@ -298,6 +310,95 @@ export class DatabaseStorage implements IStorage {
   async updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined> {
     const [updatedChain] = await db.update(chains).set(chain).where(eq(chains.id, id)).returning();
     return updatedChain || undefined;
+  }
+
+  // Category operations
+  async getAllCategories(): Promise<CategoryWithPoolCount[]> {
+    const result = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        displayName: categories.displayName,
+        slug: categories.slug,
+        iconUrl: categories.iconUrl,
+        description: categories.description,
+        color: categories.color,
+        isActive: categories.isActive,
+        sortOrder: categories.sortOrder,
+        createdAt: categories.createdAt,
+        poolCount: sql<number>`count(${poolCategories.poolId})::int`,
+      })
+      .from(categories)
+      .leftJoin(poolCategories, eq(categories.id, poolCategories.categoryId))
+      .groupBy(categories.id)
+      .orderBy(categories.sortOrder, categories.displayName);
+    
+    return result;
+  }
+
+  async getCategory(id: string): Promise<Category | undefined> {
+    const [category] = await db.select().from(categories).where(eq(categories.id, id));
+    return category || undefined;
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const [newCategory] = await db.insert(categories).values({
+      ...category,
+      slug,
+    }).returning();
+    return newCategory;
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category | undefined> {
+    const updateData = { ...category };
+    if (category.name) {
+      updateData.slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+    const [updatedCategory] = await db.update(categories).set(updateData).where(eq(categories.id, id)).returning();
+    return updatedCategory || undefined;
+  }
+
+  async deleteCategory(id: string): Promise<boolean> {
+    const result = await db.delete(categories).where(eq(categories.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async addPoolToCategory(poolId: string, categoryId: string): Promise<PoolCategory> {
+    const [poolCategory] = await db.insert(poolCategories).values({
+      poolId,
+      categoryId,
+    }).returning();
+    return poolCategory;
+  }
+
+  async removePoolFromCategory(poolId: string, categoryId: string): Promise<boolean> {
+    const result = await db.delete(poolCategories).where(
+      and(eq(poolCategories.poolId, poolId), eq(poolCategories.categoryId, categoryId))
+    );
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getPoolCategories(poolId: string): Promise<Category[]> {
+    const result = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        displayName: categories.displayName,
+        slug: categories.slug,
+        iconUrl: categories.iconUrl,
+        description: categories.description,
+        color: categories.color,
+        isActive: categories.isActive,
+        sortOrder: categories.sortOrder,
+        createdAt: categories.createdAt,
+      })
+      .from(poolCategories)
+      .innerJoin(categories, eq(poolCategories.categoryId, categories.id))
+      .where(eq(poolCategories.poolId, poolId))
+      .orderBy(categories.sortOrder, categories.displayName);
+    
+    return result;
   }
 
   async getStats(): Promise<{

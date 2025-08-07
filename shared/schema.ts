@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, boolean, jsonb, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -38,6 +38,26 @@ export const platforms = pgTable("platforms", {
   logoUrl: text("logo_url"),
   website: text("website"),
   isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const categories = pgTable("categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  slug: text("slug").notNull().unique(),
+  iconUrl: text("icon_url"),
+  description: text("description"),
+  color: text("color").notNull().default("#3B82F6"),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const poolCategories = pgTable("pool_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  categoryId: varchar("category_id").notNull().references(() => categories.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -84,6 +104,21 @@ export const platformsRelations = relations(platforms, ({ many }) => ({
   pools: many(pools),
 }));
 
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  poolCategories: many(poolCategories),
+}));
+
+export const poolCategoriesRelations = relations(poolCategories, ({ one }) => ({
+  pool: one(pools, {
+    fields: [poolCategories.poolId],
+    references: [pools.id],
+  }),
+  category: one(categories, {
+    fields: [poolCategories.categoryId],
+    references: [categories.id],
+  }),
+}));
+
 export const poolsRelations = relations(pools, ({ one, many }) => ({
   platform: one(platforms, {
     fields: [pools.platformId],
@@ -94,6 +129,7 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
     references: [chains.id],
   }),
   notes: many(notes),
+  poolCategories: many(poolCategories),
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
@@ -136,6 +172,16 @@ export const insertNoteSchema = createInsertSchema(notes).omit({
   updatedAt: true,
 });
 
+export const insertCategorySchema = createInsertSchema(categories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPoolCategorySchema = createInsertSchema(poolCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -155,9 +201,20 @@ export type InsertPool = z.infer<typeof insertPoolSchema>;
 export type Note = typeof notes.$inferSelect;
 export type InsertNote = z.infer<typeof insertNoteSchema>;
 
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+
+export type PoolCategory = typeof poolCategories.$inferSelect;
+export type InsertPoolCategory = z.infer<typeof insertPoolCategorySchema>;
+
 // Extended types for API responses
 export type PoolWithRelations = Pool & {
   platform: Platform;
   chain: Chain;
   notes: Note[];
+  categories?: Category[];
+};
+
+export type CategoryWithPoolCount = Category & {
+  poolCount: number;
 };

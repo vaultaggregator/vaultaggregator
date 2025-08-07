@@ -339,6 +339,14 @@ export default function AdminDashboard() {
                 Platforms
               </Button>
               <Button 
+                onClick={() => navigate("/admin-categories")} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-categories"
+              >
+                Categories
+              </Button>
+              <Button 
                 onClick={handleLogout} 
                 variant="outline" 
                 size="sm"

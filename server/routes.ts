@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertCategorySchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -311,6 +311,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating chain:", error);
       res.status(500).json({ message: "Failed to update chain" });
+    }
+  });
+
+  // Admin category management routes
+  app.get("/api/admin/categories", requireAuth, async (req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  app.post("/api/admin/categories", requireAuth, async (req, res) => {
+    try {
+      const categoryData = insertCategorySchema.parse(req.body);
+      const category = await storage.createCategory(categoryData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      console.error("Error creating category:", error);
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+
+  app.put("/api/admin/categories/:id", requireAuth, async (req, res) => {
+    try {
+      const updateData = req.body;
+      const category = await storage.updateCategory(req.params.id, updateData);
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating category:", error);
+      res.status(500).json({ message: "Failed to update category" });
+    }
+  });
+
+  app.delete("/api/admin/categories/:id", requireAuth, async (req, res) => {
+    try {
+      const deleted = await storage.deleteCategory(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      res.status(500).json({ message: "Failed to delete category" });
+    }
+  });
+
+  // Category icon upload routes
+  app.post("/api/admin/categories/:id/icon/upload", requireAuth, async (req, res) => {
+    try {
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorageService = new ObjectStorageService();
+      
+      const iconName = `category-${req.params.id}-${Date.now()}.png`;
+      const uploadURL = await objectStorageService.getCategoryIconUploadURL(iconName);
+      
+      res.json({ uploadURL, iconName });
+    } catch (error) {
+      console.error("Error getting category icon upload URL:", error);
+      res.status(500).json({ message: "Failed to get upload URL" });
+    }
+  });
+
+  app.put("/api/admin/categories/:id/icon", requireAuth, async (req, res) => {
+    try {
+      const { iconUrl } = req.body;
+      
+      if (!iconUrl || typeof iconUrl !== 'string') {
+        return res.status(400).json({ message: "iconUrl must be a string" });
+      }
+
+      // Convert the GCS URL to a public object path
+      const iconPath = iconUrl.replace(/.*\/category-icons\//, '/public-objects/category-icons/');
+      
+      const category = await storage.updateCategory(req.params.id, { iconUrl: iconPath });
+      if (!category) {
+        return res.status(404).json({ message: "Category not found" });
+      }
+      
+      res.json(category);
+    } catch (error) {
+      console.error("Error updating category icon:", error);
+      res.status(500).json({ message: "Failed to update category icon" });
     }
   });
 
