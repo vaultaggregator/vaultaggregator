@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, Info, ExternalLink } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
 type SortDirection = 'asc' | 'desc' | null;
@@ -667,7 +668,8 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <TooltipProvider>
+                  <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
@@ -726,6 +728,9 @@ export default function AdminDashboard() {
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
                         Categories
                       </th>
+                      <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                        Actions
+                      </th>
                       <th 
                         className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                         onClick={() => handleSort('visible')}
@@ -746,12 +751,22 @@ export default function AdminDashboard() {
                         data-testid={`row-pool-${pool.id}`}
                       >
                         <td className="py-3 px-2">
-                          <EditableField
-                            value={pool.tokenPair}
-                            onSave={(newValue) => updateTokenPair(pool.id, newValue)}
-                            className="font-medium text-gray-900 dark:text-white"
-                            data-testid={`edit-token-pair-${pool.id}`}
-                          />
+                          <div className="flex items-center gap-2">
+                            <EditableField
+                              value={pool.tokenPair}
+                              onSave={(newValue) => updateTokenPair(pool.id, newValue)}
+                              className="font-medium text-gray-900 dark:text-white"
+                              data-testid={`edit-token-pair-${pool.id}`}
+                            />
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Pool ID: {pool.poolId}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
                         </td>
                         <td className="py-3 px-2">
                           <EditableField
@@ -797,6 +812,20 @@ export default function AdminDashboard() {
                           />
                         </td>
                         <td className="py-3 px-2 text-center">
+                          {pool.poolId && (
+                            <a
+                              href={`https://defillama.com/yields/pool/${pool.poolId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                              data-testid={`link-defillama-${pool.id}`}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              <span className="text-sm">DeFi Llama</span>
+                            </a>
+                          )}
+                        </td>
+                        <td className="py-3 px-2 text-center">
                           <div className="flex items-center justify-center space-x-2">
                             <Switch
                               checked={pool.isVisible}
@@ -819,6 +848,7 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+                </TooltipProvider>
               </div>
             )}
             
