@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Settings, Menu, BarChart3 } from "lucide-react";
+import { Menu, BarChart3 } from "lucide-react";
 
 interface HeaderProps {
   onAdminClick: () => void;
@@ -47,14 +47,7 @@ export default function Header({ onAdminClick }: HeaderProps) {
             >
               Chains
             </a>
-            <Button 
-              onClick={onAdminClick}
-              className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors duration-200"
-              data-testid="button-admin"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Admin
-            </Button>
+
           </nav>
 
           {/* Mobile Menu Button */}
@@ -92,17 +85,7 @@ export default function Header({ onAdminClick }: HeaderProps) {
               >
                 Chains
               </a>
-              <Button 
-                onClick={() => {
-                  onAdminClick();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200 mt-2"
-                data-testid="button-mobile-admin"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
-              </Button>
+
             </nav>
           </div>
         )}

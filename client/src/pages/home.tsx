@@ -60,7 +60,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onAdminClick={() => setShowAdmin(true)} />
+      <Header onAdminClick={() => {}} />
       <HeroSection />
       <FilterControls filters={filters} onFilterChange={handleFilterChange} />
       
