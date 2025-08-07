@@ -160,7 +160,7 @@ export default function Home() {
                 <SortHeader field="tvl">TVL</SortHeader>
               </div>
               <div className="w-28 text-center">
-                <SortHeader field="operatingSince">Operating Since</SortHeader>
+                <SortHeader field="operatingSince">since</SortHeader>
               </div>
               <div className="w-16 text-center">
                 <SortHeader field="risk">Risk</SortHeader>

@@ -108,7 +108,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
               </p>
             </div>
             <div className="w-28 text-center">
-              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">Operating Since</p>}
+              {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">since</p>}
               <p className="text-sm font-semibold text-gray-700" data-testid={`text-operating-since-${opportunity.id}`}>
                 {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
               </p>
