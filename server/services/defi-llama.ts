@@ -167,7 +167,7 @@ export async function syncData(): Promise<void> {
           defiLlamaId: pool.pool,
           project: 'defillama', // Data source identifier
           rawData: pool,
-          isVisible: true,
+          isVisible: false, // Let admin control visibility
           isActive: true,
         };
 

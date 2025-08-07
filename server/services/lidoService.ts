@@ -83,10 +83,10 @@ export class LidoService {
         chainId: ethereumChain.id,
         apy: smaData.data.smaApr.toString(),
         tvl: '0', // TVL is not provided by Lido API, but we could fetch from other sources
-        visibility: 'visible' as const,
         riskLevel: 'medium' as const,
         defiLlamaId: `lido-steth-${Date.now()}`, // Custom ID for Lido pools
         project: 'lido', // Data source identifier
+        isVisible: false, // Let admin control visibility
         isActive: true,
         rawData: {
           source: 'lido',

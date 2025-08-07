@@ -429,17 +429,22 @@ export class DatabaseStorage implements IStorage {
     const [existingPool] = await db.select().from(pools).where(eq(pools.defiLlamaId, defiLlamaId));
 
     if (existingPool) {
-      // Update existing pool
-      const [updatedPool] = await db.update(pools).set({
+      // Update existing pool BUT preserve admin visibility settings
+      const updateData: Partial<InsertPool> = {
         ...poolData,
         lastUpdated: new Date(),
-      }).where(eq(pools.id, existingPool.id)).returning();
+        // NEVER override admin visibility decisions
+        isVisible: existingPool.isVisible,
+      };
+      
+      const [updatedPool] = await db.update(pools).set(updateData).where(eq(pools.id, existingPool.id)).returning();
       return updatedPool;
     } else {
-      // Create new pool
+      // Create new pool (defaults to hidden so admin can control visibility)
       const [newPool] = await db.insert(pools).values({
         ...poolData,
         defiLlamaId,
+        isVisible: false, // All new pools start hidden
       }).returning();
       return newPool;
     }

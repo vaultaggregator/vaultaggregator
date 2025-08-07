@@ -59,6 +59,8 @@ export async function syncMorphoData(): Promise<void> {
           defiLlamaId: `morpho-vault-${vault.address}`, // Use this as unique identifier
           project: "morpho", // Data source identifier
           riskLevel: "medium",
+          isVisible: false, // Let admin control visibility
+          isActive: true,
           rawData: {
             source: "morpho",
             type: "vault",

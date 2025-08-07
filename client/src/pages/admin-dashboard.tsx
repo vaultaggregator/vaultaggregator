@@ -158,7 +158,7 @@ export default function AdminDashboard() {
   });
   const dataSources = dataSourcesResponse?.dataSources || [];
   
-  console.log("Data sources:", { dataSourcesResponse, dataSources });
+  // Remove debug console log
 
   // Reset current page when filters change
   useEffect(() => {

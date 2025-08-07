@@ -19,6 +19,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Duplicate Pool Cleanup**: Removed 200 duplicate pools that had empty defi_llama_id fields, ensuring data consistency and eliminating vault duplication in the admin panel
 - **Lido API Integration**: Added Lido as a third data source for stETH staking APR data, including both SMA (7-day average) and latest APR endpoints
 - **Dynamic Data Sources**: Fixed admin panel to automatically detect and display all available data sources instead of hardcoded values, ensuring Lido and future APIs appear automatically
+- **Admin Visibility Protection**: Fixed critical upsertPool method to preserve admin visibility settings during sync operations - new pools default to hidden (isVisible: false) and existing pools maintain their admin-configured visibility status
 
 # User Preferences
 
