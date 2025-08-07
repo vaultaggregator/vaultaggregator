@@ -64,65 +64,70 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
         <div className="space-y-6">
           {/* Networks Section */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <span className="text-lg">🌐</span>
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Networks:</h2>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              {/* Networks Label and Buttons */}
+              <div className="flex items-center space-x-4 flex-wrap">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">🌐</span>
+                  <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Networks:</h2>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {/* All Networks Button */}
+                  <Button
+                    onClick={clearAllFilters}
+                    variant={!filters.chainId ? "default" : "outline"}
+                    size="sm"
+                    className={`
+                      flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
+                      ${!filters.chainId 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                        : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
+                      }
+                    `}
+                    data-testid="button-all-networks"
+                  >
+                    <span className="text-sm">🌐</span>
+                    <span className="font-medium">All</span>
+                  </Button>
+
+                  {/* Individual Network Buttons */}
+                  {chains.map((chain) => (
+                    <Button
+                      key={chain.id}
+                      onClick={() => handleChainClick(chain.id)}
+                      variant={filters.chainId === chain.id ? "default" : "outline"}
+                      size="sm"
+                      className={`
+                        flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
+                        ${filters.chainId === chain.id 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                          : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
+                        }
+                      `}
+                      data-testid={`button-network-${chain.name}`}
+                    >
+                      {(chain as any).iconUrl ? (
+                        <img 
+                          src={(chain as any).iconUrl} 
+                          alt={chain.displayName}
+                          className="w-4 h-4 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-sm">{getNetworkIcon(chain.displayName)}</span>
+                      )}
+                      <span className="font-medium">{chain.displayName}</span>
+                    </Button>
+                  ))}
+                </div>
               </div>
+              
               {/* Filter Status */}
               {(filters.chainId || filters.categoryId) && (
                 <Badge variant="secondary" className="px-3 py-1">
                   {[filters.chainId, filters.categoryId].filter(Boolean).length} filter{[filters.chainId, filters.categoryId].filter(Boolean).length === 1 ? '' : 's'} active
                 </Badge>
               )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {/* All Networks Button */}
-              <Button
-                onClick={clearAllFilters}
-                variant={!filters.chainId ? "default" : "outline"}
-                size="sm"
-                className={`
-                  flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
-                  ${!filters.chainId 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                    : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
-                  }
-                `}
-                data-testid="button-all-networks"
-              >
-                <span className="text-sm">🌐</span>
-                <span className="font-medium">All</span>
-              </Button>
-
-              {/* Individual Network Buttons */}
-              {chains.map((chain) => (
-                <Button
-                  key={chain.id}
-                  onClick={() => handleChainClick(chain.id)}
-                  variant={filters.chainId === chain.id ? "default" : "outline"}
-                  size="sm"
-                  className={`
-                    flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
-                    ${filters.chainId === chain.id 
-                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                      : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
-                    }
-                  `}
-                  data-testid={`button-network-${chain.name}`}
-                >
-                  {(chain as any).iconUrl ? (
-                    <img 
-                      src={(chain as any).iconUrl} 
-                      alt={chain.displayName}
-                      className="w-4 h-4 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-sm">{getNetworkIcon(chain.displayName)}</span>
-                  )}
-                  <span className="font-medium">{chain.displayName}</span>
-                </Button>
-              ))}
             </div>
           </div>
 

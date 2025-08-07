@@ -8,6 +8,8 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Removed web scraping functionality**: Eliminated all "Fetch Latest Data" features including the button, scraping endpoints, and web scraper service per user request
 - **Simplified UI**: Pool detail pages now focus on core yield data from the DeFi Llama API without additional scraping capabilities
 - **Cleaner codebase**: Removed unused imports, interfaces, and server endpoints related to web scraping
+- **Complete API System**: Implemented secure API key authentication system with protected endpoints, admin management interface, and rate limiting
+- **Network Selector UI**: Fixed network selector to display networks horizontally next to "Networks:" label for better visual layout
 
 # User Preferences
 
