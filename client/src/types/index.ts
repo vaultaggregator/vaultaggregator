@@ -1,0 +1,58 @@
+export interface YieldOpportunity {
+  id: string;
+  platform: {
+    id: string;
+    name: string;
+    displayName: string;
+    logoUrl?: string;
+  };
+  chain: {
+    id: string;
+    name: string;
+    displayName: string;
+    color: string;
+  };
+  tokenPair: string;
+  apy: string;
+  tvl: string;
+  riskLevel: 'low' | 'medium' | 'high';
+  notes: Array<{
+    id: string;
+    content: string;
+    isPublic: boolean;
+  }>;
+  isVisible: boolean;
+  lastUpdated: string;
+}
+
+export interface FilterOptions {
+  chainId?: string;
+  platformId?: string;
+  search?: string;
+  sortBy?: 'apy' | 'tvl' | 'platform';
+}
+
+export interface AppStats {
+  totalPools: number;
+  activePools: number;
+  hiddenPools: number;
+  avgApy: number;
+  totalTvl: string;
+}
+
+export interface Chain {
+  id: string;
+  name: string;
+  displayName: string;
+  color: string;
+  isActive: boolean;
+}
+
+export interface Platform {
+  id: string;
+  name: string;
+  displayName: string;
+  slug: string;
+  logoUrl?: string;
+  isActive: boolean;
+}
