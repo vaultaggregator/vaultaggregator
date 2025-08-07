@@ -1,10 +1,105 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
+import session from "express-session";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Session configuration
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+  }));
+
+  // Middleware to check if user is authenticated admin
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (req.session?.userId) {
+      next();
+    } else {
+      res.status(401).json({ message: "Authentication required" });
+    }
+  };
+  // Auth routes
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      (req.session as any).userId = user.id;
+      res.json({ message: "Login successful", user: { id: user.id, username: user.username } });
+    } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session?.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  app.get("/api/auth/me", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser((req.session as any).userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, username: user.username });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Admin user creation route (for initial setup)
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { username, password } = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(409).json({ message: "Username already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      const user = await storage.createUser({
+        username,
+        password: hashedPassword,
+      });
+
+      res.status(201).json({ message: "User created successfully", user: { id: user.id, username: user.username } });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      console.error("Error creating user:", error);
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
   // Pool routes
   app.get("/api/pools", async (req, res) => {
     try {
@@ -57,6 +152,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating pool:", error);
       res.status(500).json({ message: "Failed to create pool" });
+    }
+  });
+
+  // Admin-only pool management routes
+  app.get("/api/admin/pools", requireAuth, async (req, res) => {
+    try {
+      const { 
+        chainId, 
+        platformId, 
+        search, 
+        limit = '100', 
+        offset = '0' 
+      } = req.query;
+
+      const pools = await storage.getPools({
+        chainId: chainId as string,
+        platformId: platformId as string,
+        search: search as string,
+        onlyVisible: false, // Admin can see all pools
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+      });
+
+      res.json(pools);
+    } catch (error) {
+      console.error("Error fetching admin pools:", error);
+      res.status(500).json({ message: "Failed to fetch pools" });
+    }
+  });
+
+  app.put("/api/admin/pools/:id/visibility", requireAuth, async (req, res) => {
+    try {
+      const { isVisible } = req.body;
+      if (typeof isVisible !== 'boolean') {
+        return res.status(400).json({ message: "isVisible must be a boolean" });
+      }
+
+      const pool = await storage.updatePool(req.params.id, { isVisible });
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      res.json(pool);
+    } catch (error) {
+      console.error("Error updating pool visibility:", error);
+      res.status(500).json({ message: "Failed to update pool visibility" });
     }
   });
 
