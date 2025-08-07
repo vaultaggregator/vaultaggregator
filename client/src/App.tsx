@@ -10,7 +10,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
 import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
-import AdminPoolCategories from "@/pages/admin-pool-categories";
+
 
 function Router() {
   return (
@@ -22,7 +22,6 @@ function Router() {
       <Route path="/admin-networks" component={AdminNetworks} />
       <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route path="/admin-categories" component={AdminCategories} />
-      <Route path="/admin-pool-categories" component={AdminPoolCategories} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -346,14 +346,7 @@ export default function AdminDashboard() {
               >
                 Categories
               </Button>
-              <Button 
-                onClick={() => navigate("/admin-pool-categories")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-pool-categories"
-              >
-                Pool Categories
-              </Button>
+
               <Button 
                 onClick={handleLogout} 
                 variant="outline" 
