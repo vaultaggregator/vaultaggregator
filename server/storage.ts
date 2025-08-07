@@ -18,12 +18,14 @@ export interface IStorage {
   // Chain methods
   getChains(): Promise<Chain[]>;
   getActiveChains(): Promise<Chain[]>;
+  getChainByName(name: string): Promise<Chain | undefined>;
   createChain(chain: InsertChain): Promise<Chain>;
   updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined>;
 
   // Platform methods
   getPlatforms(): Promise<Platform[]>;
   getActivePlatforms(): Promise<Platform[]>;
+  getPlatformByName(name: string): Promise<Platform | undefined>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
   updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined>;
 
@@ -52,6 +54,7 @@ export interface IStorage {
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}>;
   getPoolById(id: string): Promise<PoolWithRelations | undefined>;
+  getPoolByTokenAndPlatform(tokenPair: string, platformId: string): Promise<Pool | undefined>;
   createPool(pool: InsertPool): Promise<Pool>;
   updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined>;
   deletePool(id: string): Promise<boolean>;
@@ -138,8 +141,29 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(platforms).where(eq(platforms.isActive, true)).orderBy(platforms.displayName);
   }
 
+  async getPlatformByName(name: string): Promise<Platform | undefined> {
+    const [platform] = await db.select().from(platforms).where(eq(platforms.name, name));
+    return platform || undefined;
+  }
+
+  async getChainByName(name: string): Promise<Chain | undefined> {
+    const [chain] = await db.select().from(chains).where(eq(chains.name, name));
+    return chain || undefined;
+  }
+
+  async getPoolByTokenAndPlatform(tokenPair: string, platformId: string): Promise<Pool | undefined> {
+    const [pool] = await db.select().from(pools).where(
+      and(eq(pools.tokenPair, tokenPair), eq(pools.platformId, platformId))
+    );
+    return pool || undefined;
+  }
+
   async createPlatform(platform: InsertPlatform): Promise<Platform> {
-    const [newPlatform] = await db.insert(platforms).values(platform).returning();
+    const platformData = {
+      ...platform,
+      slug: platform.slug || platform.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    };
+    const [newPlatform] = await db.insert(platforms).values(platformData).returning();
     return newPlatform;
   }
 
