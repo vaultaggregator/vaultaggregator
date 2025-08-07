@@ -138,7 +138,7 @@ export default function AdminDashboard() {
     queryKey: ["/api/chains"],
   });
 
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/admin/categories"],
   });
 
