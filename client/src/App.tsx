@@ -15,6 +15,10 @@ import HelpCenter from "@/pages/help-center";
 import Contact from "@/pages/contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Terms from "@/pages/terms";
+import ListYourProject from "@/pages/list-your-project";
+import PressMedia from "@/pages/press-media";
+import Watchlist from "@/pages/watchlist";
+import Jobs from "@/pages/jobs";
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
@@ -36,6 +40,10 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/list-your-project" component={ListYourProject} />
+      <Route path="/press-media" component={PressMedia} />
+      <Route path="/watchlist" component={Watchlist} />
+      <Route path="/jobs" component={Jobs} />
       <Route path="/pool/:poolId" component={PoolDetail} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />

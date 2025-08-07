@@ -5,8 +5,8 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 dark:bg-gray-950 text-white py-12 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="col-span-1 md:col-span-2 lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-white" />
@@ -92,6 +92,32 @@ export default function Footer() {
               <li>
                 <Link href="/terms" className="hover:text-white transition-colors duration-200" data-testid="link-terms">
                   Terms of Service
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-4">More</h4>
+            <ul className="space-y-2 text-gray-400">
+              <li>
+                <Link href="/list-your-project" className="hover:text-white transition-colors duration-200" data-testid="link-list-project">
+                  List Your Project
+                </Link>
+              </li>
+              <li>
+                <Link href="/press-media" className="hover:text-white transition-colors duration-200" data-testid="link-press">
+                  Press / Media
+                </Link>
+              </li>
+              <li>
+                <Link href="/watchlist" className="hover:text-white transition-colors duration-200" data-testid="link-watchlist">
+                  Watchlist
+                </Link>
+              </li>
+              <li>
+                <Link href="/jobs" className="hover:text-white transition-colors duration-200" data-testid="link-jobs">
+                  Jobs
                 </Link>
               </li>
             </ul>
