@@ -134,48 +134,51 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
           {/* Categories Section */}
           {categories.filter(cat => cat.isActive).length > 0 && (
             <div>
-              <div className="flex items-center space-x-2 mb-3">
-                <span className="text-lg">📂</span>
-                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Categories:</h2>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {categories.filter(cat => cat.isActive).map((category) => (
-                  <Button
-                    key={category.id}
-                    onClick={() => handleCategoryClick(category.id)}
-                    variant={filters.categoryId === category.id ? "default" : "outline"}
-                    size="sm"
-                    className={`
-                      flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
-                      ${filters.categoryId === category.id 
-                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                        : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
-                      }
-                    `}
-                    data-testid={`button-category-${category.slug}`}
-                  >
-                    {category.iconUrl ? (
-                      <img
-                        src={category.iconUrl}
-                        alt={category.displayName}
-                        className="w-4 h-4 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div 
-                        className="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white font-medium" 
-                        style={{ backgroundColor: category.color }}
-                      >
-                        {category.displayName.charAt(0)}
-                      </div>
-                    )}
-                    <span className="font-medium">{category.displayName}</span>
-                    {category.poolCount > 0 && (
-                      <Badge variant="secondary" className="text-xs ml-1">
-                        {category.poolCount}
-                      </Badge>
-                    )}
-                  </Button>
-                ))}
+              <div className="flex items-center space-x-4 flex-wrap">
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg">📂</span>
+                  <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Categories:</h2>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {categories.filter(cat => cat.isActive).map((category) => (
+                    <Button
+                      key={category.id}
+                      onClick={() => handleCategoryClick(category.id)}
+                      variant={filters.categoryId === category.id ? "default" : "outline"}
+                      size="sm"
+                      className={`
+                        flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
+                        ${filters.categoryId === category.id 
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                          : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
+                        }
+                      `}
+                      data-testid={`button-category-${category.slug}`}
+                    >
+                      {category.iconUrl ? (
+                        <img
+                          src={category.iconUrl}
+                          alt={category.displayName}
+                          className="w-4 h-4 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div 
+                          className="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white font-medium" 
+                          style={{ backgroundColor: category.color }}
+                        >
+                          {category.displayName.charAt(0)}
+                        </div>
+                      )}
+                      <span className="font-medium">{category.displayName}</span>
+                      {category.poolCount > 0 && (
+                        <Badge variant="secondary" className="text-xs ml-1">
+                          {category.poolCount}
+                        </Badge>
+                      )}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
