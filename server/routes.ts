@@ -567,12 +567,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manual sync endpoints for admin use
   app.post("/api/admin/sync/morpho", requireAuth, async (req, res) => {
     try {
+      console.log("Starting manual Morpho sync...");
       const { syncMorphoData } = await import("./services/morpho-data");
       await syncMorphoData();
       res.json({ success: true, message: "Morpho data synchronization completed" });
     } catch (error) {
       console.error("Error syncing Morpho data:", error);
-      res.status(500).json({ message: "Failed to sync Morpho data" });
+      res.status(500).json({ message: "Failed to sync Morpho data", error: error.message });
+    }
+  });
+
+  app.post("/api/admin/sync/lido", requireAuth, async (req, res) => {
+    try {
+      console.log("Starting manual Lido sync...");
+      const { lidoService } = await import("./services/lidoService");
+      await lidoService.syncData();
+      res.json({ success: true, message: "Lido data synchronization completed" });
+    } catch (error) {
+      console.error("Error syncing Lido data:", error);
+      res.status(500).json({ message: "Failed to sync Lido data", error: error.message });
     }
   });
 

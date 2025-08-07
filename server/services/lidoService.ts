@@ -33,7 +33,7 @@ export class LidoService {
     return response.json();
   }
 
-  async syncLidoData(): Promise<void> {
+  async syncData(): Promise<void> {
     console.log('Starting Lido data synchronization...');
     
     try {
