@@ -149,16 +149,23 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-6 mx-6">
-              <SortHeader field="apy">24h APY</SortHeader>
-              <SortHeader field="apy30d">30d APY</SortHeader>
-              <SortHeader field="tvl">TVL</SortHeader>
-              <SortHeader field="operatingSince">Operating Since</SortHeader>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <SortHeader field="risk">Risk</SortHeader>
+            <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
+              <div className="w-20 text-center">
+                <SortHeader field="apy">24h APY</SortHeader>
+              </div>
+              <div className="w-20 text-center">
+                <SortHeader field="apy30d">30d APY</SortHeader>
+              </div>
               <div className="w-24 text-center">
+                <SortHeader field="tvl">TVL</SortHeader>
+              </div>
+              <div className="w-28 text-center">
+                <SortHeader field="operatingSince">Operating Since</SortHeader>
+              </div>
+              <div className="w-16 text-center">
+                <SortHeader field="risk">Risk</SortHeader>
+              </div>
+              <div className="w-20 text-center">
                 <span className="font-semibold text-gray-700">Actions</span>
               </div>
             </div>
@@ -180,15 +187,23 @@ export default function Home() {
                       <Skeleton className="h-4 w-24" />
                     </div>
                   </div>
-                  <div className="flex items-center space-x-6 mx-6">
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-16" />
-                    <Skeleton className="h-6 w-20" />
-                    <Skeleton className="h-4 w-12" />
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <Skeleton className="h-6 w-16 rounded-md" />
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
+                    <div className="w-20 text-center">
+                      <Skeleton className="h-6 w-16 mx-auto" />
+                    </div>
+                    <div className="w-20 text-center">
+                      <Skeleton className="h-6 w-16 mx-auto" />
+                    </div>
+                    <div className="w-24 text-center">
+                      <Skeleton className="h-6 w-20 mx-auto" />
+                    </div>
+                    <div className="w-28 text-center">
+                      <Skeleton className="h-4 w-12 mx-auto" />
+                    </div>
+                    <div className="w-16 text-center">
+                      <Skeleton className="h-6 w-16 mx-auto rounded-md" />
+                    </div>
+                    <div className="w-20 flex items-center justify-center space-x-2">
                       <Skeleton className="w-8 h-8 rounded" />
                       <Skeleton className="h-8 w-20 rounded-md" />
                     </div>

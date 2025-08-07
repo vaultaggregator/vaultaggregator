@@ -88,36 +88,32 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
           </div>
 
           {/* Center section - Key metrics */}
-          <div className="flex items-center space-x-6 mx-6">
-            <div className="text-center">
+          <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
+            <div className="w-20 text-center">
               {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">24h APY</p>}
-              <p className="text-xl font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+              <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {formatApy(opportunity.apy)}
               </p>
             </div>
-            <div className="text-center">
+            <div className="w-20 text-center">
               {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">30d APY</p>}
-              <p className="text-xl font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
+              <p className="text-lg font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                 {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
               </p>
             </div>
-            <div className="text-center">
+            <div className="w-24 text-center">
               {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">TVL</p>}
-              <p className="text-xl font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+              <p className="text-lg font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {formatTvl(opportunity.tvl)}
               </p>
             </div>
-            <div className="text-center">
+            <div className="w-28 text-center">
               {showHeaders && <p className="text-xs text-gray-600 mb-1 font-medium">Operating Since</p>}
               <p className="text-sm font-semibold text-gray-700" data-testid={`text-operating-since-${opportunity.id}`}>
                 {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
               </p>
             </div>
-          </div>
-
-          {/* Right section - Risk, actions and notes */}
-          <div className="flex items-center space-x-4">
-            <div className="text-center">
+            <div className="w-16 text-center">
               {showHeaders && <p className="text-sm text-gray-600 mb-2 font-medium">Risk</p>}
               <Badge 
                 variant="secondary"
@@ -127,29 +123,30 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true }
                 {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
               </Badge>
             </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleFavorite}
-                className="text-gray-400 hover:text-red-500 p-2"
-                data-testid={`button-favorite-${opportunity.id}`}
-              >
-                <Heart 
-                  className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} 
-                />
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="hover:bg-blue-50"
-                data-testid={`button-view-details-${opportunity.id}`}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Details
-              </Button>
+            <div className="w-20 flex items-center justify-center">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleFavorite}
+                  className="text-gray-400 hover:text-red-500 p-2"
+                  data-testid={`button-favorite-${opportunity.id}`}
+                >
+                  <Heart 
+                    className={`w-5 h-5 ${isFavorited ? 'fill-red-500 text-red-500' : ''}`} 
+                  />
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="hover:bg-blue-50"
+                  data-testid={`button-view-details-${opportunity.id}`}
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Details
+                </Button>
+              </div>
             </div>
           </div>
         </div>
