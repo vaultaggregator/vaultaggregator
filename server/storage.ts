@@ -42,6 +42,13 @@ export interface IStorage {
     limit?: number;
     offset?: number;
   }): Promise<PoolWithRelations[]>;
+  getAdminPools(options: {
+    chainId?: string;
+    platformId?: string;
+    search?: string;
+    limit: number;
+    offset: number;
+  }): Promise<{pools: PoolWithRelations[], total: number}>;
   getPoolById(id: string): Promise<PoolWithRelations | undefined>;
   createPool(pool: InsertPool): Promise<Pool>;
   updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined>;
@@ -218,6 +225,90 @@ export class DatabaseStorage implements IStorage {
     }
 
     return Array.from(poolsMap.values());
+  }
+
+  async getAdminPools(options: {
+    chainId?: string;
+    platformId?: string;
+    search?: string;
+    limit: number;
+    offset: number;
+  }): Promise<{pools: PoolWithRelations[], total: number}> {
+    const { chainId, platformId, search, limit, offset } = options;
+
+    // Build the base query
+    let query = db
+      .select()
+      .from(pools)
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .leftJoin(notes, eq(pools.id, notes.poolId));
+
+    let countQuery = db
+      .select({ count: sql<number>`count(distinct ${pools.id})` })
+      .from(pools)
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id));
+
+    const conditions = [eq(pools.isActive, true)];
+
+    if (chainId) {
+      conditions.push(eq(pools.chainId, chainId));
+    }
+
+    if (platformId) {
+      conditions.push(eq(pools.platformId, platformId));
+    }
+
+    if (search) {
+      const searchCondition = or(
+        ilike(platforms.displayName, `%${search}%`),
+        ilike(pools.tokenPair, `%${search}%`)
+      )!;
+      conditions.push(searchCondition);
+    }
+
+    if (conditions.length > 0) {
+      const whereCondition = and(...conditions);
+      query = query.where(whereCondition) as any;
+      countQuery = countQuery.where(whereCondition) as any;
+    }
+
+    // Get total count first
+    const [countResult] = await countQuery;
+    const total = countResult.count;
+
+    // Get paginated results
+    const results = await query
+      .orderBy(desc(pools.apy))
+      .limit(limit)
+      .offset(offset);
+
+    // Group results by pool to handle multiple notes
+    const poolsMap = new Map<string, PoolWithRelations>();
+
+    for (const result of results) {
+      const poolId = result.pools.id;
+
+      if (!poolsMap.has(poolId)) {
+        poolsMap.set(poolId, {
+          ...result.pools,
+          platform: result.platforms!,
+          chain: result.chains!,
+          notes: result.notes ? [result.notes] : [],
+        });
+      } else {
+        const existingPool = poolsMap.get(poolId)!;
+        if (result.notes && !existingPool.notes.find(n => n.id === result.notes!.id)) {
+          existingPool.notes.push(result.notes);
+        }
+      }
+    }
+
+    return {
+      pools: Array.from(poolsMap.values()),
+      total
+    };
   }
 
   async getPoolById(id: string): Promise<PoolWithRelations | undefined> {

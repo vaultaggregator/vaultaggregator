@@ -92,12 +92,14 @@ export default function AdminDashboard() {
   const [selectedChain, setSelectedChain] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch admin pools (includes hidden ones)
+  // Fetch admin pools (includes hidden ones) with pagination
   const { data: poolsResponse, isLoading: poolsLoading, error } = useQuery<{
     pools: PoolWithRelations[];
     pagination: {
@@ -111,9 +113,11 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/pools", { 
       search, 
       platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
-      chainId: selectedChain === "all" ? "" : selectedChain 
+      chainId: selectedChain === "all" ? "" : selectedChain,
+      limit: pageSize,
+      offset: currentPage * pageSize
     }],
-    staleTime: 5000, // Reduced stale time to see updates faster
+    staleTime: 5000,
     retry: 1,
   });
 
@@ -797,6 +801,49 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            
+            {pagination && (
+              <div className="flex items-center justify-between px-4 py-3 border-t">
+                <div className="text-sm text-gray-500">
+                  Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, pagination.total)} of {pagination.total} pools
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    data-testid="button-prev-page"
+                  >
+                    Previous
+                  </Button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage + 1} of {Math.ceil(pagination.total / pageSize)}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={!pagination.hasMore}
+                    data-testid="button-next-page"
+                  >
+                    Next
+                  </Button>
+                  <div className="ml-4">
+                    <select 
+                      value={pageSize} 
+                      onChange={(e) => setPageSize(parseInt(e.target.value))}
+                      className="px-2 py-1 border rounded text-sm"
+                      data-testid="select-page-size"
+                    >
+                      <option value={25}>25 per page</option>
+                      <option value={50}>50 per page</option>
+                      <option value={100}>100 per page</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             )}
           </CardContent>

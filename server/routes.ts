@@ -264,35 +264,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chainId, 
         platformId, 
         search, 
-        limit = '5000', // Increased default limit to show all pools
+        limit = '50', // Much smaller default for better performance
         offset = '0' 
       } = req.query;
 
       console.log("Admin pools request:", { chainId, platformId, search, limit, offset });
 
-      const pools = await storage.getPools({
+      // Get pools with pagination
+      const poolsResponse = await storage.getAdminPools({
         chainId: chainId as string,
         platformId: platformId as string,
         search: search as string,
-        onlyVisible: false, // Admin can see all pools
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
       });
 
-      // Get total count for pagination info
-      const stats = await storage.getStats();
-      const totalPools = stats.totalPools + stats.hiddenPools;
-
-      console.log(`Returning ${pools.length} admin pools out of ${totalPools} total`);
+      console.log(`Returning ${poolsResponse.pools.length} admin pools out of ${poolsResponse.total} total`);
       
       res.json({
-        pools,
+        pools: poolsResponse.pools,
         pagination: {
-          total: totalPools,
+          total: poolsResponse.total,
           limit: parseInt(limit as string),
           offset: parseInt(offset as string),
-          hasMore: (parseInt(offset as string) + pools.length) < totalPools,
-          showing: pools.length
+          hasMore: (parseInt(offset as string) + poolsResponse.pools.length) < poolsResponse.total,
+          showing: poolsResponse.pools.length
         }
       });
     } catch (error) {
