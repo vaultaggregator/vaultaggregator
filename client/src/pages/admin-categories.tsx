@@ -36,7 +36,7 @@ export default function AdminCategories() {
   });
 
   const { data: categories = [], isLoading, refetch } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
+    queryKey: ["/api/admin/categories"],
   });
 
   const createCategoryMutation = useMutation({
@@ -51,6 +51,7 @@ export default function AdminCategories() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setShowCreateDialog(false);
       setFormData({ name: "", displayName: "", description: "", color: "#3B82F6" });
@@ -80,6 +81,7 @@ export default function AdminCategories() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setEditingCategory(null);
       toast({
@@ -127,6 +129,7 @@ export default function AdminCategories() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       toast({
         title: "Success",
@@ -152,6 +155,7 @@ export default function AdminCategories() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       toast({
         title: "Success",

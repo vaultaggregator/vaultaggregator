@@ -314,6 +314,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public categories route
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      // Only return active categories for public API
+      const activeCategories = categories.filter(cat => cat.isActive);
+      res.json(activeCategories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
   // Admin category management routes
   app.get("/api/admin/categories", requireAuth, async (req, res) => {
     try {
@@ -682,6 +695,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error during manual sync:", error);
       res.status(500).json({ message: "Failed to sync data" });
+    }
+  });
+
+  // Pool-Category assignment routes
+  app.post("/api/admin/pools/:poolId/categories/:categoryId", requireAuth, async (req, res) => {
+    try {
+      const poolCategory = await storage.addPoolToCategory(req.params.poolId, req.params.categoryId);
+      res.status(201).json(poolCategory);
+    } catch (error) {
+      console.error("Error adding pool to category:", error);
+      if (error instanceof Error && error.message.includes('unique')) {
+        return res.status(400).json({ message: "Pool already assigned to this category" });
+      }
+      res.status(500).json({ message: "Failed to assign pool to category" });
+    }
+  });
+
+  app.delete("/api/admin/pools/:poolId/categories/:categoryId", requireAuth, async (req, res) => {
+    try {
+      const removed = await storage.removePoolFromCategory(req.params.poolId, req.params.categoryId);
+      if (!removed) {
+        return res.status(404).json({ message: "Pool-category assignment not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing pool from category:", error);
+      res.status(500).json({ message: "Failed to remove pool from category" });
+    }
+  });
+
+  app.get("/api/pools/:poolId/categories", async (req, res) => {
+    try {
+      const categories = await storage.getPoolCategories(req.params.poolId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching pool categories:", error);
+      res.status(500).json({ message: "Failed to fetch pool categories" });
     }
   });
 

@@ -389,6 +389,28 @@ export class DatabaseStorage implements IStorage {
         sortOrder: categories.sortOrder,
         createdAt: categories.createdAt,
       })
+      .from(categories)
+      .innerJoin(poolCategories, eq(categories.id, poolCategories.categoryId))
+      .where(eq(poolCategories.poolId, poolId))
+      .orderBy(categories.sortOrder, categories.displayName);
+    
+    return result;
+  }
+
+  async getPoolCategories(poolId: string): Promise<Category[]> {
+    const result = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        displayName: categories.displayName,
+        slug: categories.slug,
+        iconUrl: categories.iconUrl,
+        description: categories.description,
+        color: categories.color,
+        isActive: categories.isActive,
+        sortOrder: categories.sortOrder,
+        createdAt: categories.createdAt,
+      })
       .from(poolCategories)
       .innerJoin(categories, eq(poolCategories.categoryId, categories.id))
       .where(eq(poolCategories.poolId, poolId))
