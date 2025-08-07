@@ -325,22 +325,6 @@ export default function PoolDetail() {
                         }}
                       />
                       <Legend />
-                      {/* Max APY Reference Line */}
-                      <ReferenceLine 
-                        y={chartData.summary?.maxApy || Math.max(...(chartData.data || chartData.mockData || []).map((d: any) => d.apy))} 
-                        stroke="#f59e0b" 
-                        strokeDasharray="5 5"
-                        strokeWidth={2}
-                        label={{ 
-                          value: `Max: ${(chartData.summary?.maxApy || Math.max(...(chartData.data || chartData.mockData || []).map((d: any) => d.apy))).toFixed(2)}%`, 
-                          position: "topRight",
-                          style: { 
-                            fill: '#f59e0b', 
-                            fontWeight: 'bold', 
-                            fontSize: '12px'
-                          }
-                        }}
-                      />
                       <Area 
                         type="monotone" 
                         dataKey="apy" 
@@ -354,7 +338,7 @@ export default function PoolDetail() {
                   </ResponsiveContainer>
                 </div>
                 {chartData.summary && (
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Average APY</p>
                       <p className="text-lg font-semibold text-blue-600">{chartData.summary.averageApy.toFixed(2)}%</p>
@@ -362,10 +346,6 @@ export default function PoolDetail() {
                     <div className="text-center">
                       <p className="text-sm text-gray-500">Min APY</p>
                       <p className="text-lg font-semibold text-red-600">{chartData.summary.minApy.toFixed(2)}%</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500">Max APY</p>
-                      <p className="text-lg font-semibold text-green-600">{chartData.summary.maxApy.toFixed(2)}%</p>
                     </div>
                   </div>
                 )}
