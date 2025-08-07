@@ -168,7 +168,7 @@ export class ObjectStorageService {
       );
     }
 
-    const objectId = require("crypto").randomUUID();
+    const objectId = randomUUID();
     const fullPath = `${privateObjectDir}/uploads/${objectId}`;
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
