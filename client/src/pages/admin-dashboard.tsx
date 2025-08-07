@@ -17,16 +17,19 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   const [selectedChain, setSelectedChain] = useState<string>("");
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
   // Fetch admin pools (includes hidden ones)
-  const { data: pools = [], isLoading: poolsLoading } = useQuery<PoolWithRelations[]>({
+  const { data: pools = [], isLoading: poolsLoading, error } = useQuery<PoolWithRelations[]>({
     queryKey: ["/api/admin/pools", { search, platformId: selectedPlatform, chainId: selectedChain }],
     staleTime: 30000,
+    retry: 1,
   });
+  
+  console.log("Admin pools query:", { pools: pools?.length, error, isLoading: poolsLoading });
 
   const { data: platforms = [] } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
@@ -81,6 +84,22 @@ export default function AdminDashboard() {
 
   const visiblePools = pools.filter(pool => pool.isVisible);
   const hiddenPools = pools.filter(pool => !pool.isVisible);
+
+  // Redirect if not authenticated
+  if (!userLoading && !user) {
+    navigate("/admin/login");
+    return null;
+  }
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

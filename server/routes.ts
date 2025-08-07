@@ -168,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chainId, 
         platformId, 
         search, 
-        limit = '100', 
+        limit = '1000', 
         offset = '0' 
       } = req.query;
 
