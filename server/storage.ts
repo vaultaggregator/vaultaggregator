@@ -297,15 +297,12 @@ export class DatabaseStorage implements IStorage {
     if (dataSources && dataSources.length > 0) {
       const dataSourceConditions = [];
       if (dataSources.includes('defillama')) {
-        // Pools from DeFi Llama don't have rawData with source='morpho'
-        dataSourceConditions.push(or(
-          sql`${pools.rawData} IS NULL`,
-          sql`${pools.rawData}->>'source' != 'morpho'`
-        ));
+        // Pools from DeFi Llama that are not Morpho pools
+        dataSourceConditions.push(sql`${pools.rawData}->>'project' != 'morpho-blue'`);
       }
       if (dataSources.includes('morpho')) {
-        // Pools from Morpho have rawData with source='morpho'
-        dataSourceConditions.push(sql`${pools.rawData}->>'source' = 'morpho'`);
+        // Pools from Morpho have project='morpho-blue'
+        dataSourceConditions.push(sql`${pools.rawData}->>'project' = 'morpho-blue'`);
       }
       if (dataSourceConditions.length > 0) {
         conditions.push(or(...dataSourceConditions));

@@ -14,6 +14,8 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Morpho Integration**: Successfully integrated Morpho GraphQL API with automated data synchronization for vaults and markets across Ethereum, Arbitrum, Base, and Polygon networks
 - **Dual Data Sources**: Platform now aggregates yield opportunities from both DeFi Llama and Morpho APIs, providing comprehensive coverage of DeFi lending and yield opportunities
 - **Enhanced API Documentation**: Added new endpoints for Morpho-specific data including vault details, market information, and historical APY charts
+- **Checkbox Filters**: Replaced dropdown filters with checkbox-based multi-select filters in admin panel for better UX and multiple selection capabilities
+- **Data Source Filtering**: Fixed Morpho pool identification to properly distinguish between DeFi Llama and Morpho data sources using project field
 
 # User Preferences
 
