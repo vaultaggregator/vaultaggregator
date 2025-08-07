@@ -1,5 +1,5 @@
 import { 
-  pools, platforms, chains, tokens, notes,
+  pools, platforms, chains, tokens, notes, users,
   type Pool, type Platform, type Chain, type Token, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertNote,
   type PoolWithRelations, type User, type InsertUser
@@ -64,18 +64,18 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(pools as any).where(eq((pools as any).id, id));
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(pools as any).where(eq((pools as any).username, username));
+    const [user] = await db.select().from(users).where(eq(users.username, username));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db
-      .insert(pools as any)
+      .insert(users)
       .values(insertUser)
       .returning();
     return user;
@@ -175,7 +175,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     const results = await query
@@ -244,7 +244,7 @@ export class DatabaseStorage implements IStorage {
 
   async deletePool(id: string): Promise<boolean> {
     const result = await db.delete(pools).where(eq(pools.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async upsertPool(defiLlamaId: string, poolData: InsertPool): Promise<Pool> {
@@ -287,7 +287,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteNote(id: string): Promise<boolean> {
     const result = await db.delete(notes).where(eq(notes.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async getStats(): Promise<{
@@ -297,7 +297,7 @@ export class DatabaseStorage implements IStorage {
     avgApy: number;
     totalTvl: string;
   }> {
-    const [stats] = await db.execute(`
+    const result = await db.execute(`
       SELECT 
         COUNT(*) as total_pools,
         COUNT(*) FILTER (WHERE is_visible = true AND is_active = true) as active_pools,
@@ -307,6 +307,8 @@ export class DatabaseStorage implements IStorage {
       FROM pools
       WHERE is_active = true
     `);
+
+    const stats = result.rows[0];
 
     return {
       totalPools: Number(stats.total_pools) || 0,

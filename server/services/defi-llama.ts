@@ -104,7 +104,7 @@ export async function syncData(): Promise<void> {
 
     // Ensure chains exist
     const chains = new Set(filteredPools.map(pool => pool.chain?.toLowerCase()).filter(Boolean));
-    for (const chainName of chains) {
+    for (const chainName of Array.from(chains)) {
       const chainInfo = CHAIN_MAPPING[chainName];
       if (chainInfo) {
         try {
@@ -122,7 +122,7 @@ export async function syncData(): Promise<void> {
 
     // Ensure platforms exist
     const platforms = new Set(filteredPools.map(pool => pool.project).filter(Boolean));
-    for (const platformName of platforms) {
+    for (const platformName of Array.from(platforms)) {
       try {
         await storage.createPlatform({
           name: platformName.toLowerCase().replace(/\s+/g, '-'),
