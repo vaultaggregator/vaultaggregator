@@ -28,7 +28,8 @@ export default function AdminNetworks() {
 
   const updateChainMutation = useMutation({
     mutationFn: async ({ chainId, isActive }: { chainId: string; isActive: boolean }) => {
-      return await apiRequest(`/api/admin/chains/${chainId}`, "PUT", { isActive });
+      const response = await apiRequest("PUT", `/api/admin/chains/${chainId}`, { isActive });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/chains"] });
@@ -49,7 +50,8 @@ export default function AdminNetworks() {
 
   const uploadIconMutation = useMutation({
     mutationFn: async ({ chainId, iconUrl }: { chainId: string; iconUrl: string }) => {
-      return await apiRequest(`/api/admin/chains/${chainId}/icon`, "PUT", { iconUrl });
+      const response = await apiRequest("PUT", `/api/admin/chains/${chainId}/icon`, { iconUrl });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/chains"] });
@@ -69,10 +71,11 @@ export default function AdminNetworks() {
   });
 
   const handleGetUploadParameters = async (chainId: string) => {
-    const response: any = await apiRequest(`/api/admin/chains/${chainId}/icon/upload`, "POST");
+    const response = await apiRequest("POST", `/api/admin/chains/${chainId}/icon/upload`);
+    const data = await response.json();
     return {
       method: "PUT" as const,
-      url: response.uploadURL,
+      url: data.uploadURL,
     };
   };
 
