@@ -433,15 +433,57 @@ export default function PoolDetail() {
 
               {/* Action Buttons */}
               <div className="flex space-x-3">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                  data-testid="button-external-link"
-                >
-                  <ExternalLink className="w-5 h-5 mr-2" />
-                  Visit Platform
-                </Button>
+                {(() => {
+                  const getExternalLink = () => {
+                    // Check if this is a Morpho pool by platform name
+                    const isMorpho = pool.platform?.displayName?.toLowerCase().includes('morpho') || 
+                                   pool.platform?.name?.toLowerCase().includes('morpho');
+                    
+                    if (isMorpho && pool.rawData && typeof pool.rawData === 'object') {
+                      const rawData = pool.rawData as any;
+                      if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
+                        // Use the first underlying token for Morpho vault URL
+                        const underlyingToken = rawData.underlyingTokens[0];
+                        const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
+                        return {
+                          url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
+                          label: 'Visit Morpho Platform'
+                        };
+                      }
+                    }
+                    
+                    // Default to DeFi Llama for all other pools
+                    return pool.defiLlamaId ? {
+                      url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,
+                      label: 'Visit DeFiLlama'
+                    } : null;
+                  };
+
+                  const linkData = getExternalLink();
+                  return linkData ? (
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      data-testid="button-external-link"
+                      onClick={() => window.open(linkData.url, '_blank', 'noopener,noreferrer')}
+                    >
+                      <ExternalLink className="w-5 h-5 mr-2" />
+                      Visit Platform
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      data-testid="button-external-link"
+                      disabled
+                    >
+                      <ExternalLink className="w-5 h-5 mr-2" />
+                      Visit Platform
+                    </Button>
+                  );
+                })()}
               </div>
             </div>
           </CardContent>

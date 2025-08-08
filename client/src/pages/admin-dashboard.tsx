@@ -1273,14 +1273,17 @@ export default function AdminDashboard() {
                                 const isMorpho = pool.platform?.displayName?.toLowerCase().includes('morpho') || 
                                                pool.platform?.name?.toLowerCase().includes('morpho');
                                 
-                                if (isMorpho && pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0) {
-                                  // Use the first underlying token for Morpho vault URL
-                                  const underlyingToken = pool.rawData.underlyingTokens[0];
-                                  const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
-                                  return {
-                                    url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
-                                    label: 'Visit Morpho Platform'
-                                  };
+                                if (isMorpho && pool.rawData && typeof pool.rawData === 'object') {
+                                  const rawData = pool.rawData as any;
+                                  if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
+                                    // Use the first underlying token for Morpho vault URL
+                                    const underlyingToken = rawData.underlyingTokens[0];
+                                    const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
+                                    return {
+                                      url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
+                                      label: 'Visit Morpho Platform'
+                                    };
+                                  }
                                 }
                                 
                                 // Default to DeFi Llama for all other pools
@@ -1299,6 +1302,10 @@ export default function AdminDashboard() {
                                   className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
                                   data-testid={`link-external-${pool.id}`}
                                   title={linkData.label}
+                                  onClick={(e) => {
+                                    console.log('Visit Platform clicked:', linkData);
+                                    // Let the browser handle the navigation
+                                  }}
                                 >
                                   <ExternalLink className="w-4 h-4" />
                                 </a>
