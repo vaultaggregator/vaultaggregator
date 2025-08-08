@@ -594,6 +594,7 @@ export class DatabaseStorage implements IStorage {
         iconUrl: categories.iconUrl,
         description: categories.description,
         color: categories.color,
+        parentId: categories.parentId,
         isActive: categories.isActive,
         sortOrder: categories.sortOrder,
         createdAt: categories.createdAt,
@@ -604,7 +605,15 @@ export class DatabaseStorage implements IStorage {
       .groupBy(categories.id)
       .orderBy(categories.sortOrder, categories.displayName);
     
-    return result;
+    // Group categories into parent-child structure
+    const parentCategories = result.filter(c => !c.parentId);
+    const subcategories = result.filter(c => c.parentId);
+
+    // Attach subcategories to their parents
+    return parentCategories.map(parent => ({
+      ...parent,
+      subcategories: subcategories.filter(sub => sub.parentId === parent.id)
+    }));
   }
 
   async getCategory(id: string): Promise<Category | undefined> {

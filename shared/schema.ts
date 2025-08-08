@@ -74,6 +74,7 @@ export const categories = pgTable("categories", {
   iconUrl: text("icon_url"),
   description: text("description"),
   color: text("color").notNull().default("#3B82F6"),
+  parentId: varchar("parent_id").references(() => categories.id),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -299,7 +300,12 @@ export const platformsRelations = relations(platforms, ({ many }) => ({
   pools: many(pools),
 }));
 
-export const categoriesRelations = relations(categories, ({ many }) => ({
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  parent: one(categories, {
+    fields: [categories.parentId],
+    references: [categories.id],
+  }),
+  subcategories: many(categories),
   poolCategories: many(poolCategories),
 }));
 

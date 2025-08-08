@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Chain, FilterOptions, Category } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getCategoryIcon } from "@/components/category-icons";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 interface NetworkSelectorProps {
   filters: FilterOptions;
@@ -11,7 +13,7 @@ interface NetworkSelectorProps {
 }
 
 export default function NetworkSelector({ filters, onFilterChange }: NetworkSelectorProps) {
-
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   
   // Fetch chains
   const { data: chains = [] } = useQuery<Chain[]>({
@@ -42,6 +44,18 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
     onFilterChange({ 
       ...filters, 
       categoryId: (isCurrentlySelected || categoryId === null) ? undefined : categoryId 
+    });
+  };
+
+  const toggleCategoryExpansion = (categoryId: string) => {
+    setExpandedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryId)) {
+        newSet.delete(categoryId);
+      } else {
+        newSet.add(categoryId);
+      }
+      return newSet;
     });
   };
 
@@ -150,29 +164,79 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                     <span className="font-medium">All</span>
                   </Button>
 
-                  {categories.filter(cat => cat.isActive).map((category) => (
-                    <Button
-                      key={category.id}
-                      onClick={() => handleCategoryClick(category.id)}
-                      variant={filters.categoryId === category.id ? "default" : "outline"}
-                      size="sm"
-                      className={`
-                        flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
-                        ${filters.categoryId === category.id 
-                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                          : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
-                        }
-                      `}
-                      data-testid={`button-category-${category.slug}`}
-                    >
-                      {renderCategoryIcon(category)}
-                      <span className="font-medium">{category.displayName}</span>
-                      {category.poolCount > 0 && (
-                        <Badge variant="secondary" className="text-xs ml-1">
-                          {category.poolCount}
-                        </Badge>
+                  {categories.filter(cat => cat.isActive && !cat.parentId).map((category) => (
+                    <div key={category.id} className="relative">
+                      {/* Main Category Button */}
+                      <div className="flex items-center gap-1">
+                        <Button
+                          onClick={() => handleCategoryClick(category.id)}
+                          variant={filters.categoryId === category.id ? "default" : "outline"}
+                          size="sm"
+                          className={`
+                            flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
+                            ${filters.categoryId === category.id 
+                              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                              : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
+                            }
+                          `}
+                          data-testid={`button-category-${category.slug}`}
+                        >
+                          {renderCategoryIcon(category)}
+                          <span className="font-medium">{category.displayName}</span>
+                          {category.poolCount > 0 && (
+                            <Badge variant="secondary" className="text-xs ml-1">
+                              {category.poolCount}
+                            </Badge>
+                          )}
+                        </Button>
+
+                        {/* Expand/Collapse Button */}
+                        {category.subcategories && category.subcategories.length > 0 && (
+                          <Button
+                            onClick={() => toggleCategoryExpansion(category.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 h-8 w-8"
+                            data-testid={`button-expand-${category.slug}`}
+                          >
+                            {expandedCategories.has(category.id) ? 
+                              <ChevronDown size={14} /> : 
+                              <ChevronRight size={14} />
+                            }
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Subcategories */}
+                      {category.subcategories && category.subcategories.length > 0 && expandedCategories.has(category.id) && (
+                        <div className="ml-8 mt-2 flex flex-wrap gap-2">
+                          {category.subcategories.filter(sub => sub.isActive).map((subcategory) => (
+                            <Button
+                              key={subcategory.id}
+                              onClick={() => handleCategoryClick(subcategory.id)}
+                              variant={filters.categoryId === subcategory.id ? "default" : "outline"}
+                              size="sm"
+                              className={`
+                                flex items-center space-x-2 px-3 py-1 rounded-full transition-all duration-200 text-sm
+                                ${filters.categoryId === subcategory.id 
+                                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                                  : 'bg-card dark:bg-card text-foreground border border-border hover:border-blue-300 hover:text-blue-600'
+                                }
+                              `}
+                              data-testid={`button-subcategory-${subcategory.slug}`}
+                            >
+                              {renderCategoryIcon(subcategory)}
+                              <span className="font-medium">{subcategory.displayName}</span>
+                              {subcategory.poolCount > 0 && (
+                                <Badge variant="secondary" className="text-xs ml-1">
+                                  {subcategory.poolCount}
+                                </Badge>
+                              )}
+                            </Button>
+                          ))}
+                        </div>
                       )}
-                    </Button>
+                    </div>
                   ))}
                 </div>
               </div>

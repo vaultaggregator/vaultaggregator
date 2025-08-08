@@ -72,8 +72,12 @@ export interface Category {
   iconUrl?: string;
   description?: string;
   color: string;
+  parentId?: string;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;
   poolCount: number;
+  subcategories?: Category[];
 }
+
+export type CategoryWithPoolCount = Category;
