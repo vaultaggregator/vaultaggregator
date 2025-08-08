@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getPlatformIcon } from "@/components/platform-icons";
-import Header from "@/components/header";
+import AdminHeader from "@/components/admin-header";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 
@@ -266,7 +266,7 @@ export default function AdminPlatforms() {
             <div className="flex space-x-2">
               <Button
                 size="sm"
-                onClick={() => saveEdit(platform.id)}
+                onClick={() => savePlatform()}
                 data-testid={`button-save-${platform.id}`}
               >
                 Save Changes
@@ -351,7 +351,7 @@ export default function AdminPlatforms() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onAdminClick={() => {}} />
+      <AdminHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Button 

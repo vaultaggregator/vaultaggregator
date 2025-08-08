@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import Header from "@/components/header";
+import AdminHeader from "@/components/admin-header";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload, Eye, EyeOff } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 
@@ -209,7 +209,7 @@ export default function AdminCategories() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onAdminClick={() => {}} />
+      <AdminHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Button 

@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2, Sparkles } from "lucide-react";
 import { TokenDisplay } from "@/components/TokenDisplay";
-import Header from "@/components/header";
+import AdminHeader from "@/components/admin-header";
 import { PoolDataLoading, SyncAnimation, FloatingActionLoading } from "@/components/loading-animations";
 import { YieldSyncLoader } from "@/components/crypto-loader";
 import { PoolScanner, GlowingButton } from "@/components/enhanced-loading";

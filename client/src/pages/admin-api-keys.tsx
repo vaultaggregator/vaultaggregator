@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Copy, Key, Plus, Clock, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Header from "@/components/header";
+import AdminHeader from "@/components/admin-header";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 
@@ -106,7 +106,7 @@ export default function AdminApiKeys() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header onAdminClick={() => {}} />
+        <AdminHeader />
         <div className="p-6">
           <div className="max-w-6xl mx-auto">
             <div className="animate-pulse">
@@ -125,7 +125,7 @@ export default function AdminApiKeys() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onAdminClick={() => {}} />
+      <AdminHeader />
       <div className="p-6">
         <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
