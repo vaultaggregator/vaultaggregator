@@ -155,16 +155,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           </div>
         </div>
 
-        {opportunity.notes.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p 
-              className="text-sm text-gray-600 italic"
-              data-testid={`text-notes-${opportunity.id}`}
-            >
-              💡 {opportunity.notes[0].content}
-            </p>
-          </div>
-        )}
+
       </CardContent>
     </Card>
   );

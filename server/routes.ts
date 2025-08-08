@@ -1117,20 +1117,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: true,
       });
 
-      // Add a note indicating this is a consolidated pool
-      if (notes || sourcePoolIds?.length > 0) {
-        const noteContent = [
-          notes ? `User notes: ${notes}` : null,
-          sourcePoolIds?.length ? `Consolidated from pools: ${sourcePoolIds.join(', ')}` : null
-        ].filter(Boolean).join('\n\n');
-
-        if (noteContent) {
-          await storage.createNote({
-            poolId: consolidatedPool.id,
-            content: noteContent,
-            isPublic: true,
-          });
-        }
+      // Add user notes only (no consolidation messages)
+      if (notes) {
+        await storage.createNote({
+          poolId: consolidatedPool.id,
+          content: notes,
+          isPublic: true,
+        });
       }
 
       res.json({ 
@@ -1154,8 +1147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const pool of allPools) {
         const notes = await storage.getNotesByPool(pool.id);
         const hasConsolidationNote = notes.some(note => 
-          note.content.includes('Consolidated from pools:') || 
-          note.content.includes('User notes:')
+          note.content.includes('Consolidated from pools:')
         );
         
         if (hasConsolidationNote) {
@@ -1185,8 +1177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify this is a consolidated pool by checking for consolidation notes
       const notes = await storage.getNotesByPool(poolId);
       const hasConsolidationNote = notes.some(note => 
-        note.content.includes('Consolidated from pools:') || 
-        note.content.includes('User notes:')
+        note.content.includes('Consolidated from pools:')
       );
       
       if (!hasConsolidationNote) {
@@ -1222,8 +1213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const pool of allPools) {
         const notes = await storage.getNotesByPool(pool.id);
         const hasConsolidationNote = notes.some(note => 
-          note.content.includes('Consolidated from pools:') || 
-          note.content.includes('User notes:')
+          note.content.includes('Consolidated from pools:')
         );
         
         if (hasConsolidationNote) {

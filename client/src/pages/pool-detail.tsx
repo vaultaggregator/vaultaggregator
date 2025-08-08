@@ -143,7 +143,7 @@ function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }
             {notes.map((note: any, index: number) => (
               <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <p className="text-gray-700 dark:text-gray-300" data-testid={`text-note-${index}`}>
-                  💡 {note.content}
+                  {note.content}
                 </p>
               </div>
             ))}
