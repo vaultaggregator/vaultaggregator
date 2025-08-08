@@ -120,18 +120,15 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </div>
                 </div>
                 {showNetworkName && (
-                  <Badge 
-                    variant="outline"
-                    className="text-xs font-medium px-1 py-0.5 flex items-center space-x-1"
-                    style={getChainColor(opportunity.chain.color)}
+                  <div 
+                    className="flex items-center justify-center flex-shrink-0"
                     data-testid={`badge-chain-${opportunity.id}`}
                   >
                     {(() => {
                       const ChainIcon = getChainIcon(opportunity.chain.name);
-                      return <ChainIcon size={10} className="flex-shrink-0" />;
+                      return <ChainIcon size={20} className="flex-shrink-0" />;
                     })()}
-                    <span>{opportunity.chain.displayName}</span>
-                  </Badge>
+                  </div>
                 )}
               </div>
             </div>
