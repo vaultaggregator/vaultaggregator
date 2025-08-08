@@ -168,9 +168,6 @@ export default function Home() {
               <div className="w-14 text-center">
                 <SortHeader field="risk"><span className="text-sm font-medium">Risk</span></SortHeader>
               </div>
-              <div className="w-16 text-center">
-                <span className="text-sm font-medium text-foreground">Actions</span>
-              </div>
             </div>
           </div>
         </div>
