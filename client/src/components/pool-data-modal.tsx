@@ -177,9 +177,13 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
   }, {} as Record<string, DisplayMapping[]>);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) {
+        onClose();
+      }
+    }}>
+      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-3">
             <span>Pool Data Configuration</span>
             <Badge variant="outline" className="text-xs">
@@ -188,11 +192,11 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-6 h-[70vh]">
+        <div className="grid grid-cols-2 gap-6 flex-1 min-h-0">
           {/* Left Panel - Raw Data View */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg border-b pb-2">All Available Data</h3>
-            <ScrollArea className="h-full">
+          <div className="flex flex-col min-h-0">
+            <h3 className="font-semibold text-lg border-b pb-2 flex-shrink-0">All Available Data</h3>
+            <ScrollArea className="flex-1 mt-4">
               <div className="space-y-4 pr-4">
                 
                 {/* Core Pool Data */}
@@ -266,8 +270,8 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
           </div>
 
           {/* Right Panel - Display Configuration */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="flex flex-col min-h-0">
+            <div className="flex items-center justify-between flex-shrink-0">
               <h3 className="font-semibold text-lg">Display Configuration</h3>
               <Button 
                 onClick={handleSave} 
@@ -280,7 +284,7 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
               </Button>
             </div>
             
-            <ScrollArea className="h-full">
+            <ScrollArea className="flex-1 mt-4">
               <div className="space-y-4 pr-4">
                 {Object.entries(DISPLAY_LOCATIONS).map(([_, location]) => {
                   const mappingsForLocation = groupedMappings[location.value] || [];
