@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import PoolDataModal from "@/components/pool-data-modal";
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
 type SortDirection = 'asc' | 'desc' | null;
@@ -97,6 +98,8 @@ export default function AdminDashboard() {
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(50);
+  const [selectedPoolForModal, setSelectedPoolForModal] = useState<any>(null);
+  const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -460,6 +463,17 @@ export default function AdminDashboard() {
 
   const visiblePools = sortedPools.filter(pool => pool.isVisible);
   const hiddenPools = sortedPools.filter(pool => !pool.isVisible);
+
+  // Handler to open pool data modal
+  const handleOpenPoolModal = (pool: any) => {
+    setSelectedPoolForModal(pool);
+    setIsPoolModalOpen(true);
+  };
+
+  const handleClosePoolModal = () => {
+    setIsPoolModalOpen(false);
+    setSelectedPoolForModal(null);
+  };
 
   // Redirect if not authenticated
   if (!userLoading && !user) {
@@ -908,18 +922,38 @@ export default function AdminDashboard() {
                           />
                         </td>
                         <td className="py-3 px-2 text-center">
-                          {pool.poolId && (
-                            <a
-                              href={`https://defillama.com/yields/pool/${pool.poolId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                              data-testid={`link-defillama-${pool.id}`}
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                              <span className="text-sm">DeFi Llama</span>
-                            </a>
-                          )}
+                          <div className="flex items-center justify-center space-x-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleOpenPoolModal(pool)}
+                                    className="h-8 w-8 p-0"
+                                    data-testid={`button-pool-settings-${pool.id}`}
+                                  >
+                                    <Settings className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Configure pool data display</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            
+                            {pool.poolId && (
+                              <a
+                                href={`https://defillama.com/yields/pool/${pool.poolId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                data-testid={`link-defillama-${pool.id}`}
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3 px-2 text-center">
                           <div className="flex items-center justify-center space-x-2">
@@ -993,6 +1027,14 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pool Data Configuration Modal */}
+      <PoolDataModal
+        isOpen={isPoolModalOpen}
+        onClose={handleClosePoolModal}
+        poolId={selectedPoolForModal?.id || ''}
+        poolData={selectedPoolForModal}
+      />
     </div>
   );
 }

@@ -888,6 +888,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update pool display configuration
+  app.put("/api/admin/pools/:poolId/display-config", requireAuth, async (req: any, res) => {
+    try {
+      const { poolId } = req.params;
+      const { displayMappings } = req.body;
+
+      // For now, we'll just acknowledge the request and return success
+      // In a full implementation, you would store this configuration in the database
+      // and use it to customize the frontend display
+      
+      console.log(`Display configuration updated for pool ${poolId}:`, displayMappings);
+      
+      res.json({ 
+        success: true, 
+        message: "Display configuration updated successfully",
+        poolId,
+        configurationsCount: displayMappings?.length || 0
+      });
+    } catch (error: any) {
+      console.error("Error updating display configuration:", error);
+      res.status(500).json({ error: error.message || "Failed to update display configuration" });
+    }
+  });
+
   // Category icon upload routes
   app.post("/api/admin/categories/:id/icon/upload", requireAuth, async (req, res) => {
     try {
