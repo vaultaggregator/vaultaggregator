@@ -531,6 +531,11 @@ export class DatabaseStorage implements IStorage {
     return updatedPool || undefined;
   }
 
+  async updatePoolRawData(id: string, rawData: any): Promise<Pool | undefined> {
+    const [updatedPool] = await db.update(pools).set({ rawData }).where(eq(pools.id, id)).returning();
+    return updatedPool || undefined;
+  }
+
   async deletePool(id: string): Promise<boolean> {
     const result = await db.delete(pools).where(eq(pools.id, id));
     return (result.rowCount || 0) > 0;

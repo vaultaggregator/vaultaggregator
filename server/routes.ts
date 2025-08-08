@@ -708,6 +708,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update underlying tokens
+  app.put("/api/admin/pools/:id/underlying-tokens", requireAuth, async (req, res) => {
+    try {
+      const { underlyingTokens } = req.body;
+      const poolId = req.params.id;
+
+      const pool = await storage.getPoolById(poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Update the rawData field with new underlying tokens
+      const updatedRawData = {
+        ...(pool.rawData as any || {}),
+        underlyingTokens: underlyingTokens
+      };
+
+      const updated = await storage.updatePoolRawData(poolId, updatedRawData);
+      if (!updated) {
+        return res.status(500).json({ error: "Failed to update pool" });
+      }
+
+      res.json({ success: true, underlyingTokens });
+    } catch (error) {
+      console.error("Error updating underlying tokens:", error);
+      res.status(500).json({ error: "Failed to update underlying tokens" });
+    }
+  });
+
   app.put("/api/admin/pools/:id/visibility", requireAuth, async (req, res) => {
     try {
       const { isVisible } = req.body;

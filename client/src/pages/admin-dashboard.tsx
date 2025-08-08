@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2, Sparkles } from "lucide-react";
 import { TokenDisplay } from "@/components/TokenDisplay";
+import { UnderlyingTokensEditor } from "@/components/underlying-tokens-editor";
 import AdminHeader from "@/components/admin-header";
 import { PoolDataLoading, SyncAnimation, FloatingActionLoading } from "@/components/loading-animations";
 import { YieldSyncLoader } from "@/components/crypto-loader";
@@ -1160,6 +1161,9 @@ export default function AdminDashboard() {
                       </th>
 
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                        Underlying Tokens
+                      </th>
+                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
                         Categories
                       </th>
                       <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
@@ -1241,6 +1245,13 @@ export default function AdminDashboard() {
                           </Badge>
                         </td>
 
+                        <td className="py-3 px-2">
+                          <UnderlyingTokensEditor
+                            poolId={pool.id}
+                            tokens={(pool.rawData as any)?.underlyingTokens || []}
+                            onUpdate={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] })}
+                          />
+                        </td>
                         <td className="py-3 px-2">
                           <CategorySelector
                             poolId={pool.id}
