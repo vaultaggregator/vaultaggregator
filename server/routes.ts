@@ -978,47 +978,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manual scan for new pools
-  app.post("/api/admin/scan-pools", requireAuth, async (req: any, res) => {
-    try {
-      console.log("Manual pool scan initiated by admin");
-      
-      // Remove duplicates first
-      const duplicatesRemoved = await storage.removeDuplicatePools();
-      console.log(`Removed ${duplicatesRemoved} duplicate pools`);
-
-      // Get current visible pools to protect them
-      const visiblePools = await storage.getVisiblePoolsForProtection();
-      console.log(`Protecting ${visiblePools.length} visible pools during scan`);
-
-      // Scan each data source
-      let newPoolsCount = 0;
-      let missingPoolsCount = 0;
-
-      try {
-        // Scan DeFi Llama (our only data source now)
-        const defiLlamaService = await import("./services/defi-llama");
-        await defiLlamaService.syncData(); // Sync pools from DeFi Llama
-
-      } catch (syncError) {
-        console.error("Error during data source sync:", syncError);
-      }
-
-      res.json({
-        success: true,
-        message: "Pool scan completed successfully",
-        newPools: newPoolsCount,
-        missingPools: missingPoolsCount,
-        duplicatesRemoved,
-        visiblePoolsProtected: visiblePools.length
-      });
-
-    } catch (error: unknown) {
-      console.error("Error during pool scan:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to scan pools";
-      res.status(500).json({ error: errorMessage });
-    }
-  });
+  // Manual pool scan removed for security - sync runs automatically via scheduler
 
   // Category icon upload routes
   app.post("/api/admin/categories/:id/icon/upload", requireAuth, async (req, res) => {
@@ -1473,26 +1433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Manual sync route for admin
-  app.post("/api/sync", async (req, res) => {
-    try {
-      console.log("Starting manual sync for DeFi Llama data source...");
-      
-      // Import only DeFi Llama sync function
-      const { syncData } = await import("./services/defi-llama");
-      
-      // Run DeFi Llama sync
-      await syncData();
-      
-      console.log("Manual sync completed successfully");
-      res.json({ 
-        message: "DeFi Llama data sync completed successfully"
-      });
-    } catch (error) {
-      console.error("Error during manual sync:", error);
-      res.status(500).json({ message: "Failed to sync data" });
-    }
-  });
+  // Manual sync removed for security - sync runs automatically via scheduler
 
   // API Key management endpoints (admin only)
   app.post("/api/admin/api-keys", requireAuth, async (req, res) => {
