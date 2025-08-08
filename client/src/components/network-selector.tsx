@@ -183,11 +183,6 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                         >
                           {renderCategoryIcon(category)}
                           <span className="font-medium">{category.displayName}</span>
-                          {category.poolCount > 0 && (
-                            <Badge variant="secondary" className="text-xs ml-1">
-                              {category.poolCount}
-                            </Badge>
-                          )}
                         </Button>
 
                         {/* Expand/Collapse Button */}
@@ -227,11 +222,6 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                             >
                               {renderCategoryIcon(subcategory)}
                               <span className="font-medium">{subcategory.displayName}</span>
-                              {subcategory.poolCount > 0 && (
-                                <Badge variant="secondary" className="text-xs ml-1">
-                                  {subcategory.poolCount}
-                                </Badge>
-                              )}
                             </Button>
                           ))}
                         </div>
