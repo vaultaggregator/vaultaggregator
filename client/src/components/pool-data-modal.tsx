@@ -59,7 +59,8 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
       'isVisible': { label: 'Visibility Status', defaultLocation: 'admin-only' },
       'isActive': { label: 'Active Status', defaultLocation: 'admin-only' },
       'lastUpdated': { label: 'Last Updated', defaultLocation: 'admin-only' },
-      'createdAt': { label: 'Created At', defaultLocation: 'admin-only' }
+      'createdAt': { label: 'Created At', defaultLocation: 'admin-only' },
+      'rawData.underlyingTokens': { label: 'Underlying Tokens', defaultLocation: 'detail-secondary' }
     };
 
     // Add core fields
@@ -101,7 +102,7 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
 
   const getDefaultLocationForRawField = (field: string): string => {
     const mainFields = ['apyBase', 'apyMean30d', 'tvlUsd', 'count'];
-    const secondaryFields = ['apyPct1D', 'apyPct7D', 'apyPct30D', 'volumeUsd1d', 'volumeUsd7d'];
+    const secondaryFields = ['apyPct1D', 'apyPct7D', 'apyPct30D', 'volumeUsd1d', 'volumeUsd7d', 'underlyingTokens'];
     
     if (mainFields.includes(field)) return 'card-main';
     if (secondaryFields.includes(field)) return 'card-secondary';
@@ -127,6 +128,12 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
   const formatValue = (value: any): string => {
     if (value === null || value === undefined) return 'N/A';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (Array.isArray(value)) {
+      // Special formatting for arrays like underlyingTokens
+      if (value.length === 0) return 'None';
+      if (value.length <= 3) return value.join(', ');
+      return `${value.slice(0, 2).join(', ')} +${value.length - 2} more`;
+    }
     if (typeof value === 'object') return JSON.stringify(value, null, 2);
     if (typeof value === 'number') return value.toLocaleString();
     return String(value);
@@ -235,6 +242,25 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
                     </div>
                   </div>
                 </div>
+
+                {/* Underlying Tokens */}
+                {poolData?.rawData?.underlyingTokens && Array.isArray(poolData.rawData.underlyingTokens) && poolData.rawData.underlyingTokens.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">Underlying Tokens</h4>
+                    <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                      {poolData.rawData.underlyingTokens.map((token: string, index: number) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-mono">
+                            {token}
+                          </Badge>
+                        </div>
+                      ))}
+                      <div className="text-xs text-muted-foreground mt-2">
+                        Total: {poolData.rawData.underlyingTokens.length} token{poolData.rawData.underlyingTokens.length !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Raw API Data */}
                 {poolData?.rawData && (
