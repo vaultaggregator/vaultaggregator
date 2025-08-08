@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { Wallet, Activity, Coins, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -35,7 +35,13 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
   });
 
   const handleSearch = () => {
-    setSearchAddress(walletAddress);
+    // Validate Ethereum address format
+    if (walletAddress && /^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+      setSearchAddress(walletAddress);
+    } else if (walletAddress) {
+      // Clear previous search if invalid
+      setSearchAddress('');
+    }
   };
 
   const formatNumber = (num: number) => {
@@ -72,7 +78,13 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Token Price Data */}
-        {priceData && (
+        {priceData && (priceData as any).error ? (
+          <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              Token price data not available on Moralis
+            </p>
+          </div>
+        ) : priceData && (priceData as any).usdPrice ? (
           <div className="space-y-2">
             <p className="text-sm font-medium flex items-center gap-1">
               <Coins className="h-4 w-4" />
@@ -104,34 +116,46 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
               </p>
             )}
           </div>
-        )}
+        ) : null}
 
         {/* Wallet Analysis Section */}
-        <div className="space-y-2 pt-4 border-t">
-          <p className="text-sm font-medium flex items-center gap-1">
-            <Wallet className="h-4 w-4" />
-            Wallet Analysis
-          </p>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Enter wallet address..."
-              value={walletAddress}
-              onChange={(e) => setWalletAddress(e.target.value)}
-              className="flex-1"
-            />
-            <Button onClick={handleSearch} size="sm">
-              Analyze
-            </Button>
+        {((): ReactNode => (
+          <div className="space-y-2 pt-4 border-t">
+            <p className="text-sm font-medium flex items-center gap-1">
+              <Wallet className="h-4 w-4" />
+              Wallet Analysis
+            </p>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter wallet address (0x...)"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  className="flex-1"
+                  pattern="^0x[a-fA-F0-9]{40}$"
+                />
+                <Button 
+                  onClick={handleSearch} 
+                  size="sm"
+                  disabled={!walletAddress || !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)}
+                >
+                  Analyze
+                </Button>
+              </div>
+              {walletAddress && !/^0x[a-fA-F0-9]{40}$/.test(walletAddress) && (
+                <p className="text-xs text-red-500">Please enter a valid Ethereum address</p>
+              )}
+            </div>
           </div>
-        </div>
+        ))()}
 
         {/* Wallet Balance Data */}
-        {balanceLoading && (
+        {balanceLoading && ((): ReactNode => (
           <div className="space-y-2">
             <Skeleton className="h-16 w-full" />
             <Skeleton className="h-16 w-full" />
           </div>
-        )}
+        ))()}
 
         {balanceData && (
           <div className="space-y-3">
