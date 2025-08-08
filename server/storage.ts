@@ -616,13 +616,42 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
+  async getAllCategoriesFlat(): Promise<Category[]> {
+    const result = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+        displayName: categories.displayName,
+        slug: categories.slug,
+        iconUrl: categories.iconUrl,
+        description: categories.description,
+        color: categories.color,
+        parentId: categories.parentId,
+        isActive: categories.isActive,
+        sortOrder: categories.sortOrder,
+        createdAt: categories.createdAt,
+        poolCount: sql<number>`count(${poolCategories.poolId})::int`,
+      })
+      .from(categories)
+      .leftJoin(poolCategories, eq(categories.id, poolCategories.categoryId))
+      .groupBy(categories.id)
+      .orderBy(categories.sortOrder, categories.displayName);
+    
+    return result;
+  }
+
   async getCategory(id: string): Promise<Category | undefined> {
     const [category] = await db.select().from(categories).where(eq(categories.id, id));
     return category || undefined;
   }
 
   async createCategory(category: any): Promise<Category> {
-    const [newCategory] = await db.insert(categories).values(category).returning();
+    const categoryData = {
+      ...category,
+      slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      parentId: category.parentId || null,
+    };
+    const [newCategory] = await db.insert(categories).values(categoryData).returning();
     return newCategory;
   }
 

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import AdminHeader from "@/components/admin-header";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload, Eye, EyeOff } from "lucide-react";
@@ -19,10 +20,12 @@ interface Category {
   iconUrl?: string;
   description?: string;
   color: string;
+  parentId?: string;
   isActive: boolean;
   sortOrder: number;
   createdAt: string;
   poolCount: number;
+  subcategories?: Category[];
 }
 
 export default function AdminCategories() {
@@ -34,6 +37,7 @@ export default function AdminCategories() {
     displayName: "",
     description: "",
     color: "#3B82F6",
+    parentId: "",
   });
 
   const { data: categories = [], isLoading, refetch } = useQuery<Category[]>({
@@ -55,7 +59,7 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setShowCreateDialog(false);
-      setFormData({ name: "", displayName: "", description: "", color: "#3B82F6" });
+      setFormData({ name: "", displayName: "", description: "", color: "#3B82F6", parentId: "" });
       toast({
         title: "Success",
         description: "Category created successfully",
@@ -255,6 +259,27 @@ export default function AdminCategories() {
                     />
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Parent Category (optional)
+                      </label>
+                      <Select 
+                        value={formData.parentId} 
+                        onValueChange={(value) => setFormData({ ...formData, parentId: value === "none" ? "" : value })}
+                      >
+                        <SelectTrigger data-testid="select-parent-category">
+                          <SelectValue placeholder="Select parent category (leave empty for main category)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No parent (main category)</SelectItem>
+                          {categories.filter(cat => !cat.parentId && cat.isActive).map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.displayName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Color
                       </label>
                       <input
@@ -310,9 +335,19 @@ export default function AdminCategories() {
                         )}
                       </div>
                       <div>
-                        <CardTitle className="text-lg">{category.displayName}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {category.parentId && <span className="text-xs text-gray-400">└─</span>}
+                          {category.displayName}
+                        </CardTitle>
                         <p className="text-sm text-gray-500">{category.name}</p>
-                        <p className="text-xs text-gray-400">{category.poolCount} pools</p>
+                        <p className="text-xs text-gray-400">
+                          {category.poolCount} pools
+                          {category.parentId && (
+                            <span className="ml-2 text-blue-600">
+                              (Subcategory)
+                            </span>
+                          )}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">

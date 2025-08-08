@@ -860,7 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin category management routes
   app.get("/api/admin/categories", requireAuth, async (req, res) => {
     try {
-      const categories = await storage.getAllCategories();
+      const categories = await storage.getAllCategoriesFlat();
       res.json(categories);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -871,7 +871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/categories", requireAuth, async (req, res) => {
     try {
       // First validate basic required fields
-      const { name, displayName, description, color, iconUrl, sortOrder, isActive } = req.body;
+      const { name, displayName, description, color, iconUrl, sortOrder, isActive, parentId } = req.body;
       
       if (!name || !displayName) {
         return res.status(400).json({ 
@@ -892,6 +892,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: description || null,
         color: color || "#3B82F6",
         iconUrl: iconUrl || null,
+        parentId: parentId || null,
         sortOrder: sortOrder || 0,
         isActive: isActive !== undefined ? isActive : true
       };
