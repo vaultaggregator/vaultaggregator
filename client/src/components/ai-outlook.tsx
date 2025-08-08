@@ -130,19 +130,9 @@ export function AIOutlook({ poolId }: AIOutlookProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground mb-4">
+          <div className="text-sm text-muted-foreground">
             Our AI analysis is temporarily unavailable. Please try again later.
           </div>
-          <Button 
-            onClick={handleRegenerate}
-            disabled={isRegenerating}
-            size="sm"
-            variant="outline"
-            data-testid="button-regenerate-outlook"
-          >
-            <RefreshCw className={cn("w-4 h-4 mr-2", isRegenerating && "animate-spin")} />
-            Try Again
-          </Button>
         </CardContent>
       </Card>
     );

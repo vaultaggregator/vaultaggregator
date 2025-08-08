@@ -427,8 +427,8 @@ export default function PoolDetail() {
           </Card>
         </div>
 
-        {/* AI Market Outlook */}
-        <AIOutlook poolId={pool.id} />
+        {/* AI Market Outlook - Only show on visible pools */}
+        {pool.isVisible && <AIOutlook poolId={pool.id} />}
 
         {/* APY Historical Chart */}
         <Card className="mb-8">

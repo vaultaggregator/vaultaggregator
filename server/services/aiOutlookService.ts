@@ -33,7 +33,7 @@ export class AIOutlookService {
   async generateOutlook(poolId: string): Promise<OutlookResponse | null> {
     try {
       // Get pool data
-      const pool = await this.storage.getPool(poolId);
+      const pool = await this.storage.getPoolById(poolId);
       if (!pool) {
         throw new Error("Pool not found");
       }
