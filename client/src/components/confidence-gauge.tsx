@@ -9,6 +9,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   const normalizedConfidence = Math.max(0, Math.min(100, confidence));
   
   // Calculate the angle for the needle (180 degrees total, from -90 to +90)
+  // For the semicircle gauge: 0% = -90°, 50% = 0°, 100% = +90°
   const angle = (normalizedConfidence / 100) * 180 - 90;
   
   // Color mappings based on confidence level

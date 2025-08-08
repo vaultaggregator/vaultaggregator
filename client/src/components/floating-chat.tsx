@@ -142,6 +142,15 @@ export default function FloatingChat({ className }: FloatingChatProps) {
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-purple-600" />
               <CardTitle className="text-lg">Crypto Companion</CardTitle>
+              <a 
+                href="/companion" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-purple-600 hover:text-purple-800 underline ml-2"
+                data-testid="link-full-companion"
+              >
+                Open Full View
+              </a>
             </div>
             <div className="flex items-center gap-1">
               <Button

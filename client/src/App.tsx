@@ -26,6 +26,7 @@ import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
 import AdminApiKeys from "@/pages/admin-api-keys";
 import PoolDetail from "@/pages/pool-detail";
+import { CompanionPage } from "@/pages/companion";
 import FloatingChat from "@/components/floating-chat";
 
 
@@ -47,6 +48,7 @@ function Router() {
       <Route path="/watchlist" component={Watchlist} />
       <Route path="/jobs" component={Jobs} />
       <Route path="/pool/:poolId" component={PoolDetail} />
+      <Route path="/companion" component={CompanionPage} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />

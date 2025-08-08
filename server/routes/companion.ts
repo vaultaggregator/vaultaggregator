@@ -43,7 +43,7 @@ export function createCompanionRoutes(storage: IStorage): Router {
       const pools = await storage.getPools({ 
         limit: 50, 
         offset: 0,
-        isVisible: true 
+        onlyVisible: true 
       });
 
       // Prepare market context
@@ -64,104 +64,66 @@ export function createCompanionRoutes(storage: IStorage): Router {
         chains: Array.from(new Set(pools.map((p: any) => p.chain?.displayName).filter(Boolean))),
       };
 
-      // Create AI prompt for witty, personalized responses
-      const prompt = `
-You are a witty, knowledgeable DeFi companion chatbot helping users with yield farming and crypto investments.
+      // Analyze user intent for better responses
+      const isGreeting = /^(hi|hello|hey|yo|sup)/i.test(message.trim());
+      const asksForPools = /pool|yield|apy|return|invest|earn|farm/i.test(message);
+      const asksForHighYield = /high|best|top|maximum/i.test(message);
+      const asksForLowRisk = /safe|low.?risk|stable|secure/i.test(message);
+      const asksForStablecoin = /stable|usdc|usdt|dai|stablecoin/i.test(message);
 
-**Your Personality:**
-- Witty and engaging, but never at the expense of accuracy
-- Use occasional crypto slang and emojis appropriately
-- Provide actionable insights, not just generic advice
-- Be encouraging but realistic about risks
-- Make complex concepts accessible
+      let systemPrompt = `You are a witty, knowledgeable DeFi companion chatbot. 
 
-**Current Market Data:**
-- Available pools: ${marketContext.totalPools}
-- Average APY: ${marketContext.avgApy.toFixed(2)}%
-- Top platforms: ${marketContext.platforms.join(", ")}
-- Active chains: ${marketContext.chains.join(", ")}
-
-**Top Performing Pools:**
-${marketContext.topPools.map((pool: any) => 
-  `• ${pool.tokenPair}: ${pool.apy}% APY on ${pool.platform} (${pool.riskLevel} risk)`
+**Available Data:**
+${marketContext.topPools.map((pool: any, idx: number) => 
+  `Pool ${idx + 1}: ${pool.tokenPair} - ${pool.apy}% APY on ${pool.platform} (${pool.riskLevel} risk, TVL: ${formatTvl(pool.tvl || "0")})`
 ).join("\n")}
 
-**User Message:** "${message}"
+**Instructions:**
+- Be conversational and specific to user's question
+- For greetings, be welcoming and offer help
+- For pool requests, recommend 1-3 specific pools with real data
+- Include pool IDs from the available data when recommending
+- Be witty but accurate
+- Keep responses under 150 words
 
-**Response Guidelines:**
-1. Address the user's specific question with relevant data
-2. Include 2-3 witty but informative insights
-3. Recommend specific pools when appropriate (max 3)
-4. Add a practical market tip
-5. Keep responses conversational and under 200 words
-
-Respond with JSON in this format:
+Respond in JSON format:
 {
-  "message": "Your main witty response here",
-  "insights": ["insight1", "insight2", "insight3"],
-  "recommendedPools": [
-    {
-      "id": "pool-id",
-      "tokenPair": "TOKEN-PAIR", 
-      "apy": "X.XX",
-      "tvl": "formatted-tvl",
-      "platform": "Platform Name",
-      "reason": "Why this pool fits their request"
-    }
-  ],
-  "marketTip": "Practical tip for the current market"
-}
-`;
+  "message": "conversational response",
+  "pools": [{"id": "real-pool-id", "tokenPair": "name", "apy": "rate", "platform": {"displayName": "platform"}, "chain": {"displayName": "chain"}, "tvl": "amount", "riskLevel": "level"}]
+}`;
+
+      let userPrompt = `User asks: "${message}"
+
+${isGreeting ? "User is greeting - be welcoming and explain how you can help." : ""}
+${asksForHighYield ? "User wants high yield opportunities - recommend top APY pools." : ""}
+${asksForLowRisk ? "User wants low-risk options - recommend stable, established pools." : ""}
+${asksForStablecoin ? "User wants stablecoin opportunities - recommend pools with stablecoins." : ""}
+${asksForPools ? "User asks about pools - provide specific recommendations with real data." : ""}`;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: "You are a witty DeFi companion providing personalized yield farming advice. Always respond with valid JSON only."
+            content: systemPrompt
           },
           {
             role: "user",
-            content: prompt
+            content: userPrompt
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.8,
-        max_tokens: 800,
+        temperature: 0.7,
+        max_tokens: 600,
       });
 
       const aiResponse = JSON.parse(response.choices[0].message.content || "{}");
 
-      // Enhance recommended pools with real data
-      if (aiResponse.recommendedPools) {
-        aiResponse.recommendedPools = aiResponse.recommendedPools.map((rec: any) => {
-          const realPool = pools.find((p: any) => 
-            p.tokenPair.toLowerCase().includes(rec.tokenPair.toLowerCase()) ||
-            p.platform?.displayName.toLowerCase() === rec.platform.toLowerCase()
-          );
-          
-          if (realPool) {
-            return {
-              id: realPool.id,
-              tokenPair: realPool.tokenPair,
-              apy: realPool.apy || "0",
-              tvl: formatTvl(realPool.tvl || "0"),
-              platform: realPool.platform?.displayName || "Unknown",
-              reason: rec.reason || "Matches your criteria"
-            };
-          }
-          return rec;
-        }).filter(Boolean);
-      }
-
-      const companionResponse: CompanionResponse = {
+      // Return the response with pools data that matches our floating chat interface
+      res.json({
         message: aiResponse.message || "I'm having trouble processing that request. Could you try rephrasing?",
-        insights: aiResponse.insights || [],
-        recommendedPools: aiResponse.recommendedPools || [],
-        marketTip: aiResponse.marketTip || "Always DYOR (Do Your Own Research) before investing!"
-      };
-
-      res.json(companionResponse);
+        pools: aiResponse.pools || []
+      });
 
     } catch (error) {
       console.error("Companion chat error:", error);
