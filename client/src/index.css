@@ -122,6 +122,56 @@
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
 
+/* Dark mode text readability improvements */
+.dark .text-gray-900 {
+  color: hsl(220 14% 96%) !important;
+}
+
+.dark .text-gray-700 {
+  color: hsl(220 14% 85%) !important;
+}
+
+.dark .text-gray-600 {
+  color: hsl(220 9% 70%) !important;
+}
+
+.dark .text-gray-500 {
+  color: hsl(220 9% 65%) !important;
+}
+
+.dark .text-gray-400 {
+  color: hsl(220 9% 60%) !important;
+}
+
+/* Improve contrast for badges and special elements in dark mode */
+.dark .text-green-800 {
+  color: hsl(142.1 70.6% 75%) !important;
+}
+
+.dark .text-yellow-800 {
+  color: hsl(42.0290 92.8251% 75%) !important;
+}
+
+.dark .text-red-800 {
+  color: hsl(0 84% 75%) !important;
+}
+
+.dark .text-blue-800 {
+  color: hsl(203.8863 88.2845% 75%) !important;
+}
+
+.dark .text-blue-700 {
+  color: hsl(203.8863 88.2845% 80%) !important;
+}
+
+.dark .text-orange-800 {
+  color: hsl(20 91% 75%) !important;
+}
+
+.dark .text-orange-700 {
+  color: hsl(20 91% 80%) !important;
+}
+
 /* Custom animations */
 @keyframes fadeIn {
   from { opacity: 0; }
