@@ -164,8 +164,12 @@ export default function AdminCategories() {
         method: "DELETE",
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Failed to delete category");
-      return response.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete category");
+      }
+      // No need to parse JSON for 204 status
+      return;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
@@ -204,7 +208,7 @@ export default function AdminCategories() {
         id: editingCategory, 
         data: {
           ...editFormData,
-          parentId: editFormData.parentId || null
+          parentId: editFormData.parentId || undefined
         }
       });
     }
