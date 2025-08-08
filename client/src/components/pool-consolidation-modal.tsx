@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { TokenDisplay } from "@/components/TokenDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Merge, ArrowRight } from "lucide-react";
@@ -324,18 +325,13 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
                   <div className="col-span-1 md:col-span-2">
                     <strong>Underlying Tokens:</strong> 
                     {Array.isArray(consolidatedData.underlyingTokens) && consolidatedData.underlyingTokens.length > 0 ? (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {consolidatedData.underlyingTokens.map((token: string, index: number) => {
-                          // Handle Ethereum addresses - convert to friendly names where possible
-                          const displayToken = token === "0x0000000000000000000000000000000000000000" ? "ETH" : 
-                                             token.startsWith("0x") ? `${token.slice(0, 6)}...${token.slice(-4)}` : 
-                                             token;
-                          return (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {displayToken}
-                            </Badge>
-                          );
-                        })}
+                      <div className="mt-1">
+                        <TokenDisplay 
+                          addresses={consolidatedData.underlyingTokens}
+                          maxDisplay={3}
+                          showNormalizeButton={true}
+                          size="sm"
+                        />
                       </div>
                     ) : (
                       <span className="text-muted-foreground"> None</span>

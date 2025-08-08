@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2 } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2, Sparkles } from "lucide-react";
+import { TokenDisplay } from "@/components/TokenDisplay";
 import { PoolDataLoading, SyncAnimation, FloatingActionLoading } from "@/components/loading-animations";
 import { YieldSyncLoader } from "@/components/crypto-loader";
 import { PoolScanner, GlowingButton } from "@/components/enhanced-loading";
@@ -720,6 +721,22 @@ export default function AdminDashboard() {
                 {isScanning ? "Scanning..." : "Scan Pools"}
               </GlowingButton>
 
+              <Button 
+                onClick={() => {
+                  toast({
+                    title: "Token Normalization",
+                    description: "All token addresses are now using intelligent display formatting with one-click normalization available on each pool",
+                  });
+                }}
+                variant="outline" 
+                size="sm"
+                data-testid="button-normalize-tokens"
+                className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900"
+              >
+                <Sparkles className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
+                Smart Tokens
+              </Button>
+
               {selectedPoolsForConsolidation.length > 0 && (
                 <Button 
                   onClick={handleOpenConsolidationModal}
@@ -1010,17 +1027,13 @@ export default function AdminDashboard() {
                           {(pool.rawData as any)?.underlyingTokens && Array.isArray((pool.rawData as any).underlyingTokens) && (pool.rawData as any).underlyingTokens.length > 0 && (
                             <div className="mt-2">
                               <span className="text-gray-600 dark:text-gray-400 text-sm">Underlying Tokens:</span>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {(pool.rawData as any).underlyingTokens.map((token: string, index: number) => {
-                                  const displayToken = token === "0x0000000000000000000000000000000000000000" ? "ETH" : 
-                                                     token.startsWith("0x") ? `${token.slice(0, 6)}...${token.slice(-4)}` : 
-                                                     token;
-                                  return (
-                                    <Badge key={index} variant="outline" className="text-xs">
-                                      {displayToken}
-                                    </Badge>
-                                  );
-                                })}
+                              <div className="mt-1">
+                                <TokenDisplay 
+                                  addresses={(pool.rawData as any).underlyingTokens}
+                                  maxDisplay={2}
+                                  showNormalizeButton={true}
+                                  size="sm"
+                                />
                               </div>
                             </div>
                           )}

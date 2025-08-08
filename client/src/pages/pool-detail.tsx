@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { TokenDisplay } from "@/components/TokenDisplay";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -476,19 +477,12 @@ export default function PoolDetail() {
                   <Separator />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Underlying Tokens</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {pool.rawData.underlyingTokens.map((token: string, index: number) => {
-                        // Handle Ethereum addresses - convert to friendly names where possible
-                        const displayToken = token === "0x0000000000000000000000000000000000000000" ? "ETH" : 
-                                           token.startsWith("0x") ? `${token.slice(0, 6)}...${token.slice(-4)}` : 
-                                           token;
-                        return (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {displayToken}
-                          </Badge>
-                        );
-                      })}
-                    </div>
+                    <TokenDisplay 
+                      addresses={pool.rawData.underlyingTokens}
+                      maxDisplay={5}
+                      showNormalizeButton={true}
+                      size="md"
+                    />
                   </div>
                 </>
               )}
