@@ -1102,6 +1102,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get consolidated pools endpoint
+  app.get("/api/admin/pools/consolidated", requireAuth, async (req, res) => {
+    try {
+      // Find all pools that have consolidation notes
+      const allPools = await storage.getPools();
+      const consolidatedPools: any[] = [];
+
+      // Check each pool for consolidation notes and get full details
+      for (const pool of allPools) {
+        const notes = await storage.getNotesByPool(pool.id);
+        const hasConsolidationNote = notes.some(note => 
+          note.content.includes('Consolidated from pools:') || 
+          note.content.includes('User notes:')
+        );
+        
+        if (hasConsolidationNote) {
+          // Get full pool details with platform and chain info
+          const fullPool = await storage.getPoolById(pool.id);
+          if (fullPool) {
+            consolidatedPools.push({
+              ...fullPool,
+              notes: notes
+            });
+          }
+        }
+      }
+
+      res.json(consolidatedPools);
+    } catch (error) {
+      console.error("Error fetching consolidated pools:", error);
+      res.status(500).json({ message: "Failed to fetch consolidated pools" });
+    }
+  });
+
+  // Delete individual consolidated pool endpoint
+  app.delete("/api/admin/pools/consolidated/:poolId", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.poolId;
+      
+      // Verify this is a consolidated pool by checking for consolidation notes
+      const notes = await storage.getNotesByPool(poolId);
+      const hasConsolidationNote = notes.some(note => 
+        note.content.includes('Consolidated from pools:') || 
+        note.content.includes('User notes:')
+      );
+      
+      if (!hasConsolidationNote) {
+        return res.status(400).json({ message: "This is not a consolidated pool" });
+      }
+
+      // Delete associated notes first
+      for (const note of notes) {
+        await storage.deleteNote(note.id);
+      }
+      
+      // Delete the pool
+      await storage.deletePool(poolId);
+
+      res.json({ 
+        message: "Consolidated pool deleted successfully",
+        deletedPoolId: poolId
+      });
+    } catch (error) {
+      console.error("Error deleting consolidated pool:", error);
+      res.status(500).json({ message: "Failed to delete consolidated pool" });
+    }
+  });
+
   // Reset/clear consolidated pools endpoint
   app.delete("/api/admin/pools/consolidated", requireAuth, async (req, res) => {
     try {

@@ -108,6 +108,7 @@ export default function AdminDashboard() {
   const [scanResults, setScanResults] = useState<any>(null);
   const [selectedPoolsForConsolidation, setSelectedPoolsForConsolidation] = useState<string[]>([]);
   const [isConsolidationModalOpen, setIsConsolidationModalOpen] = useState(false);
+  const [showConsolidatedPools, setShowConsolidatedPools] = useState(false);
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -160,6 +161,12 @@ export default function AdminDashboard() {
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/admin/categories"],
+  });
+
+  // Fetch consolidated pools
+  const { data: consolidatedPools = [], isLoading: consolidatedPoolsLoading } = useQuery<PoolWithRelations[]>({
+    queryKey: ["/api/admin/pools/consolidated"],
+    enabled: showConsolidatedPools,
   });
 
   // No longer need data sources query since we only have DeFi Llama
@@ -488,9 +495,42 @@ export default function AdminDashboard() {
     },
   });
 
+  // Delete individual consolidated pool mutation
+  const deleteConsolidatedPoolMutation = useMutation({
+    mutationFn: async (poolId: string) => {
+      const response = await fetch(`/api/admin/pools/consolidated/${poolId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete consolidated pool");
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Success",
+        description: "Consolidated pool deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/consolidated"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete consolidated pool",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleResetConsolidatedPools = () => {
     if (confirm("Are you sure you want to delete all consolidated pools? This action cannot be undone.")) {
       resetConsolidatedPoolsMutation.mutate();
+    }
+  };
+
+  const handleDeleteConsolidatedPool = (poolId: string, tokenPair: string) => {
+    if (confirm(`Are you sure you want to delete the consolidated pool "${tokenPair}"? This action cannot be undone.`)) {
+      deleteConsolidatedPoolMutation.mutate(poolId);
     }
   };
 
@@ -693,6 +733,16 @@ export default function AdminDashboard() {
               )}
 
               <Button 
+                onClick={() => setShowConsolidatedPools(!showConsolidatedPools)}
+                variant="outline" 
+                size="sm"
+                data-testid="button-view-consolidated"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {showConsolidatedPools ? "Hide Consolidated" : "View Consolidated"}
+              </Button>
+
+              <Button 
                 onClick={handleResetConsolidatedPools}
                 disabled={resetConsolidatedPoolsMutation.isPending}
                 variant="destructive" 
@@ -701,7 +751,7 @@ export default function AdminDashboard() {
                 className={resetConsolidatedPoolsMutation.isPending ? "animate-pulse" : ""}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                {resetConsolidatedPoolsMutation.isPending ? "Resetting..." : "Reset Consolidated"}
+                {resetConsolidatedPoolsMutation.isPending ? "Resetting..." : "Reset All"}
               </Button>
 
               <Button 
@@ -912,6 +962,106 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Consolidated Pools Section */}
+        {showConsolidatedPools && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Merge className="h-5 w-5" />
+                Consolidated Pools Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {consolidatedPoolsLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+                </div>
+              ) : consolidatedPools.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  No consolidated pools found
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {consolidatedPools.map((pool) => (
+                    <div key={pool.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-4">
+                            <h3 className="font-semibold text-lg">{pool.tokenPair}</h3>
+                            <Badge variant="outline" className="text-xs">
+                              {pool.platform.displayName}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {pool.chain.displayName}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">APY:</span> {pool.apy}%
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">TVL:</span> ${parseFloat(pool.tvl || "0").toLocaleString()}
+                            </div>
+                            <div>
+                              <span className="text-gray-600 dark:text-gray-400">Risk:</span> {pool.riskLevel}
+                            </div>
+                          </div>
+                          {(pool.rawData as any)?.underlyingTokens && Array.isArray((pool.rawData as any).underlyingTokens) && (pool.rawData as any).underlyingTokens.length > 0 && (
+                            <div className="mt-2">
+                              <span className="text-gray-600 dark:text-gray-400 text-sm">Underlying Tokens:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {(pool.rawData as any).underlyingTokens.map((token: string, index: number) => {
+                                  const displayToken = token === "0x0000000000000000000000000000000000000000" ? "ETH" : 
+                                                     token.startsWith("0x") ? `${token.slice(0, 6)}...${token.slice(-4)}` : 
+                                                     token;
+                                  return (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {displayToken}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          {(pool as any).notes && (pool as any).notes.length > 0 && (
+                            <div className="mt-2">
+                              <span className="text-gray-600 dark:text-gray-400 text-sm">Notes:</span>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                {(pool as any).notes.map((note: any) => (
+                                  <div key={note.id} className="mb-1">
+                                    {note.content}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => navigate(`/pool/${pool.id}`)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteConsolidatedPool(pool.id, pool.tokenPair)}
+                            disabled={deleteConsolidatedPoolMutation.isPending}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pools Table */}
         <Card>
