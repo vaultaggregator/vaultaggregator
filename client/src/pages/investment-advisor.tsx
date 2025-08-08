@@ -137,21 +137,24 @@ export default function InvestmentAdvisor() {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Investment Amount */}
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="flex items-center gap-2">
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
-                Investment Amount
+                Investment Amount: {formatCurrency(formData.amount)}
               </Label>
-              <Input
-                id="amount"
-                type="number"
-                value={formData.amount}
-                onChange={(e) => setFormData(prev => ({ ...prev, amount: Number(e.target.value) }))}
-                placeholder="Enter amount in USD"
-                className="text-lg"
-                data-testid="input-investment-amount"
+              <Slider
+                value={[formData.amount]}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, amount: value[0] }))}
+                max={100000000}
+                min={0}
+                step={1000}
+                className="w-full"
+                data-testid="slider-investment-amount"
               />
-              <p className="text-sm text-gray-500">{formatCurrency(formData.amount)}</p>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>$0</span>
+                <span>$100,000,000</span>
+              </div>
             </div>
 
             {/* Investment Duration */}
