@@ -106,9 +106,6 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </div>
                 )}
               </div>
-              <p className="text-sm font-medium text-muted-foreground truncate" data-testid={`text-platform-${opportunity.id}`}>
-                {opportunity.platform.displayName}
-              </p>
             </div>
           </div>
 
