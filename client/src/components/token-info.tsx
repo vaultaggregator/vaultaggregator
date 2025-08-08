@@ -151,13 +151,13 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Holders</p>
               <p className="text-sm font-semibold">
-                {holders?.count || "N/A"}
+                {holders?.count > 0 ? holders.count : "N/A"}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">24h Transfers</p>
               <p className="text-sm font-semibold">
-                {transfers?.analytics?.transferCount24h || "N/A"}
+                {transfers?.analytics?.transferCount24h > 0 ? transfers.analytics.transferCount24h : "N/A"}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
