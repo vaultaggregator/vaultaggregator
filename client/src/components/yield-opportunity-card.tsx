@@ -59,60 +59,65 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
       <Card className={`bg-card cursor-pointer ${showHeaders ? 'rounded-xl shadow-sm border border-border hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
         <CardContent className="p-1.5 sm:p-3">
         <div className="flex items-center flex-col sm:flex-row gap-2 sm:gap-0">
-          {/* Left section - Platform and Token info */}
+          {/* Left section - Token and Platform info */}
           <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 w-full sm:w-auto">
-            <div 
-              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center overflow-hidden shadow-md flex-shrink-0"
-              data-testid={`logo-${opportunity.platform.name}`}
-            >
-              {opportunity.platform.logoUrl ? (
-                <img 
-                  src={opportunity.platform.logoUrl} 
-                  alt={opportunity.platform.displayName}
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : (
-                (() => {
-                  const PlatformIcon = getPlatformIcon(opportunity.platform.name);
-                  return <PlatformIcon size={24} className="flex-shrink-0" />;
-                })()
-              )}
+            {/* Subcategory Icon First */}
+            <div className="flex-shrink-0">
+              {opportunity.categories && opportunity.categories.length > 0 && (() => {
+                // Check all categories for USDC or stETH, not just the first one
+                const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
+                const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
+                
+                if (usdcCategory) {
+                  return (
+                    <img 
+                      src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
+                      alt="USDC"
+                      className="w-5 h-5 flex-shrink-0 rounded-full"
+                      data-testid={`logo-usdc-${opportunity.id}`}
+                    />
+                  );
+                } else if (stethCategory) {
+                  return (
+                    <img 
+                      src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
+                      alt="stETH"
+                      className="w-5 h-5 flex-shrink-0 rounded-full"
+                      data-testid={`logo-steth-${opportunity.id}`}
+                    />
+                  );
+                }
+                
+                // Fall back to SVG icons for other categories
+                const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
+                return <CategoryIcon size={20} className="flex-shrink-0" />;
+              })()}
             </div>
+            
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-2 mb-1">
                 <div className="flex items-center space-x-1.5">
                   <h3 className="font-bold text-base text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
                     {opportunity.tokenPair}
                   </h3>
-                  {opportunity.categories && opportunity.categories.length > 0 && (() => {
-                    // Check all categories for USDC or stETH, not just the first one
-                    const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
-                    const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
-                    
-                    if (usdcCategory) {
-                      return (
-                        <img 
-                          src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
-                          alt="USDC"
-                          className="w-5 h-5 flex-shrink-0 rounded-full"
-                          data-testid={`logo-usdc-${opportunity.id}`}
-                        />
-                      );
-                    } else if (stethCategory) {
-                      return (
-                        <img 
-                          src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
-                          alt="stETH"
-                          className="w-5 h-5 flex-shrink-0 rounded-full"
-                          data-testid={`logo-steth-${opportunity.id}`}
-                        />
-                      );
-                    }
-                    
-                    // Fall back to SVG icons for other categories
-                    const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                    return <CategoryIcon size={16} className="flex-shrink-0" />;
-                  })()}
+                  {/* Protocol Icon - Smaller */}
+                  <div 
+                    className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                    data-testid={`logo-${opportunity.platform.name}`}
+                  >
+                    {opportunity.platform.logoUrl ? (
+                      <img 
+                        src={opportunity.platform.logoUrl} 
+                        alt={opportunity.platform.displayName}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      (() => {
+                        const PlatformIcon = getPlatformIcon(opportunity.platform.name);
+                        return <PlatformIcon size={16} className="flex-shrink-0" />;
+                      })()
+                    )}
+                  </div>
                 </div>
                 {showNetworkName && (
                   <Badge 
