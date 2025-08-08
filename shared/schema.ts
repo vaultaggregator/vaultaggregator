@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, decimal, timestamp, boolean, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, decimal, timestamp, boolean, jsonb, json, integer } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -113,6 +113,17 @@ export const notes = pgTable("notes", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const aiOutlooks = pgTable("ai_outlooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  outlook: text("outlook").notNull(), // AI-generated prediction text
+  sentiment: text("sentiment").notNull(), // "bullish", "bearish", "neutral"
+  confidence: integer("confidence").notNull(), // 1-100 confidence score
+  marketFactors: json("market_factors"), // JSON array of considered factors
+  generatedAt: timestamp("generated_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(), // When this prediction expires (2 hours)
+});
+
 // Relations
 export const chainsRelations = relations(chains, ({ many }) => ({
   tokens: many(tokens),
@@ -156,11 +167,19 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
   }),
   notes: many(notes),
   poolCategories: many(poolCategories),
+  aiOutlooks: many(aiOutlooks),
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
   pool: one(pools, {
     fields: [notes.poolId],
+    references: [pools.id],
+  }),
+}));
+
+export const aiOutlooksRelations = relations(aiOutlooks, ({ one }) => ({
+  pool: one(pools, {
+    fields: [aiOutlooks.poolId],
     references: [pools.id],
   }),
 }));
@@ -227,6 +246,11 @@ export const insertPoolCategorySchema = createInsertSchema(poolCategories).omit(
   createdAt: true,
 });
 
+export const insertAIOutlookSchema = createInsertSchema(aiOutlooks).omit({
+  id: true,
+  generatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -257,6 +281,9 @@ export type InsertCategory = z.infer<typeof insertCategorySchema>;
 
 export type PoolCategory = typeof poolCategories.$inferSelect;
 export type InsertPoolCategory = z.infer<typeof insertPoolCategorySchema>;
+
+export type AIOutlook = typeof aiOutlooks.$inferSelect;
+export type InsertAIOutlook = z.infer<typeof insertAIOutlookSchema>;
 
 // Extended types for API responses
 export type PoolWithRelations = Pool & {

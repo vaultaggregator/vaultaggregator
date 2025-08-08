@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
+import { AIOutlook } from "@/components/ai-outlook";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -426,7 +427,8 @@ export default function PoolDetail() {
           </Card>
         </div>
 
-
+        {/* AI Market Outlook */}
+        <AIOutlook poolId={pool.id} />
 
         {/* APY Historical Chart */}
         <Card className="mb-8">

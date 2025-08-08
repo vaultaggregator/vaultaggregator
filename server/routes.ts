@@ -459,9 +459,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Outlook routes
+  app.get("/api/pools/:id/outlook", async (req, res) => {
+    try {
+      const { AIOutlookService } = await import("./services/aiOutlookService");
+      const aiOutlookService = new AIOutlookService(storage);
+      
+      // Try to get existing valid outlook first
+      let outlook = await aiOutlookService.getValidOutlook(req.params.id);
+      
+      // If no valid outlook exists, generate a new one
+      if (!outlook) {
+        outlook = await aiOutlookService.generateAndSaveOutlook(req.params.id);
+      }
+      
+      if (!outlook) {
+        return res.status(500).json({ message: "Failed to generate AI outlook" });
+      }
+      
+      res.json(outlook);
+    } catch (error) {
+      console.error("Error fetching AI outlook:", error);
+      res.status(500).json({ message: "Failed to fetch AI outlook" });
+    }
+  });
 
-
-
+  app.post("/api/pools/:id/outlook/regenerate", async (req, res) => {
+    try {
+      const { AIOutlookService } = await import("./services/aiOutlookService");
+      const aiOutlookService = new AIOutlookService(storage);
+      
+      const outlook = await aiOutlookService.generateAndSaveOutlook(req.params.id);
+      
+      if (!outlook) {
+        return res.status(500).json({ message: "Failed to regenerate AI outlook" });
+      }
+      
+      res.json(outlook);
+    } catch (error) {
+      console.error("Error regenerating AI outlook:", error);
+      res.status(500).json({ message: "Failed to regenerate AI outlook" });
+    }
+  });
 
   // Manual sync endpoints for admin use
 
