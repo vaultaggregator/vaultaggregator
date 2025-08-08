@@ -4,6 +4,92 @@ import { IStorage } from "../storage";
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// CoinGecko API service for accurate crypto prices
+class CoinGeckoService {
+  private static readonly BASE_URL = 'https://api.coingecko.com/api/v3';
+  
+  static async getTokenPrice(tokenSymbol: string): Promise<number | null> {
+    try {
+      // Common token symbol to CoinGecko ID mapping
+      const tokenMap: { [key: string]: string } = {
+        'ETH': 'ethereum',
+        'BTC': 'bitcoin',
+        'USDC': 'usd-coin',
+        'USDT': 'tether',
+        'DAI': 'dai',
+        'WETH': 'weth',
+        'WBTC': 'wrapped-bitcoin',
+        'STETH': 'staked-ether',
+        'LDO': 'lido-dao',
+        'LIDO': 'lido-dao',
+        'MATIC': 'matic-network',
+        'POLYGON': 'matic-network',
+        'LINK': 'chainlink',
+        'UNI': 'uniswap',
+        'AAVE': 'aave',
+        'CRV': 'curve-dao-token',
+        'COMP': 'compound-governance-token',
+        'MKR': 'maker',
+        'SNX': 'havven',
+        'YFI': 'yearn-finance',
+        'SUSHI': 'sushi',
+        '1INCH': '1inch'
+      };
+
+      const tokenId = tokenMap[tokenSymbol.toUpperCase()];
+      if (!tokenId) {
+        console.warn(`Token ${tokenSymbol} not found in CoinGecko mapping`);
+        return null;
+      }
+
+      const response = await fetch(`${this.BASE_URL}/simple/price?ids=${tokenId}&vs_currencies=usd`);
+      if (!response.ok) {
+        throw new Error(`CoinGecko API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data[tokenId]?.usd || null;
+    } catch (error) {
+      console.error(`Error fetching price for ${tokenSymbol}:`, error);
+      return null;
+    }
+  }
+
+  static async getMarketData(tokenSymbol: string): Promise<{price: number | null, change24h: number | null} | null> {
+    try {
+      const tokenMap: { [key: string]: string } = {
+        'ETH': 'ethereum',
+        'BTC': 'bitcoin',
+        'USDC': 'usd-coin',
+        'USDT': 'tether',
+        'DAI': 'dai',
+        'WETH': 'weth',
+        'WBTC': 'wrapped-bitcoin',
+        'STETH': 'staked-ether',
+        'LDO': 'lido-dao',
+        'LIDO': 'lido-dao',
+        'MATIC': 'matic-network',
+        'POLYGON': 'matic-network'
+      };
+
+      const tokenId = tokenMap[tokenSymbol.toUpperCase()];
+      if (!tokenId) return null;
+
+      const response = await fetch(`${this.BASE_URL}/simple/price?ids=${tokenId}&vs_currencies=usd&include_24hr_change=true`);
+      if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
+
+      const data = await response.json();
+      return {
+        price: data[tokenId]?.usd || null,
+        change24h: data[tokenId]?.usd_24h_change || null
+      };
+    } catch (error) {
+      console.error(`Error fetching market data for ${tokenSymbol}:`, error);
+      return null;
+    }
+  }
+}
+
 // Utility function to format TVL values
 function formatTvl(value: string): string {
   const num = parseFloat(value);
@@ -230,6 +316,19 @@ Current DeFi Market Data Context:
       // Get comprehensive market context
       const globalMarketContext = await this.getCurrentMarketContext();
       
+      // Get real-time crypto prices from CoinGecko for accurate analysis
+      const tokenSymbols = pool.tokenPair.split('-').map(t => t.trim());
+      const cryptoPrices: { [key: string]: { price: number | null, change24h: number | null } } = {};
+      
+      for (const token of tokenSymbols) {
+        if (!['USDC', 'USDT', 'DAI'].includes(token.toUpperCase())) { // Skip stablecoins
+          const marketData = await CoinGeckoService.getMarketData(token);
+          if (marketData) {
+            cryptoPrices[token] = marketData;
+          }
+        }
+      }
+      
       // Get market data for enhanced analysis
       const marketMetrics = {
         tvlStability: parseFloat(pool.tvl || "0") > 10000000 ? "high" : "moderate",
@@ -263,16 +362,23 @@ You are a professional DeFi yield analyst providing market outlook with specific
 - Data Quality: ${marketMetrics.dataQuality}
 - Calculated Confidence: ${calculatedConfidence}%
 
+**REAL-TIME CRYPTO PRICES (CoinGecko):**
+${Object.entries(cryptoPrices).map(([token, data]) => 
+  `- ${token}: $${data.price?.toFixed(2) || 'N/A'} (24h: ${data.change24h ? (data.change24h > 0 ? '+' : '') + data.change24h.toFixed(2) + '%' : 'N/A'})`
+).join('\n')}
+
 **DATA INPUTS TO ANALYZE:**
 
 ${globalMarketContext}
 
 **Required Analysis Framework:**
+- Use the REAL CoinGecko prices above for accurate market analysis
 - Market sentiment from DeFi angle (protocol adoption, TVL flows, user activity)
-- ETH price and recent trends (impact on gas costs and yield sustainability)
+- ETH price trends using CoinGecko data (impact on gas costs and yield sustainability)
 - Market cap and flows of major stablecoins (USDC, USDT, DAI liquidity health)
 - Relevant economic news (Fed policy, rate moves, macro shifts affecting crypto)
 - Vault's historical and current APY performance patterns
+- Reference the actual 24h price changes from CoinGecko in your analysis
 
 **Required Output (exactly 185 words):**
 1. **Short-term APY prediction** (days to weeks) with specific percentage
