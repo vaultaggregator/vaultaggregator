@@ -144,32 +144,32 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Table Header - Hidden on mobile */}
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
-          <div className="px-4 sm:px-6 py-4 flex items-center bg-muted rounded-t-xl">
+          <div className="px-4 sm:px-6 py-2 flex items-center bg-muted rounded-t-xl">
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="w-12"></div> {/* Space for logo */}
               <div className="min-w-0 flex-1">
-                <SortHeader field="name">Name</SortHeader>
+                <SortHeader field="name"><span className="text-sm font-medium">Name</span></SortHeader>
               </div>
             </div>
             
             <div className="flex items-center justify-between flex-1 max-w-4xl mx-2 sm:mx-8">
-              <div className="w-20 text-center">
-                <SortHeader field="apy">24h APY</SortHeader>
-              </div>
-              <div className="w-20 text-center">
-                <SortHeader field="apy30d">30d APY</SortHeader>
-              </div>
-              <div className="w-24 text-center">
-                <SortHeader field="tvl">TVL</SortHeader>
-              </div>
-              <div className="w-28 text-center">
-                <SortHeader field="operatingSince">Since</SortHeader>
+              <div className="w-16 text-center">
+                <SortHeader field="apy"><span className="text-sm font-medium">24h APY</span></SortHeader>
               </div>
               <div className="w-16 text-center">
-                <SortHeader field="risk">Risk</SortHeader>
+                <SortHeader field="apy30d"><span className="text-sm font-medium">30d APY</span></SortHeader>
               </div>
               <div className="w-20 text-center">
-                <span className="font-semibold text-foreground">Actions</span>
+                <SortHeader field="tvl"><span className="text-sm font-medium">TVL</span></SortHeader>
+              </div>
+              <div className="w-20 text-center">
+                <SortHeader field="operatingSince"><span className="text-sm font-medium">Since</span></SortHeader>
+              </div>
+              <div className="w-14 text-center">
+                <SortHeader field="risk"><span className="text-sm font-medium">Risk</span></SortHeader>
+              </div>
+              <div className="w-16 text-center">
+                <span className="text-sm font-medium text-foreground">Actions</span>
               </div>
             </div>
           </div>
