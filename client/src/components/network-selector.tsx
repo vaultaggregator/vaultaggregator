@@ -2,10 +2,16 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Chain, FilterOptions, Category } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getCategoryIcon } from "@/components/category-icons";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface NetworkSelectorProps {
   filters: FilterOptions;
@@ -13,7 +19,6 @@ interface NetworkSelectorProps {
 }
 
 export default function NetworkSelector({ filters, onFilterChange }: NetworkSelectorProps) {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   
   // Fetch chains
   const { data: chains = [] } = useQuery<Chain[]>({
@@ -47,17 +52,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
     });
   };
 
-  const toggleCategoryExpansion = (categoryId: string) => {
-    setExpandedCategories(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(categoryId)) {
-        newSet.delete(categoryId);
-      } else {
-        newSet.add(categoryId);
-      }
-      return newSet;
-    });
-  };
+
 
   // Render chain icon component
   const renderChainIcon = (chain: Chain) => {
@@ -166,8 +161,58 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
 
                   {categories.filter(cat => cat.isActive && !cat.parentId).map((category) => (
                     <div key={category.id} className="relative">
-                      {/* Main Category Button */}
-                      <div className="flex items-center gap-1">
+                      {/* Category with Dropdown */}
+                      {category.subcategories && category.subcategories.length > 0 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant={filters.categoryId === category.id ? "default" : "outline"}
+                              size="sm"
+                              className={`
+                                flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
+                                ${filters.categoryId === category.id 
+                                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                                  : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
+                                }
+                              `}
+                              data-testid={`button-category-${category.slug}`}
+                            >
+                              {renderCategoryIcon(category)}
+                              <span className="font-medium">{category.displayName}</span>
+                              <ChevronDown size={14} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start" className="w-48">
+                            {/* Parent Category Option */}
+                            <DropdownMenuItem
+                              onClick={() => handleCategoryClick(category.id)}
+                              className={`flex items-center space-x-2 cursor-pointer ${
+                                filters.categoryId === category.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                              }`}
+                              data-testid={`dropdown-category-${category.slug}`}
+                            >
+                              {renderCategoryIcon(category)}
+                              <span className="font-medium">All {category.displayName}</span>
+                            </DropdownMenuItem>
+                            
+                            {/* Subcategories */}
+                            {category.subcategories.filter(sub => sub.isActive).map((subcategory) => (
+                              <DropdownMenuItem
+                                key={subcategory.id}
+                                onClick={() => handleCategoryClick(subcategory.id)}
+                                className={`flex items-center space-x-2 cursor-pointer ${
+                                  filters.categoryId === subcategory.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                                }`}
+                                data-testid={`dropdown-subcategory-${subcategory.slug}`}
+                              >
+                                {renderCategoryIcon(subcategory)}
+                                <span>{subcategory.displayName}</span>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        /* Category without subcategories - regular button */
                         <Button
                           onClick={() => handleCategoryClick(category.id)}
                           variant={filters.categoryId === category.id ? "default" : "outline"}
@@ -184,47 +229,6 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                           {renderCategoryIcon(category)}
                           <span className="font-medium">{category.displayName}</span>
                         </Button>
-
-                        {/* Expand/Collapse Button */}
-                        {category.subcategories && category.subcategories.length > 0 && (
-                          <Button
-                            onClick={() => toggleCategoryExpansion(category.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="p-1 h-8 w-8"
-                            data-testid={`button-expand-${category.slug}`}
-                          >
-                            {expandedCategories.has(category.id) ? 
-                              <ChevronDown size={14} /> : 
-                              <ChevronRight size={14} />
-                            }
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* Subcategories */}
-                      {category.subcategories && category.subcategories.length > 0 && expandedCategories.has(category.id) && (
-                        <div className="ml-8 mt-2 flex flex-wrap gap-2">
-                          {category.subcategories.filter(sub => sub.isActive).map((subcategory) => (
-                            <Button
-                              key={subcategory.id}
-                              onClick={() => handleCategoryClick(subcategory.id)}
-                              variant={filters.categoryId === subcategory.id ? "default" : "outline"}
-                              size="sm"
-                              className={`
-                                flex items-center space-x-2 px-3 py-1 rounded-full transition-all duration-200 text-sm
-                                ${filters.categoryId === subcategory.id 
-                                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                                  : 'bg-card dark:bg-card text-foreground border border-border hover:border-blue-300 hover:text-blue-600'
-                                }
-                              `}
-                              data-testid={`button-subcategory-${subcategory.slug}`}
-                            >
-                              {renderCategoryIcon(subcategory)}
-                              <span className="font-medium">{subcategory.displayName}</span>
-                            </Button>
-                          ))}
-                        </div>
                       )}
                     </div>
                   ))}
