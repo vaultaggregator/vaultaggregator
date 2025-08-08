@@ -8,9 +8,10 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   // Normalize confidence to 0-100 range
   const normalizedConfidence = Math.max(0, Math.min(100, confidence));
   
-  // Calculate the angle for the needle (180 degrees total semicircle, from -90 to +90)
-  // 0% confidence = -90° (left), 50% = 0° (top), 100% = +90° (right)
-  const angle = (normalizedConfidence / 100) * 180 - 90;
+  // Calculate the angle for the needle (180 degrees total semicircle)
+  // For half-moon: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)  
+  // We need to map 0-100% to 180° to 0° (reverse direction for proper left-to-right)
+  const angle = 180 - (normalizedConfidence / 100) * 180;
   
   // Color mappings based on confidence level
   const getConfidenceColor = (conf: number) => {
@@ -123,7 +124,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
         
         {/* Scale markers at key points */}
         {[0, 25, 50, 75, 100].map((value, index) => {
-          const markerAngle = (value / 100) * 180 - 90;
+          const markerAngle = 180 - (value / 100) * 180;
           const markerStartX = centerX + (radius - 8) * Math.cos((markerAngle * Math.PI) / 180);
           const markerStartY = centerY + (radius - 8) * Math.sin((markerAngle * Math.PI) / 180);
           const markerEndX = centerX + (radius + 5) * Math.cos((markerAngle * Math.PI) / 180);
@@ -148,7 +149,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
-          const labelAngle = (value / 100) * 180 - 90;
+          const labelAngle = 180 - (value / 100) * 180;
           const labelDistance = radius + 22;
           const labelX = centerX + labelDistance * Math.cos((labelAngle * Math.PI) / 180);
           const labelY = centerY + labelDistance * Math.sin((labelAngle * Math.PI) / 180);
