@@ -59,20 +59,20 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
   };
 
   return (
-    <section className="bg-card dark:bg-card shadow-sm py-6 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="space-y-6">
+    <section className="bg-card dark:bg-card shadow-sm py-3 sm:py-6 border-b border-border">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="space-y-3 sm:space-y-6">
           {/* Networks Section */}
           <div>
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               {/* Networks Label and Buttons */}
-              <div className="flex items-center space-x-4 flex-wrap">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div className="flex items-center space-x-2">
-                  <span className="text-lg">🌐</span>
+                  <span className="text-base sm:text-lg">🌐</span>
                   <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Networks:</h2>
                 </div>
                 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {/* All Networks Button */}
                   <Button
                     onClick={clearAllFilters}

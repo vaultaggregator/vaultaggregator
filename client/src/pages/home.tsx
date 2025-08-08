@@ -141,10 +141,10 @@ export default function Home() {
       <HeroSection />
       <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Table Header */}
-        <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0">
-          <div className="px-6 py-4 flex items-center bg-muted rounded-t-xl">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Table Header - Hidden on mobile */}
+        <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
+          <div className="px-4 sm:px-6 py-4 flex items-center bg-muted rounded-t-xl">
             <div className="flex items-center space-x-4 min-w-0 flex-1">
               <div className="w-12"></div> {/* Space for logo */}
               <div className="min-w-0 flex-1">
@@ -152,7 +152,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
+            <div className="flex items-center justify-between flex-1 max-w-4xl mx-2 sm:mx-8">
               <div className="w-20 text-center">
                 <SortHeader field="apy">24h APY</SortHeader>
               </div>
@@ -172,6 +172,30 @@ export default function Home() {
                 <span className="font-semibold text-foreground flex justify-center">Actions</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile Sort Options */}
+        <div className="sm:hidden bg-card rounded-t-xl shadow-sm border border-border border-b-0 p-4">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleSort('apy')}
+              className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full flex items-center gap-1"
+            >
+              APY {sortBy === 'apy' && (sortOrder === 'desc' ? '↓' : '↑')}
+            </button>
+            <button
+              onClick={() => handleSort('tvl')}
+              className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full flex items-center gap-1"
+            >
+              TVL {sortBy === 'tvl' && (sortOrder === 'desc' ? '↓' : '↑')}
+            </button>
+            <button
+              onClick={() => handleSort('risk')}
+              className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full flex items-center gap-1"
+            >
+              Risk {sortBy === 'risk' && (sortOrder === 'desc' ? '↓' : '↑')}
+            </button>
           </div>
         </div>
 
@@ -205,9 +229,9 @@ export default function Home() {
           </div>
         ) : (
           <>
-            <div className="bg-card border border-border border-t-0 rounded-b-xl overflow-hidden">
+            <div className="bg-card border border-border border-t-0 sm:rounded-b-xl rounded-b-lg overflow-hidden space-y-2 sm:space-y-0">
               {sortedPools.map((opportunity, index) => (
-                <div key={opportunity.id} className={`border-b border-border last:border-b-0 ${index === sortedPools.length - 1 ? 'rounded-b-xl' : ''}`}>
+                <div key={opportunity.id} className={`sm:border-b sm:border-border last:border-b-0 ${index === sortedPools.length - 1 ? 'sm:rounded-b-xl' : ''} rounded-lg sm:rounded-none mb-2 sm:mb-0 shadow-sm sm:shadow-none`}>
                   <YieldOpportunityCard 
                     opportunity={opportunity} 
                     showHeaders={false}
