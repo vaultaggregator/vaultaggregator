@@ -547,8 +547,8 @@ export default function PoolDetail() {
                           day: 'numeric' 
                         })}
                         formatter={(value: any, name: string) => [
-                          name === 'apy' ? `${Number(value).toFixed(2)}%` : formatTvl(value.toString()),
-                          name === 'apy' ? 'APY' : 'TVL'
+                          `${Number(value).toFixed(2)}%`,
+                          'APY'
                         ]}
                         contentStyle={{
                           backgroundColor: 'white',
