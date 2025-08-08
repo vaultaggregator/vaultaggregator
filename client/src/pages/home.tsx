@@ -153,19 +153,19 @@ export default function Home() {
             </div>
             
             <div className="flex items-center justify-between flex-1 max-w-4xl mx-2 sm:mx-8">
-              <div className="w-16 text-center">
+              <div className="w-14 text-center">
                 <SortHeader field="apy"><span className="text-sm font-medium">24h APY</span></SortHeader>
               </div>
-              <div className="w-16 text-center">
+              <div className="w-14 text-center">
                 <SortHeader field="apy30d"><span className="text-sm font-medium">30d APY</span></SortHeader>
               </div>
-              <div className="w-20 text-center">
+              <div className="w-16 text-center">
                 <SortHeader field="tvl"><span className="text-sm font-medium">TVL</span></SortHeader>
               </div>
-              <div className="w-20 text-center">
+              <div className="w-16 text-center">
                 <SortHeader field="operatingSince"><span className="text-sm font-medium">Since</span></SortHeader>
               </div>
-              <div className="w-14 text-center">
+              <div className="w-16 text-center">
                 <SortHeader field="risk"><span className="text-sm font-medium">Risk</span></SortHeader>
               </div>
             </div>
