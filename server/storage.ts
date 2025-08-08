@@ -321,7 +321,7 @@ export class DatabaseStorage implements IStorage {
         visibilityConditions.push(eq(pools.isVisible, false));
       }
       if (visibilityConditions.length > 0) {
-        conditions.push(or(...visibilityConditions));
+        conditions.push(or(...visibilityConditions)!);
       }
     }
 
@@ -332,7 +332,7 @@ export class DatabaseStorage implements IStorage {
         dataSourceConditions.push(sql`1=1`); // Always true since we only have DeFi Llama
       }
       if (dataSourceConditions.length > 0) {
-        conditions.push(or(...dataSourceConditions));
+        conditions.push(or(...dataSourceConditions)!);
       }
     }
 
@@ -407,10 +407,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined> {
-    const [updatedPool] = await db.update(pools).set({
-      ...pool,
-      lastUpdated: new Date(),
-    }).where(eq(pools.id, id)).returning();
+    const [updatedPool] = await db.update(pools).set(pool).where(eq(pools.id, id)).returning();
     return updatedPool || undefined;
   }
 
@@ -425,9 +422,8 @@ export class DatabaseStorage implements IStorage {
 
     if (existingPool) {
       // Update existing pool BUT preserve admin visibility settings
-      const updateData: Partial<InsertPool> = {
+      const updateData = {
         ...poolData,
-        lastUpdated: new Date(),
         // NEVER override admin visibility decisions
         isVisible: existingPool.isVisible,
       };
@@ -465,16 +461,6 @@ export class DatabaseStorage implements IStorage {
   async deleteNote(id: string): Promise<boolean> {
     const result = await db.delete(notes).where(eq(notes.id, id));
     return (result.rowCount || 0) > 0;
-  }
-
-  async updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined> {
-    const [updatedPlatform] = await db.update(platforms).set(platform).where(eq(platforms.id, id)).returning();
-    return updatedPlatform || undefined;
-  }
-
-  async updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined> {
-    const [updatedChain] = await db.update(chains).set(chain).where(eq(chains.id, id)).returning();
-    return updatedChain || undefined;
   }
 
   // Category operations
@@ -637,7 +623,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteApiKey(id: string): Promise<boolean> {
     const result = await db.delete(apiKeys).where(eq(apiKeys.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void> {
