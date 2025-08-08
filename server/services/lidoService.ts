@@ -2,8 +2,16 @@ import { storage } from "../storage";
 
 export interface LidoAPRResponse {
   data: {
+    aprs: Array<{
+      timeUnix: number;
+      apr: number;
+    }>;
     smaApr: number;
-    timeUnix: number;
+  };
+  meta: {
+    symbol: string;
+    address: string;
+    chainId: number;
   };
 }
 
@@ -15,31 +23,13 @@ export interface LastAPRResponse {
 }
 
 export interface WithdrawalTimeResponse {
+  requestInfo: {
+    finalizationIn: number;
+    finalizationAt: string;
+    type: string;
+  };
   status: string;
-  meta: {
-    claimableRequestsCount: number;
-    requestsCountInProgress: number;
-    avgTimeToFinalize: number;
-    finalizationFromTime: number;
-    finalizationToTime: number;
-  };
-  data: {
-    requestInfo: {
-      id: number;
-      requestedAt: number;
-      finalizedAt: number | null;
-      status: string;
-      amountOfStETH: string;
-      amountOfShares: string;
-    }[];
-    timeToFinalize: {
-      days: number;
-      hours: number;
-      minutes: number;
-      seconds: number;
-      type: string;
-    };
-  };
+  nextCalculationAt: string;
 }
 
 export interface LidoRewardHistoryResponse {
@@ -148,7 +138,7 @@ export class LidoService {
         smaApr: smaData.data.smaApr,
         lastApr: lastData.data.apr,
         tvl: tvlData ? `$${(tvlData / 1e9).toFixed(2)}B` : 'N/A',
-        withdrawalQueue: withdrawalData?.meta ? `${withdrawalData.meta.avgTimeToFinalize / 86400} days avg` : 'N/A'
+        withdrawalQueue: withdrawalData?.requestInfo ? `${withdrawalData.requestInfo.finalizationIn / 86400} days` : 'N/A'
       });
 
       // Create or update Lido platform
@@ -190,16 +180,18 @@ export class LidoService {
         lastApr: lastData.data.apr,
         smaTimestamp: smaData.data.timeUnix,
         lastTimestamp: lastData.data.timeUnix,
+        // Historical APR data (7-day trend)
+        historicalAprs: smaData.data.aprs,
         // TVL Data
         tvlUsd: tvlData,
         // Withdrawal Queue Data
         withdrawalQueue: withdrawalData ? {
-          avgTimeToFinalize: withdrawalData.meta.avgTimeToFinalize,
-          avgTimeToFinalizeDays: Math.round(withdrawalData.meta.avgTimeToFinalize / 86400 * 100) / 100,
-          claimableRequestsCount: withdrawalData.meta.claimableRequestsCount,
-          requestsCountInProgress: withdrawalData.meta.requestsCountInProgress,
-          finalizationFromTime: withdrawalData.meta.finalizationFromTime,
-          finalizationToTime: withdrawalData.meta.finalizationToTime
+          finalizationIn: withdrawalData.requestInfo.finalizationIn,
+          finalizationAt: withdrawalData.requestInfo.finalizationAt,
+          finalizationInDays: Math.round(withdrawalData.requestInfo.finalizationIn / 86400 * 100) / 100,
+          status: withdrawalData.status,
+          nextCalculationAt: withdrawalData.nextCalculationAt,
+          type: withdrawalData.requestInfo.type
         } : null,
         // Protocol Information
         protocol: {
