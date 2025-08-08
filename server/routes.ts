@@ -1200,7 +1200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Platform routes
   app.get("/api/platforms", async (req, res) => {
     try {
-      const platforms = await storage.getActivePlatforms();
+      const platforms = await storage.getPlatformsWithVisibility();
       res.json(platforms);
     } catch (error) {
       console.error("Error fetching platforms:", error);

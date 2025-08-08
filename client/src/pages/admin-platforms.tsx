@@ -23,6 +23,7 @@ interface Platform {
   showUnderlyingTokens?: boolean;
   isActive: boolean;
   createdAt: string;
+  hasVisiblePools?: boolean;
 }
 
 export default function AdminPlatforms() {
@@ -236,17 +237,73 @@ export default function AdminPlatforms() {
             );
           }
 
+          // Group platforms by visibility
+          const platformsWithVisible = filteredPlatforms.filter(p => p.hasVisiblePools);
+          const platformsWithoutVisible = filteredPlatforms.filter(p => !p.hasVisiblePools);
+
           return (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {searchQuery && (
                 <p className="text-sm text-gray-600" data-testid="text-search-results">
                   Showing {filteredPlatforms.length} platform{filteredPlatforms.length === 1 ? '' : 's'} 
                   {searchQuery && ` matching "${searchQuery}"`}
                 </p>
               )}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredPlatforms.map((platform) => (
-              <Card key={platform.id} className="hover:shadow-lg transition-shadow">
+              
+              {!searchQuery && (
+                <div className="text-sm text-gray-600 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p>
+                    <strong>Platform Ordering:</strong> Platforms with visible pools are shown first, 
+                    followed by platforms without visible pools. This helps you identify which platforms 
+                    are actively being used in your visible pool collection.
+                  </p>
+                </div>
+              )}
+
+              {/* Show all platforms in one grid when searching */}
+              {searchQuery ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {filteredPlatforms.map((platform) => (
+                    <PlatformCard key={platform.id} platform={platform} />
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {/* Platforms with visible pools */}
+                  {platformsWithVisible.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Platforms with Visible Pools ({platformsWithVisible.length})
+                      </h3>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {platformsWithVisible.map((platform) => (
+                          <PlatformCard key={platform.id} platform={platform} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Platforms without visible pools */}
+                  {platformsWithoutVisible.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Other Platforms ({platformsWithoutVisible.length})
+                      </h3>
+                      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {platformsWithoutVisible.map((platform) => (
+                          <PlatformCard key={platform.id} platform={platform} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+
+        // Platform Card Component
+        const PlatformCard = ({ platform }: { platform: Platform }) => (
+          <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -269,9 +326,16 @@ export default function AdminPlatforms() {
                         <p className="text-sm text-gray-500">{platform.name}</p>
                       </div>
                     </div>
-                    <Badge variant={platform.isActive ? "default" : "secondary"}>
-                      {platform.isActive ? "Active" : "Inactive"}
-                    </Badge>
+                    <div className="flex gap-2">
+                      {platform.hasVisiblePools && (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          Has Visible Pools
+                        </Badge>
+                      )}
+                      <Badge variant={platform.isActive ? "default" : "secondary"}>
+                        {platform.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -410,10 +474,8 @@ export default function AdminPlatforms() {
                   )}
                 </CardContent>
               </Card>
-                ))}
-              </div>
-            </div>
-          );
+        );
+
         })()}
       </div>
     </div>

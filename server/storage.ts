@@ -34,6 +34,7 @@ export interface IStorage {
   // Platform methods
   getPlatforms(): Promise<Platform[]>;
   getActivePlatforms(): Promise<Platform[]>;
+  getPlatformsWithVisibility(): Promise<(Platform & { hasVisiblePools: boolean })[]>;
   getPlatformByName(name: string): Promise<Platform | undefined>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
   updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined>;
@@ -213,6 +214,39 @@ export class DatabaseStorage implements IStorage {
 
   async getActivePlatforms(): Promise<Platform[]> {
     return await db.select().from(platforms).where(eq(platforms.isActive, true)).orderBy(platforms.displayName);
+  }
+
+  async getPlatformsWithVisibility(): Promise<(Platform & { hasVisiblePools: boolean })[]> {
+    const result = await db
+      .select({
+        id: platforms.id,
+        name: platforms.name,
+        displayName: platforms.displayName,
+        slug: platforms.slug,
+        logoUrl: platforms.logoUrl,
+        website: platforms.website,
+        visitUrlTemplate: platforms.visitUrlTemplate,
+        showUnderlyingTokens: platforms.showUnderlyingTokens,
+        isActive: platforms.isActive,
+        createdAt: platforms.createdAt,
+        hasVisiblePools: sql`CASE WHEN COUNT(${pools.id}) > 0 THEN true ELSE false END`.as('hasVisiblePools')
+      })
+      .from(platforms)
+      .leftJoin(pools, and(
+        eq(platforms.id, pools.platformId),
+        eq(pools.isVisible, true)
+      ))
+      .where(eq(platforms.isActive, true))
+      .groupBy(platforms.id)
+      .orderBy(
+        sql`CASE WHEN COUNT(${pools.id}) > 0 THEN 0 ELSE 1 END`, // Platforms with visible pools first
+        platforms.displayName
+      );
+
+    return result.map(platform => ({
+      ...platform,
+      hasVisiblePools: platform.hasVisiblePools as boolean
+    }));
   }
 
   async getPlatformByName(name: string): Promise<Platform | undefined> {
