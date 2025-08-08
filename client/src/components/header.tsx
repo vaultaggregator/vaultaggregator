@@ -50,27 +50,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
             >
               Chains
             </Link>
-            <Link 
-              href="/api" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-api"
-            >
-              API
-            </Link>
-            <Link 
-              href="/documentation" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-documentation"
-            >
-              Docs
-            </Link>
-            <Link 
-              href="/help-center" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-help"
-            >
-              Help
-            </Link>
+
             <Link 
               href="/market-intelligence" 
               className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
@@ -142,13 +122,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               </div>
             </div>
 
-            <Link 
-              href="/contact" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-contact"
-            >
-              Contact
-            </Link>
+
           </nav>
 
           {/* Actions */}
@@ -194,30 +168,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               >
                 Chains
               </Link>
-              <Link 
-                href="/api" 
-                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-api"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                API
-              </Link>
-              <Link 
-                href="/documentation" 
-                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-documentation"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Documentation
-              </Link>
-              <Link 
-                href="/help-center" 
-                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-help"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Help Center
-              </Link>
+
               <Link 
                 href="/investment-advisor" 
                 className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
@@ -278,14 +229,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               >
                 API Marketplace
               </Link>
-              <Link 
-                href="/contact" 
-                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-contact"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
+
             </nav>
           </div>
         )}
