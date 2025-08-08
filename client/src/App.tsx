@@ -38,6 +38,7 @@ import FloatingChat from "@/components/floating-chat";
 import AIPortfolioOptimizer from "@/pages/ai-portfolio-optimizer";
 import AIYieldPredictor from "@/pages/ai-yield-predictor";
 import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
+import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
 
 
 function Router() {

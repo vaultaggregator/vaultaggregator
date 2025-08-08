@@ -19,6 +19,8 @@ interface Message {
     tvl: string;
     platform: string;
   }>;
+  suggestions?: string[];
+  links?: string[];
 }
 
 interface CompanionResponse {
@@ -33,6 +35,8 @@ interface CompanionResponse {
     reason: string;
   }>;
   marketTip?: string;
+  suggestions?: string[];
+  links?: string[];
 }
 
 export function CryptoCompanion() {
@@ -104,6 +108,8 @@ export function CryptoCompanion() {
         content: data.message,
         timestamp: new Date(),
         pools: data.recommendedPools,
+        suggestions: data.suggestions,
+        links: data.links,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -211,6 +217,44 @@ export function CryptoCompanion() {
                               {pool.platform} • TVL: {pool.tvl}
                             </div>
                           </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {message.suggestions && message.suggestions.length > 0 && (
+                      <div className="mt-3 space-y-2">
+                        <p className="text-xs font-medium opacity-75">
+                          Try asking:
+                        </p>
+                        {message.suggestions.map((suggestion, index) => (
+                          <Button
+                            key={index}
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs h-auto p-2 bg-background/10 hover:bg-background/20 justify-start w-full"
+                            onClick={() => setInput(suggestion)}
+                            data-testid={`suggestion-${index}`}
+                          >
+                            {suggestion}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
+
+                    {message.links && message.links.length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        <p className="text-xs font-medium opacity-75">
+                          Related pages:
+                        </p>
+                        {message.links.map((link, index) => (
+                          <a
+                            key={index}
+                            href={link}
+                            className="block text-xs text-blue-400 hover:text-blue-300 underline"
+                            data-testid={`link-${index}`}
+                          >
+                            {link}
+                          </a>
                         ))}
                       </div>
                     )}

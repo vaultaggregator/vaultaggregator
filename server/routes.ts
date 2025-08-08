@@ -1541,6 +1541,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Message is required" });
       }
 
+      // Initialize knowledge base
+      const { KnowledgeBase } = await import("./services/knowledge-base");
+      const knowledgeBase = new KnowledgeBase(storage);
+
       // Get current pools data for context
       const pools = await storage.getPools({ 
         limit: 50, 
@@ -1581,13 +1585,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Intelligent response based on keywords
-      let response: any = {
-        message: "I'm your DeFi companion! 🤖 I can help you find yield opportunities, analyze market trends, and provide investment insights.",
-        insights: [],
-        recommendedPools: [],
-        marketTip: "Always research protocols before investing and never invest more than you can afford to lose!"
-      };
+      // First, check knowledge base for specific site questions
+      const knowledgeResult = knowledgeBase.findAnswer(message, { 
+        ...context, 
+        marketContext,
+        timestamp: new Date().toISOString() 
+      });
+
+      if (knowledgeResult && knowledgeResult.confidence > 0.7) {
+        return res.json({
+          message: knowledgeResult.answer,
+          insights: knowledgeResult.urls.length > 0 ? [`Found ${knowledgeResult.urls.length} relevant page(s)`] : [],
+          links: knowledgeResult.urls,
+          confidence: knowledgeResult.confidence,
+          source: "knowledge_base"
+        });
+      }
+
+      // If not found in knowledge base, use intelligent response based on keywords
+      let response: any;
 
       const lowerMessage = message.toLowerCase();
 
@@ -1682,23 +1698,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           marketTip: "Market trends can change quickly in DeFi - always monitor your positions and stay informed!"
         };
       } else {
-        // Default friendly response
+        // If no specific pattern matches and knowledge base didn't help, record as unknown query
+        const queryId = knowledgeBase.recordUnknownQuery(message, {
+          ...context,
+          marketContext: {
+            totalPools: marketContext.totalPools,
+            avgApy: marketContext.avgApy.toFixed(2)
+          },
+          timestamp: new Date().toISOString()
+        });
+
         response = {
-          message: `Hey there! 👋 I'm here to help you navigate the DeFi yield farming space. Currently tracking ${marketContext.totalPools} active pools with an average APY of ${marketContext.avgApy.toFixed(2)}%. Ask me about high yields, low-risk options, stablecoins, or market trends!`,
+          message: "I don't have specific information about that topic. I can help you with yield farming opportunities, market analysis, risk assessment, and platform features. You can also try asking about our AI tools, supported networks, or how to use specific features.",
           insights: [
-            `${marketContext.totalPools} active pools monitored`,
-            `Average yield: ${marketContext.avgApy.toFixed(2)}%`,
-            "Real-time data from DeFi Llama"
+            "I specialize in DeFi and yield farming topics",
+            "Try asking about pools, risks, or platform features", 
+            "Your question has been noted for improvement"
           ],
-          recommendedPools: marketContext.topPools.slice(0, 3).map((pool: any) => ({
-            id: crypto.randomUUID(),
-            tokenPair: pool.tokenPair,
-            apy: pool.apy,
-            tvl: formatTvl(pool.tvl || "0"),
-            platform: pool.platform,
-            reason: "Top yield opportunity"
-          })),
-          marketTip: "Start with smaller amounts to test strategies before committing larger capital!"
+          suggestions: [
+            "What AI tools are available?",
+            "Show me high-yield opportunities",
+            "How do I access the admin panel?",
+            "What blockchain networks are supported?"
+          ],
+          queryId,
+          source: "fallback"
         };
       }
 
@@ -1707,8 +1731,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Companion chat error:", error);
       res.status(500).json({ 
-        error: "My circuits are a bit fried right now. Try again in a moment!" 
+        error: "I'm experiencing technical difficulties. Please try again in a moment." 
       });
+    }
+  });
+
+  // Knowledge base admin endpoints
+  app.get("/api/admin/knowledge-stats", requireAuth, async (req, res) => {
+    try {
+      const { KnowledgeBase } = await import("./services/knowledge-base");
+      const knowledgeBase = new KnowledgeBase(storage);
+      
+      const stats = knowledgeBase.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Knowledge stats error:", error);
+      res.status(500).json({ error: "Failed to fetch knowledge base stats" });
+    }
+  });
+
+  app.get("/api/admin/unknown-queries", requireAuth, async (req, res) => {
+    try {
+      const { KnowledgeBase } = await import("./services/knowledge-base");
+      const knowledgeBase = new KnowledgeBase(storage);
+      
+      const unknownQueries = knowledgeBase.getUnknownQueries();
+      res.json(unknownQueries);
+    } catch (error) {
+      console.error("Unknown queries error:", error);
+      res.status(500).json({ error: "Failed to fetch unknown queries" });
+    }
+  });
+
+  app.post("/api/admin/resolve-query/:queryId", requireAuth, async (req, res) => {
+    try {
+      const { queryId } = req.params;
+      const { adminAnswer } = req.body;
+      
+      const { KnowledgeBase } = await import("./services/knowledge-base");
+      const knowledgeBase = new KnowledgeBase(storage);
+      
+      knowledgeBase.markQueryAsResolved(queryId, adminAnswer);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Resolve query error:", error);
+      res.status(500).json({ error: "Failed to resolve query" });
     }
   });
 
