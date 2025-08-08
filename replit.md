@@ -40,6 +40,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Test-Driven Development Approach**: Implemented policy to test all functionality after implementation and fix any issues immediately before considering tasks complete
 - **Removed External APIs**: Removed CoinGecko and Moralis API integrations to simplify platform architecture and reduce dependency on external services per user request
 - **Authentic Protocol Logos**: Successfully implemented working authentic logos for Lido (Trust Wallet assets) and Morpho (DeFi Llama protocol icons) replacing non-functional brand asset URLs with reliable sources that display the official protocol branding
+- **Category Navigation Finalized**: Implemented horizontal category layout with dropdown menus - Categories display as "📂 Categories: [📂 All] [ETH ▼] [Stables ▼]" with subcategories accessible via dropdown clicks, featuring authentic USDC (Circle/Wikimedia) and stETH (Lido/Coinando) logos in proper parent-child hierarchy
 
 # User Preferences
 
@@ -49,6 +50,11 @@ Preferred communication style: Simple, everyday language.
 - Always test functionality after implementation to verify it works correctly
 - If something doesn't work during testing, fix it immediately before moving on
 - No task is complete until it's been tested and confirmed working
+
+**UI/UX Preferences:**
+- Category navigation: Horizontal layout with dropdown menus (established design - do not change without explicit request)
+- Subcategories appear in dropdown menus when clicking parent categories with down arrows
+- Maintain authentic token logos for USDC and stETH in category hierarchy
 
 **Data Integrity Requirements:**
 - Never use fake, mock, or placeholder data for yield information (APY, TVL, operating days)
