@@ -11,8 +11,8 @@ export function registerAIRoutes(app: Express) {
 
       // Get current pools data
       const { storage } = await import('../storage');
-      const pools = await storage.getAllPools();
-      const activePools = pools.filter(pool => pool.isActive);
+      const pools = await storage.getPools({ limit: 50, onlyVisible: true });
+      const activePools = pools.filter((pool: any) => pool.isActive !== false);
 
       // Create AI prompt for portfolio optimization
       const prompt = `As a DeFi portfolio optimization AI, analyze the following yield opportunities and create an optimal portfolio allocation:
@@ -26,7 +26,7 @@ Investment Parameters:
 - Avoid High Risk: ${avoidHighRisk}
 
 Available Yield Opportunities:
-${activePools.slice(0, 20).map(pool => `
+${activePools.slice(0, 20).map((pool: any) => `
 - ${pool.tokenPair} on ${pool.platform?.displayName || 'Unknown'} (${pool.chain?.displayName || 'Unknown'})
   APY: ${pool.apy || 'N/A'}%, TVL: ${pool.tvl || 'N/A'}, Risk: ${pool.riskLevel || 'unknown'}
   Pool ID: ${pool.id}
@@ -99,7 +99,7 @@ Current Pool Data:
 - Current APY: ${pool.apy || 'N/A'}%
 - TVL: ${pool.tvl || 'N/A'}
 - Risk Level: ${pool.riskLevel || 'unknown'}
-- Operating Days: ${pool.rawData?.count || 'unknown'}
+- Operating Days: ${(pool.rawData as any)?.count || 'unknown'}
 
 Prediction Period: ${periodDays} days
 
@@ -194,7 +194,7 @@ Pool Data:
 - APY: ${pool.apy || 'N/A'}%
 - TVL: ${pool.tvl || 'N/A'}
 - Risk Level: ${pool.riskLevel || 'unknown'}
-- Operating Days: ${pool.rawData?.count || 'unknown'}
+- Operating Days: ${(pool.rawData as any)?.count || 'unknown'}
 
 Analyze the following risk categories:
 1. Smart Contract Risk - Protocol audit status, code complexity, exploit history
