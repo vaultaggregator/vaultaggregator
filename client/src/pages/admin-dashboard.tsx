@@ -1269,17 +1269,25 @@ export default function AdminDashboard() {
                             
                             {(() => {
                               const getExternalLink = () => {
-                                // Check the pool.project field first, then fall back to rawData.project
-                                const project = pool.project || (pool.rawData as any)?.project || 'defillama';
+                                // Check if this is a Morpho pool by platform name
+                                const isMorpho = pool.platform?.displayName?.toLowerCase().includes('morpho') || 
+                                               pool.platform?.name?.toLowerCase().includes('morpho');
                                 
-                                switch (project.toLowerCase()) {
-                                  // Removed Lido and Morpho cases since we only use DeFi Llama now
-                                  default:
-                                    return pool.defiLlamaId ? {
-                                      url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,
-                                      label: 'Visit DeFiLlama'
-                                    } : null;
+                                if (isMorpho && pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0) {
+                                  // Use the first underlying token for Morpho vault URL
+                                  const underlyingToken = pool.rawData.underlyingTokens[0];
+                                  const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
+                                  return {
+                                    url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
+                                    label: 'Visit Morpho Platform'
+                                  };
                                 }
+                                
+                                // Default to DeFi Llama for all other pools
+                                return pool.defiLlamaId ? {
+                                  url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,
+                                  label: 'Visit DeFiLlama'
+                                } : null;
                               };
 
                               const linkData = getExternalLink();
