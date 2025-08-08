@@ -1,8 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
@@ -17,7 +14,6 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
-import { useAuth } from "@/hooks/useAuth";
 
 // Utility function to format TVL values
 function formatTvl(value: string): string {
@@ -133,121 +129,26 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
   );
 }
 
-// Additional Info Component with Admin Edit Capability
+// Additional Info Component - Read-only, editable only from admin panel
 function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }) {
-  const { user } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [newNote, setNewNote] = useState("");
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const addNoteMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const response = await fetch(`/api/pools/${poolId}/notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ content, isPublic: true }),
-      });
-      if (!response.ok) throw new Error("Failed to add note");
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: "Success", description: "Note added successfully" });
-      setNewNote("");
-      setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: [`/api/pools/${poolId}`] });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to add note", variant: "destructive" });
-    },
-  });
-
-  const deleteNoteMutation = useMutation({
-    mutationFn: async (noteId: string) => {
-      const response = await fetch(`/api/pools/${poolId}/notes/${noteId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to delete note");
-    },
-    onSuccess: () => {
-      toast({ title: "Success", description: "Note deleted successfully" });
-      queryClient.invalidateQueries({ queryKey: [`/api/pools/${poolId}`] });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to delete note", variant: "destructive" });
-    },
-  });
-
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader>
         <CardTitle>Additional Information</CardTitle>
-        {user && (
-          <Button
-            onClick={() => setIsEditing(!isEditing)}
-            variant="outline"
-            size="sm"
-          >
-            {isEditing ? "Cancel" : "Edit"}
-          </Button>
-        )}
       </CardHeader>
       <CardContent>
         {notes && notes.length > 0 ? (
           <div className="space-y-4">
             {notes.map((note: any, index: number) => (
-              <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 relative group">
+              <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <p className="text-gray-700 dark:text-gray-300" data-testid={`text-note-${index}`}>
                   💡 {note.content}
                 </p>
-                {user && note.id && (
-                  <Button
-                    onClick={() => deleteNoteMutation.mutate(note.id)}
-                    variant="ghost"
-                    size="sm"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ×
-                  </Button>
-                )}
               </div>
             ))}
           </div>
         ) : (
           <p className="text-gray-500 dark:text-gray-400 italic">No additional notes available for this pool.</p>
-        )}
-
-        {isEditing && (
-          <div className="mt-4 space-y-3">
-            <textarea
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              placeholder="Add additional information about this pool..."
-              className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
-              rows={3}
-            />
-            <div className="flex gap-2">
-              <Button
-                onClick={() => addNoteMutation.mutate(newNote)}
-                disabled={!newNote.trim() || addNoteMutation.isPending}
-                size="sm"
-              >
-                {addNoteMutation.isPending ? "Adding..." : "Add Note"}
-              </Button>
-              <Button
-                onClick={() => {
-                  setIsEditing(false);
-                  setNewNote("");
-                }}
-                variant="outline"
-                size="sm"
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
         )}
       </CardContent>
     </Card>
