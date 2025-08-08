@@ -27,6 +27,7 @@ interface Platform {
 
 export default function AdminPlatforms() {
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
@@ -186,13 +187,65 @@ export default function AdminPlatforms() {
           </p>
         </div>
 
+        {/* Search Box */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Input
+              type="text"
+              placeholder="Search platforms..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+              data-testid="input-search-platforms"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="text-center py-8">
             <p>Loading platforms...</p>
           </div>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {platforms.map((platform) => (
+        ) : (() => {
+          const filteredPlatforms = platforms.filter((platform) => {
+            const query = searchQuery.toLowerCase();
+            return (
+              platform.name.toLowerCase().includes(query) ||
+              platform.displayName.toLowerCase().includes(query) ||
+              (platform.website && platform.website.toLowerCase().includes(query))
+            );
+          });
+
+          if (filteredPlatforms.length === 0 && searchQuery) {
+            return (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No platforms found matching "{searchQuery}"</p>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSearchQuery("")}
+                  className="mt-2"
+                  data-testid="button-clear-search"
+                >
+                  Clear search
+                </Button>
+              </div>
+            );
+          }
+
+          return (
+            <div className="space-y-4">
+              {searchQuery && (
+                <p className="text-sm text-gray-600" data-testid="text-search-results">
+                  Showing {filteredPlatforms.length} platform{filteredPlatforms.length === 1 ? '' : 's'} 
+                  {searchQuery && ` matching "${searchQuery}"`}
+                </p>
+              )}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {filteredPlatforms.map((platform) => (
               <Card key={platform.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -357,9 +410,11 @@ export default function AdminPlatforms() {
                   )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
+                ))}
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
