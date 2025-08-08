@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Chain, FilterOptions, Category } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
+import { getCategoryIcon } from "@/components/category-icons";
 
 interface NetworkSelectorProps {
   filters: FilterOptions;
@@ -48,6 +49,12 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
   const renderChainIcon = (chain: Chain) => {
     const ChainIcon = getChainIcon(chain.name);
     return <ChainIcon size={16} className="flex-shrink-0" />;
+  };
+
+  // Render category icon component
+  const renderCategoryIcon = (category: Category) => {
+    const CategoryIcon = getCategoryIcon(category.name);
+    return <CategoryIcon size={16} className="flex-shrink-0" />;
   };
 
   return (
@@ -140,20 +147,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                       `}
                       data-testid={`button-category-${category.slug}`}
                     >
-                      {category.iconUrl ? (
-                        <img
-                          src={category.iconUrl}
-                          alt={category.displayName}
-                          className="w-4 h-4 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div 
-                          className="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white font-medium" 
-                          style={{ backgroundColor: category.color }}
-                        >
-                          {category.displayName.charAt(0)}
-                        </div>
-                      )}
+                      {renderCategoryIcon(category)}
                       <span className="font-medium">{category.displayName}</span>
                       {category.poolCount > 0 && (
                         <Badge variant="secondary" className="text-xs ml-1">
