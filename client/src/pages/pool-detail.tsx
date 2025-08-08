@@ -655,19 +655,20 @@ export default function PoolDetail() {
                 </Badge>
               </div>
 
-              {(pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0) && (
+              {(pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0 && pool.platform.showUnderlyingTokens) && (
                 <>
                   <Separator />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Underlying Tokens</h4>
                     <div className="space-y-2">
-                      {pool.rawData.underlyingTokens.map((token: string, index: number) => (
-                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                          <p className="font-mono text-sm break-all text-gray-700 dark:text-gray-300">
-                            {token}
-                          </p>
-                        </div>
-                      ))}
+                      <TokenDisplay 
+                        addresses={pool.rawData.underlyingTokens}
+                        maxDisplay={5}
+                        showNormalizeButton={true}
+                        size="md"
+                        variant="outline"
+                        className="space-y-2"
+                      />
                     </div>
                   </div>
                 </>

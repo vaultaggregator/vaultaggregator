@@ -5,6 +5,7 @@ export interface YieldOpportunity {
     name: string;
     displayName: string;
     logoUrl?: string;
+    showUnderlyingTokens?: boolean;
   };
   chain: {
     id: string;

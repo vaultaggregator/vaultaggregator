@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
@@ -18,6 +19,7 @@ interface Platform {
   logoUrl?: string;
   website?: string;
   visitUrlTemplate?: string;
+  showUnderlyingTokens?: boolean;
   isActive: boolean;
   createdAt: string;
 }
@@ -29,6 +31,7 @@ export default function AdminPlatforms() {
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editWebsite, setEditWebsite] = useState("");
   const [editUrlTemplate, setEditUrlTemplate] = useState("");
+  const [editShowUnderlyingTokens, setEditShowUnderlyingTokens] = useState(false);
 
   const { data: platforms = [], isLoading, refetch } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
@@ -118,6 +121,7 @@ export default function AdminPlatforms() {
     setEditDisplayName(platform.displayName);
     setEditWebsite(platform.website || "");
     setEditUrlTemplate(platform.visitUrlTemplate || "");
+    setEditShowUnderlyingTokens(platform.showUnderlyingTokens || false);
   };
 
   const cancelEditing = () => {
@@ -126,6 +130,7 @@ export default function AdminPlatforms() {
     setEditDisplayName("");
     setEditWebsite("");
     setEditUrlTemplate("");
+    setEditShowUnderlyingTokens(false);
   };
 
   const savePlatform = () => {
@@ -138,6 +143,7 @@ export default function AdminPlatforms() {
         displayName: editDisplayName,
         website: editWebsite || undefined,
         visitUrlTemplate: editUrlTemplate || undefined,
+        showUnderlyingTokens: editShowUnderlyingTokens,
       },
     });
   };
@@ -248,6 +254,20 @@ export default function AdminPlatforms() {
                           <p className="mt-1 font-medium">Example:</p>
                           <code className="text-xs">https://app.morpho.org/{`{chainName}`}/vault/{`{underlyingToken}`}</code>
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`show-tokens-${platform.id}`}
+                            checked={editShowUnderlyingTokens}
+                            onCheckedChange={setEditShowUnderlyingTokens}
+                            data-testid={`checkbox-show-tokens-${platform.id}`}
+                          />
+                          <label 
+                            htmlFor={`show-tokens-${platform.id}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Show underlying tokens on pool detail page
+                          </label>
+                        </div>
                       </div>
                       <div className="flex space-x-2">
                         <Button 
@@ -292,6 +312,16 @@ export default function AdminPlatforms() {
                             </code>
                           </p>
                         )}
+                        <p className="text-sm text-gray-600">
+                          Show Underlying Tokens: 
+                          <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
+                            platform.showUnderlyingTokens 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {platform.showUnderlyingTokens ? 'Yes' : 'No'}
+                          </span>
+                        </p>
                         <p className="text-sm text-gray-500 mt-1">
                           Created: {new Date(platform.createdAt).toLocaleDateString()}
                         </p>

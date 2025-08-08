@@ -61,6 +61,7 @@ export const platforms = pgTable("platforms", {
   logoUrl: text("logo_url"),
   website: text("website"),
   visitUrlTemplate: text("visit_url_template"), // Custom URL template with variables
+  showUnderlyingTokens: boolean("show_underlying_tokens").default(false), // Display underlying tokens on pool detail page
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
