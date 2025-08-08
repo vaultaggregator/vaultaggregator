@@ -44,6 +44,7 @@ import MarketIntelligence from "@/pages/market-intelligence";
 import AdvancedSearch from "@/pages/advanced-search";
 import YieldForecasting from "@/pages/yield-forecasting";
 import RiskCalculator from "@/pages/risk-calculator";
+import EtherscanDashboard from "@/pages/etherscan-dashboard";
 
 
 function Router() {
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/advanced-search" component={AdvancedSearch} />
       <Route path="/yield-forecasting" component={YieldForecasting} />
       <Route path="/risk-calculator" component={RiskCalculator} />
+      <Route path="/etherscan" component={EtherscanDashboard} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
