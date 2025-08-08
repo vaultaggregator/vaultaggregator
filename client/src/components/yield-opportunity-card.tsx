@@ -73,7 +73,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <img 
                       src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
                       alt="USDC"
-                      className="w-5 h-5 flex-shrink-0 rounded-full"
+                      className="w-6 h-6 flex-shrink-0 rounded-full"
                       data-testid={`logo-usdc-${opportunity.id}`}
                     />
                   );
@@ -82,7 +82,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <img 
                       src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
                       alt="stETH"
-                      className="w-5 h-5 flex-shrink-0 rounded-full"
+                      className="w-6 h-6 flex-shrink-0 rounded-full"
                       data-testid={`logo-steth-${opportunity.id}`}
                     />
                   );
@@ -90,7 +90,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 
                 // Fall back to SVG icons for other categories
                 const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                return <CategoryIcon size={20} className="flex-shrink-0" />;
+                return <CategoryIcon size={24} className="flex-shrink-0" />;
               })()}
             </div>
             
@@ -126,7 +126,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   >
                     {(() => {
                       const ChainIcon = getChainIcon(opportunity.chain.name);
-                      return <ChainIcon size={20} className="flex-shrink-0" />;
+                      return <ChainIcon size={24} className="flex-shrink-0" />;
                     })()}
                   </div>
                 )}
