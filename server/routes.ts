@@ -1884,6 +1884,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { startScheduler } = await import('./services/scheduler');
   startScheduler();
 
+  // Logo Management Routes
+  app.post("/api/admin/logos/update-all", requireAuth, async (req, res) => {
+    try {
+      console.log('Admin initiated bulk logo update');
+      const { logoUpdaterService } = await import("./services/logo-updater");
+      const result = await logoUpdaterService.updateAllPlatformLogos();
+      
+      res.json({
+        message: `Logo update completed. ${result.success}/${result.total} successful.`,
+        ...result
+      });
+    } catch (error) {
+      console.error('Error updating all platform logos:', error);
+      res.status(500).json({
+        message: 'Failed to update platform logos',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post("/api/admin/logos/update/:platformName", requireAuth, async (req, res) => {
+    try {
+      const { platformName } = req.params;
+      const { logoUpdaterService } = await import("./services/logo-updater");
+      
+      if (!logoUpdaterService.hasPlatformConfig(platformName)) {
+        return res.status(404).json({
+          message: `No official logo source configured for platform: ${platformName}`,
+          configuredPlatforms: logoUpdaterService.getConfiguredPlatforms()
+        });
+      }
+
+      console.log(`Admin initiated logo update for: ${platformName}`);
+      const success = await logoUpdaterService.updatePlatformLogo(platformName);
+      
+      if (success) {
+        res.json({
+          message: `Successfully updated logo for ${platformName}`,
+          platform: platformName
+        });
+      } else {
+        res.status(500).json({
+          message: `Failed to update logo for ${platformName}`,
+          platform: platformName
+        });
+      }
+    } catch (error) {
+      console.error(`Error updating logo for ${req.params.platformName}:`, error);
+      res.status(500).json({
+        message: 'Failed to update platform logo',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/admin/logos/configured-platforms", requireAuth, async (req, res) => {
+    try {
+      const { logoUpdaterService } = await import("./services/logo-updater");
+      const platforms = logoUpdaterService.getConfiguredPlatforms();
+      
+      res.json({
+        platforms,
+        total: platforms.length,
+        message: 'Platforms with official logo sources configured'
+      });
+    } catch (error) {
+      console.error('Error fetching configured platforms:', error);
+      res.status(500).json({
+        message: 'Failed to fetch configured platforms',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
