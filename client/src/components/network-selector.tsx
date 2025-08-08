@@ -147,7 +147,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                     data-testid="button-category-all"
                   >
                     <span className="text-lg">📂</span>
-                    <span className="font-medium">All Categories</span>
+                    <span className="font-medium">All</span>
                   </Button>
 
                   {categories.filter(cat => cat.isActive).map((category) => (
