@@ -36,12 +36,12 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
     onFilterChange({});
   };
 
-  const handleCategoryClick = (categoryId: string) => {
-    // Toggle category selection - if already selected, deselect it
+  const handleCategoryClick = (categoryId: string | null) => {
+    // Toggle category selection - if already selected, deselect it, or if null, clear selection
     const isCurrentlySelected = filters.categoryId === categoryId;
     onFilterChange({ 
       ...filters, 
-      categoryId: isCurrentlySelected ? undefined : categoryId 
+      categoryId: (isCurrentlySelected || categoryId === null) ? undefined : categoryId 
     });
   };
 
@@ -132,6 +132,24 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
+                  {/* All Categories Button */}
+                  <Button
+                    onClick={() => handleCategoryClick(null)}
+                    variant={!filters.categoryId ? "default" : "outline"}
+                    size="sm"
+                    className={`
+                      flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-200
+                      ${!filters.categoryId 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
+                        : 'bg-card dark:bg-card text-foreground border-2 border-border hover:border-blue-300 hover:text-blue-600'
+                      }
+                    `}
+                    data-testid="button-category-all"
+                  >
+                    <span className="text-lg">📂</span>
+                    <span className="font-medium">All Categories</span>
+                  </Button>
+
                   {categories.filter(cat => cat.isActive).map((category) => (
                     <Button
                       key={category.id}
