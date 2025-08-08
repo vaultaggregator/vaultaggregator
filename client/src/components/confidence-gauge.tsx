@@ -33,13 +33,13 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
 
   const confidenceColor = getConfidenceColor(normalizedConfidence);
   
-  // SVG dimensions and positioning for proper semicircle
+  // SVG dimensions and positioning for half-moon semicircle
   const svgSize = size;
-  const svgHeight = size * 0.65; // Taller to accommodate full semicircle
-  const radius = size * 0.32;
+  const svgHeight = size * 0.55; // Adjusted for half-circle height
+  const radius = size * 0.35;
   const centerX = svgSize / 2;
-  const centerY = svgHeight * 0.85; // Position circle lower to show full arc
-  const needleLength = radius * 0.75;
+  const centerY = svgHeight; // Position at bottom edge for half-moon effect
+  const needleLength = radius * 0.8;
 
   // Calculate needle end position
   const needleEndX = centerX + needleLength * Math.cos((angle * Math.PI) / 180);
@@ -63,21 +63,21 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           </linearGradient>
         </defs>
         
-        {/* Background arc - full semicircle */}
+        {/* Background arc - half-moon semicircle */}
         <path
           d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="#e5e7eb"
-          strokeWidth="10"
+          strokeWidth="12"
           strokeLinecap="round"
         />
         
-        {/* Colored gradient arc - full semicircle */}
+        {/* Colored gradient arc - half-moon semicircle */}
         <path
           d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="url(#gaugeGradient)"
-          strokeWidth="10"
+          strokeWidth="12"
           strokeLinecap="round"
           opacity="0.9"
         />
@@ -142,15 +142,15 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           );
         })}
         
-        {/* Scale labels positioned correctly for 0-100 range */}
+        {/* Scale labels for half-moon gauge */}
         {[
           { value: 0, label: "0" },
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = (value / 100) * 180 - 90;
-          const labelX = centerX + (radius + 20) * Math.cos((labelAngle * Math.PI) / 180);
-          const labelY = centerY + (radius + 20) * Math.sin((labelAngle * Math.PI) / 180);
+          const labelX = centerX + (radius + 18) * Math.cos((labelAngle * Math.PI) / 180);
+          const labelY = centerY + (radius + 18) * Math.sin((labelAngle * Math.PI) / 180);
           
           return (
             <text
@@ -159,7 +159,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               y={labelY}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="13"
+              fontSize="12"
               fill="#374151"
               className="font-bold"
             >
