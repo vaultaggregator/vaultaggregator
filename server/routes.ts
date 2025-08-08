@@ -2259,13 +2259,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const etherscan = new EtherscanService();
       const contractInfo = await etherscan.getContractInfo(underlyingToken);
 
+      // Use holdersCount from tokenInfo if available
+      const holdersCount = tokenInfo?.holdersCount || topHolders.length;
+      
       res.json({
         tokenAddress: underlyingToken,
         tokenInfo,
         contractInfo,
         supplyData: tokenSupply,
         holders: {
-          count: topHolders.length,
+          count: holdersCount,
           topHolders
         },
         transfers: {
