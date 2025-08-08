@@ -784,7 +784,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Network icon upload routes
+  // Admin chains endpoint
+  app.get("/api/admin/chains", requireAuth, async (req, res) => {
+    try {
+      const chains = await storage.getChains(); // Get all chains, not just active ones
+      res.json(chains);
+    } catch (error) {
+      console.error("Error fetching all chains:", error);
+      res.status(500).json({ message: "Failed to fetch chains" });
+    }
+  });
+
   app.post("/api/admin/chains/:id/icon/upload", requireAuth, async (req, res) => {
     try {
       const { ObjectStorageService } = await import("./objectStorage");
