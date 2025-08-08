@@ -82,11 +82,27 @@ export async function syncData(): Promise<void> {
   try {
     console.log("Starting DeFi Llama data sync...");
     
+    // First, get only visible pools from database to sync
+    const visiblePools = await storage.getPools({ onlyVisible: true });
+    const visibleDefiLlamaIds = new Set(
+      visiblePools
+        .filter(p => p.defiLlamaId && p.project === 'defillama')
+        .map(p => p.defiLlamaId)
+    );
+    
+    console.log(`Found ${visibleDefiLlamaIds.size} visible pools to sync`);
+    
+    if (visibleDefiLlamaIds.size === 0) {
+      console.log("No visible pools to sync - skipping DeFi Llama API call");
+      return;
+    }
+    
     const pools = await fetchYieldPools();
     console.log(`Fetched ${pools.length} pools from DeFi Llama`);
 
-    // Filter out pools with very low TVL or APY to focus on quality opportunities
+    // Only sync pools that are marked as visible in our database
     const filteredPools = pools.filter(pool => 
+      visibleDefiLlamaIds.has(pool.pool) && // Only sync visible pools
       pool.tvlUsd > 10000 && // Min $10k TVL
       pool.apy > 0.01 && // Min 1% APY
       pool.apy < 1000 && // Max 1000% APY (filter out obvious outliers)
@@ -94,11 +110,12 @@ export async function syncData(): Promise<void> {
       CHAIN_MAPPING[pool.chain?.toLowerCase()]
     );
 
-    console.log(`Filtered to ${filteredPools.length} quality pools`);
+    console.log(`Filtered to ${filteredPools.length} visible pools for sync`);
     
-    // Log how many Beefy pools we have
-    const beefyPools = filteredPools.filter(p => p.project.toLowerCase() === 'beefy');
-    console.log(`Found ${beefyPools.length} Beefy pools in filtered results`);
+    if (filteredPools.length === 0) {
+      console.log("No visible pools found in DeFi Llama data - sync complete");
+      return;
+    }
 
     // Ensure chains exist
     const chains = new Set(filteredPools.map(pool => pool.chain?.toLowerCase()).filter(Boolean));
@@ -143,8 +160,8 @@ export async function syncData(): Promise<void> {
     let syncedCount = 0;
     let errorCount = 0;
 
-    // Sync pools
-    for (const pool of filteredPools) { // Process all filtered pools
+    // Sync only visible pools
+    for (const pool of filteredPools) { // Process only visible pools
       try {
         const chainId = chainMap.get(pool.chain?.toLowerCase());
         const platformId = platformMap.get(pool.project?.toLowerCase().replace(/\s+/g, '-'));
@@ -174,8 +191,8 @@ export async function syncData(): Promise<void> {
         await storage.upsertPool(pool.pool, poolData);
         syncedCount++;
 
-        if (syncedCount % 50 === 0) {
-          console.log(`Synced ${syncedCount} pools...`);
+        if (syncedCount % 25 === 0) {
+          console.log(`Synced ${syncedCount} visible pools...`);
         }
       } catch (error) {
         console.error(`Error syncing pool ${pool.pool}:`, error);
@@ -183,7 +200,7 @@ export async function syncData(): Promise<void> {
       }
     }
 
-    console.log(`Data sync completed. Synced: ${syncedCount}, Errors: ${errorCount}`);
+    console.log(`Data sync completed. Synced ${syncedCount} visible pools, Errors: ${errorCount}`);
   } catch (error) {
     console.error("Error during data sync:", error);
     throw error;
