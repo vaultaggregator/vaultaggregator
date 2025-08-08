@@ -7,6 +7,7 @@ import AdminPanel from "@/components/admin-panel";
 import Footer from "@/components/footer";
 import { useQuery } from "@tanstack/react-query";
 import type { YieldOpportunity, FilterOptions } from "@/types";
+import { DeFiTooltip } from "@/components/metric-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronUp, ChevronDown } from "lucide-react";

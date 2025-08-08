@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { AppStats } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DeFiTooltip } from "./metric-tooltip";
 
 export default function HeroSection() {
   const { data: stats, isLoading } = useQuery<AppStats>({
@@ -20,10 +21,10 @@ export default function HeroSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4" data-testid="text-hero-title">
-            Discover High-Yield DeFi Opportunities
+            Discover High-Yield <DeFiTooltip term="defi">DeFi</DeFiTooltip> Opportunities
           </h2>
           <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto" data-testid="text-hero-subtitle">
-            Track and compare yield farming opportunities across multiple chains and protocols in real-time.
+            Track and compare <DeFiTooltip term="yield-farming">yield farming</DeFiTooltip> opportunities across multiple chains and <DeFiTooltip term="protocol">protocols</DeFiTooltip> in real-time.
           </p>
           
           {/* Stats Row */}

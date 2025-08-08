@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { MetricTooltip } from "./metric-tooltip";
 import type { YieldOpportunity } from "@/types";
 
 interface YieldOpportunityCardProps {
@@ -100,33 +101,53 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Center section - Key metrics */}
           <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
             <div className="w-20 text-center">
-              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">24h APY</p>}
+              {showHeaders && (
+                <MetricTooltip metric="24h-apy">
+                  <p className="text-xs text-muted-foreground mb-1 font-medium">24h APY</p>
+                </MetricTooltip>
+              )}
               <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
                  opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
               </p>
             </div>
             <div className="w-20 text-center">
-              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">30d APY</p>}
+              {showHeaders && (
+                <MetricTooltip metric="30d-apy">
+                  <p className="text-xs text-muted-foreground mb-1 font-medium">30d APY</p>
+                </MetricTooltip>
+              )}
               <p className="text-lg font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                 {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
               </p>
             </div>
             <div className="w-24 text-center">
-              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">TVL</p>}
+              {showHeaders && (
+                <MetricTooltip metric="tvl">
+                  <p className="text-xs text-muted-foreground mb-1 font-medium">TVL</p>
+                </MetricTooltip>
+              )}
               <p className="text-lg font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
                  opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
               </p>
             </div>
             <div className="w-28 text-center">
-              {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">Since</p>}
+              {showHeaders && (
+                <MetricTooltip metric="operating-days">
+                  <p className="text-xs text-muted-foreground mb-1 font-medium">Since</p>
+                </MetricTooltip>
+              )}
               <p className="text-sm font-semibold text-foreground" data-testid={`text-operating-since-${opportunity.id}`}>
                 {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
               </p>
             </div>
             <div className="w-16 text-center">
-              {showHeaders && <p className="text-sm text-muted-foreground mb-2 font-medium">Risk</p>}
+              {showHeaders && (
+                <MetricTooltip metric="risk-level">
+                  <p className="text-sm text-muted-foreground mb-2 font-medium">Risk</p>
+                </MetricTooltip>
+              )}
               <Badge 
                 variant="secondary"
                 className={`text-sm font-medium px-3 py-1 ${getRiskColor(opportunity.riskLevel)}`}

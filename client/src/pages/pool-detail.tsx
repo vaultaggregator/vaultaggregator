@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 import { AIOutlook } from "@/components/ai-outlook";
+import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -323,13 +324,15 @@ export default function PoolDetail() {
                     >
                       {pool.chain.displayName}
                     </Badge>
-                    <Badge 
-                      className={`text-sm px-3 py-1 ${getRiskColor(pool.riskLevel)}`}
-                      data-testid="badge-risk"
-                    >
-                      <Shield className="w-3 h-3 mr-1" />
-                      {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
-                    </Badge>
+                    <MetricTooltip metric="risk-level" variant="icon" side="bottom">
+                      <Badge 
+                        className={`text-sm px-3 py-1 ${getRiskColor(pool.riskLevel)}`}
+                        data-testid="badge-risk"
+                      >
+                        <Shield className="w-3 h-3 mr-1" />
+                        {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
+                      </Badge>
+                    </MetricTooltip>
                   </div>
                 </div>
               </div>
@@ -372,8 +375,10 @@ export default function PoolDetail() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
-                Current APY (24h)
+                <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
+                  <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
+                  Current APY (24h)
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -386,8 +391,10 @@ export default function PoolDetail() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
-                30-Day Average APY
+                <MetricTooltip metric="30d-apy" variant="icon" side="bottom">
+                  <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                  30-Day Average APY
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -400,8 +407,10 @@ export default function PoolDetail() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                <DollarSign className="w-4 h-4 mr-2 text-blue-600" />
-                Total Value Locked
+                <MetricTooltip metric="tvl" variant="icon" side="bottom">
+                  <DollarSign className="w-4 h-4 mr-2 text-blue-600" />
+                  Total Value Locked
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -414,8 +423,10 @@ export default function PoolDetail() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
-                Operating Since
+                <MetricTooltip metric="operating-days" variant="icon" side="bottom">
+                  <Calendar className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
+                  Operating Since
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent>
