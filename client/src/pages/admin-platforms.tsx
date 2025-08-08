@@ -38,7 +38,7 @@ export default function AdminPlatforms() {
   const [editShowUnderlyingTokens, setEditShowUnderlyingTokens] = useState(false);
 
   const { data: platforms = [], isLoading, refetch } = useQuery<Platform[]>({
-    queryKey: ["/api/platforms"],
+    queryKey: ["/api/admin/platforms"],
   });
 
   const updatePlatformMutation = useMutation({

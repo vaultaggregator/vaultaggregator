@@ -741,6 +741,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin platforms endpoint with additional fields
+  app.get("/api/admin/platforms", requireAuth, async (req, res) => {
+    try {
+      const platforms = await storage.getPlatformsWithVisibility();
+      res.json(platforms);
+    } catch (error) {
+      console.error("Error fetching admin platforms:", error);
+      res.status(500).json({ message: "Failed to fetch platforms" });
+    }
+  });
+
   app.put("/api/admin/platforms/:id", requireAuth, async (req, res) => {
     try {
       const { displayName, name, website, visitUrlTemplate, showUnderlyingTokens } = req.body;
