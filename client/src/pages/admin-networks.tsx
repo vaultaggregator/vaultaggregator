@@ -129,7 +129,14 @@ export default function AdminNetworks() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {chains.map((chain) => (
+                {chains
+                  .sort((a, b) => {
+                    // Sort active chains first, then by display name
+                    if (a.isActive && !b.isActive) return -1;
+                    if (!a.isActive && b.isActive) return 1;
+                    return a.displayName.localeCompare(b.displayName);
+                  })
+                  .map((chain) => (
                   <Card key={chain.id} className="p-4">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">

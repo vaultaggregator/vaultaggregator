@@ -82,25 +82,25 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
               <div>
                 <p className="text-sm text-muted-foreground">USD Price</p>
                 <p className="text-lg font-semibold">
-                  ${priceData.usdPrice?.toFixed(6) || 'N/A'}
+                  ${(priceData as any).usdPrice?.toFixed(6) || 'N/A'}
                 </p>
               </div>
-              {priceData['24hrPercentChange'] && (
+              {(priceData as any)['24hrPercentChange'] && (
                 <div>
                   <p className="text-sm text-muted-foreground">24h Change</p>
                   <span className={
-                    parseFloat(priceData['24hrPercentChange']) >= 0 
+                    parseFloat((priceData as any)['24hrPercentChange']) >= 0 
                       ? "text-green-500" 
                       : "text-red-500"
                   }>
-                    {priceData['24hrPercentChange']}%
+                    {(priceData as any)['24hrPercentChange']}%
                   </span>
                 </div>
               )}
             </div>
-            {priceData.exchangeName && (
+            {(priceData as any).exchangeName && (
               <p className="text-xs text-muted-foreground">
-                Data from: {priceData.exchangeName}
+                Data from: {(priceData as any).exchangeName}
               </p>
             )}
           </div>
@@ -136,21 +136,21 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
         {balanceData && (
           <div className="space-y-3">
             {/* Native Balance */}
-            {balanceData.native && (
+            {(balanceData as any).native && (
               <div className="p-3 bg-secondary/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">Native Balance</p>
                 <p className="text-lg font-medium">
-                  {(parseFloat(balanceData.native.balance) / 1e18).toFixed(4)} ETH
+                  {(parseFloat((balanceData as any).native.balance) / 1e18).toFixed(4)} ETH
                 </p>
               </div>
             )}
 
             {/* Token Balances */}
-            {balanceData.tokens && balanceData.tokens.length > 0 && (
+            {(balanceData as any).tokens && (balanceData as any).tokens.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Token Holdings</p>
                 <div className="max-h-48 overflow-y-auto space-y-2">
-                  {balanceData.tokens.slice(0, 10).map((token: any, index: number) => (
+                  {(balanceData as any).tokens.slice(0, 10).map((token: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-2 bg-secondary/30 rounded">
                       <div className="flex items-center gap-2">
                         {token.logo && (
@@ -174,9 +174,9 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
                     </div>
                   ))}
                 </div>
-                {balanceData.tokens.length > 10 && (
+                {(balanceData as any).tokens.length > 10 && (
                   <p className="text-xs text-muted-foreground text-center">
-                    +{balanceData.tokens.length - 10} more tokens
+                    +{(balanceData as any).tokens.length - 10} more tokens
                   </p>
                 )}
               </div>
@@ -189,14 +189,14 @@ export function MoralisData({ tokenAddress, chainName = 'ethereum' }: MoralisDat
           <Skeleton className="h-20 w-full" />
         )}
 
-        {defiData && defiData.length > 0 && (
+        {defiData && (defiData as any).length > 0 && (
           <div className="space-y-2">
             <p className="text-sm font-medium flex items-center gap-1">
               <TrendingUp className="h-4 w-4" />
               DeFi Positions
             </p>
             <div className="space-y-2">
-              {defiData.map((position: any, index: number) => (
+              {(defiData as any).map((position: any, index: number) => (
                 <div key={index} className="p-3 bg-secondary/30 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">

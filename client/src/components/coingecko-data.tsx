@@ -72,7 +72,7 @@ export function CoinGeckoData({ tokenAddress, chainName = 'ethereum' }: CoinGeck
     return `${percent >= 0 ? '+' : ''}${formatted}%`;
   };
 
-  const marketData = tokenData?.market_data;
+  const marketData = (tokenData as any)?.market_data;
 
   return (
     <Card>
@@ -88,18 +88,18 @@ export function CoinGeckoData({ tokenAddress, chainName = 'ethereum' }: CoinGeck
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Current Price</p>
-              <p className="text-xl font-semibold">${priceData.usd?.toFixed(6) || '0'}</p>
+              <p className="text-xl font-semibold">${(priceData as any).usd?.toFixed(6) || '0'}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">24h Change</p>
               <div className="flex items-center gap-1">
-                {priceData.usd_24h_change >= 0 ? (
+                {(priceData as any).usd_24h_change >= 0 ? (
                   <TrendingUp className="h-4 w-4 text-green-500" />
                 ) : (
                   <TrendingDown className="h-4 w-4 text-red-500" />
                 )}
-                <span className={priceData.usd_24h_change >= 0 ? "text-green-500" : "text-red-500"}>
-                  {formatPercent(priceData.usd_24h_change)}
+                <span className={(priceData as any).usd_24h_change >= 0 ? "text-green-500" : "text-red-500"}>
+                  {formatPercent((priceData as any).usd_24h_change)}
                 </span>
               </div>
             </div>
@@ -219,23 +219,23 @@ export function CoinGeckoData({ tokenAddress, chainName = 'ethereum' }: CoinGeck
         {tokenData && (
           <div className="pt-2 border-t">
             <div className="flex items-center gap-2">
-              {tokenData.image?.small && (
+              {(tokenData as any).image?.small && (
                 <img 
-                  src={tokenData.image.small} 
-                  alt={tokenData.name} 
+                  src={(tokenData as any).image.small} 
+                  alt={(tokenData as any).name} 
                   className="w-6 h-6 rounded-full"
                 />
               )}
               <div>
-                <p className="font-medium">{tokenData.name}</p>
+                <p className="font-medium">{(tokenData as any).name}</p>
                 <p className="text-sm text-muted-foreground">
-                  {tokenData.symbol?.toUpperCase()}
+                  {(tokenData as any).symbol?.toUpperCase()}
                 </p>
               </div>
             </div>
-            {tokenData.links?.homepage?.[0] && (
+            {(tokenData as any).links?.homepage?.[0] && (
               <a 
-                href={tokenData.links.homepage[0]} 
+                href={(tokenData as any).links.homepage[0]} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-sm text-blue-500 hover:underline mt-2 inline-block"
