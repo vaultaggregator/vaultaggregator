@@ -20,6 +20,8 @@ interface ChatMessage {
     tvl?: string;
     riskLevel: string;
   }>;
+  action?: string;
+  links?: string[];
 }
 
 interface FloatingChatProps {
@@ -62,13 +64,15 @@ export default function FloatingChat({ className }: FloatingChatProps) {
       
       return await response.json();
     },
-    onSuccess: (response: { message: string; pools?: any[] }) => {
+    onSuccess: (response: { message: string; pools?: any[]; action?: string; links?: string[] }) => {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content: response.message,
           pools: response.pools || [],
+          action: response.action,
+          links: response.links || [],
         },
       ]);
     },
@@ -192,7 +196,23 @@ export default function FloatingChat({ className }: FloatingChatProps) {
                       }`}
                       data-testid={`message-${message.role}-${index}`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      
+                      {/* Direct Pool Links when requested */}
+                      {message.links && message.links.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 font-medium">🔗 Direct Pool Links:</p>
+                          <div className="space-y-1">
+                            {message.links.map((poolId) => (
+                              <Link key={poolId} href={`/pool/${poolId}`}>
+                                <div className="inline-block px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded text-xs hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors cursor-pointer">
+                                  View Pool →
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       
                       {message.pools && message.pools.length > 0 && (
                         <div className="mt-3 space-y-2">
