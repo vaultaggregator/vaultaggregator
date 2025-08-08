@@ -42,6 +42,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Authentic Protocol Logos**: Successfully implemented working authentic logos for Lido (Trust Wallet assets) and Morpho (DeFi Llama protocol icons) replacing non-functional brand asset URLs with reliable sources that display the official protocol branding
 - **Token Logo Solution**: Use Trust Wallet GitHub repository URLs (raw.githubusercontent.com/trustwallet/assets) for authentic token logos. CryptoLogos.cc returns 403 errors and should be avoided. Trust Wallet provides reliable, working URLs for tokens like USDC and stETH.
 - **Category Navigation Finalized**: Implemented horizontal category layout with dropdown menus - Categories display as "📂 Categories: [📂 All] [ETH ▼] [Stables ▼]" with subcategories accessible via dropdown clicks, featuring authentic USDC and stETH logos from Trust Wallet assets in proper parent-child hierarchy
+- **Token Information Database Storage**: Implemented comprehensive token information database storage system with tokenInfo table to store token data (address, name, symbol, decimals, totalSupply, holdersCount) for each pool. Token info is now synced during pool synchronization and stored for 24-hour caching to improve performance and reduce Etherscan API dependency
 - **Risk Display Simplified**: Removed emoji-powered risk sentiment meter system and restored simple risk level badges (Low/Medium/High) based on user preference for cleaner, more professional appearance without emoji indicators
 
 # User Preferences

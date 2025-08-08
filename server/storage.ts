@@ -1,9 +1,9 @@
 import { 
-  pools, platforms, chains, tokens, notes, users, categories, poolCategories, apiKeys, apiKeyUsage, aiOutlooks,
+  pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage, aiOutlooks,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications,
-  type Pool, type Platform, type Chain, type Token, type Note,
-  type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertNote,
+  type Pool, type Platform, type Chain, type Token, type TokenInfo, type Note,
+  type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage,
@@ -44,6 +44,12 @@ export interface IStorage {
   getActiveTokens(): Promise<Token[]>;
   getTokensByChain(chainId: string): Promise<Token[]>;
   createToken(token: InsertToken): Promise<Token>;
+
+  // Token Info methods
+  getTokenInfoByAddress(address: string): Promise<TokenInfo | undefined>;
+  createTokenInfo(tokenInfo: InsertTokenInfo): Promise<TokenInfo>;
+  updateTokenInfo(address: string, tokenInfo: Partial<InsertTokenInfo>): Promise<TokenInfo | undefined>;
+  upsertTokenInfo(address: string, tokenInfo: InsertTokenInfo): Promise<TokenInfo>;
 
   // Pool methods
   getPools(options?: {
@@ -300,6 +306,34 @@ export class DatabaseStorage implements IStorage {
   async createToken(token: InsertToken): Promise<Token> {
     const [newToken] = await db.insert(tokens).values(token).returning();
     return newToken;
+  }
+
+  // Token Info methods
+  async getTokenInfoByAddress(address: string): Promise<TokenInfo | undefined> {
+    const [tokenInfoRecord] = await db.select().from(tokenInfo).where(eq(tokenInfo.address, address));
+    return tokenInfoRecord || undefined;
+  }
+
+  async createTokenInfo(tokenInfoData: InsertTokenInfo): Promise<TokenInfo> {
+    const [newTokenInfo] = await db.insert(tokenInfo).values(tokenInfoData).returning();
+    return newTokenInfo;
+  }
+
+  async updateTokenInfo(address: string, tokenInfoData: Partial<InsertTokenInfo>): Promise<TokenInfo | undefined> {
+    const [updatedTokenInfo] = await db.update(tokenInfo).set({
+      ...tokenInfoData,
+      lastUpdated: new Date()
+    }).where(eq(tokenInfo.address, address)).returning();
+    return updatedTokenInfo || undefined;
+  }
+
+  async upsertTokenInfo(address: string, tokenInfoData: InsertTokenInfo): Promise<TokenInfo> {
+    const existing = await this.getTokenInfoByAddress(address);
+    if (existing) {
+      return await this.updateTokenInfo(address, tokenInfoData) || existing;
+    } else {
+      return await this.createTokenInfo(tokenInfoData);
+    }
   }
 
   async getPools(options: {

@@ -2263,32 +2263,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Fetching token info for pool ${pool.id}, token: ${underlyingToken}`);
 
-      const { EtherscanTokenService } = await import("./services/etherscanTokenService");
-      const tokenService = new EtherscanTokenService();
+      // First check for stored token info in database
+      const storedTokenInfo = await storage.getTokenInfoByAddress(underlyingToken);
+      let tokenInfo = storedTokenInfo;
+      let shouldFetchFromEtherscan = true;
 
-      // Fetch all token data in parallel
-      const [
-        tokenInfo,
-        tokenSupply,
-        topHolders,
-        recentTransfers,
-        analytics,
-        gasStats,
-        events
-      ] = await Promise.all([
-        tokenService.getTokenInfo(underlyingToken),
-        tokenService.getTokenSupply(underlyingToken),
-        tokenService.getTopHolders(underlyingToken, 10),
-        tokenService.getRecentTransfers(underlyingToken, 20),
-        tokenService.getTokenAnalytics(underlyingToken),
-        tokenService.getGasUsageStats(underlyingToken),
-        tokenService.getContractEvents(underlyingToken, 50)
-      ]);
+      // If we have stored data that's less than 24 hours old, use it
+      if (storedTokenInfo && storedTokenInfo.lastUpdated) {
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        if (storedTokenInfo.lastUpdated > dayAgo) {
+          console.log(`Using stored token info for ${underlyingToken}`);
+          shouldFetchFromEtherscan = false;
+        }
+      }
 
-      // Get contract info
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      const contractInfo = await etherscan.getContractInfo(underlyingToken);
+      let tokenSupply: any;
+      let topHolders: any[] = [];
+      let recentTransfers: any[] = [];
+      let analytics: any;
+      let gasStats: any;
+      let events: any[] = [];
+      let contractInfo: any;
+      
+      if (shouldFetchFromEtherscan) {
+        console.log(`Fetching fresh token info from Etherscan for ${underlyingToken}`);
+        
+        const { EtherscanTokenService } = await import("./services/etherscanTokenService");
+        const tokenService = new EtherscanTokenService();
+
+        // Fetch all token data in parallel
+        const [
+          fetchedTokenInfo,
+          fetchedTokenSupply,
+          fetchedTopHolders,
+          fetchedRecentTransfers,
+          fetchedAnalytics,
+          fetchedGasStats,
+          fetchedEvents
+        ] = await Promise.all([
+          tokenService.getTokenInfo(underlyingToken),
+          tokenService.getTokenSupply(underlyingToken),
+          tokenService.getTopHolders(underlyingToken, 10),
+          tokenService.getRecentTransfers(underlyingToken, 20),
+          tokenService.getTokenAnalytics(underlyingToken),
+          tokenService.getGasUsageStats(underlyingToken),
+          tokenService.getContractEvents(underlyingToken, 50)
+        ]);
+
+        tokenInfo = fetchedTokenInfo || storedTokenInfo;
+        tokenSupply = fetchedTokenSupply;
+        topHolders = fetchedTopHolders;
+        recentTransfers = fetchedRecentTransfers;
+        analytics = fetchedAnalytics;
+        gasStats = fetchedGasStats;
+        events = fetchedEvents;
+
+        // Get contract info
+        const { EtherscanService } = await import("./services/etherscanService");
+        const etherscan = new EtherscanService();
+        contractInfo = await etherscan.getContractInfo(underlyingToken);
+      } else {
+        // Use stored data and provide minimal additional data
+        tokenSupply = { totalSupply: storedTokenInfo?.totalSupply || "0" };
+        topHolders = [];
+        recentTransfers = [];
+        analytics = null;
+        gasStats = null;
+        events = [];
+        contractInfo = null;
+      }
 
       // Use holdersCount from tokenInfo if available
       const holdersCount = tokenInfo?.holdersCount || topHolders.length;

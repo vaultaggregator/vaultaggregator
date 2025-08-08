@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import type { InsertPool, InsertPlatform, InsertChain } from "@shared/schema";
+import { TokenInfoSyncService } from "./tokenInfoSyncService";
 
 interface DefiLlamaPool {
   chain: string;
@@ -160,6 +161,9 @@ export async function syncData(): Promise<void> {
     let syncedCount = 0;
     let errorCount = 0;
 
+    // Initialize token info sync service
+    const tokenInfoService = new TokenInfoSyncService();
+
     // Sync only visible pools
     for (const pool of filteredPools) { // Process only visible pools
       try {
@@ -188,8 +192,13 @@ export async function syncData(): Promise<void> {
           isActive: true,
         };
 
-        await storage.upsertPool(pool.pool, poolData);
+        const upsertedPool = await storage.upsertPool(pool.pool, poolData);
         syncedCount++;
+
+        // Sync token info for this pool if it has underlying tokens
+        if (pool.underlyingTokens && pool.underlyingTokens.length > 0) {
+          await tokenInfoService.syncTokenInfo(upsertedPool.id, pool);
+        }
 
         if (syncedCount % 25 === 0) {
           console.log(`Synced ${syncedCount} visible pools...`);
