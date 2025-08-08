@@ -466,9 +466,9 @@ export class DatabaseStorage implements IStorage {
     const [countResult] = await countQuery;
     const total = countResult.count;
 
-    // Get paginated results
+    // Get paginated results - prioritize visible pools first (true before false), then order by APY
     const results = await query
-      .orderBy(desc(pools.apy))
+      .orderBy(desc(pools.isVisible), desc(pools.apy))
       .limit(limit)
       .offset(offset);
 
