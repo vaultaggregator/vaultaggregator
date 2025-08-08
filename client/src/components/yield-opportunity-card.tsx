@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
+import { getPlatformIcon } from "@/components/platform-icons";
 import { generateYieldUrl } from "@/lib/seo-urls";
 
 interface YieldOpportunityCardProps {
@@ -61,21 +62,17 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shadow-md flex-shrink-0"
               data-testid={`logo-${opportunity.platform.name}`}
             >
-              {opportunity.platform.logoUrl ? (
+{opportunity.platform.logoUrl ? (
                 <img 
                   src={opportunity.platform.logoUrl} 
                   alt={opportunity.platform.displayName}
                   className="w-full h-full object-cover rounded-full"
                 />
               ) : (
-                <div 
-                  className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-sm"
-                  style={{
-                    background: `linear-gradient(135deg, ${opportunity.chain.color}80, ${opportunity.chain.color})`
-                  }}
-                >
-                  {getPlatformInitials(opportunity.platform.displayName)}
-                </div>
+                (() => {
+                  const PlatformIcon = getPlatformIcon(opportunity.platform.name);
+                  return <PlatformIcon size={48} className="flex-shrink-0" />;
+                })()
               )}
             </div>
             <div className="min-w-0 flex-1">

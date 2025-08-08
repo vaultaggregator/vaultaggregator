@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { getPlatformIcon } from "@/components/platform-icons";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 
@@ -196,7 +197,7 @@ export default function AdminPlatforms() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm shadow-md">
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
                         {platform.logoUrl ? (
                           <img 
                             src={platform.logoUrl} 
@@ -204,7 +205,10 @@ export default function AdminPlatforms() {
                             className="w-full h-full rounded-lg object-cover"
                           />
                         ) : (
-                          getPlatformInitials(platform.displayName)
+                          (() => {
+                            const PlatformIcon = getPlatformIcon(platform.name);
+                            return <PlatformIcon size={48} className="flex-shrink-0" />;
+                          })()
                         )}
                       </div>
                       <div>
@@ -258,7 +262,7 @@ export default function AdminPlatforms() {
                           <Checkbox
                             id={`show-tokens-${platform.id}`}
                             checked={editShowUnderlyingTokens}
-                            onCheckedChange={setEditShowUnderlyingTokens}
+                            onCheckedChange={(checked) => setEditShowUnderlyingTokens(checked === true)}
                             data-testid={`checkbox-show-tokens-${platform.id}`}
                           />
                           <label 
