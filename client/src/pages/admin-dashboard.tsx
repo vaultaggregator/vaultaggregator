@@ -1011,7 +1011,8 @@ export default function AdminDashboard() {
                             
                             {(() => {
                               const getExternalLink = () => {
-                                const project = pool.rawData?.project || 'defillama';
+                                // Check the pool.project field first, then fall back to rawData.project
+                                const project = pool.project || pool.rawData?.project || 'defillama';
                                 
                                 switch (project.toLowerCase()) {
                                   case 'lido':
