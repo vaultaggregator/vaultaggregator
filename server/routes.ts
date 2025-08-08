@@ -1928,6 +1928,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerMarketIntelligenceRoutes } = await import('./routes/market-intelligence');
   registerMarketIntelligenceRoutes(app);
 
+  // Start data sync scheduler
+  const { startScheduler } = await import('./services/scheduler');
+  startScheduler();
+
   const httpServer = createServer(app);
   return httpServer;
 }

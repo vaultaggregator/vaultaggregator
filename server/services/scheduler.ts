@@ -1,4 +1,4 @@
-import { DefiLlamaService } from "./defiLlamaService";
+import { syncData } from "./defi-llama";
 import { AIOutlookService } from "./aiOutlookService";
 import { storage } from "../storage";
 
@@ -10,7 +10,7 @@ export function startScheduler(): void {
   console.log("Starting data sync scheduler for DeFi Llama and AI Outlooks...");
   
   // Initial DeFi Llama sync
-  DefiLlamaService.syncPools().catch((error: any) => {
+  syncData().catch((error: any) => {
     console.error("DeFi Llama initial sync failed:", error);
   });
 
@@ -18,7 +18,7 @@ export function startScheduler(): void {
   defiLlamaInterval = setInterval(async () => {
     try {
       console.log("Running scheduled DeFi Llama sync...");
-      await DefiLlamaService.syncPools();
+      await syncData();
       console.log("Scheduled DeFi Llama sync completed");
     } catch (error) {
       console.error("Error in scheduled DeFi Llama sync:", error);
