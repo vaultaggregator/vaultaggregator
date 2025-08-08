@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Brain, TrendingUp, TrendingDown, Minus, RefreshCw, Clock, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ConfidenceGauge } from "./confidence-gauge";
 
 interface AIOutlook {
   id: string;
@@ -168,34 +169,47 @@ export function AIOutlook({ poolId }: AIOutlookProps) {
           Generated {formatTimeAgo(outlook.generatedAt)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div data-testid="text-outlook">
-          <p className="text-sm leading-relaxed">{outlook.outlook}</p>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* AI Outlook Text */}
+          <div className="lg:col-span-2 space-y-4">
+            <div data-testid="text-outlook">
+              <p className="text-sm leading-relaxed">{outlook.outlook}</p>
+            </div>
+            
+            {outlook.marketFactors && outlook.marketFactors.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Lightbulb className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-medium">Key Factors Considered</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {outlook.marketFactors.map((factor, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary" 
+                      className="text-xs"
+                      data-testid={`factor-${index}`}
+                    >
+                      {factor}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Confidence Gauge */}
+          <div className="lg:col-span-1 flex justify-center">
+            <ConfidenceGauge 
+              confidence={outlook.confidence} 
+              sentiment={outlook.sentiment}
+              size={180}
+            />
+          </div>
         </div>
 
-        {outlook.marketFactors && outlook.marketFactors.length > 0 && (
-          <>
-            <Separator />
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Lightbulb className="w-4 h-4 text-amber-500" />
-                <span className="text-sm font-medium">Key Factors Considered</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {outlook.marketFactors.map((factor, index) => (
-                  <Badge 
-                    key={index} 
-                    variant="secondary" 
-                    className="text-xs"
-                    data-testid={`factor-${index}`}
-                  >
-                    {factor}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
+
 
         <Separator />
         
