@@ -1716,6 +1716,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerAdvancedRoutes } = await import('./routes/advanced-features');
   registerAdvancedRoutes(app);
 
+  // Register AI routes
+  const { registerAIRoutes } = await import('./routes/ai');
+  registerAIRoutes(app);
+
   const httpServer = createServer(app);
   return httpServer;
 }

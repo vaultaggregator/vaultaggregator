@@ -35,6 +35,9 @@ import CommunityInsights from "@/pages/community-insights";
 import Watchlists from "@/pages/watchlists";
 import ApiMarketplace from "@/pages/api-marketplace";
 import FloatingChat from "@/components/floating-chat";
+import AIPortfolioOptimizer from "@/pages/ai-portfolio-optimizer";
+import AIYieldPredictor from "@/pages/ai-yield-predictor";
+import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
 
 
 function Router() {
@@ -64,6 +67,9 @@ function Router() {
       <Route path="/community-insights" component={CommunityInsights} />
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/api-marketplace" component={ApiMarketplace} />
+      <Route path="/ai/portfolio-optimizer" component={AIPortfolioOptimizer} />
+      <Route path="/ai/yield-predictor" component={AIYieldPredictor} />
+      <Route path="/ai/risk-analyzer" component={AIRiskAnalyzer} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />

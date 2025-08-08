@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, BarChart3, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AINavigationMenu } from "@/components/ai-navigation-menu";
 
 interface HeaderProps {
   onAdminClick: () => void;
@@ -145,6 +146,7 @@ export default function Header({ onAdminClick }: HeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            <AINavigationMenu />
             <ThemeToggle />
             {/* Mobile Menu Button */}
             <button 
