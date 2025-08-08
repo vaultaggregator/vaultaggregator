@@ -6,10 +6,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { AINavigationMenu } from "@/components/ai-navigation-menu";
 
 interface HeaderProps {
-  onAdminClick: () => void;
+  onAdminClick?: () => void;
 }
 
-export default function Header({ onAdminClick }: HeaderProps) {
+export default function Header({ onAdminClick = () => {} }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -70,6 +70,13 @@ export default function Header({ onAdminClick }: HeaderProps) {
               data-testid="link-help"
             >
               Help
+            </Link>
+            <Link 
+              href="/market-intelligence" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-market-intelligence"
+            >
+              Intelligence
             </Link>
             <Link 
               href="/investment-advisor" 

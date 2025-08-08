@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -167,15 +169,17 @@ export default function MarketIntelligencePage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Market Intelligence
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          AI-powered market analysis, whale tracking, and yield predictions
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Market Intelligence
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            AI-powered market analysis, whale tracking, and yield predictions
+          </p>
+        </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -579,6 +583,8 @@ export default function MarketIntelligencePage() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
+      <Footer />
     </div>
   );
 }
