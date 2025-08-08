@@ -9,6 +9,7 @@ import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
 import { getCategoryIcon } from "@/components/category-icons";
+import { RiskSentimentMeter } from "@/components/risk-sentiment-meter";
 import { generateYieldUrl } from "@/lib/seo-urls";
 
 interface YieldOpportunityCardProps {
@@ -166,17 +167,24 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="col-span-2 sm:col-span-1 text-center sm:w-10 flex justify-center">
+              <div className="col-span-2 sm:col-span-1 text-center sm:w-20 flex flex-col items-center">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium">Risk</p>
                 )}
-                <Badge 
-                  variant="secondary"
-                  className={`text-xs font-medium px-1 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
-                  data-testid={`badge-risk-${opportunity.id}`}
-                >
-                  {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
-                </Badge>
+                <RiskSentimentMeter 
+                  data={{ 
+                    overallRisk: opportunity.riskLevel as 'low' | 'medium' | 'high' | 'extreme',
+                    overallScore: (opportunity as any).riskScore || undefined,
+                    smartContractRisk: (opportunity as any).smartContractRisk || undefined,
+                    liquidityRisk: (opportunity as any).liquidityRisk || undefined,
+                    platformRisk: (opportunity as any).platformRisk || undefined,
+                    marketRisk: (opportunity as any).marketRisk || undefined,
+                    auditStatus: (opportunity as any).auditStatus as 'verified' | 'unaudited' | 'unknown' || undefined
+                  }}
+                  size="sm"
+                  showDetailed={false}
+                  data-testid={`risk-sentiment-${opportunity.id}`}
+                />
               </div>
             </div>
           </div>
