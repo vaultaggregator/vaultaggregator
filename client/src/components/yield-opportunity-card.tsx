@@ -32,6 +32,13 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
     return `${num.toFixed(2)}%`;
   };
 
+  const formatHolders = (holders: number | null | undefined): string => {
+    if (!holders) return 'N/A';
+    if (holders >= 1000000) return `${(holders / 1000000).toFixed(1)}M`;
+    if (holders >= 1000) return `${(holders / 1000).toFixed(1)}K`;
+    return holders.toString();
+  };
+
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
       case 'low': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
@@ -170,6 +177,14 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 )}
                 <p className="text-xs font-semibold text-foreground" data-testid={`text-operating-since-${opportunity.id}`}>
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
+                </p>
+              </div>
+              <div className="text-center sm:w-20 sm:block hidden">
+                {showHeaders && (
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">Holders</p>
+                )}
+                <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+                  {formatHolders(opportunity.holdersCount)}
                 </p>
               </div>
               <div className="col-span-2 sm:col-span-1 text-center sm:w-16 flex justify-center">

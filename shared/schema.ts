@@ -739,6 +739,7 @@ export type PoolWithRelations = Pool & {
   riskScores?: RiskScore[];
   poolReviews?: PoolReview[];
   aiOutlooks?: AIOutlook[];
+  holdersCount?: number | null;
 };
 
 export type CategoryWithPoolCount = Category & {

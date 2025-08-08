@@ -18,7 +18,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showAdmin, setShowAdmin] = useState(false);
   const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const limit = 12;
 
@@ -49,7 +49,7 @@ export default function Home() {
     setPage(prev => prev + 1);
   };
 
-  const handleSort = (field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk') => {
+  const handleSort = (field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -89,6 +89,10 @@ export default function Home() {
         aValue = riskOrder[a.riskLevel];
         bValue = riskOrder[b.riskLevel];
         break;
+      case 'holders':
+        aValue = a.holdersCount || 0;
+        bValue = b.holdersCount || 0;
+        break;
       default:
         return 0;
     }
@@ -108,7 +112,7 @@ export default function Home() {
     }
   });
 
-  const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk', children: React.ReactNode }) => (
+  const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders', children: React.ReactNode }) => (
     <button
       onClick={() => handleSort(field)}
       className="flex items-center justify-center space-x-1 text-sm font-semibold text-foreground hover:text-blue-600 transition-colors w-full"
@@ -165,6 +169,9 @@ export default function Home() {
               <div className="w-16 text-center">
                 <SortHeader field="operatingSince"><span className="text-sm font-medium">Since</span></SortHeader>
               </div>
+              <div className="w-20 text-center">
+                <SortHeader field="holders"><span className="text-sm font-medium">Holders</span></SortHeader>
+              </div>
               <div className="w-16 text-center">
                 <SortHeader field="risk"><span className="text-sm font-medium">Risk</span></SortHeader>
               </div>
@@ -192,6 +199,12 @@ export default function Home() {
               className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full flex items-center gap-1"
             >
               Risk {sortBy === 'risk' && (sortOrder === 'desc' ? '↓' : '↑')}
+            </button>
+            <button
+              onClick={() => handleSort('holders')}
+              className="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-full flex items-center gap-1"
+            >
+              Holders {sortBy === 'holders' && (sortOrder === 'desc' ? '↓' : '↑')}
             </button>
           </div>
         </div>

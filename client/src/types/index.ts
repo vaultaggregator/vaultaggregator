@@ -30,7 +30,7 @@ export interface YieldOpportunity {
     count?: number;
     [key: string]: any;
   };
-
+  holdersCount?: number | null;
 }
 
 export interface FilterOptions {

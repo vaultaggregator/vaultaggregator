@@ -354,7 +354,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(chains, eq(pools.chainId, chains.id))
       .leftJoin(notes, eq(pools.id, notes.poolId))
       .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
-      .leftJoin(categories, eq(poolCategories.categoryId, categories.id));
+      .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
+      .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id));
 
     const conditions = [eq(pools.isActive, true)];
 
@@ -406,6 +407,7 @@ export class DatabaseStorage implements IStorage {
           chain: result.chains!,
           notes: result.notes ? [result.notes] : [],
           categories: result.categories ? [result.categories] : [],
+          holdersCount: result.token_info?.holdersCount || null,
         });
       } else {
         const existingPool = poolsMap.get(poolId)!;
