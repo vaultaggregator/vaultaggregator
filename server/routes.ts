@@ -1102,6 +1102,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset/clear consolidated pools endpoint
+  app.delete("/api/admin/pools/consolidated", requireAuth, async (req, res) => {
+    try {
+      // Find all pools that have consolidation notes
+      const allPools = await storage.getPools();
+      const consolidatedPoolIds: string[] = [];
+
+      // Check each pool for consolidation notes
+      for (const pool of allPools) {
+        const notes = await storage.getNotesByPool(pool.id);
+        const hasConsolidationNote = notes.some(note => 
+          note.content.includes('Consolidated from pools:') || 
+          note.content.includes('User notes:')
+        );
+        
+        if (hasConsolidationNote) {
+          consolidatedPoolIds.push(pool.id);
+        }
+      }
+
+      // Delete consolidated pools and their associated data
+      let deletedCount = 0;
+      for (const poolId of consolidatedPoolIds) {
+        // Delete associated notes first
+        const notes = await storage.getNotesByPool(poolId);
+        for (const note of notes) {
+          await storage.deleteNote(note.id);
+        }
+        
+        // Delete the pool
+        await storage.deletePool(poolId);
+        deletedCount++;
+      }
+
+      res.json({ 
+        message: `Successfully reset consolidated pools data`,
+        deletedCount,
+        deletedPoolIds: consolidatedPoolIds
+      });
+    } catch (error) {
+      console.error("Error resetting consolidated pools:", error);
+      res.status(500).json({ message: "Failed to reset consolidated pools data" });
+    }
+  });
+
   // Notes routes
   app.get("/api/pools/:poolId/notes", async (req, res) => {
     try {

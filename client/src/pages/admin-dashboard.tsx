@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
 import PoolConsolidationModal from "@/components/pool-consolidation-modal";
@@ -423,6 +423,36 @@ export default function AdminDashboard() {
 
   const selectedPoolsData = pools.filter(pool => selectedPoolsForConsolidation.includes(pool.id));
 
+  // Reset consolidated pools mutation
+  const resetConsolidatedPoolsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("/api/admin/pools/consolidated", {
+        method: "DELETE",
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Success",
+        description: `Reset ${data.deletedCount} consolidated pools successfully`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset consolidated pools",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleResetConsolidatedPools = () => {
+    if (confirm("Are you sure you want to delete all consolidated pools? This action cannot be undone.")) {
+      resetConsolidatedPoolsMutation.mutate();
+    }
+  };
+
   // Sorting handlers
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -622,6 +652,17 @@ export default function AdminDashboard() {
                   Consolidate ({selectedPoolsForConsolidation.length})
                 </Button>
               )}
+
+              <Button 
+                onClick={handleResetConsolidatedPools}
+                disabled={resetConsolidatedPoolsMutation.isPending}
+                variant="destructive" 
+                size="sm"
+                data-testid="button-reset-consolidated"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {resetConsolidatedPoolsMutation.isPending ? "Resetting..." : "Reset Consolidated"}
+              </Button>
 
               <Button 
                 onClick={handleLogout} 
