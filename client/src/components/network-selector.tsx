@@ -62,7 +62,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
   // Render category icon component
   const renderCategoryIcon = (category: Category) => {
     // Use Trust Wallet logos for specific tokens
-    if (category.name.toLowerCase() === 'usdc') {
+    if (category.name === 'USDC') {
       return (
         <img 
           src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
@@ -70,7 +70,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
           className="w-4 h-4 flex-shrink-0"
         />
       );
-    } else if (category.name.toLowerCase() === 'steth') {
+    } else if (category.name === 'stETH') {
       return (
         <img 
           src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"

@@ -85,10 +85,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     {opportunity.tokenPair}
                   </h3>
                   {opportunity.categories && opportunity.categories.length > 0 && (() => {
-                    const categoryName = opportunity.categories[0].name.toLowerCase();
+                    const categoryName = opportunity.categories[0].name;
                     
                     // Use Trust Wallet logos for specific tokens
-                    if (categoryName === 'usdc') {
+                    if (categoryName === 'USDC') {
                       return (
                         <img 
                           src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
@@ -96,7 +96,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                           className="w-3.5 h-3.5 flex-shrink-0"
                         />
                       );
-                    } else if (categoryName === 'steth') {
+                    } else if (categoryName === 'stETH') {
                       return (
                         <img 
                           src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
