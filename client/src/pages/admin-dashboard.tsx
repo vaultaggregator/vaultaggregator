@@ -14,7 +14,7 @@ import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, Arr
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
 
-type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible' | 'datasource';
+type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
 type SortDirection = 'asc' | 'desc' | null;
 import type { PoolWithRelations, Platform, Chain, Category } from "@shared/schema";
 
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [selectedChains, setSelectedChains] = useState<string[]>([]);
   const [visibilityFilters, setVisibilityFilters] = useState<string[]>([]); // visibility filters as checkboxes
-  const [dataSourceFilters, setDataSourceFilters] = useState<string[]>([]); // Data source filters (defillama, morpho)
+  // Removed dataSourceFilters since we only have DeFi Llama now
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const [currentPage, setCurrentPage] = useState(0);
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       platformIds: selectedPlatforms.join(','),
       chainIds: selectedChains.join(','),
       visibilities: visibilityFilters.join(','),
-      dataSources: dataSourceFilters.join(','),
+
       limit: pageSize,
       offset: currentPage * pageSize
     }],
@@ -156,19 +156,14 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/categories"],
   });
 
-  // Fetch available data sources dynamically
-  const { data: dataSourcesResponse } = useQuery<{ dataSources: { key: string; name: string; }[] }>({
-    queryKey: ["/api/admin/data-sources"],
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-  });
-  const dataSources = dataSourcesResponse?.dataSources || [];
+  // No longer need data sources query since we only have DeFi Llama
   
   // Remove debug console log
 
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(0);
-  }, [search, selectedPlatforms, selectedChains, visibilityFilters, dataSourceFilters]);
+  }, [search, selectedPlatforms, selectedChains, visibilityFilters]);
 
   // Inline EditableField component
   function EditableField({ value, onSave, className = "", ...props }: {
@@ -454,10 +449,7 @@ export default function AdminDashboard() {
         aValue = a.isVisible ? 1 : 0;
         bValue = b.isVisible ? 1 : 0;
         break;
-      case 'datasource':
-        aValue = a.project?.toLowerCase() || '';
-        bValue = b.project?.toLowerCase() || '';
-        break;
+      // Removed datasource case since we only use DeFi Llama
       default:
         return 0;
     }
@@ -742,33 +734,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                {/* Data Sources */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Data Sources</h4>
-                  <div className="space-y-2">
-                    {dataSources.map(dataSource => (
-                      <label key={dataSource.key} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={dataSourceFilters.includes(dataSource.key)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setDataSourceFilters([...dataSourceFilters, dataSource.key]);
-                            } else {
-                              setDataSourceFilters(dataSourceFilters.filter(source => source !== dataSource.key));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          data-testid={`checkbox-data-source-${dataSource.key}`}
-                        />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{dataSource.name}</span>
-                      </label>
-                    ))}
-                    {dataSources.length === 0 && (
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Loading data sources...</span>
-                    )}
-                  </div>
-                </div>
+                {/* No data sources filter needed since we only use DeFi Llama */}
 
                 {/* Visibility */}
                 <div className="space-y-3">
@@ -891,16 +857,7 @@ export default function AdminDashboard() {
                           {getSortIcon('risk')}
                         </div>
                       </th>
-                      <th 
-                        className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('datasource')}
-                        data-testid="sort-datasource"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          Data Source
-                          {getSortIcon('datasource')}
-                        </div>
-                      </th>
+
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
                         Categories
                       </th>
@@ -973,14 +930,7 @@ export default function AdminDashboard() {
                             {pool.riskLevel}
                           </Badge>
                         </td>
-                        <td className="py-3 px-2 text-center">
-                          <Badge 
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {pool.project?.toUpperCase() || 'UNKNOWN'}
-                          </Badge>
-                        </td>
+
                         <td className="py-3 px-2">
                           <CategorySelector
                             poolId={pool.id}
@@ -1015,16 +965,7 @@ export default function AdminDashboard() {
                                 const project = pool.project || pool.rawData?.project || 'defillama';
                                 
                                 switch (project.toLowerCase()) {
-                                  case 'lido':
-                                    return {
-                                      url: 'https://lido.fi',
-                                      label: 'Visit Lido'
-                                    };
-                                  case 'morpho':
-                                    return pool.defiLlamaId ? {
-                                      url: `https://app.morpho.org/vault?vault=${pool.defiLlamaId}`,
-                                      label: 'Visit Morpho'
-                                    } : null;
+                                  // Removed Lido and Morpho cases since we only use DeFi Llama now
                                   default:
                                     return pool.defiLlamaId ? {
                                       url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,

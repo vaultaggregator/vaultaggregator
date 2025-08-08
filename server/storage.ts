@@ -95,8 +95,7 @@ export interface IStorage {
   logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void>;
   getApiKeyUsage(keyId: string, hours?: number): Promise<number>;
   
-  // Data source methods  
-  getDataSources(): Promise<Array<{key: string, name: string}>>;
+  // Removed data source methods since we only use DeFi Llama now
 }
 
 export class DatabaseStorage implements IStorage {
@@ -329,19 +328,8 @@ export class DatabaseStorage implements IStorage {
     if (dataSources && dataSources.length > 0) {
       const dataSourceConditions = [];
       if (dataSources.includes('defillama')) {
-        // Pools from DeFi Llama that are not Morpho or Lido pools
-        dataSourceConditions.push(and(
-          sql`${pools.rawData}->>'project' != 'morpho-blue'`,
-          sql`${pools.project} != 'lido'`
-        ));
-      }
-      if (dataSources.includes('morpho')) {
-        // Pools from Morpho have project='morpho-blue'
-        dataSourceConditions.push(sql`${pools.rawData}->>'project' = 'morpho-blue'`);
-      }
-      if (dataSources.includes('lido')) {
-        // Pools from Lido have project='lido'
-        dataSourceConditions.push(eq(pools.project, 'lido'));
+        // All pools are now from DeFi Llama only
+        dataSourceConditions.push(sql`1=1`); // Always true since we only have DeFi Llama
       }
       if (dataSourceConditions.length > 0) {
         conditions.push(or(...dataSourceConditions));
@@ -671,39 +659,7 @@ export class DatabaseStorage implements IStorage {
     return Number(result[0]?.count) || 0;
   }
   
-  async getDataSources(): Promise<Array<{key: string, name: string}>> {
-    const result = await db
-      .select({
-        source: sql<string>`DISTINCT ${pools.project}`,
-      })
-      .from(pools)
-      .where(
-        and(
-          eq(pools.isActive, true),
-          sql`${pools.project} IS NOT NULL`,
-          sql`${pools.project} != ''`
-        )
-      );
-
-    const dataSources = result
-      .map(row => row.source)
-      .filter(source => source && source !== 'null' && source.trim() !== '')
-      .map(source => {
-        // Map source names to display names
-        const sourceMap: Record<string, string> = {
-          'defillama': 'DeFi Llama API',
-          'morpho': 'Morpho API', 
-          'lido': 'Lido API'
-        };
-        return {
-          key: source,
-          name: sourceMap[source] || source.charAt(0).toUpperCase() + source.slice(1) + ' API'
-        };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
-
-    return dataSources;
-  }
+  // Removed getDataSources method since we only use DeFi Llama now
 
   async removeDuplicatePools(): Promise<number> {
     // Find duplicate pools based on platformId + tokenPair + chainId, keeping the one with data

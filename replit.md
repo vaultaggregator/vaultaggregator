@@ -17,9 +17,9 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Checkbox Filters**: Replaced dropdown filters with checkbox-based multi-select filters in admin panel for better UX and multiple selection capabilities
 - **Data Source Filtering**: Fixed Morpho pool identification to properly distinguish between DeFi Llama and Morpho data sources using project field
 - **Duplicate Pool Cleanup**: Removed 200 duplicate pools that had empty defi_llama_id fields, ensuring data consistency and eliminating vault duplication in the admin panel
-- **Lido API Integration**: Added Lido as a third data source for stETH staking APR data, including both SMA (7-day average) and latest APR endpoints
-- **Dynamic Data Sources**: Fixed admin panel to automatically detect and display all available data sources instead of hardcoded values, ensuring Lido and future APIs appear automatically
-- **Admin Visibility Protection**: Fixed critical upsertPool method to preserve admin visibility settings during sync operations - new pools default to hidden (isVisible: false) and existing pools maintain their admin-configured visibility status
+- **Simplified Data Architecture**: Removed all Lido and Morpho data sources to use exclusively DeFi Llama APIs as single source of truth
+- **Streamlined Admin Panel**: Removed data source filtering UI and related components, focusing on core pool management functionality
+- **Simplified Synchronization**: Removed multi-source sync complexity in favor of single DeFi Llama API integration for cleaner architecture
 
 # User Preferences
 
@@ -81,11 +81,7 @@ The authentication is minimal and focused on admin panel access rather than end-
 
 ## Third-Party Services
 
-**DeFi Llama API**: Primary data source for yield farming opportunities, providing real-time APY, TVL, and pool metadata across multiple DeFi protocols and blockchains.
-
-**Morpho GraphQL API**: Secondary data source specifically for Morpho protocol vaults and markets, providing authenticated yield data, vault allocations, and historical APY information across supported networks (Ethereum, Arbitrum, Base, Polygon).
-
-**Lido API**: Third data source for Ethereum liquid staking protocol, providing stETH staking APR data with both 7-day Simple Moving Average (SMA) and latest APR values for comprehensive staking yield information.
+**DeFi Llama API**: Primary and only data source for yield farming opportunities, providing real-time APY, TVL, and pool metadata across multiple DeFi protocols and blockchains. Simplified architecture ensures data consistency and maintainability.
 
 ## Database Services
 
@@ -105,4 +101,4 @@ The authentication is minimal and focused on admin panel access rather than end-
 
 ## Key Integrations
 
-The application maintains real-time data accuracy through automated synchronization with DeFi Llama's yields API, Morpho's GraphQL API, and Lido's staking API, automatically creating and updating chain, platform, and pool records. The background scheduler runs every 10 minutes to keep all data sources synchronized. The admin panel provides visibility controls for managing which opportunities are displayed to users.
+The application maintains real-time data accuracy through automated synchronization with DeFi Llama's yields API, automatically creating and updating chain, platform, and pool records. The background scheduler runs every 10 minutes to keep data synchronized. The admin panel provides visibility controls for managing which opportunities are displayed to users.
