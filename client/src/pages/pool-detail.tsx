@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TokenDisplay } from "@/components/TokenDisplay";
+import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -434,32 +435,7 @@ export default function PoolDetail() {
               {/* Action Buttons */}
               <div className="flex space-x-3">
                 {(() => {
-                  const getExternalLink = () => {
-                    // Check if this is a Morpho pool by platform name
-                    const isMorpho = pool.platform?.displayName?.toLowerCase().includes('morpho') || 
-                                   pool.platform?.name?.toLowerCase().includes('morpho');
-                    
-                    if (isMorpho && pool.rawData && typeof pool.rawData === 'object') {
-                      const rawData = pool.rawData as any;
-                      if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
-                        // Use the first underlying token for Morpho vault URL
-                        const underlyingToken = rawData.underlyingTokens[0];
-                        const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
-                        return {
-                          url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
-                          label: 'Visit Morpho Platform'
-                        };
-                      }
-                    }
-                    
-                    // Default to DeFi Llama for all other pools
-                    return pool.defiLlamaId ? {
-                      url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,
-                      label: 'Visit DeFiLlama'
-                    } : null;
-                  };
-
-                  const linkData = getExternalLink();
+                  const linkData = generatePlatformVisitUrl(pool);
                   return linkData ? (
                     <Button 
                       variant="outline" 

@@ -567,12 +567,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/platforms/:id", requireAuth, async (req, res) => {
     try {
-      const { displayName, name, website } = req.body;
+      const { displayName, name, website, visitUrlTemplate } = req.body;
       
       const updateData: any = {};
       if (displayName) updateData.displayName = displayName;
       if (name) updateData.name = name;
       if (website !== undefined) updateData.website = website;
+      if (visitUrlTemplate !== undefined) updateData.visitUrlTemplate = visitUrlTemplate;
 
       const platform = await storage.updatePlatform(req.params.id, updateData);
       if (!platform) {

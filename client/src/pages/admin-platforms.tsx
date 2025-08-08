@@ -17,6 +17,7 @@ interface Platform {
   slug: string;
   logoUrl?: string;
   website?: string;
+  visitUrlTemplate?: string;
   isActive: boolean;
   createdAt: string;
 }
@@ -27,6 +28,7 @@ export default function AdminPlatforms() {
   const [editName, setEditName] = useState("");
   const [editDisplayName, setEditDisplayName] = useState("");
   const [editWebsite, setEditWebsite] = useState("");
+  const [editUrlTemplate, setEditUrlTemplate] = useState("");
 
   const { data: platforms = [], isLoading, refetch } = useQuery<Platform[]>({
     queryKey: ["/api/platforms"],
@@ -115,6 +117,7 @@ export default function AdminPlatforms() {
     setEditName(platform.name);
     setEditDisplayName(platform.displayName);
     setEditWebsite(platform.website || "");
+    setEditUrlTemplate(platform.visitUrlTemplate || "");
   };
 
   const cancelEditing = () => {
@@ -122,6 +125,7 @@ export default function AdminPlatforms() {
     setEditName("");
     setEditDisplayName("");
     setEditWebsite("");
+    setEditUrlTemplate("");
   };
 
   const savePlatform = () => {
@@ -133,6 +137,7 @@ export default function AdminPlatforms() {
         name: editName,
         displayName: editDisplayName,
         website: editWebsite || undefined,
+        visitUrlTemplate: editUrlTemplate || undefined,
       },
     });
   };
@@ -227,6 +232,23 @@ export default function AdminPlatforms() {
                         placeholder="Website URL (optional)"
                         data-testid={`input-edit-website-${platform.id}`}
                       />
+                      <div className="space-y-2">
+                        <Input
+                          value={editUrlTemplate}
+                          onChange={(e) => setEditUrlTemplate(e.target.value)}
+                          placeholder="Visit URL Template (optional)"
+                          data-testid={`input-edit-url-template-${platform.id}`}
+                        />
+                        <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                          <p className="font-medium mb-1">Available variables:</p>
+                          <p>• {`{chainName}`} - Chain name (ethereum, arbitrum, etc.)</p>
+                          <p>• {`{underlyingToken}`} - First underlying token address</p>
+                          <p>• {`{defiLlamaId}`} - DeFi Llama pool ID</p>
+                          <p>• {`{poolAddress}`} - Pool contract address</p>
+                          <p className="mt-1 font-medium">Example:</p>
+                          <code className="text-xs">https://app.morpho.org/{`{chainName}`}/vault/{`{underlyingToken}`}</code>
+                        </div>
+                      </div>
                       <div className="flex space-x-2">
                         <Button 
                           size="sm" 
@@ -260,6 +282,14 @@ export default function AdminPlatforms() {
                             >
                               {platform.website}
                             </a>
+                          </p>
+                        )}
+                        {platform.visitUrlTemplate && (
+                          <p className="text-sm text-gray-600">
+                            URL Template: 
+                            <code className="text-xs bg-gray-100 px-1 py-0.5 rounded ml-1">
+                              {platform.visitUrlTemplate}
+                            </code>
                           </p>
                         )}
                         <p className="text-sm text-gray-500 mt-1">

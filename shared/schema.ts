@@ -60,6 +60,7 @@ export const platforms = pgTable("platforms", {
   slug: text("slug").notNull().unique(),
   logoUrl: text("logo_url"),
   website: text("website"),
+  visitUrlTemplate: text("visit_url_template"), // Custom URL template with variables
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
