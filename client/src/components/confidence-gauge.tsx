@@ -8,10 +8,10 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   // Normalize confidence to 0-100 range
   const normalizedConfidence = Math.max(0, Math.min(100, confidence));
   
-  // Calculate the angle for the needle on upward-facing semicircle
-  // For upward arc: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)
-  // Since sin() values are negative below 0°, we need to map differently
-  const angle = (normalizedConfidence / 100) * 180;
+  // Calculate the angle for the needle on upward-facing semicircle (horizontally flipped)
+  // For flipped upward arc: 0% = 0° (right), 50% = 90° (top), 100% = 180° (left)
+  // Horizontally flip by reversing the angle mapping
+  const angle = 180 - (normalizedConfidence / 100) * 180;
   
   // Color mappings based on confidence level
   const getConfidenceColor = (conf: number) => {
@@ -122,9 +122,9 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           />
         </g>
         
-        {/* Scale markers at key points - upward semicircle */}
+        {/* Scale markers at key points - horizontally flipped upward semicircle */}
         {[0, 25, 50, 75, 100].map((value, index) => {
-          const markerAngle = (value / 100) * 180;
+          const markerAngle = 180 - (value / 100) * 180;
           const markerStartX = centerX + (radius - 10) * Math.cos((markerAngle * Math.PI) / 180);
           const markerStartY = centerY - (radius - 10) * Math.sin((markerAngle * Math.PI) / 180);
           const markerEndX = centerX + (radius + 6) * Math.cos((markerAngle * Math.PI) / 180);
@@ -143,13 +143,13 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           );
         })}
         
-        {/* Scale labels for upward semicircle - positioned on upward arc */}
+        {/* Scale labels for horizontally flipped upward semicircle */}
         {[
           { value: 0, label: "0" },
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
-          const labelAngle = (value / 100) * 180;
+          const labelAngle = 180 - (value / 100) * 180;
           const labelDistance = radius + 25;
           const labelX = centerX + labelDistance * Math.cos((labelAngle * Math.PI) / 180);
           const labelY = centerY - labelDistance * Math.sin((labelAngle * Math.PI) / 180);
