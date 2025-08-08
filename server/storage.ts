@@ -697,6 +697,37 @@ export class DatabaseStorage implements IStorage {
 
     return dataSources;
   }
+
+  async removeDuplicatePools(): Promise<number> {
+    // Find duplicate pools based on platformId + tokenPair + chainId, keeping the one with data
+    const duplicates = await this.db.execute(sql`
+      WITH ranked_pools AS (
+        SELECT id, 
+               ROW_NUMBER() OVER (
+                 PARTITION BY platform_id, token_pair, chain_id 
+                 ORDER BY 
+                   CASE WHEN defi_llama_id IS NOT NULL THEN 1 ELSE 2 END,
+                   CASE WHEN is_visible = true THEN 1 ELSE 2 END,
+                   created_at DESC
+               ) as rn
+        FROM pools
+      )
+      SELECT id FROM ranked_pools WHERE rn > 1
+    `);
+
+    if (duplicates.rows.length > 0) {
+      const idsToDelete = duplicates.rows.map(row => row.id as string);
+      await this.db.delete(pools).where(sql`id = ANY(${idsToDelete})`);
+      console.log(`Removed ${idsToDelete.length} duplicate pools`);
+      return idsToDelete.length;
+    }
+    
+    return 0;
+  }
+
+  async getVisiblePoolsForProtection(): Promise<Pool[]> {
+    return await this.db.select().from(pools).where(eq(pools.isVisible, true));
+  }
 }
 
 export const storage = new DatabaseStorage();

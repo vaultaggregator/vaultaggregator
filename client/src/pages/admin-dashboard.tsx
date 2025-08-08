@@ -100,6 +100,8 @@ export default function AdminDashboard() {
   const [pageSize, setPageSize] = useState(50);
   const [selectedPoolForModal, setSelectedPoolForModal] = useState<any>(null);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanResults, setScanResults] = useState<any>(null);
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -252,8 +254,8 @@ export default function AdminDashboard() {
       queryClient.setQueryData<{pools: PoolWithRelations[], pagination: any}>(
         ["/api/admin/pools", { 
           search, 
-          platformId: selectedPlatform === "all" ? "" : selectedPlatform, 
-          chainId: selectedChain === "all" ? "" : selectedChain 
+          platformIds: selectedPlatforms.length > 0 ? selectedPlatforms.join(',') : undefined,
+          chainIds: selectedChains.length > 0 ? selectedChains.join(',') : undefined 
         }],
         (oldData) => {
           if (!oldData) return oldData;
@@ -428,12 +430,12 @@ export default function AdminDashboard() {
     
     switch (sortField) {
       case 'platform':
-        aValue = a.platform.displayName.toLowerCase();
-        bValue = b.platform.displayName.toLowerCase();
+        aValue = a.platform?.displayName?.toLowerCase() || '';
+        bValue = b.platform?.displayName?.toLowerCase() || '';
         break;
       case 'chain':
-        aValue = a.chain.displayName.toLowerCase();
-        bValue = b.chain.displayName.toLowerCase();
+        aValue = a.chain?.displayName?.toLowerCase() || '';
+        bValue = b.chain?.displayName?.toLowerCase() || '';
         break;
       case 'apy':
         aValue = parseFloat(a.apy || '0');
@@ -473,6 +475,36 @@ export default function AdminDashboard() {
   const handleClosePoolModal = () => {
     setIsPoolModalOpen(false);
     setSelectedPoolForModal(null);
+  };
+
+  // Manual scan mutation
+  const scanMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("/api/admin/scan-pools", {}, { method: "POST" });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      setIsScanning(false);
+      setScanResults(data);
+      toast({
+        title: "Scan Complete",
+        description: `Found ${data.newPools} new pools, ${data.missingPools} missing pools, ${data.duplicatesRemoved} duplicates removed`,
+      });
+    },
+    onError: (error: any) => {
+      setIsScanning(false);
+      toast({
+        title: "Scan Failed",
+        description: error.message || "Failed to scan for pools",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleScanPools = () => {
+    setIsScanning(true);
+    setScanResults(null);
+    scanMutation.mutate();
   };
 
   // Redirect if not authenticated
@@ -537,6 +569,15 @@ export default function AdminDashboard() {
                 data-testid="button-api-keys"
               >
                 API Keys
+              </Button>
+              <Button 
+                onClick={handleScanPools}
+                disabled={isScanning}
+                variant="outline" 
+                size="sm"
+                data-testid="button-scan-pools"
+              >
+                {isScanning ? "Scanning..." : "Scan Pools"}
               </Button>
 
               <Button 
@@ -880,7 +921,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="py-3 px-2">
                           <EditableField
-                            value={pool.platform.displayName}
+                            value={pool.platform?.displayName || 'Unknown Platform'}
                             onSave={(newValue) => updatePlatformName(pool.platformId, newValue)}
                             className="text-sm text-gray-600 dark:text-gray-400"
                             data-testid={`edit-platform-name-${pool.id}`}
@@ -889,9 +930,9 @@ export default function AdminDashboard() {
                         <td className="py-3 px-2">
                           <Badge 
                             variant="secondary" 
-                            style={{ backgroundColor: `${pool.chain.color}20`, color: pool.chain.color }}
+                            style={{ backgroundColor: `${pool.chain?.color || '#000'}20`, color: pool.chain?.color || '#000' }}
                           >
-                            {pool.chain.displayName}
+                            {pool.chain?.displayName || 'Unknown Chain'}
                           </Badge>
                         </td>
                         <td className="py-3 px-2 text-right">
@@ -942,9 +983,9 @@ export default function AdminDashboard() {
                               </Tooltip>
                             </TooltipProvider>
                             
-                            {pool.poolId && (
+                            {pool.defiLlamaId && (
                               <a
-                                href={`https://defillama.com/yields/pool/${pool.poolId}`}
+                                href={`https://defillama.com/yields/pool/${pool.defiLlamaId}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"

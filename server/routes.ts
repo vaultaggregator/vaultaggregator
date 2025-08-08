@@ -580,8 +580,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/sync/lido", requireAuth, async (req, res) => {
     try {
       console.log("Starting manual Lido sync...");
-      const { lidoService } = await import("./services/lidoService");
-      await lidoService.syncData();
+      const lidoService = await import("./services/lidoService");
+      const lidoServiceInstance = new lidoService.LidoService();
+      await lidoServiceInstance.syncData();
       res.json({ success: true, message: "Lido data synchronization completed" });
     } catch (error) {
       console.error("Error syncing Lido data:", error);
@@ -912,6 +913,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual scan for new pools
+  app.post("/api/admin/scan-pools", requireAuth, async (req: any, res) => {
+    try {
+      console.log("Manual pool scan initiated by admin");
+      
+      // Remove duplicates first
+      const duplicatesRemoved = await storage.removeDuplicatePools();
+      console.log(`Removed ${duplicatesRemoved} duplicate pools`);
+
+      // Get current visible pools to protect them
+      const visiblePools = await storage.getVisiblePoolsForProtection();
+      console.log(`Protecting ${visiblePools.length} visible pools during scan`);
+
+      // Scan each data source
+      let newPoolsCount = 0;
+      let missingPoolsCount = 0;
+
+      try {
+        // Scan DeFi Llama
+        const defiLlamaService = await import("./services/defi-llama");
+        await defiLlamaService.syncYieldData(); // Sync pools normally
+        
+        // Scan Morpho
+        const morphoService = await import("./services/morphoService");
+        const morphoServiceInstance = new morphoService.MorphoService();
+        await morphoServiceInstance.syncData(); // Sync pools normally
+
+        // Scan Lido
+        const lidoService = await import("./services/lidoService");
+        const lidoServiceInstance = new lidoService.LidoService();
+        await lidoServiceInstance.syncData(); // Sync pools normally
+
+      } catch (syncError) {
+        console.error("Error during data source sync:", syncError);
+      }
+
+      res.json({
+        success: true,
+        message: "Pool scan completed successfully",
+        newPools: newPoolsCount,
+        missingPools: missingPoolsCount,
+        duplicatesRemoved,
+        visiblePoolsProtected: visiblePools.length
+      });
+
+    } catch (error: any) {
+      console.error("Error during pool scan:", error);
+      res.status(500).json({ error: error.message || "Failed to scan pools" });
+    }
+  });
+
   // Category icon upload routes
   app.post("/api/admin/categories/:id/icon/upload", requireAuth, async (req, res) => {
     try {
@@ -1202,13 +1254,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import all sync functions
       const { syncData } = await import("./services/defi-llama");
       const { syncMorphoData } = await import("./services/morpho-data");
-      const { lidoService } = await import("./services/lidoService");
+      const lidoService = await import("./services/lidoService");
       
       // Run all syncs in parallel
       const syncResults = await Promise.allSettled([
         syncData(),
         syncMorphoData(),
-        lidoService.syncLidoData()
+        new lidoService.LidoService().syncData()
       ]);
       
       const results = {
