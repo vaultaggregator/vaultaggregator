@@ -172,16 +172,20 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
   };
 
   const handleCreate = () => {
-    // Create consolidated raw data by merging selected data from each field
+    // Get the raw data from the poolMeta selection for base data
+    const baseRawData = pools.find(p => p.id === selectedFields.poolMeta)?.rawData || {};
+    
+    // Create consolidated raw data with explicitly selected values taking precedence
     const consolidatedRawData = {
+      // Start with base raw data
+      ...baseRawData,
+      // Override with specifically selected values
       apy: parseFloat(consolidatedData.apy),
       tvlUsd: parseFloat(consolidatedData.tvl),
       poolMeta: consolidatedData.poolMeta,
-      underlyingTokens: consolidatedData.underlyingTokens,
+      underlyingTokens: consolidatedData.underlyingTokens, // This must come after spread to ensure it takes precedence
       project: consolidatedData.project,
       symbol: consolidatedData.tokenPair,
-      // Get raw data from the selected pool for additional context
-      ...(pools.find(p => p.id === selectedFields.poolMeta)?.rawData || {}),
     };
 
     const payload = {
@@ -201,6 +205,7 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
     console.log("Creating consolidated pool with payload:", payload);
     console.log("Selected fields:", selectedFields);
     console.log("Consolidated data:", consolidatedData);
+    console.log("Final underlying tokens in payload:", consolidatedRawData.underlyingTokens);
     createConsolidatedPoolMutation.mutate(payload);
   };
 
