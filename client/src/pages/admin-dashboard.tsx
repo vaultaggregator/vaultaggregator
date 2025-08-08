@@ -426,6 +426,42 @@ export default function AdminDashboard() {
 
   const selectedPoolsData = pools.filter(pool => selectedPoolsForConsolidation.includes(pool.id));
 
+  // Consolidate pools mutation
+  const consolidatePoolsMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch("/api/admin/pools/consolidate", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create consolidated pool");
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Consolidated pool created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
+      setIsConsolidationModalOpen(false);
+      setSelectedPoolsForConsolidation([]);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create consolidated pool",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Reset consolidated pools mutation
   const resetConsolidatedPoolsMutation = useMutation({
     mutationFn: async () => {
