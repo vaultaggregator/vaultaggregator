@@ -339,28 +339,18 @@ export const ConvexIcon = ({ className = "", size = 24 }: PlatformIconProps) => 
   </svg>
 );
 
-// Lido - Use actual original logo
+// Lido - Fallback icon (logos now served from database URLs)
 export const LidoIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
-  <img 
-    src="https://static.lido.fi/app-brand/logo/lido-colored.svg"
-    alt="Lido"
-    width={size}
-    height={size}
-    className={`${className} rounded-full`}
-    style={{ minWidth: size, minHeight: size }}
-  />
+  <div className={`w-${size} h-${size} ${className} rounded-full bg-orange-500 flex items-center justify-center`}>
+    <span className="text-white font-bold text-sm">L</span>
+  </div>
 );
 
-// Morpho - Use actual original logo  
+// Morpho - Fallback icon (logos now served from database URLs)
 export const MorphoIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
-  <img 
-    src="https://brand.morpho.org/assets/icon.svg"
-    alt="Morpho"
-    width={size}
-    height={size}
-    className={`${className} rounded-full`}
-    style={{ minWidth: size, minHeight: size }}
-  />
+  <div className={`w-${size} h-${size} ${className} rounded-full bg-blue-600 flex items-center justify-center`}>
+    <span className="text-white font-bold text-sm">M</span>
+  </div>
 );
 
 // Default platform icon
