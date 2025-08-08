@@ -1,11 +1,19 @@
 import { 
   pools, platforms, chains, tokens, notes, users, categories, poolCategories, apiKeys, apiKeyUsage, aiOutlooks,
+  riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
+  discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications,
   type Pool, type Platform, type Chain, type Token, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage,
-  type AIOutlook, type InsertAIOutlook
+  type AIOutlook, type InsertAIOutlook, type RiskScore, type InsertRiskScore,
+  type UserAlert, type InsertUserAlert, type AlertNotification, type InsertAlertNotification,
+  type PoolReview, type InsertPoolReview, type PoolReviewWithUser, type ReviewVote, type InsertReviewVote,
+  type Strategy, type InsertStrategy, type StrategyWithPools, type StrategyPool, type InsertStrategyPool,
+  type Discussion, type InsertDiscussion, type DiscussionWithReplies, type DiscussionReply, type InsertDiscussionReply,
+  type Watchlist, type InsertWatchlist, type WatchlistWithPools, type WatchlistPool, type InsertWatchlistPool,
+  type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
@@ -100,8 +108,66 @@ export interface IStorage {
   createAIOutlook(outlook: InsertAIOutlook): Promise<AIOutlook>;
   getValidAIOutlook(poolId: string): Promise<AIOutlook | undefined>;
   deleteExpiredOutlooks(): Promise<number>;
-  
-  // Removed data source methods since we only use DeFi Llama now
+
+  // 1. Risk Scoring methods
+  calculateAndStoreRiskScore(poolId: string): Promise<RiskScore>;
+  getRiskScore(poolId: string): Promise<RiskScore | undefined>;
+  updateRiskScore(poolId: string, riskData: Partial<InsertRiskScore>): Promise<RiskScore | undefined>;
+  deleteExpiredRiskScores(): Promise<number>;
+
+  // 2. Smart Alerts methods
+  createUserAlert(alert: InsertUserAlert): Promise<UserAlert>;
+  getUserAlerts(userId: string, isActive?: boolean): Promise<UserAlert[]>;
+  getAlertsByPool(poolId: string): Promise<UserAlert[]>;
+  updateUserAlert(id: string, alert: Partial<InsertUserAlert>): Promise<UserAlert | undefined>;
+  deleteUserAlert(id: string): Promise<boolean>;
+  createAlertNotification(notification: InsertAlertNotification): Promise<AlertNotification>;
+  getUserNotifications(userId: string, isRead?: boolean): Promise<AlertNotification[]>;
+  markNotificationAsRead(id: string): Promise<boolean>;
+  triggerAlert(alertId: string, message: string, severity: string): Promise<AlertNotification>;
+
+  // 3. User Reviews & Ratings methods
+  createPoolReview(review: InsertPoolReview): Promise<PoolReview>;
+  getPoolReviews(poolId: string): Promise<PoolReviewWithUser[]>;
+  getUserReviews(userId: string): Promise<PoolReview[]>;
+  updatePoolReview(id: string, review: Partial<InsertPoolReview>): Promise<PoolReview | undefined>;
+  deletePoolReview(id: string): Promise<boolean>;
+  voteOnReview(vote: InsertReviewVote): Promise<ReviewVote>;
+  removeReviewVote(reviewId: string, userId: string): Promise<boolean>;
+  getPoolRating(poolId: string): Promise<{ averageRating: number; totalReviews: number; }>;
+
+  // 4. Community Insights methods
+  createStrategy(strategy: InsertStrategy): Promise<Strategy>;
+  getStrategies(options?: { userId?: string; category?: string; riskLevel?: string; isPublic?: boolean; }): Promise<StrategyWithPools[]>;
+  getStrategy(id: string): Promise<StrategyWithPools | undefined>;
+  updateStrategy(id: string, strategy: Partial<InsertStrategy>): Promise<Strategy | undefined>;
+  deleteStrategy(id: string): Promise<boolean>;
+  addPoolToStrategy(strategyPool: InsertStrategyPool): Promise<StrategyPool>;
+  removePoolFromStrategy(strategyId: string, poolId: string): Promise<boolean>;
+  upvoteStrategy(strategyId: string): Promise<boolean>;
+  createDiscussion(discussion: InsertDiscussion): Promise<Discussion>;
+  getDiscussions(options?: { poolId?: string; strategyId?: string; category?: string; }): Promise<DiscussionWithReplies[]>;
+  createDiscussionReply(reply: InsertDiscussionReply): Promise<DiscussionReply>;
+
+  // 5. Custom Watchlists methods
+  createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist>;
+  getUserWatchlists(userId: string): Promise<WatchlistWithPools[]>;
+  getWatchlist(id: string): Promise<WatchlistWithPools | undefined>;
+  updateWatchlist(id: string, watchlist: Partial<InsertWatchlist>): Promise<Watchlist | undefined>;
+  deleteWatchlist(id: string): Promise<boolean>;
+  addPoolToWatchlist(watchlistPool: InsertWatchlistPool): Promise<WatchlistPool>;
+  removePoolFromWatchlist(watchlistId: string, poolId: string): Promise<boolean>;
+  getWatchlistAlerts(userId: string): Promise<UserAlert[]>;
+
+  // 6. API Marketplace methods
+  createApiEndpoint(endpoint: InsertApiEndpoint): Promise<ApiEndpoint>;
+  getApiEndpoints(category?: string, accessLevel?: string): Promise<ApiEndpoint[]>;
+  getApiEndpoint(id: string): Promise<ApiEndpoint | undefined>;
+  updateApiEndpoint(id: string, endpoint: Partial<InsertApiEndpoint>): Promise<ApiEndpoint | undefined>;
+  deleteApiEndpoint(id: string): Promise<boolean>;
+  createDeveloperApplication(application: InsertDeveloperApplication): Promise<DeveloperApplication>;
+  getDeveloperApplications(status?: string): Promise<DeveloperApplication[]>;
+  updateDeveloperApplication(id: string, status: string): Promise<DeveloperApplication | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -719,6 +785,663 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${aiOutlooks.expiresAt} <= ${now}`);
     
     return result.rowCount || 0;
+  }
+
+  // 1. Risk Scoring implementations
+  async calculateAndStoreRiskScore(poolId: string): Promise<RiskScore> {
+    const pool = await this.getPoolById(poolId);
+    if (!pool) throw new Error("Pool not found");
+
+    // Calculate risk factors based on pool data
+    const smartContractRisk = this.calculateSmartContractRisk(pool);
+    const liquidityRisk = this.calculateLiquidityRisk(pool);
+    const platformRisk = this.calculatePlatformRisk(pool);
+    const marketRisk = this.calculateMarketRisk(pool);
+    
+    const overallScore = Math.round((smartContractRisk + liquidityRisk + platformRisk + marketRisk) / 4);
+    
+    const riskData: InsertRiskScore = {
+      poolId,
+      overallScore,
+      smartContractRisk,
+      liquidityRisk,
+      platformRisk,
+      marketRisk,
+      auditStatus: this.determineAuditStatus(pool),
+      tvlStability: this.calculateTvlStability(pool),
+      apyVolatility: this.calculateApyVolatility(pool)
+    };
+
+    const [existing] = await db.select().from(riskScores).where(eq(riskScores.poolId, poolId));
+    
+    if (existing) {
+      const [updated] = await db
+        .update(riskScores)
+        .set({ ...riskData, updatedAt: new Date() })
+        .where(eq(riskScores.poolId, poolId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(riskScores).values(riskData).returning();
+      return created;
+    }
+  }
+
+  private calculateSmartContractRisk(pool: PoolWithRelations): number {
+    let risk = 50;
+    
+    if (pool.platform.name.toLowerCase().includes('uniswap') || 
+        pool.platform.name.toLowerCase().includes('aave') ||
+        pool.platform.name.toLowerCase().includes('compound')) {
+      risk -= 20;
+    }
+    
+    if (pool.chain.name.toLowerCase() === 'ethereum') risk -= 10;
+    if (pool.chain.name.toLowerCase().includes('polygon')) risk -= 5;
+    
+    return Math.max(1, Math.min(100, risk));
+  }
+
+  private calculateLiquidityRisk(pool: PoolWithRelations): number {
+    const tvl = parseFloat(pool.tvl || "0");
+    
+    if (tvl > 100000000) return 10;
+    if (tvl > 10000000) return 25;
+    if (tvl > 1000000) return 50;
+    if (tvl > 100000) return 75;
+    return 90;
+  }
+
+  private calculatePlatformRisk(pool: PoolWithRelations): number {
+    const knownPlatforms = ['uniswap', 'aave', 'compound', 'curve', 'balancer'];
+    const platformName = pool.platform.name.toLowerCase();
+    
+    if (knownPlatforms.some(known => platformName.includes(known))) {
+      return 20;
+    }
+    
+    return 60;
+  }
+
+  private calculateMarketRisk(pool: PoolWithRelations): number {
+    const apy = parseFloat(pool.apy || "0");
+    
+    if (apy > 50) return 90;
+    if (apy > 20) return 60;
+    if (apy > 10) return 40;
+    if (apy > 5) return 25;
+    return 15;
+  }
+
+  private determineAuditStatus(pool: PoolWithRelations): string {
+    const knownAudited = ['uniswap', 'aave', 'compound', 'curve'];
+    if (knownAudited.some(platform => pool.platform.name.toLowerCase().includes(platform))) {
+      return 'verified';
+    }
+    return 'unknown';
+  }
+
+  private calculateTvlStability(pool: PoolWithRelations): string {
+    return "50.00";
+  }
+
+  private calculateApyVolatility(pool: PoolWithRelations): string {
+    return "25.00";
+  }
+
+  async getRiskScore(poolId: string): Promise<RiskScore | undefined> {
+    const [risk] = await db.select().from(riskScores)
+      .where(eq(riskScores.poolId, poolId))
+      .orderBy(desc(riskScores.updatedAt))
+      .limit(1);
+    return risk;
+  }
+
+  async updateRiskScore(poolId: string, riskData: Partial<InsertRiskScore>): Promise<RiskScore | undefined> {
+    const [updated] = await db
+      .update(riskScores)
+      .set({ ...riskData, updatedAt: new Date() })
+      .where(eq(riskScores.poolId, poolId))
+      .returning();
+    return updated;
+  }
+
+  async deleteExpiredRiskScores(): Promise<number> {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const result = await db
+      .delete(riskScores)
+      .where(sql`${riskScores.updatedAt} < ${oneWeekAgo}`);
+    
+    return result.rowCount || 0;
+  }
+
+  // 2. Smart Alerts implementations
+  async createUserAlert(alert: InsertUserAlert): Promise<UserAlert> {
+    const [created] = await db.insert(userAlerts).values(alert).returning();
+    return created;
+  }
+
+  async getUserAlerts(userId: string, isActive?: boolean): Promise<UserAlert[]> {
+    let query = db.select().from(userAlerts).where(eq(userAlerts.userId, userId));
+    
+    if (isActive !== undefined) {
+      query = query.where(eq(userAlerts.isActive, isActive));
+    }
+    
+    return await query;
+  }
+
+  async getAlertsByPool(poolId: string): Promise<UserAlert[]> {
+    return await db.select().from(userAlerts).where(eq(userAlerts.poolId, poolId));
+  }
+
+  async updateUserAlert(id: string, alert: Partial<InsertUserAlert>): Promise<UserAlert | undefined> {
+    const [updated] = await db
+      .update(userAlerts)
+      .set(alert)
+      .where(eq(userAlerts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteUserAlert(id: string): Promise<boolean> {
+    const result = await db.delete(userAlerts).where(eq(userAlerts.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async createAlertNotification(notification: InsertAlertNotification): Promise<AlertNotification> {
+    const [created] = await db.insert(alertNotifications).values(notification).returning();
+    return created;
+  }
+
+  async getUserNotifications(userId: string, isRead?: boolean): Promise<AlertNotification[]> {
+    let query = db.select().from(alertNotifications)
+      .innerJoin(userAlerts, eq(alertNotifications.alertId, userAlerts.id))
+      .where(eq(userAlerts.userId, userId));
+    
+    if (isRead !== undefined) {
+      query = query.where(eq(alertNotifications.isRead, isRead));
+    }
+    
+    const results = await query;
+    return results.map(r => r.alert_notifications);
+  }
+
+  async markNotificationAsRead(id: string): Promise<boolean> {
+    const result = await db
+      .update(alertNotifications)
+      .set({ isRead: true })
+      .where(eq(alertNotifications.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async triggerAlert(alertId: string, message: string, severity: string): Promise<AlertNotification> {
+    const notification = await this.createAlertNotification({
+      alertId,
+      message,
+      severity
+    });
+    
+    await db
+      .update(userAlerts)
+      .set({ lastTriggered: new Date() })
+      .where(eq(userAlerts.id, alertId));
+    
+    return notification;
+  }
+
+  // 3. User Reviews & Ratings implementations
+  async createPoolReview(review: InsertPoolReview): Promise<PoolReview> {
+    const [created] = await db.insert(poolReviews).values(review).returning();
+    return created;
+  }
+
+  async getPoolReviews(poolId: string): Promise<PoolReviewWithUser[]> {
+    const results = await db.select()
+      .from(poolReviews)
+      .innerJoin(users, eq(poolReviews.userId, users.id))
+      .leftJoin(reviewVotes, eq(poolReviews.id, reviewVotes.reviewId))
+      .where(eq(poolReviews.poolId, poolId))
+      .orderBy(desc(poolReviews.createdAt));
+    
+    const reviewsMap = new Map();
+    results.forEach(result => {
+      const review = result.pool_reviews;
+      if (!reviewsMap.has(review.id)) {
+        reviewsMap.set(review.id, {
+          ...review,
+          user: result.users,
+          votes: []
+        });
+      }
+      if (result.review_votes) {
+        reviewsMap.get(review.id).votes.push(result.review_votes);
+      }
+    });
+    
+    return Array.from(reviewsMap.values());
+  }
+
+  async getUserReviews(userId: string): Promise<PoolReview[]> {
+    return await db.select().from(poolReviews)
+      .where(eq(poolReviews.userId, userId))
+      .orderBy(desc(poolReviews.createdAt));
+  }
+
+  async updatePoolReview(id: string, review: Partial<InsertPoolReview>): Promise<PoolReview | undefined> {
+    const [updated] = await db
+      .update(poolReviews)
+      .set({ ...review, updatedAt: new Date() })
+      .where(eq(poolReviews.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deletePoolReview(id: string): Promise<boolean> {
+    const result = await db.delete(poolReviews).where(eq(poolReviews.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async voteOnReview(vote: InsertReviewVote): Promise<ReviewVote> {
+    await db.delete(reviewVotes)
+      .where(and(
+        eq(reviewVotes.reviewId, vote.reviewId),
+        eq(reviewVotes.userId, vote.userId)
+      ));
+    
+    const [created] = await db.insert(reviewVotes).values(vote).returning();
+    await this.updateReviewVoteCounts(vote.reviewId);
+    
+    return created;
+  }
+
+  async removeReviewVote(reviewId: string, userId: string): Promise<boolean> {
+    const result = await db.delete(reviewVotes)
+      .where(and(
+        eq(reviewVotes.reviewId, reviewId),
+        eq(reviewVotes.userId, userId)
+      ));
+    
+    await this.updateReviewVoteCounts(reviewId);
+    return (result.rowCount || 0) > 0;
+  }
+
+  private async updateReviewVoteCounts(reviewId: string): Promise<void> {
+    const votes = await db.select().from(reviewVotes).where(eq(reviewVotes.reviewId, reviewId));
+    
+    const upvotes = votes.filter(v => v.voteType === 'upvote').length;
+    const downvotes = votes.filter(v => v.voteType === 'downvote').length;
+    
+    await db
+      .update(poolReviews)
+      .set({ upvotes, downvotes })
+      .where(eq(poolReviews.id, reviewId));
+  }
+
+  async getPoolRating(poolId: string): Promise<{ averageRating: number; totalReviews: number; }> {
+    const result = await db.select({
+      averageRating: sql<number>`AVG(${poolReviews.rating})`,
+      totalReviews: sql<number>`COUNT(*)`
+    }).from(poolReviews).where(eq(poolReviews.poolId, poolId));
+    
+    return {
+      averageRating: result[0]?.averageRating || 0,
+      totalReviews: result[0]?.totalReviews || 0
+    };
+  }
+
+  // 4. Community Insights implementations
+  async createStrategy(strategy: InsertStrategy): Promise<Strategy> {
+    const [created] = await db.insert(strategies).values(strategy).returning();
+    return created;
+  }
+
+  async getStrategies(options?: { userId?: string; category?: string; riskLevel?: string; isPublic?: boolean; }): Promise<StrategyWithPools[]> {
+    let query = db.select()
+      .from(strategies)
+      .innerJoin(users, eq(strategies.userId, users.id))
+      .leftJoin(strategyPools, eq(strategies.id, strategyPools.strategyId))
+      .leftJoin(pools, eq(strategyPools.poolId, pools.id))
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id));
+
+    const conditions = [];
+    if (options?.userId) conditions.push(eq(strategies.userId, options.userId));
+    if (options?.category) conditions.push(eq(strategies.category, options.category));
+    if (options?.riskLevel) conditions.push(eq(strategies.riskLevel, options.riskLevel));
+    if (options?.isPublic !== undefined) conditions.push(eq(strategies.isPublic, options.isPublic));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const results = await query.orderBy(desc(strategies.createdAt));
+
+    const strategiesMap = new Map();
+    results.forEach(result => {
+      const strategy = result.strategies;
+      if (!strategiesMap.has(strategy.id)) {
+        strategiesMap.set(strategy.id, {
+          ...strategy,
+          user: result.users,
+          strategyPools: []
+        });
+      }
+      if (result.strategy_pools && result.pools) {
+        strategiesMap.get(strategy.id).strategyPools.push({
+          ...result.strategy_pools,
+          pool: {
+            ...result.pools,
+            platform: result.platforms,
+            chain: result.chains
+          }
+        });
+      }
+    });
+
+    return Array.from(strategiesMap.values());
+  }
+
+  async getStrategy(id: string): Promise<StrategyWithPools | undefined> {
+    const results = await db.select()
+      .from(strategies)
+      .innerJoin(users, eq(strategies.userId, users.id))
+      .leftJoin(strategyPools, eq(strategies.id, strategyPools.strategyId))
+      .leftJoin(pools, eq(strategyPools.poolId, pools.id))
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(eq(strategies.id, id));
+
+    if (results.length === 0) return undefined;
+
+    const strategy = results[0].strategies;
+    const user = results[0].users;
+    const strategyPools = results
+      .filter(r => r.strategy_pools && r.pools)
+      .map(r => ({
+        ...r.strategy_pools!,
+        pool: {
+          ...r.pools!,
+          platform: r.platforms!,
+          chain: r.chains!
+        }
+      }));
+
+    return {
+      ...strategy,
+      user,
+      strategyPools
+    };
+  }
+
+  async updateStrategy(id: string, strategy: Partial<InsertStrategy>): Promise<Strategy | undefined> {
+    const [updated] = await db
+      .update(strategies)
+      .set({ ...strategy, updatedAt: new Date() })
+      .where(eq(strategies.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteStrategy(id: string): Promise<boolean> {
+    const result = await db.delete(strategies).where(eq(strategies.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async addPoolToStrategy(strategyPool: InsertStrategyPool): Promise<StrategyPool> {
+    const [created] = await db.insert(strategyPools).values(strategyPool).returning();
+    return created;
+  }
+
+  async removePoolFromStrategy(strategyId: string, poolId: string): Promise<boolean> {
+    const result = await db.delete(strategyPools)
+      .where(and(
+        eq(strategyPools.strategyId, strategyId),
+        eq(strategyPools.poolId, poolId)
+      ));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async upvoteStrategy(strategyId: string): Promise<boolean> {
+    await db
+      .update(strategies)
+      .set({ upvotes: sql`${strategies.upvotes} + 1` })
+      .where(eq(strategies.id, strategyId));
+    return true;
+  }
+
+  async createDiscussion(discussion: InsertDiscussion): Promise<Discussion> {
+    const [created] = await db.insert(discussions).values(discussion).returning();
+    return created;
+  }
+
+  async getDiscussions(options?: { poolId?: string; strategyId?: string; category?: string; }): Promise<DiscussionWithReplies[]> {
+    let query = db.select()
+      .from(discussions)
+      .innerJoin(users, eq(discussions.userId, users.id))
+      .leftJoin(pools, eq(discussions.poolId, pools.id))
+      .leftJoin(strategies, eq(discussions.strategyId, strategies.id))
+      .leftJoin(discussionReplies, eq(discussions.id, discussionReplies.discussionId));
+
+    const conditions = [];
+    if (options?.poolId) conditions.push(eq(discussions.poolId, options.poolId));
+    if (options?.strategyId) conditions.push(eq(discussions.strategyId, options.strategyId));
+    if (options?.category) conditions.push(eq(discussions.category, options.category));
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const results = await query.orderBy(desc(discussions.createdAt));
+
+    const discussionsMap = new Map();
+    results.forEach(result => {
+      const discussion = result.discussions;
+      if (!discussionsMap.has(discussion.id)) {
+        discussionsMap.set(discussion.id, {
+          ...discussion,
+          user: result.users,
+          pool: result.pools || undefined,
+          strategy: result.strategies || undefined,
+          replies: []
+        });
+      }
+      if (result.discussion_replies) {
+        discussionsMap.get(discussion.id).replies.push({
+          ...result.discussion_replies,
+          user: result.users
+        });
+      }
+    });
+
+    return Array.from(discussionsMap.values());
+  }
+
+  async createDiscussionReply(reply: InsertDiscussionReply): Promise<DiscussionReply> {
+    const [created] = await db.insert(discussionReplies).values(reply).returning();
+    
+    await db
+      .update(discussions)
+      .set({ 
+        replyCount: sql`${discussions.replyCount} + 1`,
+        lastReplyAt: new Date()
+      })
+      .where(eq(discussions.id, reply.discussionId));
+    
+    return created;
+  }
+
+  // 5. Custom Watchlists implementations
+  async createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist> {
+    const [created] = await db.insert(watchlists).values(watchlist).returning();
+    return created;
+  }
+
+  async getUserWatchlists(userId: string): Promise<WatchlistWithPools[]> {
+    const results = await db.select()
+      .from(watchlists)
+      .leftJoin(watchlistPools, eq(watchlists.id, watchlistPools.watchlistId))
+      .leftJoin(pools, eq(watchlistPools.poolId, pools.id))
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(eq(watchlists.userId, userId))
+      .orderBy(desc(watchlists.createdAt));
+
+    const watchlistsMap = new Map();
+    results.forEach(result => {
+      const watchlist = result.watchlists;
+      if (!watchlistsMap.has(watchlist.id)) {
+        watchlistsMap.set(watchlist.id, {
+          ...watchlist,
+          watchlistPools: []
+        });
+      }
+      if (result.watchlist_pools && result.pools) {
+        watchlistsMap.get(watchlist.id).watchlistPools.push({
+          ...result.watchlist_pools,
+          pool: {
+            ...result.pools,
+            platform: result.platforms,
+            chain: result.chains
+          }
+        });
+      }
+    });
+
+    return Array.from(watchlistsMap.values());
+  }
+
+  async getWatchlist(id: string): Promise<WatchlistWithPools | undefined> {
+    const results = await db.select()
+      .from(watchlists)
+      .leftJoin(watchlistPools, eq(watchlists.id, watchlistPools.watchlistId))
+      .leftJoin(pools, eq(watchlistPools.poolId, pools.id))
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(eq(watchlists.id, id));
+
+    if (results.length === 0) return undefined;
+
+    const watchlist = results[0].watchlists;
+    const watchlistPools = results
+      .filter(r => r.watchlist_pools && r.pools)
+      .map(r => ({
+        ...r.watchlist_pools!,
+        pool: {
+          ...r.pools!,
+          platform: r.platforms!,
+          chain: r.chains!
+        }
+      }));
+
+    return {
+      ...watchlist,
+      watchlistPools
+    };
+  }
+
+  async updateWatchlist(id: string, watchlist: Partial<InsertWatchlist>): Promise<Watchlist | undefined> {
+    const [updated] = await db
+      .update(watchlists)
+      .set({ ...watchlist, updatedAt: new Date() })
+      .where(eq(watchlists.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteWatchlist(id: string): Promise<boolean> {
+    const result = await db.delete(watchlists).where(eq(watchlists.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async addPoolToWatchlist(watchlistPool: InsertWatchlistPool): Promise<WatchlistPool> {
+    const [created] = await db.insert(watchlistPools).values(watchlistPool).returning();
+    return created;
+  }
+
+  async removePoolFromWatchlist(watchlistId: string, poolId: string): Promise<boolean> {
+    const result = await db.delete(watchlistPools)
+      .where(and(
+        eq(watchlistPools.watchlistId, watchlistId),
+        eq(watchlistPools.poolId, poolId)
+      ));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getWatchlistAlerts(userId: string): Promise<UserAlert[]> {
+    return await db.select().from(userAlerts)
+      .where(and(
+        eq(userAlerts.userId, userId),
+        eq(userAlerts.alertType, 'watchlist_change')
+      ));
+  }
+
+  // 6. API Marketplace implementations
+  async createApiEndpoint(endpoint: InsertApiEndpoint): Promise<ApiEndpoint> {
+    const [created] = await db.insert(apiEndpoints).values(endpoint).returning();
+    return created;
+  }
+
+  async getApiEndpoints(category?: string, accessLevel?: string): Promise<ApiEndpoint[]> {
+    let query = db.select().from(apiEndpoints).where(eq(apiEndpoints.isActive, true));
+    
+    if (category) {
+      query = query.where(eq(apiEndpoints.category, category));
+    }
+    
+    if (accessLevel) {
+      query = query.where(eq(apiEndpoints.accessLevel, accessLevel));
+    }
+    
+    return await query;
+  }
+
+  async getApiEndpoint(id: string): Promise<ApiEndpoint | undefined> {
+    const [endpoint] = await db.select().from(apiEndpoints).where(eq(apiEndpoints.id, id));
+    return endpoint;
+  }
+
+  async updateApiEndpoint(id: string, endpoint: Partial<InsertApiEndpoint>): Promise<ApiEndpoint | undefined> {
+    const [updated] = await db
+      .update(apiEndpoints)
+      .set(endpoint)
+      .where(eq(apiEndpoints.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteApiEndpoint(id: string): Promise<boolean> {
+    const result = await db.delete(apiEndpoints).where(eq(apiEndpoints.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async createDeveloperApplication(application: InsertDeveloperApplication): Promise<DeveloperApplication> {
+    const [created] = await db.insert(developerApplications).values(application).returning();
+    return created;
+  }
+
+  async getDeveloperApplications(status?: string): Promise<DeveloperApplication[]> {
+    let query = db.select().from(developerApplications);
+    
+    if (status) {
+      query = query.where(eq(developerApplications.status, status));
+    }
+    
+    return await query.orderBy(desc(developerApplications.createdAt));
+  }
+
+  async updateDeveloperApplication(id: string, status: string): Promise<DeveloperApplication | undefined> {
+    const updates: any = { status };
+    if (status === 'approved') {
+      updates.approvedAt = new Date();
+    }
+    
+    const [updated] = await db
+      .update(developerApplications)
+      .set(updates)
+      .where(eq(developerApplications.id, id))
+      .returning();
+    return updated;
   }
 }
 

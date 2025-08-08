@@ -28,6 +28,12 @@ import AdminApiKeys from "@/pages/admin-api-keys";
 import PoolDetail from "@/pages/pool-detail";
 import { CompanionPage } from "@/pages/companion";
 import InvestmentAdvisor from "@/pages/investment-advisor";
+import RiskDashboard from "@/pages/risk-dashboard";
+import SmartAlerts from "@/pages/smart-alerts";
+import PoolReviews from "@/pages/pool-reviews";
+import CommunityInsights from "@/pages/community-insights";
+import Watchlists from "@/pages/watchlists";
+import ApiMarketplace from "@/pages/api-marketplace";
 import FloatingChat from "@/components/floating-chat";
 
 
@@ -51,6 +57,12 @@ function Router() {
       <Route path="/pool/:poolId" component={PoolDetail} />
       <Route path="/companion" component={CompanionPage} />
       <Route path="/investment-advisor" component={InvestmentAdvisor} />
+      <Route path="/risk-dashboard" component={RiskDashboard} />
+      <Route path="/smart-alerts" component={SmartAlerts} />
+      <Route path="/pool-reviews" component={PoolReviews} />
+      <Route path="/community-insights" component={CommunityInsights} />
+      <Route path="/watchlists" component={Watchlists} />
+      <Route path="/api-marketplace" component={ApiMarketplace} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />

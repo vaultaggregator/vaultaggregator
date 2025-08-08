@@ -1712,6 +1712,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Register advanced features routes
+  const { registerAdvancedRoutes } = await import('./routes/advanced-features');
+  registerAdvancedRoutes(app);
+
   const httpServer = createServer(app);
   return httpServer;
 }
