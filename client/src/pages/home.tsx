@@ -10,6 +10,8 @@ import type { YieldOpportunity, FilterOptions } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animations";
+import { CryptoLoader } from "@/components/crypto-loader";
 
 export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
@@ -173,44 +175,8 @@ export default function Home() {
         </div>
 
         {isLoading && page === 0 ? (
-          <div className="bg-card border border-border border-t-0 rounded-b-xl">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="border-b border-border last:border-b-0 p-6">
-                <div className="flex items-center">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <Skeleton className="w-12 h-12 rounded-xl" />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-1">
-                        <Skeleton className="h-5 w-32" />
-                        <Skeleton className="h-4 w-16 rounded-md" />
-                      </div>
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between flex-1 max-w-4xl mx-8">
-                    <div className="w-20 text-center">
-                      <Skeleton className="h-6 w-16 mx-auto" />
-                    </div>
-                    <div className="w-20 text-center">
-                      <Skeleton className="h-6 w-16 mx-auto" />
-                    </div>
-                    <div className="w-24 text-center">
-                      <Skeleton className="h-6 w-20 mx-auto" />
-                    </div>
-                    <div className="w-28 text-center">
-                      <Skeleton className="h-4 w-12 mx-auto" />
-                    </div>
-                    <div className="w-16 text-center">
-                      <Skeleton className="h-6 w-16 mx-auto rounded-md" />
-                    </div>
-                    <div className="w-20 flex items-center justify-center space-x-2">
-                      <Skeleton className="w-8 h-8 rounded" />
-                      <Skeleton className="h-8 w-20 rounded-md" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-card border border-border border-t-0 rounded-b-xl p-12">
+            <CryptoLoader message="Discovering yield opportunities across DeFi protocols..." />
           </div>
         ) : pools.length === 0 ? (
           <div className="text-center py-12">

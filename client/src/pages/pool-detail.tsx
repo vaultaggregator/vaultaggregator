@@ -3,6 +3,8 @@ import { useParams, Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
+import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
+import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -98,21 +100,11 @@ export default function PoolDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header />
+        <Header onAdminClick={() => {}} />
         <div className="py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mb-8"></div>
-            <div className="bg-white rounded-xl p-8">
-              <div className="h-12 bg-gray-200 rounded mb-6"></div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="h-32 bg-gray-200 rounded"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
-              </div>
-            </div>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <CryptoLoader message="Loading pool details and market data..." />
           </div>
-        </div>
         </div>
         <Footer />
       </div>
@@ -122,9 +114,9 @@ export default function PoolDetail() {
   if (error || !pool) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header />
+        <Header onAdminClick={() => {}} />
         <div className="py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
             <Button variant="ghost" className="mb-6">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -137,7 +129,7 @@ export default function PoolDetail() {
               <p className="text-gray-600">The requested pool could not be found.</p>
             </CardContent>
           </Card>
-        </div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -146,9 +138,9 @@ export default function PoolDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
+      <Header onAdminClick={() => {}} />
       <div className="py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with back button */}
         <div className="mb-8">
           <Link href="/">

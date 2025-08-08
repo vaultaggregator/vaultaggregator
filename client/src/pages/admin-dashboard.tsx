@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2 } from "lucide-react";
+import { PoolDataLoading, SyncAnimation, FloatingActionLoading } from "@/components/loading-animations";
+import { YieldSyncLoader } from "@/components/crypto-loader";
+import { PoolScanner, GlowingButton } from "@/components/enhanced-loading";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
 import PoolConsolidationModal from "@/components/pool-consolidation-modal";
@@ -579,9 +582,7 @@ export default function AdminDashboard() {
   if (userLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg">Loading...</p>
-        </div>
+        <PoolDataLoading message="Loading admin dashboard..." />
       </div>
     );
   }
@@ -633,15 +634,15 @@ export default function AdminDashboard() {
               >
                 API Keys
               </Button>
-              <Button 
+              <GlowingButton 
                 onClick={handleScanPools}
                 disabled={isScanning}
-                variant="outline" 
-                size="sm"
-                data-testid="button-scan-pools"
+                variant="primary"
+                isActive={isScanning}
+                className="h-8 px-4 text-sm"
               >
                 {isScanning ? "Scanning..." : "Scan Pools"}
-              </Button>
+              </GlowingButton>
 
               {selectedPoolsForConsolidation.length > 0 && (
                 <Button 
@@ -661,6 +662,7 @@ export default function AdminDashboard() {
                 variant="destructive" 
                 size="sm"
                 data-testid="button-reset-consolidated"
+                className={resetConsolidatedPoolsMutation.isPending ? "animate-pulse" : ""}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 {resetConsolidatedPoolsMutation.isPending ? "Resetting..." : "Reset Consolidated"}
@@ -747,6 +749,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Enhanced Scan Animation */}
+        <PoolScanner 
+          isActive={isScanning}
+          poolsFound={scanResults?.newPools || 0}
+          totalScanned={scanResults?.totalScanned || 0}
+          currentProtocol="DeFi Llama API"
+          className="mb-6"
+        />
 
         {/* Filters */}
         <Card className="mb-6">
@@ -1174,6 +1185,17 @@ export default function AdminDashboard() {
         isOpen={isConsolidationModalOpen}
         onClose={handleCloseConsolidationModal}
         pools={selectedPoolsData}
+      />
+
+      {/* Floating Action Loaders */}
+      <FloatingActionLoading 
+        message="Consolidating pools..."
+        className={consolidatePoolsMutation.isPending ? "block" : "hidden"}
+      />
+      
+      <FloatingActionLoading 
+        message="Resetting consolidated pools..."
+        className={resetConsolidatedPoolsMutation.isPending ? "block" : "hidden"}
       />
     </div>
   );
