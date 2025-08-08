@@ -147,7 +147,10 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
           updated.poolAddress = selectedPool.poolAddress || "";
           break;
         case 'underlyingTokens':
-          updated.underlyingTokens = rawData?.underlyingTokens || [];
+          // Ensure we always get an array and properly handle the data
+          const tokens = rawData?.underlyingTokens;
+          updated.underlyingTokens = Array.isArray(tokens) ? tokens : [];
+          console.log(`Selected underlying tokens for ${selectedPool.tokenPair}:`, updated.underlyingTokens);
           break;
         case 'poolMeta':
           updated.poolMeta = rawData?.poolMeta || "";
@@ -163,6 +166,7 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
           break;
       }
       
+      console.log(`Field ${field} updated. New consolidated data:`, updated);
       return updated;
     });
   };
@@ -177,7 +181,7 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
       project: consolidatedData.project,
       symbol: consolidatedData.tokenPair,
       // Get raw data from the selected pool for additional context
-      ...pools.find(p => p.id === selectedFields.poolMeta)?.rawData,
+      ...(pools.find(p => p.id === selectedFields.poolMeta)?.rawData || {}),
     };
 
     const payload = {
@@ -215,7 +219,11 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
       case 'poolAddress':
         return pool.poolAddress || "N/A";
       case 'underlyingTokens':
-        return rawData?.underlyingTokens?.length ? `${rawData.underlyingTokens.length} tokens` : "None";
+        const tokens = rawData?.underlyingTokens || [];
+        if (Array.isArray(tokens) && tokens.length > 0) {
+          return tokens.slice(0, 3).join(', ') + (tokens.length > 3 ? ` (+${tokens.length - 3} more)` : '');
+        }
+        return 'None';
       case 'poolMeta':
         return rawData?.poolMeta || "N/A";
       case 'project':
@@ -308,7 +316,26 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
                   <div><strong>APY:</strong> {consolidatedData.apy}%</div>
                   <div><strong>TVL:</strong> ${parseFloat(consolidatedData.tvl).toLocaleString()}</div>
                   <div><strong>Risk Level:</strong> {consolidatedData.riskLevel}</div>
-                  <div><strong>Underlying Tokens:</strong> {consolidatedData.underlyingTokens.length} tokens</div>
+                  <div className="col-span-1 md:col-span-2">
+                    <strong>Underlying Tokens:</strong> 
+                    {Array.isArray(consolidatedData.underlyingTokens) && consolidatedData.underlyingTokens.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {consolidatedData.underlyingTokens.map((token: string, index: number) => {
+                          // Handle Ethereum addresses - convert to friendly names where possible
+                          const displayToken = token === "0x0000000000000000000000000000000000000000" ? "ETH" : 
+                                             token.startsWith("0x") ? `${token.slice(0, 6)}...${token.slice(-4)}` : 
+                                             token;
+                          return (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {displayToken}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground"> None</span>
+                    )}
+                  </div>
                   <div><strong>Pool Meta:</strong> {consolidatedData.poolMeta || "N/A"}</div>
                 </div>
               </CardContent>

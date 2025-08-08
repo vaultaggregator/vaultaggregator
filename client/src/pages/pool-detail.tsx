@@ -471,17 +471,23 @@ export default function PoolDetail() {
                   </div>
                 </>
               )}
-              {pool.rawData?.underlyingTokens && pool.rawData.underlyingTokens.length > 0 && (
+              {(pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0) && (
                 <>
                   <Separator />
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Underlying Tokens</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Underlying Tokens</h4>
                     <div className="flex flex-wrap gap-2">
-                      {pool.rawData.underlyingTokens.map((token: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {token}
-                        </Badge>
-                      ))}
+                      {pool.rawData.underlyingTokens.map((token: string, index: number) => {
+                        // Handle Ethereum addresses - convert to friendly names where possible
+                        const displayToken = token === "0x0000000000000000000000000000000000000000" ? "ETH" : 
+                                           token.startsWith("0x") ? `${token.slice(0, 6)}...${token.slice(-4)}` : 
+                                           token;
+                        return (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {displayToken}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </div>
                 </>
