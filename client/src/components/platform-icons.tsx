@@ -339,62 +339,28 @@ export const ConvexIcon = ({ className = "", size = 24 }: PlatformIconProps) => 
   </svg>
 );
 
-// Lido - Authentic orange logo with staking symbol
+// Lido - Use actual original logo
 export const LidoIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
-  <svg
+  <img 
+    src="https://static.lido.fi/app-brand/logo/lido-colored.svg"
+    alt="Lido"
     width={size}
     height={size}
-    viewBox="0 0 128 128"
-    className={className}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="64" cy="64" r="64" fill="#F69009"/>
-    {/* Authentic Lido staking symbol */}
-    <path
-      d="M64 28L44 44L64 56L84 44L64 28Z"
-      fill="white"
-    />
-    <path
-      d="M44 52L64 64L84 52V72L64 84L44 72V52Z"
-      fill="white"
-      fillOpacity="0.8"
-    />
-    <path
-      d="M52 60L64 68L76 60V76L64 84L52 76V60Z"
-      fill="white"
-      fillOpacity="0.6"
-    />
-  </svg>
+    className={`${className} rounded-full`}
+    style={{ minWidth: size, minHeight: size }}
+  />
 );
 
-// Morpho - Authentic blue logo with geometric butterfly design
+// Morpho - Use actual original logo  
 export const MorphoIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
-  <svg
+  <img 
+    src="https://brand.morpho.org/assets/icon.svg"
+    alt="Morpho"
     width={size}
     height={size}
-    viewBox="0 0 128 128"
-    className={className}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="64" cy="64" r="64" fill="#1B4FFE"/>
-    {/* Authentic Morpho butterfly - clean geometric design */}
-    <path
-      d="M40 56C40 48 46 42 54 42C58 42 62 44 64 48C66 44 70 42 74 42C82 42 88 48 88 56C88 64 82 70 74 70C70 70 66 68 64 64C62 68 58 70 54 70C46 70 40 64 40 56Z"
-      fill="white"
-    />
-    <path
-      d="M40 72C40 64 46 58 54 58C58 58 62 60 64 64C66 60 70 58 74 58C82 58 88 64 88 72C88 80 82 86 74 86C70 86 66 84 64 80C62 84 58 86 54 86C46 86 40 80 40 72Z"
-      fill="white"
-      fillOpacity="0.7"
-    />
-    {/* Wing details */}
-    <ellipse cx="54" cy="56" rx="6" ry="8" fill="#1B4FFE" fillOpacity="0.3"/>
-    <ellipse cx="74" cy="56" rx="6" ry="8" fill="#1B4FFE" fillOpacity="0.3"/>
-    <ellipse cx="54" cy="72" rx="6" ry="8" fill="#1B4FFE" fillOpacity="0.3"/>
-    <ellipse cx="74" cy="72" rx="6" ry="8" fill="#1B4FFE" fillOpacity="0.3"/>
-  </svg>
+    className={`${className} rounded-full`}
+    style={{ minWidth: size, minHeight: size }}
+  />
 );
 
 // Default platform icon
