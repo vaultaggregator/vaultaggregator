@@ -54,7 +54,8 @@ function Router() {
       <Route path="/press-media" component={PressMedia} />
       <Route path="/watchlist" component={Watchlist} />
       <Route path="/jobs" component={Jobs} />
-      <Route path="/pool/:poolId" component={PoolDetail} />
+      <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
+      <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
       <Route path="/companion" component={CompanionPage} />
       <Route path="/investment-advisor" component={InvestmentAdvisor} />
       <Route path="/risk-dashboard" component={RiskDashboard} />

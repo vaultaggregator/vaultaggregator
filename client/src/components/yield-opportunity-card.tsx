@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
+import { generateYieldUrl } from "@/lib/seo-urls";
 
 interface YieldOpportunityCardProps {
   opportunity: YieldOpportunity;
@@ -152,7 +153,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 >
                   {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
                 </Badge>
-                <Link href={`/pool/${opportunity.id}`} className="mt-2 sm:mt-0">
+                <Link href={generateYieldUrl(opportunity)} className="mt-2 sm:mt-0">
                   <Button 
                     variant="outline" 
                     size="sm" 

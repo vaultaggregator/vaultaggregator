@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
+import { useEffect } from "react";
 import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
@@ -169,12 +171,39 @@ interface DefiLlamaResponse {
 
 
 export default function PoolDetail() {
-  const { poolId } = useParams<{ poolId: string }>();
+  const params = useParams<{ 
+    poolId?: string;
+    network?: string;
+    protocol?: string;
+    slug?: string;
+  }>();
+  
+  // Handle both new SEO URLs and legacy URLs
+  const poolId = params.poolId;
+  const urlInfo = parseYieldUrl(params);
   
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: ['/api/pools', poolId],
     enabled: !!poolId,
   });
+
+  // Update document title and meta tags when pool data loads
+  useEffect(() => {
+    if (pool) {
+      document.title = generatePageTitle(pool);
+      
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', generateMetaDescription(pool));
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'description';
+        meta.content = generateMetaDescription(pool);
+        document.head.appendChild(meta);
+      }
+    }
+  }, [pool]);
 
   const { data: chartData, isLoading: chartLoading } = useQuery<ChartResponse>({
     queryKey: ['/api/pools', poolId, 'chart'],
