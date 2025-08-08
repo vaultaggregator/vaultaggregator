@@ -47,6 +47,7 @@ interface InvestmentResponse {
   }[];
   warnings: string[];
   confidence: number;
+  requestData: InvestmentRequest; // Store the original request data
 }
 
 export default function InvestmentAdvisor() {
@@ -75,13 +76,16 @@ export default function InvestmentAdvisor() {
       if (!response.ok) throw new Error("Failed to analyze investment");
       return await response.json();
     },
-    onSuccess: (data: InvestmentResponse) => {
-      setResult(data);
+    onSuccess: (data: InvestmentResponse, variables: InvestmentRequest) => {
+      // Store the request data with the response so we display consistent values
+      setResult({ ...data, requestData: variables });
     }
   });
 
   const handleSubmit = () => {
     if (!formData.amount) return;
+    console.log("Submitting form data:", formData);
+    setResult(null); // Clear previous results to show new analysis is in progress
     investmentMutation.mutate(formData);
   };
 
@@ -263,6 +267,36 @@ export default function InvestmentAdvisor() {
         <div className="space-y-6">
           {result ? (
             <>
+              {/* Analysis Parameters Summary */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Target className="h-4 w-4" />
+                    Analysis Based On
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Investment:</span>
+                      <div className="font-semibold">{formatCurrency(result.requestData.amount)}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Duration:</span>
+                      <div className="font-semibold">{result.requestData.duration} months</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Target Return:</span>
+                      <div className="font-semibold">{result.requestData.expectedReturn}%</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Risk Tolerance:</span>
+                      <div className="font-semibold capitalize">{result.requestData.riskTolerance}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Investment Summary */}
               <Card>
                 <CardHeader>
@@ -293,8 +327,8 @@ export default function InvestmentAdvisor() {
                     </div>
 
                     <div className="space-y-2">
-                      <Badge className={getStrategyColor(formData.riskTolerance)}>
-                        {formData.riskTolerance.charAt(0).toUpperCase() + formData.riskTolerance.slice(1)} Strategy
+                      <Badge className={getStrategyColor(result.requestData.riskTolerance)}>
+                        {result.requestData.riskTolerance.charAt(0).toUpperCase() + result.requestData.riskTolerance.slice(1)} Strategy
                       </Badge>
                     </div>
                   </div>
@@ -342,7 +376,7 @@ export default function InvestmentAdvisor() {
                             ></div>
                           </div>
                           <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mt-1">
-                            <span>Investment: {formatCurrency((formData.amount * pool.allocation) / 100)}</span>
+                            <span>Investment: {formatCurrency((result.requestData.amount * pool.allocation) / 100)}</span>
                             <span>Projected: {formatCurrency(pool.projectedReturn)}</span>
                           </div>
                         </div>
