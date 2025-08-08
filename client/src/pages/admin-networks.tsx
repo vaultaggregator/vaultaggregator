@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { ArrowLeft, Upload, Image } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { getChainIcon } from "@/components/chain-icons";
 import type { Chain } from "@shared/schema";
 import type { UploadResult } from "@uppy/core";
 
@@ -151,19 +152,17 @@ export default function AdminNetworks() {
                   <Card key={chain.id} className="p-4">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        {chain.iconUrl ? (
+{chain.iconUrl ? (
                           <img 
                             src={chain.iconUrl} 
                             alt={chain.displayName}
                             className="w-8 h-8 rounded-full object-cover"
                           />
                         ) : (
-                          <div 
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                            style={{ backgroundColor: chain.color }}
-                          >
-                            {chain.displayName.slice(0, 2).toUpperCase()}
-                          </div>
+                          (() => {
+                            const ChainIcon = getChainIcon(chain.name);
+                            return <ChainIcon size={32} className="flex-shrink-0" />;
+                          })()
                         )}
                         <div>
                           <h3 className="font-semibold text-gray-900 dark:text-white">

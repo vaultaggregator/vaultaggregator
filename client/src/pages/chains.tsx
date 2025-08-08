@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Search, TrendingUp, DollarSign, Activity, ExternalLink, Shield } from "lucide-react";
+import { getChainIcon } from "@/components/chain-icons";
 
 export default function Chains() {
   const [search, setSearch] = useState("");
@@ -221,12 +222,10 @@ export default function Chains() {
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: chain.color }}
-                    >
-                      {chain.name.charAt(0)}
-                    </div>
+                    {(() => {
+                      const ChainIcon = getChainIcon(chain.name);
+                      return <ChainIcon size={40} className="flex-shrink-0" />;
+                    })()}
                     <div>
                       <CardTitle className="text-lg">{chain.displayName}</CardTitle>
                       <p className="text-sm text-gray-500">{chain.poolCount} pools</p>
