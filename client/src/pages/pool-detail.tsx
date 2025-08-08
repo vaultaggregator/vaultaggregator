@@ -468,6 +468,32 @@ export default function PoolDetail() {
                   {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
                 </Badge>
               </div>
+              {pool.poolAddress && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Pool Address</h4>
+                    <p className="text-gray-700 font-mono text-sm break-all" data-testid="text-pool-address">
+                      {pool.poolAddress}
+                    </p>
+                  </div>
+                </>
+              )}
+              {pool.rawData?.underlyingTokens && pool.rawData.underlyingTokens.length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Underlying Tokens</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {pool.rawData.underlyingTokens.map((token: string, index: number) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {token}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
               {defiLlamaData?.defiLlamaData?.[0] && (
                 <>
                   <Separator />

@@ -426,10 +426,12 @@ export default function AdminDashboard() {
   // Reset consolidated pools mutation
   const resetConsolidatedPoolsMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("/api/admin/pools/consolidated", {
+      const response = await fetch("/api/admin/pools/consolidated", {
         method: "DELETE",
+        credentials: "include",
       });
-      return response;
+      if (!response.ok) throw new Error("Failed to reset consolidated pools");
+      return await response.json();
     },
     onSuccess: (data: any) => {
       toast({
@@ -1058,7 +1060,7 @@ export default function AdminDashboard() {
                             {(() => {
                               const getExternalLink = () => {
                                 // Check the pool.project field first, then fall back to rawData.project
-                                const project = pool.project || pool.rawData?.project || 'defillama';
+                                const project = pool.project || (pool.rawData as any)?.project || 'defillama';
                                 
                                 switch (project.toLowerCase()) {
                                   // Removed Lido and Morpho cases since we only use DeFi Llama now
@@ -1172,8 +1174,6 @@ export default function AdminDashboard() {
         isOpen={isConsolidationModalOpen}
         onClose={handleCloseConsolidationModal}
         pools={selectedPoolsData}
-        platforms={platforms}
-        chains={chains}
       />
     </div>
   );

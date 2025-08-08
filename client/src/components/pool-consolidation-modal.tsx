@@ -88,7 +88,19 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
 
   const createConsolidatedPoolMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest("POST", "/api/admin/pools/consolidate", data);
+      const response = await fetch("/api/admin/pools/consolidate", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create consolidated pool");
+      }
+      return await response.json();
     },
     onSuccess: () => {
       toast({
@@ -156,7 +168,7 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
   };
 
   const handleCreate = () => {
-    // Create consolidated raw data
+    // Create consolidated raw data by merging selected data from each field
     const consolidatedRawData = {
       apy: parseFloat(consolidatedData.apy),
       tvlUsd: parseFloat(consolidatedData.tvl),
@@ -164,8 +176,8 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
       underlyingTokens: consolidatedData.underlyingTokens,
       project: consolidatedData.project,
       symbol: consolidatedData.tokenPair,
-      // Add other necessary fields from the original pools
-      ...pools.find(p => p.id === selectedFields.apy)?.rawData,
+      // Get raw data from the selected pool for additional context
+      ...pools.find(p => p.id === selectedFields.poolMeta)?.rawData,
     };
 
     const payload = {
@@ -182,6 +194,9 @@ export default function PoolConsolidationModal({ isOpen, onClose, pools }: PoolC
       sourcePoolIds: pools.map(p => p.id), // Track which pools were consolidated
     };
 
+    console.log("Creating consolidated pool with payload:", payload);
+    console.log("Selected fields:", selectedFields);
+    console.log("Consolidated data:", consolidatedData);
     createConsolidatedPoolMutation.mutate(payload);
   };
 
