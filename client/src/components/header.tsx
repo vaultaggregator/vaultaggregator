@@ -77,13 +77,7 @@ export default function Header({ onAdminClick }: HeaderProps) {
             >
               AI Advisor
             </Link>
-            <Link 
-              href="/pool-link-explorer" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-pool-link-explorer"
-            >
-              Link Explorer
-            </Link>
+
             <Link 
               href="/contact" 
               className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"

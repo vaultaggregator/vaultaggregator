@@ -28,7 +28,6 @@ import AdminApiKeys from "@/pages/admin-api-keys";
 import PoolDetail from "@/pages/pool-detail";
 import { CompanionPage } from "@/pages/companion";
 import InvestmentAdvisor from "@/pages/investment-advisor";
-import PoolLinkExplorer from "@/pages/pool-link-explorer";
 import FloatingChat from "@/components/floating-chat";
 
 
@@ -52,7 +51,6 @@ function Router() {
       <Route path="/pool/:poolId" component={PoolDetail} />
       <Route path="/companion" component={CompanionPage} />
       <Route path="/investment-advisor" component={InvestmentAdvisor} />
-      <Route path="/pool-link-explorer" component={PoolLinkExplorer} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />

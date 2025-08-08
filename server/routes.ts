@@ -1531,34 +1531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Link preview routes
-  app.post("/api/link-preview/generate", async (req, res) => {
-    try {
-      const { createLinkPreviewRoutes } = await import("./routes/linkPreview");
-      const linkPreviewRouter = createLinkPreviewRoutes(storage);
-      
-      // Directly call the link preview generation logic
-      const { url } = req.body;
 
-      if (!url || typeof url !== "string") {
-        return res.status(400).json({ error: "Valid URL is required" });
-      }
-
-      // Simple link preview for now
-      res.json({
-        url,
-        title: "Link Preview",
-        description: "Generated link preview",
-        image: "/placeholder-image.jpg",
-        favicon: "/favicon.ico",
-        type: "general",
-        generatedAt: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Link preview error:", error);
-      res.status(500).json({ error: "Failed to generate link preview" });
-    }
-  });
 
   app.post("/api/companion/chat", async (req, res) => {
     try {
