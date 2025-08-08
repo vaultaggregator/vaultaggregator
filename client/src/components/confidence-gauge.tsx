@@ -8,9 +8,9 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   // Normalize confidence to 0-100 range
   const normalizedConfidence = Math.max(0, Math.min(100, confidence));
   
-  // Calculate the angle for the needle (180 degrees on upper semicircle only)
-  // For upper semicircle: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)
-  // This keeps the needle in the upper half only
+  // Calculate the angle for the needle on upward-facing semicircle
+  // For upward arc: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)
+  // Needle points upward along the curved arc
   const angle = 180 - (normalizedConfidence / 100) * 180;
   
   // Color mappings based on confidence level
@@ -122,7 +122,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           />
         </g>
         
-        {/* Scale markers at key points - upper semicircle only */}
+        {/* Scale markers at key points - upward semicircle */}
         {[0, 25, 50, 75, 100].map((value, index) => {
           const markerAngle = 180 - (value / 100) * 180;
           const markerStartX = centerX + (radius - 10) * Math.cos((markerAngle * Math.PI) / 180);
@@ -143,7 +143,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           );
         })}
         
-        {/* Scale labels for upper semicircle - positioned on top arc only */}
+        {/* Scale labels for upward semicircle - positioned on upward arc */}
         {[
           { value: 0, label: "0" },
           { value: 50, label: "50" },
