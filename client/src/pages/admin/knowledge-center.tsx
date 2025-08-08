@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle, CheckCircle2, Clock, MessageSquare, Brain, TrendingUp } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
+import Header from "@/components/header";
 
 interface UnknownQuery {
   id: string;
@@ -77,7 +78,9 @@ export function KnowledgeCenterPage() {
   const resolvedQueries = unknownQueries?.filter(q => q.isResolved) || [];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <Header onAdminClick={() => {}} />
+      <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Knowledge Center
@@ -315,6 +318,7 @@ export function KnowledgeCenterPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }

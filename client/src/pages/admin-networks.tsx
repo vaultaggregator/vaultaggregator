@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { ArrowLeft, Upload, Image } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import Header from "@/components/header";
 import { getChainIcon } from "@/components/chain-icons";
 import type { Chain } from "@shared/schema";
 import type { UploadResult } from "@uppy/core";

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getPlatformIcon } from "@/components/platform-icons";
+import Header from "@/components/header";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 
@@ -169,8 +170,188 @@ export default function AdminPlatforms() {
       .slice(0, 2);
   };
 
+  // Platform Card Component
+  const PlatformCard = ({ platform }: { platform: Platform }) => (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
+              {platform.logoUrl ? (
+                <img 
+                  src={platform.logoUrl} 
+                  alt={platform.displayName}
+                  className="w-full h-full rounded-lg object-cover"
+                />
+              ) : (
+                (() => {
+                  const PlatformIcon = getPlatformIcon(platform.name);
+                  return <PlatformIcon size={48} className="flex-shrink-0" />;
+                })()
+              )}
+            </div>
+            <div>
+              <CardTitle className="text-lg">{platform.displayName}</CardTitle>
+              <p className="text-sm text-gray-500">{platform.name}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Badge 
+              variant={platform.isActive ? "default" : "secondary"} 
+              className={platform.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}
+              data-testid={`badge-status-${platform.id}`}
+            >
+              {platform.isActive ? "Active" : "Inactive"}
+            </Badge>
+            {platform.hasVisiblePools && (
+              <Badge variant="outline" className="text-blue-600 border-blue-300">
+                Has Pools
+              </Badge>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        {editingPlatform === platform.id ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Platform Name</label>
+                <Input
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Platform name"
+                  data-testid={`input-edit-name-${platform.id}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                <Input
+                  value={editDisplayName}
+                  onChange={(e) => setEditDisplayName(e.target.value)}
+                  placeholder="Display name"
+                  data-testid={`input-edit-display-name-${platform.id}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                <Input
+                  value={editWebsite}
+                  onChange={(e) => setEditWebsite(e.target.value)}
+                  placeholder="https://example.com"
+                  data-testid={`input-edit-website-${platform.id}`}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">URL Template</label>
+                <Input
+                  value={editUrlTemplate}
+                  onChange={(e) => setEditUrlTemplate(e.target.value)}
+                  placeholder="https://example.com/pool/{POOL_ID}"
+                  data-testid={`input-edit-url-template-${platform.id}`}
+                />
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id={`show-underlying-${platform.id}`}
+                checked={editShowUnderlyingTokens}
+                onCheckedChange={(checked) => setEditShowUnderlyingTokens(checked as boolean)}
+                data-testid={`checkbox-show-underlying-${platform.id}`}
+              />
+              <label htmlFor={`show-underlying-${platform.id}`} className="text-sm">Show underlying tokens</label>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                onClick={() => saveEdit(platform.id)}
+                data-testid={`button-save-${platform.id}`}
+              >
+                Save Changes
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setEditingPlatform(null)}
+                data-testid={`button-cancel-edit-${platform.id}`}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm text-gray-600">Slug: {platform.slug}</p>
+              {platform.website && (
+                <p className="text-sm text-gray-600">
+                  Website: 
+                  <a 
+                    href={platform.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline ml-1"
+                  >
+                    {platform.website}
+                  </a>
+                </p>
+              )}
+              {platform.visitUrlTemplate && (
+                <p className="text-sm text-gray-600">
+                  URL Template: 
+                  <code className="text-xs bg-gray-100 px-1 py-0.5 rounded ml-1">
+                    {platform.visitUrlTemplate}
+                  </code>
+                </p>
+              )}
+              <p className="text-sm text-gray-600">
+                Show Underlying Tokens: 
+                <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
+                  platform.showUnderlyingTokens 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {platform.showUnderlyingTokens ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Created: {new Date(platform.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => startEditing(platform)}
+                data-testid={`button-edit-${platform.id}`}
+              >
+                <Edit2 className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
+              
+              <ObjectUploader
+                maxNumberOfFiles={1}
+                maxFileSize={5242880}
+                onGetUploadParameters={uploadMutation.mutateAsync}
+                onComplete={handleLogoUploadComplete(platform.id)}
+                buttonClassName="text-sm"
+              >
+                <Upload className="w-4 h-4 mr-1" />
+                Upload Logo
+              </ObjectUploader>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
+      <Header onAdminClick={() => {}} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <Button 
@@ -301,183 +482,8 @@ export default function AdminPlatforms() {
             </div>
           );
 
-        // Platform Card Component
-        const PlatformCard = ({ platform }: { platform: Platform }) => (
-          <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center shadow-md">
-                        {platform.logoUrl ? (
-                          <img 
-                            src={platform.logoUrl} 
-                            alt={platform.displayName}
-                            className="w-full h-full rounded-lg object-cover"
-                          />
-                        ) : (
-                          (() => {
-                            const PlatformIcon = getPlatformIcon(platform.name);
-                            return <PlatformIcon size={48} className="flex-shrink-0" />;
-                          })()
-                        )}
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{platform.displayName}</CardTitle>
-                        <p className="text-sm text-gray-500">{platform.name}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {platform.hasVisiblePools && (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                          Has Visible Pools
-                        </Badge>
-                      )}
-                      <Badge variant={platform.isActive ? "default" : "secondary"}>
-                        {platform.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {editingPlatform === platform.id ? (
-                    <div className="space-y-3">
-                      <Input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        placeholder="Platform Name"
-                        data-testid={`input-edit-name-${platform.id}`}
-                      />
-                      <Input
-                        value={editDisplayName}
-                        onChange={(e) => setEditDisplayName(e.target.value)}
-                        placeholder="Display Name"
-                        data-testid={`input-edit-display-name-${platform.id}`}
-                      />
-                      <Input
-                        value={editWebsite}
-                        onChange={(e) => setEditWebsite(e.target.value)}
-                        placeholder="Website URL (optional)"
-                        data-testid={`input-edit-website-${platform.id}`}
-                      />
-                      <div className="space-y-2">
-                        <Input
-                          value={editUrlTemplate}
-                          onChange={(e) => setEditUrlTemplate(e.target.value)}
-                          placeholder="Visit URL Template (optional)"
-                          data-testid={`input-edit-url-template-${platform.id}`}
-                        />
-                        <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-                          <p className="font-medium mb-1">Available variables:</p>
-                          <p>• {`{chainName}`} - Chain name (ethereum, arbitrum, etc.)</p>
-                          <p>• {`{underlyingToken}`} - First underlying token address</p>
-                          <p>• {`{defiLlamaId}`} - DeFi Llama pool ID</p>
-                          <p>• {`{poolAddress}`} - Pool contract address</p>
-                          <p className="mt-1 font-medium">Example:</p>
-                          <code className="text-xs">https://app.morpho.org/{`{chainName}`}/vault/{`{underlyingToken}`}</code>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`show-tokens-${platform.id}`}
-                            checked={editShowUnderlyingTokens}
-                            onCheckedChange={(checked) => setEditShowUnderlyingTokens(checked === true)}
-                            data-testid={`checkbox-show-tokens-${platform.id}`}
-                          />
-                          <label 
-                            htmlFor={`show-tokens-${platform.id}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Show underlying tokens on pool detail page
-                          </label>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
-                          onClick={savePlatform}
-                          data-testid={`button-save-${platform.id}`}
-                        >
-                          Save
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={cancelEditing}
-                          data-testid={`button-cancel-${platform.id}`}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm text-gray-600">Slug: {platform.slug}</p>
-                        {platform.website && (
-                          <p className="text-sm text-gray-600">
-                            Website: 
-                            <a 
-                              href={platform.website} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline ml-1"
-                            >
-                              {platform.website}
-                            </a>
-                          </p>
-                        )}
-                        {platform.visitUrlTemplate && (
-                          <p className="text-sm text-gray-600">
-                            URL Template: 
-                            <code className="text-xs bg-gray-100 px-1 py-0.5 rounded ml-1">
-                              {platform.visitUrlTemplate}
-                            </code>
-                          </p>
-                        )}
-                        <p className="text-sm text-gray-600">
-                          Show Underlying Tokens: 
-                          <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
-                            platform.showUnderlyingTokens 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {platform.showUnderlyingTokens ? 'Yes' : 'No'}
-                          </span>
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Created: {new Date(platform.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => startEditing(platform)}
-                          data-testid={`button-edit-${platform.id}`}
-                        >
-                          <Edit2 className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                        
-                        <ObjectUploader
-                          maxNumberOfFiles={1}
-                          maxFileSize={5242880}
-                          onGetUploadParameters={uploadMutation.mutateAsync}
-                          onComplete={handleLogoUploadComplete(platform.id)}
-                          buttonClassName="text-sm"
-                        >
-                          <Upload className="w-4 h-4 mr-1" />
-                          Upload Logo
-                        </ObjectUploader>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-        );
-
         })()}
       </div>
     </div>
   );
-}
+} 

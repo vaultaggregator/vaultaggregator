@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Copy, Key, Plus, Clock, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Header from "@/components/header";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 
@@ -35,11 +36,7 @@ export default function AdminApiKeys() {
 
   const createApiKeyMutation = useMutation({
     mutationFn: async (data: { name: string; tier: string }) => {
-      return await apiRequest("/api/admin/api-keys", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      });
+      return await apiRequest("/api/admin/api-keys", "POST", data);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/api-keys"] });
@@ -63,9 +60,7 @@ export default function AdminApiKeys() {
 
   const deleteApiKeyMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/admin/api-keys/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/admin/api-keys/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/api-keys"] });
@@ -110,14 +105,17 @@ export default function AdminApiKeys() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-muted rounded w-1/3 mb-4"></div>
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-24 bg-muted rounded"></div>
-              ))}
+      <div className="min-h-screen bg-background">
+        <Header onAdminClick={() => {}} />
+        <div className="p-6">
+          <div className="max-w-6xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded w-1/3 mb-4"></div>
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-24 bg-muted rounded"></div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -126,8 +124,10 @@ export default function AdminApiKeys() {
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background">
+      <Header onAdminClick={() => {}} />
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground" data-testid="text-api-keys-title">
@@ -335,6 +335,7 @@ export default function AdminApiKeys() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
