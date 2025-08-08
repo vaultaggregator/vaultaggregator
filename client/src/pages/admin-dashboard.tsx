@@ -1009,17 +1009,43 @@ export default function AdminDashboard() {
                               </Tooltip>
                             </TooltipProvider>
                             
-                            {pool.defiLlamaId && (
-                              <a
-                                href={`https://defillama.com/yields/pool/${pool.defiLlamaId}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                                data-testid={`link-defillama-${pool.id}`}
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
+                            {(() => {
+                              const getExternalLink = () => {
+                                const project = pool.rawData?.project || 'defillama';
+                                
+                                switch (project.toLowerCase()) {
+                                  case 'lido':
+                                    return {
+                                      url: 'https://lido.fi',
+                                      label: 'Visit Lido'
+                                    };
+                                  case 'morpho':
+                                    return pool.defiLlamaId ? {
+                                      url: `https://app.morpho.org/vault?vault=${pool.defiLlamaId}`,
+                                      label: 'Visit Morpho'
+                                    } : null;
+                                  default:
+                                    return pool.defiLlamaId ? {
+                                      url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,
+                                      label: 'Visit DeFiLlama'
+                                    } : null;
+                                }
+                              };
+
+                              const linkData = getExternalLink();
+                              return linkData && (
+                                <a
+                                  href={linkData.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                  data-testid={`link-external-${pool.id}`}
+                                  title={linkData.label}
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
+                              );
+                            })()}
                           </div>
                         </td>
                         <td className="py-3 px-2 text-center">
