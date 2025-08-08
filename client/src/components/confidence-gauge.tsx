@@ -36,10 +36,10 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   
   // SVG dimensions and positioning for upward-facing semicircle
   const svgSize = size;
-  const svgHeight = size * 0.65; 
-  const radius = size * 0.35;
+  const svgHeight = size * 0.7; 
+  const radius = size * 0.3; // Smaller radius to leave space for labels
   const centerX = svgSize / 2;
-  const centerY = svgHeight - 20; // Position center near bottom for upward arc
+  const centerY = svgHeight - 30; // Position center to leave space for labels
   const needleLength = radius * 0.8;
 
   // Calculate needle end position for upward arc
@@ -150,7 +150,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = 180 - (value / 100) * 180;
-          const labelDistance = radius + 25;
+          const labelDistance = radius + 20;
           const labelX = centerX + labelDistance * Math.cos((labelAngle * Math.PI) / 180);
           const labelY = centerY - labelDistance * Math.sin((labelAngle * Math.PI) / 180);
           
