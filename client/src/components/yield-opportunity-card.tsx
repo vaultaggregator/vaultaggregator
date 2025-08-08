@@ -54,12 +54,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
 
   return (
     <Card className={`bg-card ${showHeaders ? 'rounded-xl shadow-sm border border-border hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
-      <CardContent className="p-3 sm:p-6">
-        <div className="flex items-center flex-col sm:flex-row gap-3 sm:gap-0">
+      <CardContent className="p-2 sm:p-4">
+        <div className="flex items-center flex-col sm:flex-row gap-2 sm:gap-0">
           {/* Left section - Platform and Token info */}
-          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1 w-full sm:w-auto">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 w-full sm:w-auto">
             <div 
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden shadow-md flex-shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center overflow-hidden shadow-md flex-shrink-0"
               data-testid={`logo-${opportunity.platform.name}`}
             >
 {opportunity.platform.logoUrl ? (
@@ -77,14 +77,14 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-3 mb-1">
-                <h3 className="font-bold text-xl text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
+                <h3 className="font-bold text-lg text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
                 {showNetworkName && (
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1.5">
                     <Badge 
                       variant="outline"
-                      className="text-xs font-medium px-2 py-1 flex items-center space-x-1"
+                      className="text-xs font-medium px-1.5 py-0.5 flex items-center space-x-1"
                       style={getChainColor(opportunity.chain.color)}
                       data-testid={`badge-chain-${opportunity.id}`}
                     >
@@ -97,7 +97,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     {opportunity.categories && opportunity.categories.length > 0 && (
                       <Badge 
                         variant="secondary"
-                        className="text-xs font-medium px-2 py-1"
+                        className="text-xs font-medium px-1.5 py-0.5"
                         data-testid={`badge-category-${opportunity.id}`}
                       >
                         {opportunity.categories[0].displayName}
