@@ -34,12 +34,12 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
 
   const confidenceColor = getConfidenceColor(normalizedConfidence);
   
-  // SVG dimensions and positioning for upper semicircle only
+  // SVG dimensions and positioning for upward-facing semicircle
   const svgSize = size;
-  const svgHeight = size * 0.7; // Taller to accommodate upper semicircle
+  const svgHeight = size * 0.65; 
   const radius = size * 0.35;
   const centerX = svgSize / 2;
-  const centerY = svgHeight - 40; // Position center so upper arc is visible
+  const centerY = svgHeight - 20; // Position center near bottom for upward arc
   const needleLength = radius * 0.8;
 
   // Calculate needle end position
@@ -64,18 +64,18 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           </linearGradient>
         </defs>
         
-        {/* Background arc - upper semicircle only */}
+        {/* Background arc - upward-facing semicircle */}
         <path
-          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 0 ${centerX + radius} ${centerY}`}
+          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="#e5e7eb"
           strokeWidth="12"
           strokeLinecap="round"
         />
         
-        {/* Colored gradient arc - upper semicircle only */}
+        {/* Colored gradient arc - upward-facing semicircle */}
         <path
-          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 0 ${centerX + radius} ${centerY}`}
+          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="url(#gaugeGradient)"
           strokeWidth="12"
