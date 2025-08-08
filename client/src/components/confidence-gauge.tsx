@@ -10,8 +10,8 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   
   // Calculate the angle for the needle on upward-facing semicircle
   // For upward arc: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)
-  // Needle points upward along the curved arc
-  const angle = 180 - (normalizedConfidence / 100) * 180;
+  // Since sin() values are negative below 0°, we need to map differently
+  const angle = (normalizedConfidence / 100) * 180;
   
   // Color mappings based on confidence level
   const getConfidenceColor = (conf: number) => {
@@ -42,9 +42,9 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   const centerY = svgHeight - 20; // Position center near bottom for upward arc
   const needleLength = radius * 0.8;
 
-  // Calculate needle end position
+  // Calculate needle end position for upward arc
   const needleEndX = centerX + needleLength * Math.cos((angle * Math.PI) / 180);
-  const needleEndY = centerY + needleLength * Math.sin((angle * Math.PI) / 180);
+  const needleEndY = centerY - needleLength * Math.sin((angle * Math.PI) / 180);
 
   return (
     <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700" data-testid="confidence-gauge">
@@ -124,11 +124,11 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
         
         {/* Scale markers at key points - upward semicircle */}
         {[0, 25, 50, 75, 100].map((value, index) => {
-          const markerAngle = 180 - (value / 100) * 180;
+          const markerAngle = (value / 100) * 180;
           const markerStartX = centerX + (radius - 10) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerStartY = centerY + (radius - 10) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerStartY = centerY - (radius - 10) * Math.sin((markerAngle * Math.PI) / 180);
           const markerEndX = centerX + (radius + 6) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerEndY = centerY + (radius + 6) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerEndY = centerY - (radius + 6) * Math.sin((markerAngle * Math.PI) / 180);
           
           return (
             <line
@@ -149,10 +149,10 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
-          const labelAngle = 180 - (value / 100) * 180;
+          const labelAngle = (value / 100) * 180;
           const labelDistance = radius + 25;
           const labelX = centerX + labelDistance * Math.cos((labelAngle * Math.PI) / 180);
-          const labelY = centerY + labelDistance * Math.sin((labelAngle * Math.PI) / 180);
+          const labelY = centerY - labelDistance * Math.sin((labelAngle * Math.PI) / 180);
           
           return (
             <text
