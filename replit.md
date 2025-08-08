@@ -20,7 +20,8 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Simplified Data Architecture**: Removed all Lido and Morpho data sources to use exclusively DeFi Llama APIs as single source of truth
 - **Streamlined Admin Panel**: Removed data source filtering UI and related components, focusing on core pool management functionality
 - **Simplified Synchronization**: Removed multi-source sync complexity in favor of single DeFi Llama API integration for cleaner architecture
-- **AI-Powered Market Outlook**: Implemented complete AI prediction system with OpenAI gpt-4o-mini integration, generating 70-word market outlooks every 2 hours with sentiment analysis, confidence scoring, and visibility-based display on pool detail pages
+- **AI-Powered Market Outlook**: Implemented complete AI prediction system with OpenAI gpt-4o-mini integration, generating 185-word market outlooks with calm, DeFi-savvy tone including specific APY predictions, stablecoin flow analysis, and practical risk-benefit advice
+- **Enhanced Confidence Formula**: Redesigned confidence calculation system using 6 comprehensive factors: APY stability (30d vs current), TVL health assessment, platform maturity scoring, market volatility analysis, social sentiment simulation, and data quality metrics for more accurate prediction confidence
 
 # User Preferences
 

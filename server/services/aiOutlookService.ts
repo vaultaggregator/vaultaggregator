@@ -47,72 +47,121 @@ export class AIOutlookService {
   constructor(private storage: IStorage) {}
 
   /**
-   * Calculate dynamic confidence score based on market data
-   * Factors: TVL stability, volatility, APY history, data availability, market conditions
+   * Calculate dynamic confidence score based on comprehensive market factors
+   * New formula considers: APY stability, TVL health, platform maturity, social sentiment
    */
   private calculateConfidenceScore(pool: any): number {
-    let confidence = 50; // Base confidence
+    let confidence = 40; // Lower base confidence for more dynamic range
 
-    // 1. TVL Stability Factor (0-25 points)
-    const tvl = parseFloat(pool.tvl || "0");
-    if (tvl > 100000000) confidence += 25; // >$100M TVL: very stable
-    else if (tvl > 10000000) confidence += 20; // >$10M TVL: stable  
-    else if (tvl > 1000000) confidence += 15; // >$1M TVL: moderate
-    else if (tvl > 100000) confidence += 10; // >$100K TVL: low
-    else confidence += 5; // <$100K TVL: very low
-
-    // 2. Volatility Factor (-15 to +15 points)
-    const volatility = (pool.rawData as any)?.sigma || 0;
-    if (volatility < 0.05) confidence += 15; // Low volatility: predictable
-    else if (volatility < 0.1) confidence += 10; // Moderate volatility
-    else if (volatility < 0.2) confidence += 5; // High volatility
-    else if (volatility < 0.4) confidence -= 5; // Very high volatility
-    else confidence -= 15; // Extreme volatility: unpredictable
-
-    // 3. APY History Factor (0-20 points)
+    // 1. APY Stability Analysis (0-25 points)
     const currentApy = parseFloat(pool.apy || "0");
     const apy30d = (pool.rawData as any)?.apyMean30d;
+    
     if (apy30d && currentApy > 0) {
-      const apyStability = Math.abs(currentApy - apy30d) / currentApy;
-      if (apyStability < 0.1) confidence += 20; // Very stable APY
-      else if (apyStability < 0.2) confidence += 15; // Stable APY
-      else if (apyStability < 0.4) confidence += 10; // Moderate APY variation
-      else if (apyStability < 0.6) confidence += 5; // High APY variation
-      else confidence -= 5; // Extreme APY variation
+      const apyVariation = Math.abs(currentApy - apy30d) / Math.max(currentApy, apy30d);
+      
+      if (apyVariation < 0.05) confidence += 25; // Very stable APY (<5% variation)
+      else if (apyVariation < 0.15) confidence += 20; // Stable APY (<15% variation)
+      else if (apyVariation < 0.30) confidence += 15; // Moderate variation (<30%)
+      else if (apyVariation < 0.50) confidence += 10; // High variation (<50%)
+      else if (apyVariation < 0.75) confidence += 5; // Very high variation
+      else confidence -= 5; // Extreme volatility (>75% variation)
+      
+      // Bonus for reasonable APY levels
+      if (currentApy > 0 && currentApy < 25) confidence += 5; // Sustainable yields
+      else if (currentApy >= 25 && currentApy < 50) confidence += 2; // High but possible
+      else if (currentApy >= 50) confidence -= 8; // Potentially unsustainable
+    } else {
+      confidence -= 10; // Penalty for missing historical data
     }
 
-    // 4. Data Quality Factor (0-15 points)
-    let dataPoints = 0;
-    if ((pool.rawData as any)?.count) dataPoints++; // Operating days
-    if ((pool.rawData as any)?.apyMean30d) dataPoints++; // 30d APY
-    if ((pool.rawData as any)?.sigma) dataPoints++; // Volatility
-    if ((pool.rawData as any)?.volumeUsd7d) dataPoints++; // Volume
-    if ((pool.rawData as any)?.apyPct7D) dataPoints++; // 7d trend
-    confidence += dataPoints * 3; // 3 points per data metric
+    // 2. Total Value Locked Health (0-20 points)
+    const tvl = parseFloat(pool.tvl || "0");
+    if (tvl >= 500000000) confidence += 20; // >$500M TVL: institutional grade
+    else if (tvl >= 100000000) confidence += 18; // >$100M TVL: very stable
+    else if (tvl >= 50000000) confidence += 15; // >$50M TVL: stable
+    else if (tvl >= 10000000) confidence += 12; // >$10M TVL: moderate
+    else if (tvl >= 1000000) confidence += 8; // >$1M TVL: small but viable
+    else if (tvl >= 100000) confidence += 4; // >$100K TVL: risky
+    else confidence -= 5; // <$100K TVL: very risky
 
-    // 5. Risk Level Factor (-10 to +10 points)
-    switch (pool.riskLevel?.toLowerCase()) {
-      case 'low': confidence += 10; break;
-      case 'medium': confidence += 5; break;
-      case 'high': confidence -= 5; break;
-      case 'extreme': confidence -= 10; break;
-    }
-
-    // 6. Platform Maturity Factor (0-10 points)
+    // 3. Platform Maturity & Operating History (0-20 points)
     const operatingDays = (pool.rawData as any)?.count || 0;
-    if (operatingDays > 365) confidence += 10; // >1 year: mature
-    else if (operatingDays > 180) confidence += 8; // >6 months: established
-    else if (operatingDays > 90) confidence += 6; // >3 months: growing
-    else if (operatingDays > 30) confidence += 4; // >1 month: new
-    else confidence += 2; // <1 month: very new
-
-    // 7. APY Reasonableness Factor (-5 to +5 points)
-    if (currentApy > 0) {
-      if (currentApy < 50) confidence += 5; // Reasonable APY
-      else if (currentApy < 100) confidence += 2; // High but possible
-      else if (currentApy < 200) confidence -= 2; // Very high APY
-      else confidence -= 5; // Unreasonably high APY
+    const platformName = pool.platform?.displayName?.toLowerCase() || "";
+    
+    // Platform reputation scoring
+    let platformScore = 0;
+    if (["aave", "compound", "morpho", "lido", "maker", "uniswap"].includes(platformName)) {
+      platformScore = 10; // Blue chip protocols
+    } else if (["curve", "convex", "yearn", "balancer"].includes(platformName)) {
+      platformScore = 8; // Established DeFi protocols
+    } else if (operatingDays > 365) {
+      platformScore = 6; // Unknown but mature
+    } else {
+      platformScore = 2; // New or unknown protocol
     }
+    
+    // Operating history scoring
+    if (operatingDays > 730) confidence += (10 + platformScore); // >2 years: battle-tested
+    else if (operatingDays > 365) confidence += (8 + platformScore); // >1 year: mature
+    else if (operatingDays > 180) confidence += (6 + Math.floor(platformScore/2)); // >6 months: established
+    else if (operatingDays > 90) confidence += (4 + Math.floor(platformScore/2)); // >3 months: growing
+    else if (operatingDays > 30) confidence += 2; // >1 month: new
+    else confidence -= 5; // <1 month: unproven
+
+    // 4. Market Volatility & Risk Assessment (0-15 points)
+    const volatility = (pool.rawData as any)?.sigma || 0;
+    if (volatility < 0.02) confidence += 15; // Very low volatility
+    else if (volatility < 0.05) confidence += 12; // Low volatility
+    else if (volatility < 0.10) confidence += 8; // Moderate volatility
+    else if (volatility < 0.20) confidence += 4; // High volatility
+    else if (volatility < 0.40) confidence -= 2; // Very high volatility
+    else confidence -= 8; // Extreme volatility
+
+    // Risk level adjustment
+    switch (pool.riskLevel?.toLowerCase()) {
+      case 'low': confidence += 8; break;
+      case 'medium': confidence += 4; break;
+      case 'high': confidence -= 4; break;
+      case 'extreme': confidence -= 12; break;
+    }
+
+    // 5. Social Sentiment & Market Position (0-10 points)
+    // Simulated social sentiment based on platform reputation and performance
+    let sentimentScore = 0;
+    
+    // Platform social sentiment (simplified scoring)
+    if (["aave", "lido", "morpho"].includes(platformName)) {
+      sentimentScore += 4; // Strong community trust
+    } else if (["compound", "maker", "uniswap"].includes(platformName)) {
+      sentimentScore += 3; // Established reputation
+    } else {
+      sentimentScore += 1; // Unknown sentiment
+    }
+    
+    // Performance-based sentiment
+    if (currentApy > 0 && apy30d && currentApy >= apy30d * 0.9) {
+      sentimentScore += 3; // Maintaining yields = positive sentiment
+    } else if (currentApy > 0 && apy30d && currentApy < apy30d * 0.7) {
+      sentimentScore -= 2; // Declining yields = negative sentiment
+    }
+    
+    // TVL growth indicates positive sentiment
+    if (tvl > 10000000) {
+      sentimentScore += 3; // Large TVL suggests community confidence
+    }
+    
+    confidence += Math.min(10, sentimentScore);
+
+    // 6. Data Quality & Completeness (0-10 points)
+    let dataQualityScore = 0;
+    if ((pool.rawData as any)?.count) dataQualityScore += 2;
+    if ((pool.rawData as any)?.apyMean30d) dataQualityScore += 2;
+    if ((pool.rawData as any)?.sigma) dataQualityScore += 2;
+    if ((pool.rawData as any)?.volumeUsd7d) dataQualityScore += 2;
+    if (pool.tvl && parseFloat(pool.tvl) > 0) dataQualityScore += 2;
+    
+    confidence += dataQualityScore;
 
     // Ensure confidence is between 1-100
     return Math.max(1, Math.min(100, Math.round(confidence)));
