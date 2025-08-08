@@ -71,6 +71,20 @@ export default function Header({ onAdminClick }: HeaderProps) {
               Help
             </Link>
             <Link 
+              href="/investment-advisor" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-investment-advisor"
+            >
+              AI Advisor
+            </Link>
+            <Link 
+              href="/pool-link-explorer" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-pool-link-explorer"
+            >
+              Link Explorer
+            </Link>
+            <Link 
               href="/contact" 
               className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
               data-testid="link-contact"
@@ -144,6 +158,22 @@ export default function Header({ onAdminClick }: HeaderProps) {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Help Center
+              </Link>
+              <Link 
+                href="/investment-advisor" 
+                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                data-testid="link-mobile-investment-advisor"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                AI Investment Advisor
+              </Link>
+              <Link 
+                href="/pool-link-explorer" 
+                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                data-testid="link-mobile-pool-link-explorer"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Pool Link Explorer
               </Link>
               <Link 
                 href="/contact" 

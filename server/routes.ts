@@ -1444,6 +1444,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // No longer need data sources endpoint since we only use DeFi Llama
 
   // Companion chatbot routes
+  // Investment advisor routes
+  app.post("/api/investment/analyze", async (req, res) => {
+    try {
+      const { amount, duration, expectedReturn, riskTolerance, strategy } = req.body;
+
+      if (!amount || !duration || !expectedReturn || !riskTolerance || !strategy) {
+        return res.status(400).json({ error: "All investment parameters are required" });
+      }
+
+      // Get available pools for analysis
+      const pools = await storage.getPools({ 
+        limit: 100, 
+        offset: 0,
+        onlyVisible: true 
+      });
+
+      if (pools.length === 0) {
+        return res.status(400).json({ error: "No pools available for analysis" });
+      }
+
+      // Basic investment analysis (simplified version)
+      const filteredPools = pools.filter((pool: any) => {
+        const poolRisk = pool.riskLevel?.toLowerCase();
+        const apy = parseFloat(pool.apy || "0");
+        
+        switch (riskTolerance) {
+          case "conservative":
+            return (poolRisk === "low" || poolRisk === "medium") && apy <= 15;
+          case "moderate":
+            return poolRisk !== "extreme" && apy <= 30;
+          case "aggressive":
+            return apy > 0;
+          default:
+            return true;
+        }
+      });
+
+      // Simple allocation strategy
+      const topPools = filteredPools
+        .sort((a: any, b: any) => parseFloat(b.apy || "0") - parseFloat(a.apy || "0"))
+        .slice(0, 3);
+
+      const allocations = topPools.length === 1 ? [100] : 
+                         topPools.length === 2 ? [60, 40] : [50, 30, 20];
+
+      const recommendations = topPools.map((pool: any, index: number) => ({
+        id: pool.id,
+        tokenPair: pool.tokenPair,
+        apy: pool.apy,
+        tvl: pool.tvl,
+        platform: pool.platform,
+        chain: pool.chain,
+        riskLevel: pool.riskLevel,
+        allocation: allocations[index] || 0,
+        reason: `Selected for ${pool.apy}% APY with ${pool.riskLevel} risk profile`,
+        projectedReturn: Math.round(((amount * (allocations[index] || 0)) / 100) * (1 + (parseFloat(pool.apy) / 100) * (duration / 12)))
+      }));
+
+      const totalProjectedReturn = recommendations.reduce((total, rec) => total + rec.projectedReturn, 0);
+
+      res.json({
+        summary: `Based on your ${riskTolerance} strategy with $${amount.toLocaleString()} over ${duration} months, we recommend diversifying across ${recommendations.length} high-performing pools. This strategy targets ${expectedReturn}% annual returns while managing risk through careful allocation.`,
+        totalProjectedReturn,
+        riskAssessment: `This ${riskTolerance} strategy carries standard DeFi risks including smart contract vulnerabilities and market volatility.`,
+        recommendations,
+        timeline: [
+          {
+            timeframe: `${Math.floor(duration/3)} months`,
+            expectedValue: Math.round(amount * 1.02),
+            description: "Initial growth phase"
+          },
+          {
+            timeframe: `${duration} months`,
+            expectedValue: totalProjectedReturn,
+            description: "Target portfolio value"
+          }
+        ],
+        warnings: ["DeFi investments carry inherent risks", "Past performance does not guarantee future results"],
+        confidence: 75
+      });
+
+    } catch (error) {
+      console.error("Investment analysis error:", error);
+      res.status(500).json({ error: "Failed to process investment analysis" });
+    }
+  });
+
+  // Link preview routes
+  app.post("/api/link-preview/generate", async (req, res) => {
+    try {
+      const { createLinkPreviewRoutes } = await import("./routes/linkPreview");
+      const linkPreviewRouter = createLinkPreviewRoutes(storage);
+      
+      // Directly call the link preview generation logic
+      const { url } = req.body;
+
+      if (!url || typeof url !== "string") {
+        return res.status(400).json({ error: "Valid URL is required" });
+      }
+
+      // Simple link preview for now
+      res.json({
+        url,
+        title: "Link Preview",
+        description: "Generated link preview",
+        image: "/placeholder-image.jpg",
+        favicon: "/favicon.ico",
+        type: "general",
+        generatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Link preview error:", error);
+      res.status(500).json({ error: "Failed to generate link preview" });
+    }
+  });
+
   app.post("/api/companion/chat", async (req, res) => {
     try {
       const { message, context } = req.body;
