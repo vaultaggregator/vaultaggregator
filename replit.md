@@ -40,11 +40,19 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Test-Driven Development Approach**: Implemented policy to test all functionality after implementation and fix any issues immediately before considering tasks complete
 - **Removed External APIs**: Removed CoinGecko and Moralis API integrations to simplify platform architecture and reduce dependency on external services per user request
 - **Authentic Protocol Logos**: Successfully implemented working authentic logos for Lido (Trust Wallet assets) and Morpho (DeFi Llama protocol icons) replacing non-functional brand asset URLs with reliable sources that display the official protocol branding
-- **Category Navigation Finalized**: Implemented horizontal category layout with dropdown menus - Categories display as "📂 Categories: [📂 All] [ETH ▼] [Stables ▼]" with subcategories accessible via dropdown clicks, featuring authentic USDC (Circle/Wikimedia) and stETH (Lido/Coinando) logos in proper parent-child hierarchy
+- **Token Logo Solution**: Use Trust Wallet GitHub repository URLs (raw.githubusercontent.com/trustwallet/assets) for authentic token logos. CryptoLogos.cc returns 403 errors and should be avoided. Trust Wallet provides reliable, working URLs for tokens like USDC and stETH.
+- **Category Navigation Finalized**: Implemented horizontal category layout with dropdown menus - Categories display as "📂 Categories: [📂 All] [ETH ▼] [Stables ▼]" with subcategories accessible via dropdown clicks, featuring authentic USDC and stETH logos from Trust Wallet assets in proper parent-child hierarchy
 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+**Logo Implementation:**
+- Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`
+- Never use CryptoLogos.cc (returns 403 errors)
+- Example working URLs:
+  - USDC: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png`
+  - stETH: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png`
 
 **Development Approach:**
 - Always test functionality after implementation to verify it works correctly
