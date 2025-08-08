@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
 import type { YieldOpportunity } from "@/types";
+import { getChainIcon } from "@/components/chain-icons";
 
 interface YieldOpportunityCardProps {
   opportunity: YieldOpportunity;
@@ -84,11 +85,15 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 {showNetworkName && (
                   <Badge 
                     variant="outline"
-                    className="text-xs font-medium px-2 py-1"
+                    className="text-xs font-medium px-2 py-1 flex items-center space-x-1"
                     style={getChainColor(opportunity.chain.color)}
                     data-testid={`badge-chain-${opportunity.id}`}
                   >
-                    {opportunity.chain.displayName}
+                    {(() => {
+                      const ChainIcon = getChainIcon(opportunity.chain.name);
+                      return <ChainIcon size={12} className="flex-shrink-0" />;
+                    })()}
+                    <span>{opportunity.chain.displayName}</span>
                   </Badge>
                 )}
               </div>

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Chain, FilterOptions, Category } from "@/types";
+import { getChainIcon } from "@/components/chain-icons";
 
 interface NetworkSelectorProps {
   filters: FilterOptions;
@@ -43,19 +44,10 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
     });
   };
 
-  // Get network icon/logo based on chain name
-  const getNetworkIcon = (chainName: string) => {
-    const name = chainName.toLowerCase();
-    if (name.includes('ethereum') || name.includes('eth')) return '⟠';
-    if (name.includes('base')) return '🔵';
-    if (name.includes('arbitrum')) return '🔺';
-    if (name.includes('optimism')) return '🔴';
-    if (name.includes('polygon') || name.includes('matic')) return '🟣';
-    if (name.includes('avalanche') || name.includes('avax')) return '❄️';
-    if (name.includes('bsc') || name.includes('binance')) return '🟡';
-    if (name.includes('fantom')) return '👻';
-    if (name.includes('solana')) return '🌟';
-    return '🔗';
+  // Render chain icon component
+  const renderChainIcon = (chain: Chain) => {
+    const ChainIcon = getChainIcon(chain.name);
+    return <ChainIcon size={16} className="flex-shrink-0" />;
   };
 
   return (
@@ -107,15 +99,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
                       `}
                       data-testid={`button-network-${chain.name}`}
                     >
-                      {(chain as any).iconUrl ? (
-                        <img 
-                          src={(chain as any).iconUrl} 
-                          alt={chain.displayName}
-                          className="w-4 h-4 rounded-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-sm">{getNetworkIcon(chain.displayName)}</span>
-                      )}
+                      {renderChainIcon(chain)}
                       <span className="font-medium">{chain.displayName}</span>
                     </Button>
                   ))}
