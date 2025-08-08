@@ -25,6 +25,12 @@ The platform features a modern React frontend with shadcn/ui components and a No
 
 Preferred communication style: Simple, everyday language.
 
+**Data Integrity Requirements:**
+- Never use fake, mock, or placeholder data for yield information (APY, TVL, operating days)
+- Always display "N/A" when authentic data is not available
+- Users rely on accurate data for investment decisions
+- Use correct field mappings: 24h APY = "apyBase", 30d APY = "apyMean30d", TVL = "tvlUsd", Operating = "count"
+
 # System Architecture
 
 ## Frontend Architecture

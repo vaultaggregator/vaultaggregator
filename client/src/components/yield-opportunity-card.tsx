@@ -102,7 +102,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             <div className="w-20 text-center">
               {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">24h APY</p>}
               <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
-                {formatApy(opportunity.apy)}
+                {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
+                 opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
               </p>
             </div>
             <div className="w-20 text-center">
@@ -114,7 +115,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             <div className="w-24 text-center">
               {showHeaders && <p className="text-xs text-muted-foreground mb-1 font-medium">TVL</p>}
               <p className="text-lg font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
-                {formatTvl(opportunity.tvl)}
+                {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
+                 opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
               </p>
             </div>
             <div className="w-28 text-center">
