@@ -465,6 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { 
         chainId, 
         platformId, 
+        categoryId,
         search, 
         onlyVisible = 'true', 
         limit = '50', 
@@ -474,6 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pools = await storage.getPools({
         chainId: chainId as string,
         platformId: platformId as string,
+        categoryId: categoryId as string,
         search: search as string,
         onlyVisible: onlyVisible === 'true',
         limit: parseInt(limit as string),

@@ -305,12 +305,13 @@ export class DatabaseStorage implements IStorage {
   async getPools(options: {
     chainId?: string;
     platformId?: string;
+    categoryId?: string;
     search?: string;
     onlyVisible?: boolean;
     limit?: number;
     offset?: number;
   } = {}): Promise<PoolWithRelations[]> {
-    const { chainId, platformId, search, onlyVisible = true, limit = 50, offset = 0 } = options;
+    const { chainId, platformId, categoryId, search, onlyVisible = true, limit = 50, offset = 0 } = options;
 
     let query = db
       .select()
@@ -318,6 +319,13 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id))
       .leftJoin(notes, eq(pools.id, notes.poolId));
+
+    // Only join pool categories if filtering by categoryId
+    if (categoryId) {
+      query = query.innerJoin(poolCategories, eq(pools.id, poolCategories.poolId)) as any;
+    } else {
+      query = query.leftJoin(poolCategories, eq(pools.id, poolCategories.poolId)) as any;
+    }
 
     const conditions = [eq(pools.isActive, true)];
 
@@ -331,6 +339,10 @@ export class DatabaseStorage implements IStorage {
 
     if (platformId) {
       conditions.push(eq(pools.platformId, platformId));
+    }
+
+    if (categoryId) {
+      conditions.push(eq(poolCategories.categoryId, categoryId));
     }
 
     if (search) {
