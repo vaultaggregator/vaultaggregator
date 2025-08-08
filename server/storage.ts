@@ -587,6 +587,8 @@ export class DatabaseStorage implements IStorage {
         ...poolData,
         // NEVER override admin visibility decisions
         isVisible: existingPool.isVisible,
+        // Always update the lastUpdated timestamp when syncing
+        lastUpdated: new Date(),
       };
       
       const [updatedPool] = await db.update(pools).set(updateData).where(eq(pools.id, existingPool.id)).returning();
@@ -597,6 +599,7 @@ export class DatabaseStorage implements IStorage {
         ...poolData,
         defiLlamaId,
         isVisible: false, // All new pools start hidden
+        lastUpdated: new Date(),
       }).returning();
       return newPool;
     }
