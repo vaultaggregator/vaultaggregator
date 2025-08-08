@@ -660,6 +660,10 @@ export class DatabaseStorage implements IStorage {
     if (category.name) {
       updateData.slug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
+    // Ensure parentId is properly handled
+    if ('parentId' in category) {
+      updateData.parentId = category.parentId || null;
+    }
     const [updatedCategory] = await db.update(categories).set(updateData).where(eq(categories.id, id)).returning();
     return updatedCategory || undefined;
   }

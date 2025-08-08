@@ -879,6 +879,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errors: [{ message: "Name and display name are required" }] 
         });
       }
+
+      // Check for duplicate subcategory names within the same parent
+      if (parentId) {
+        const existingCategories = await storage.getAllCategoriesFlat();
+        const duplicateSubcategory = existingCategories.find(cat => 
+          cat.parentId === parentId && 
+          cat.name.toLowerCase() === name.toLowerCase()
+        );
+        
+        if (duplicateSubcategory) {
+          return res.status(400).json({ 
+            message: "Validation error", 
+            errors: [{ message: "A subcategory with this name already exists in the selected parent category" }] 
+          });
+        }
+      }
       
       // Auto-generate slug from name
       const slug = name.toLowerCase()
@@ -910,7 +926,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/categories/:id", requireAuth, async (req, res) => {
     try {
-      const updateData = req.body;
+      const { name, displayName, description, color, iconUrl, sortOrder, isActive, parentId } = req.body;
+      
+      // Check for duplicate subcategory names within the same parent when updating
+      if (parentId && name) {
+        const existingCategories = await storage.getAllCategoriesFlat();
+        const duplicateSubcategory = existingCategories.find(cat => 
+          cat.parentId === parentId && 
+          cat.name.toLowerCase() === name.toLowerCase() &&
+          cat.id !== req.params.id
+        );
+        
+        if (duplicateSubcategory) {
+          return res.status(400).json({ 
+            message: "Validation error", 
+            errors: [{ message: "A subcategory with this name already exists in the selected parent category" }] 
+          });
+        }
+      }
+      
+      const updateData = {
+        ...req.body,
+        parentId: parentId || null
+      };
+      
       const category = await storage.updateCategory(req.params.id, updateData);
       if (!category) {
         return res.status(404).json({ message: "Category not found" });

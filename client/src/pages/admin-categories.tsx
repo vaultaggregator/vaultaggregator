@@ -39,6 +39,13 @@ export default function AdminCategories() {
     color: "#3B82F6",
     parentId: "",
   });
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    displayName: "",
+    description: "",
+    color: "#3B82F6",
+    parentId: "",
+  });
 
   const { data: categories = [], isLoading, refetch } = useQuery<Category[]>({
     queryKey: ["/api/admin/categories"],
@@ -89,6 +96,7 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/categories"] });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setEditingCategory(null);
+      setEditFormData({ name: "", displayName: "", description: "", color: "#3B82F6", parentId: "" });
       toast({
         title: "Success",
         description: "Category updated successfully",
@@ -187,6 +195,30 @@ export default function AdminCategories() {
       return;
     }
     createCategoryMutation.mutate(formData);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingCategory) {
+      updateCategoryMutation.mutate({ 
+        id: editingCategory, 
+        data: {
+          ...editFormData,
+          parentId: editFormData.parentId || null
+        }
+      });
+    }
+  };
+
+  const startEdit = (category: Category) => {
+    setEditingCategory(category.id);
+    setEditFormData({
+      name: category.name,
+      displayName: category.displayName,
+      description: category.description || "",
+      color: category.color,
+      parentId: category.parentId || "",
+    });
   };
 
   const handleIconUploadComplete = (categoryId: string) => (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
@@ -302,6 +334,79 @@ export default function AdminCategories() {
                 </div>
               </div>
             )}
+            
+            {/* Edit Category Dialog */}
+            {editingCategory && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                  <h2 className="text-xl font-bold mb-4">Edit Category</h2>
+                  <form onSubmit={handleEditSubmit} className="space-y-4">
+                    <Input
+                      placeholder="Category Name (e.g., bitcoin)"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                      data-testid="input-edit-category-name"
+                    />
+                    <Input
+                      placeholder="Display Name (e.g., Bitcoin)"
+                      value={editFormData.displayName}
+                      onChange={(e) => setEditFormData({ ...editFormData, displayName: e.target.value })}
+                      data-testid="input-edit-category-display-name"
+                    />
+                    <textarea
+                      placeholder="Description (optional)"
+                      value={editFormData.description}
+                      onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      rows={3}
+                      data-testid="textarea-edit-category-description"
+                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Parent Category (optional)
+                      </label>
+                      <Select 
+                        value={editFormData.parentId} 
+                        onValueChange={(value) => setEditFormData({ ...editFormData, parentId: value === "none" ? "" : value })}
+                      >
+                        <SelectTrigger data-testid="select-edit-parent-category">
+                          <SelectValue placeholder="Select parent category (leave empty for main category)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No parent (main category)</SelectItem>
+                          {categories.filter(cat => !cat.parentId && cat.isActive && cat.id !== editingCategory).map((category) => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.displayName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Color
+                      </label>
+                      <input
+                        type="color"
+                        value={editFormData.color}
+                        onChange={(e) => setEditFormData({ ...editFormData, color: e.target.value })}
+                        className="w-full h-10 border border-gray-300 rounded-md"
+                        data-testid="input-edit-category-color"
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button type="button" variant="outline" onClick={() => setEditingCategory(null)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" data-testid="button-submit-edit-category">
+                        Update
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+            
             <Button onClick={() => setShowCreateDialog(true)} data-testid="button-create-category">
               <Plus className="w-4 h-4 mr-2" />
               Create Category
@@ -370,6 +475,16 @@ export default function AdminCategories() {
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => startEdit(category)}
+                        data-testid={`button-edit-${category.id}`}
+                      >
+                        <Edit2 className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      
                       <Button
                         size="sm"
                         variant="outline"
