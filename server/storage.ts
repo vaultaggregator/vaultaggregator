@@ -318,14 +318,9 @@ export class DatabaseStorage implements IStorage {
       .from(pools)
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id))
-      .leftJoin(notes, eq(pools.id, notes.poolId));
-
-    // Only join pool categories if filtering by categoryId
-    if (categoryId) {
-      query = query.innerJoin(poolCategories, eq(pools.id, poolCategories.poolId)) as any;
-    } else {
-      query = query.leftJoin(poolCategories, eq(pools.id, poolCategories.poolId)) as any;
-    }
+      .leftJoin(notes, eq(pools.id, notes.poolId))
+      .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
+      .leftJoin(categories, eq(poolCategories.categoryId, categories.id));
 
     const conditions = [eq(pools.isActive, true)];
 
@@ -376,11 +371,16 @@ export class DatabaseStorage implements IStorage {
           platform: result.platforms!,
           chain: result.chains!,
           notes: result.notes ? [result.notes] : [],
+          categories: result.categories ? [result.categories] : [],
         });
       } else {
         const existingPool = poolsMap.get(poolId)!;
         if (result.notes && !existingPool.notes.find(n => n.id === result.notes!.id)) {
           existingPool.notes.push(result.notes);
+        }
+        if (result.categories && !existingPool.categories?.find(c => c.id === result.categories!.id)) {
+          existingPool.categories = existingPool.categories || [];
+          existingPool.categories.push(result.categories);
         }
       }
     }

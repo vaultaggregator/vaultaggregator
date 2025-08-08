@@ -22,6 +22,7 @@ export interface YieldOpportunity {
     content: string;
     isPublic: boolean;
   }>;
+  categories?: Category[];
   isVisible: boolean;
   lastUpdated: string;
   rawData?: {

@@ -81,18 +81,29 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.tokenPair}
                 </h3>
                 {showNetworkName && (
-                  <Badge 
-                    variant="outline"
-                    className="text-xs font-medium px-2 py-1 flex items-center space-x-1"
-                    style={getChainColor(opportunity.chain.color)}
-                    data-testid={`badge-chain-${opportunity.id}`}
-                  >
-                    {(() => {
-                      const ChainIcon = getChainIcon(opportunity.chain.name);
-                      return <ChainIcon size={12} className="flex-shrink-0" />;
-                    })()}
-                    <span>{opportunity.chain.displayName}</span>
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge 
+                      variant="outline"
+                      className="text-xs font-medium px-2 py-1 flex items-center space-x-1"
+                      style={getChainColor(opportunity.chain.color)}
+                      data-testid={`badge-chain-${opportunity.id}`}
+                    >
+                      {(() => {
+                        const ChainIcon = getChainIcon(opportunity.chain.name);
+                        return <ChainIcon size={12} className="flex-shrink-0" />;
+                      })()}
+                      <span>{opportunity.chain.displayName}</span>
+                    </Badge>
+                    {opportunity.categories && opportunity.categories.length > 0 && (
+                      <Badge 
+                        variant="secondary"
+                        className="text-xs font-medium px-2 py-1"
+                        data-testid={`badge-category-${opportunity.id}`}
+                      >
+                        {opportunity.categories[0].displayName}
+                      </Badge>
+                    )}
+                  </div>
                 )}
               </div>
               <p className="text-sm font-medium text-muted-foreground truncate" data-testid={`text-platform-${opportunity.id}`}>
