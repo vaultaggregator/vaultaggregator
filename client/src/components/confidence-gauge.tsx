@@ -35,10 +35,10 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   
   // SVG dimensions and positioning for half-moon semicircle
   const svgSize = size;
-  const svgHeight = size * 0.55; // Adjusted for half-circle height
-  const radius = size * 0.35;
+  const svgHeight = size * 0.6; // Adjusted for half-circle height with label space
+  const radius = size * 0.32;
   const centerX = svgSize / 2;
-  const centerY = svgHeight; // Position at bottom edge for half-moon effect
+  const centerY = svgHeight - 30; // Position to leave space for labels below
   const needleLength = radius * 0.8;
 
   // Calculate needle end position
@@ -121,13 +121,13 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           />
         </g>
         
-        {/* Scale markers every 20% */}
-        {[0, 20, 40, 60, 80, 100].map((value, index) => {
+        {/* Scale markers at key points */}
+        {[0, 25, 50, 75, 100].map((value, index) => {
           const markerAngle = (value / 100) * 180 - 90;
-          const markerStartX = centerX + (radius - 6) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerStartY = centerY + (radius - 6) * Math.sin((markerAngle * Math.PI) / 180);
-          const markerEndX = centerX + (radius + 3) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerEndY = centerY + (radius + 3) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerStartX = centerX + (radius - 8) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerStartY = centerY + (radius - 8) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerEndX = centerX + (radius + 5) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerEndY = centerY + (radius + 5) * Math.sin((markerAngle * Math.PI) / 180);
           
           return (
             <line
@@ -137,20 +137,21 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               x2={markerEndX}
               y2={markerEndY}
               stroke="#374151"
-              strokeWidth="2"
+              strokeWidth={value % 50 === 0 ? "3" : "2"}
             />
           );
         })}
         
-        {/* Scale labels for half-moon gauge */}
+        {/* Scale labels for half-moon gauge - positioned properly on semicircle */}
         {[
           { value: 0, label: "0" },
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = (value / 100) * 180 - 90;
-          const labelX = centerX + (radius + 18) * Math.cos((labelAngle * Math.PI) / 180);
-          const labelY = centerY + (radius + 18) * Math.sin((labelAngle * Math.PI) / 180);
+          const labelDistance = radius + 22;
+          const labelX = centerX + labelDistance * Math.cos((labelAngle * Math.PI) / 180);
+          const labelY = centerY + labelDistance * Math.sin((labelAngle * Math.PI) / 180);
           
           return (
             <text
@@ -159,7 +160,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               y={labelY}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="12"
+              fontSize="14"
               fill="#374151"
               className="font-bold"
             >
