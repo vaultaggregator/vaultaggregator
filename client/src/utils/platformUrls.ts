@@ -3,14 +3,14 @@ interface Pool {
   platform?: {
     displayName?: string;
     name?: string;
-    visitUrlTemplate?: string;
+    visitUrlTemplate?: string | null;
   };
   chain?: {
     name?: string;
   };
   rawData?: any;
-  defiLlamaId?: string;
-  poolAddress?: string;
+  defiLlamaId?: string | null;
+  poolAddress?: string | null;
 }
 
 interface UrlData {
@@ -23,6 +23,8 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
   if (pool.platform?.visitUrlTemplate) {
     const template = pool.platform.visitUrlTemplate;
     let url = template;
+    
+    console.log('Generating URL with template:', template, 'for pool:', pool.id);
     
     // Replace variables in the template
     const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
@@ -44,12 +46,17 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
       url = url.replace(/\{poolAddress\}/g, pool.poolAddress);
     }
     
+    console.log('Generated URL:', url);
+    
     // Check if all variables were replaced (no remaining {variable} patterns)
-    if (!url.includes('{') || !url.includes('}')) {
+    const hasUnreplacedVariables = /\{[^}]+\}/.test(url);
+    if (!hasUnreplacedVariables) {
       return {
         url,
         label: `Visit ${pool.platform.displayName || pool.platform.name || 'Platform'}`
       };
+    } else {
+      console.warn('URL template has unreplaced variables:', url);
     }
   }
   
