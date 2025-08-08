@@ -102,14 +102,14 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           </div>
 
           {/* Center section - Key metrics */}
-          <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl sm:mx-8">
+          <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl sm:mx-2 sm:mx-8">
             {/* Mobile grid, desktop flex layout */}
             <div className="grid grid-cols-2 gap-3 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
               <div className="text-center sm:w-20">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-1 font-medium">24h APY</p>
                 )}
-                <p className="text-sm sm:text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+                <p className="text-sm sm:text-base font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                   {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
                    opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                 </p>
@@ -118,7 +118,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-1 font-medium">30d APY</p>
                 )}
-                <p className="text-sm sm:text-lg font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
+                <p className="text-sm sm:text-base font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                   {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-1 font-medium">TVL</p>
                 )}
-                <p className="text-sm sm:text-lg font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+                <p className="text-sm sm:text-base font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                   {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
                    opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
                 </p>
@@ -139,25 +139,27 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="col-span-2 sm:col-span-1 text-center sm:w-16 flex flex-col sm:block items-center gap-2 sm:gap-0">
+              <div className="col-span-2 sm:col-span-1 text-center sm:w-16 flex justify-center">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-1 font-medium">Risk</p>
                 )}
                 <Badge 
                   variant="secondary"
-                  className={`text-xs sm:text-sm font-medium px-2 py-1 sm:px-3 sm:py-1 ${getRiskColor(opportunity.riskLevel)}`}
+                  className={`text-xs font-medium px-2 py-1 ${getRiskColor(opportunity.riskLevel)}`}
                   data-testid={`badge-risk-${opportunity.id}`}
                 >
                   {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
                 </Badge>
-                <Link href={generateYieldUrl(opportunity)} className="mt-2 sm:mt-0">
+              </div>
+              <div className="col-span-2 sm:col-span-1 text-center sm:w-20 flex justify-center sm:block">
+                <Link href={generateYieldUrl(opportunity)}>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="hover:bg-blue-50 text-xs sm:text-sm px-2 sm:px-4"
+                    className="hover:bg-blue-50 text-xs px-3 py-1"
                     data-testid={`button-view-details-${opportunity.id}`}
                   >
-                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <ExternalLink className="w-3 h-3 mr-1" />
                     Details
                   </Button>
                 </Link>

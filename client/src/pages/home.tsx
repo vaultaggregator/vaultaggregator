@@ -169,7 +169,7 @@ export default function Home() {
                 <SortHeader field="risk">Risk</SortHeader>
               </div>
               <div className="w-20 text-center">
-                <span className="font-semibold text-foreground flex justify-center">Actions</span>
+                <span className="font-semibold text-foreground">Actions</span>
               </div>
             </div>
           </div>
