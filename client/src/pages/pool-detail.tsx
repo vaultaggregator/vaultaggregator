@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
 import { useEffect } from "react";
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, Clock } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 import { AIOutlook } from "@/components/ai-outlook";
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
+import { formatTimeAgo } from "@/lib/utils";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -363,6 +364,11 @@ export default function PoolDetail() {
                         {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
                       </Badge>
                     </MetricTooltip>
+                  </div>
+                  {/* Last Synced Info */}
+                  <div className="flex items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <Clock className="w-4 h-4 mr-1" />
+                    <span>Data synced {formatTimeAgo(pool.lastUpdated)}</span>
                   </div>
                 </div>
               </div>
