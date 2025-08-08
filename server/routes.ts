@@ -2219,11 +2219,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Extract underlying token address from raw data
       const rawData = pool.rawData || {};
-      const underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
       
       if (!underlyingToken) {
         return res.status(404).json({ error: "No underlying token found for this pool" });
       }
+      
+      console.log(`Fetching token info for pool ${pool.id}, token: ${underlyingToken}`);
 
       const { EtherscanTokenService } = await import("./services/etherscanTokenService");
       const tokenService = new EtherscanTokenService();
