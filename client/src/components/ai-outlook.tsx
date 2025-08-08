@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Brain, TrendingUp, TrendingDown, Minus, RefreshCw, Clock, Lightbulb } from "lucide-react";
+import { Brain, TrendingUp, TrendingDown, Minus, Clock, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConfidenceGauge } from "./confidence-gauge";
 
@@ -24,30 +24,11 @@ interface AIOutlookProps {
 }
 
 export function AIOutlook({ poolId }: AIOutlookProps) {
-  const [isRegenerating, setIsRegenerating] = useState(false);
-
-  const { data: outlook, isLoading, error, refetch } = useQuery<AIOutlook>({
+  const { data: outlook, isLoading, error } = useQuery<AIOutlook>({
     queryKey: ["/api/pools", poolId, "outlook"],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchInterval: 30 * 60 * 1000, // 30 minutes
+    staleTime: 2 * 60 * 60 * 1000, // 2 hours
+    refetchInterval: 2 * 60 * 60 * 1000, // Auto-refresh every 2 hours
   });
-
-  const handleRegenerate = async () => {
-    setIsRegenerating(true);
-    try {
-      const response = await fetch(`/api/pools/${poolId}/outlook/regenerate`, {
-        method: "POST",
-      });
-      
-      if (response.ok) {
-        await refetch();
-      }
-    } catch (error) {
-      console.error("Error regenerating outlook:", error);
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
@@ -214,19 +195,13 @@ export function AIOutlook({ poolId }: AIOutlookProps) {
         <Separator />
         
         <div className="flex items-center justify-between">
-          <div className="text-xs text-muted-foreground">
-            Analysis refreshes every 2 hours
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            Analysis auto-refreshes every 2 hours
           </div>
-          <Button 
-            onClick={handleRegenerate}
-            disabled={isRegenerating}
-            size="sm"
-            variant="ghost"
-            data-testid="button-regenerate-outlook"
-          >
-            <RefreshCw className={cn("w-4 h-4 mr-2", isRegenerating && "animate-spin")} />
-            Refresh
-          </Button>
+          <div className="text-xs text-muted-foreground">
+            {outlook && new Date(outlook.generatedAt).toLocaleTimeString()}
+          </div>
         </div>
       </CardContent>
     </Card>

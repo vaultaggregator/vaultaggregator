@@ -1549,7 +1549,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pools = await storage.getPools({ 
         limit: 50, 
         offset: 0,
-        isVisible: true 
+        onlyVisible: true 
       });
 
       // Prepare market context
@@ -1570,7 +1570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         chains: Array.from(new Set(pools.map((p: any) => p.chain?.displayName).filter(Boolean))),
       };
 
-      function formatTvl(value: string): string {
+      const formatTvl = (value: string): string => {
         const num = parseFloat(value);
         if (isNaN(num)) return "N/A";
         
@@ -1583,7 +1583,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           return `$${num.toFixed(2)}`;
         }
-      }
+      };
 
       // First, check knowledge base for specific site questions
       const knowledgeResult = knowledgeBase.findAnswer(message, { 
