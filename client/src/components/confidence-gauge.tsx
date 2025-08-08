@@ -8,8 +8,8 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   // Normalize confidence to 0-100 range
   const normalizedConfidence = Math.max(0, Math.min(100, confidence));
   
-  // Calculate the angle for the needle (180 degrees total, from -90 to +90)
-  // For the semicircle gauge: 0% = -90°, 50% = 0°, 100% = +90°
+  // Calculate the angle for the needle (180 degrees total semicircle, from -90 to +90)
+  // 0% confidence = -90° (left), 50% = 0° (top), 100% = +90° (right)
   const angle = (normalizedConfidence / 100) * 180 - 90;
   
   // Color mappings based on confidence level
@@ -32,10 +32,14 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   };
 
   const confidenceColor = getConfidenceColor(normalizedConfidence);
-  const radius = size * 0.35;
-  const centerX = size / 2;
-  const centerY = size * 0.7;
-  const needleLength = radius * 0.8;
+  
+  // SVG dimensions and positioning for proper semicircle
+  const svgSize = size;
+  const svgHeight = size * 0.65; // Taller to accommodate full semicircle
+  const radius = size * 0.32;
+  const centerX = svgSize / 2;
+  const centerY = svgHeight * 0.85; // Position circle lower to show full arc
+  const needleLength = radius * 0.75;
 
   // Calculate needle end position
   const needleEndX = centerX + needleLength * Math.cos((angle * Math.PI) / 180);
@@ -48,17 +52,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
         <span>Confidence Index</span>
       </div>
       
-      <svg width={size} height={size * 0.8} viewBox={`0 0 ${size} ${size * 0.8}`} className="mb-2">
-        {/* Background arc */}
-        <path
-          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
-          fill="none"
-          stroke="#e5e7eb"
-          strokeWidth="12"
-          strokeLinecap="round"
-        />
-        
-        {/* Colored gradient arc */}
+      <svg width={svgSize} height={svgHeight} viewBox={`0 0 ${svgSize} ${svgHeight}`} className="mb-2">
         <defs>
           <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#ef4444" />
@@ -69,13 +63,23 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           </linearGradient>
         </defs>
         
+        {/* Background arc - full semicircle */}
+        <path
+          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        
+        {/* Colored gradient arc - full semicircle */}
         <path
           d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="url(#gaugeGradient)"
-          strokeWidth="12"
+          strokeWidth="10"
           strokeLinecap="round"
-          opacity="0.8"
+          opacity="0.9"
         />
         
         {/* Needle */}
@@ -117,14 +121,13 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           />
         </g>
         
-        {/* Scale markers */}
-        {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((value, index) => {
+        {/* Scale markers every 20% */}
+        {[0, 20, 40, 60, 80, 100].map((value, index) => {
           const markerAngle = (value / 100) * 180 - 90;
-          const isMainMarker = value % 25 === 0;
-          const markerStartX = centerX + (radius - (isMainMarker ? 8 : 4)) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerStartY = centerY + (radius - (isMainMarker ? 8 : 4)) * Math.sin((markerAngle * Math.PI) / 180);
-          const markerEndX = centerX + radius * Math.cos((markerAngle * Math.PI) / 180);
-          const markerEndY = centerY + radius * Math.sin((markerAngle * Math.PI) / 180);
+          const markerStartX = centerX + (radius - 6) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerStartY = centerY + (radius - 6) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerEndX = centerX + (radius + 3) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerEndY = centerY + (radius + 3) * Math.sin((markerAngle * Math.PI) / 180);
           
           return (
             <line
@@ -133,22 +136,21 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               y1={markerStartY}
               x2={markerEndX}
               y2={markerEndY}
-              stroke="#6b7280"
-              strokeWidth={isMainMarker ? "2" : "1"}
-              opacity={isMainMarker ? "1" : "0.5"}
+              stroke="#374151"
+              strokeWidth="2"
             />
           );
         })}
         
-        {/* Scale labels */}
+        {/* Scale labels positioned correctly for 0-100 range */}
         {[
           { value: 0, label: "0" },
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = (value / 100) * 180 - 90;
-          const labelX = centerX + (radius + 25) * Math.cos((labelAngle * Math.PI) / 180);
-          const labelY = centerY + (radius + 25) * Math.sin((labelAngle * Math.PI) / 180);
+          const labelX = centerX + (radius + 20) * Math.cos((labelAngle * Math.PI) / 180);
+          const labelY = centerY + (radius + 20) * Math.sin((labelAngle * Math.PI) / 180);
           
           return (
             <text
@@ -157,7 +159,7 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               y={labelY}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="14"
+              fontSize="13"
               fill="#374151"
               className="font-bold"
             >
