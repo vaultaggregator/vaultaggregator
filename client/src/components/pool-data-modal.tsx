@@ -109,6 +109,8 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
   };
 
   const getFieldValue = (field: string): any => {
+    if (!poolData) return null;
+    
     if (field.startsWith('rawData.')) {
       const rawField = field.replace('rawData.', '');
       return poolData.rawData?.[rawField];

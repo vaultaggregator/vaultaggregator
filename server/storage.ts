@@ -6,7 +6,7 @@ import {
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage
 } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
 
 export interface IStorage {
@@ -707,7 +707,7 @@ export class DatabaseStorage implements IStorage {
 
   async removeDuplicatePools(): Promise<number> {
     // Find duplicate pools based on platformId + tokenPair + chainId, keeping the one with data
-    const duplicates = await this.db.execute(sql`
+    const duplicateQuery = `
       WITH ranked_pools AS (
         SELECT id, 
                ROW_NUMBER() OVER (
@@ -720,11 +720,13 @@ export class DatabaseStorage implements IStorage {
         FROM pools
       )
       SELECT id FROM ranked_pools WHERE rn > 1
-    `);
+    `;
+    
+    const duplicates = await pool.query(duplicateQuery);
 
     if (duplicates.rows.length > 0) {
-      const idsToDelete = duplicates.rows.map(row => row.id as string);
-      await this.db.delete(pools).where(sql`id = ANY(${idsToDelete})`);
+      const idsToDelete = duplicates.rows.map((row: any) => row.id as string);
+      await db.delete(pools).where(inArray(pools.id, idsToDelete));
       console.log(`Removed ${idsToDelete.length} duplicate pools`);
       return idsToDelete.length;
     }
@@ -733,7 +735,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getVisiblePoolsForProtection(): Promise<Pool[]> {
-    return await this.db.select().from(pools).where(eq(pools.isVisible, true));
+    return await db.select().from(pools).where(eq(pools.isVisible, true));
   }
 }
 

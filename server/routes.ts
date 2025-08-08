@@ -907,9 +907,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         poolId,
         configurationsCount: displayMappings?.length || 0
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating display configuration:", error);
-      res.status(500).json({ error: error.message || "Failed to update display configuration" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to update display configuration";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
@@ -933,17 +934,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Scan DeFi Llama
         const defiLlamaService = await import("./services/defi-llama");
-        await defiLlamaService.syncYieldData(); // Sync pools normally
+        await defiLlamaService.syncData(); // Sync pools from DeFi Llama
         
         // Scan Morpho
-        const morphoService = await import("./services/morphoService");
-        const morphoServiceInstance = new morphoService.MorphoService();
-        await morphoServiceInstance.syncData(); // Sync pools normally
+        const morphoDataService = await import("./services/morpho-data");
+        await morphoDataService.syncMorphoData(); // Sync pools from Morpho
 
         // Scan Lido
         const lidoService = await import("./services/lidoService");
         const lidoServiceInstance = new lidoService.LidoService();
-        await lidoServiceInstance.syncData(); // Sync pools normally
+        await lidoServiceInstance.syncData(); // Sync pools from Lido
 
       } catch (syncError) {
         console.error("Error during data source sync:", syncError);
@@ -958,9 +958,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         visiblePoolsProtected: visiblePools.length
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error during pool scan:", error);
-      res.status(500).json({ error: error.message || "Failed to scan pools" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to scan pools";
+      res.status(500).json({ error: errorMessage });
     }
   });
 
