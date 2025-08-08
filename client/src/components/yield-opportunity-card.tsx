@@ -61,7 +61,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Left section - Platform and Token info */}
           <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 w-full sm:w-auto">
             <div 
-              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center overflow-hidden shadow-md flex-shrink-0"
+              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center overflow-hidden shadow-md flex-shrink-0"
               data-testid={`logo-${opportunity.platform.name}`}
             >
               {opportunity.platform.logoUrl ? (
@@ -73,7 +73,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               ) : (
                 (() => {
                   const PlatformIcon = getPlatformIcon(opportunity.platform.name);
-                  return <PlatformIcon size={32} className="flex-shrink-0" />;
+                  return <PlatformIcon size={24} className="flex-shrink-0" />;
                 })()
               )}
             </div>
@@ -110,47 +110,47 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl sm:mx-2 sm:mx-6">
             {/* Mobile grid, desktop flex layout */}
             <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
-              <div className="text-center sm:w-16">
+              <div className="text-center sm:w-14">
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-1 font-medium">24h APY</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">24h APY</p>
                 )}
-                <p className="text-xs sm:text-sm font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+                <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                   {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
                    opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-16">
+              <div className="text-center sm:w-14">
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-1 font-medium">30d APY</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">30d APY</p>
                 )}
-                <p className="text-xs sm:text-sm font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
+                <p className="text-xs font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                   {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-20">
+              <div className="text-center sm:w-16">
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-1 font-medium">TVL</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">TVL</p>
                 )}
-                <p className="text-xs sm:text-sm font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+                <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                   {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
                    opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-20 sm:block hidden">
+              <div className="text-center sm:w-16 sm:block hidden">
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-1 font-medium">Since</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">Since</p>
                 )}
                 <p className="text-xs font-semibold text-foreground" data-testid={`text-operating-since-${opportunity.id}`}>
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="col-span-2 sm:col-span-1 text-center sm:w-12 flex justify-center">
+              <div className="col-span-2 sm:col-span-1 text-center sm:w-10 flex justify-center">
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-1 font-medium">Risk</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">Risk</p>
                 )}
                 <Badge 
                   variant="secondary"
-                  className={`text-xs font-medium px-1.5 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
+                  className={`text-xs font-medium px-1 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
                   data-testid={`badge-risk-${opportunity.id}`}
                 >
                   {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
