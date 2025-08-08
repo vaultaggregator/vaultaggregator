@@ -142,14 +142,12 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
         {/* Scale labels */}
         {[
           { value: 0, label: "0" },
-          { value: 25, label: "25" },
           { value: 50, label: "50" },
-          { value: 75, label: "75" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = (value / 100) * 180 - 90;
-          const labelX = centerX + (radius + 20) * Math.cos((labelAngle * Math.PI) / 180);
-          const labelY = centerY + (radius + 20) * Math.sin((labelAngle * Math.PI) / 180);
+          const labelX = centerX + (radius + 25) * Math.cos((labelAngle * Math.PI) / 180);
+          const labelY = centerY + (radius + 25) * Math.sin((labelAngle * Math.PI) / 180);
           
           return (
             <text
@@ -158,9 +156,9 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               y={labelY}
               textAnchor="middle"
               dominantBaseline="middle"
-              fontSize="12"
-              fill="#6b7280"
-              className="font-medium"
+              fontSize="14"
+              fill="#374151"
+              className="font-bold"
             >
               {label}
             </text>
