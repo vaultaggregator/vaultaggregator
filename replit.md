@@ -42,6 +42,7 @@ The platform features a modern React frontend with shadcn/ui components and a No
 - **Authentic Protocol Logos**: Successfully implemented working authentic logos for Lido (Trust Wallet assets) and Morpho (DeFi Llama protocol icons) replacing non-functional brand asset URLs with reliable sources that display the official protocol branding
 - **Token Logo Solution**: Use Trust Wallet GitHub repository URLs (raw.githubusercontent.com/trustwallet/assets) for authentic token logos. CryptoLogos.cc returns 403 errors and should be avoided. Trust Wallet provides reliable, working URLs for tokens like USDC and stETH.
 - **Category Navigation Finalized**: Implemented horizontal category layout with dropdown menus - Categories display as "📂 Categories: [📂 All] [ETH ▼] [Stables ▼]" with subcategories accessible via dropdown clicks, featuring authentic USDC and stETH logos from Trust Wallet assets in proper parent-child hierarchy
+- **Risk Display Simplified**: Removed emoji-powered risk sentiment meter system and restored simple risk level badges (Low/Medium/High) based on user preference for cleaner, more professional appearance without emoji indicators
 
 # User Preferences
 
@@ -63,6 +64,7 @@ Preferred communication style: Simple, everyday language.
 - Category navigation: Horizontal layout with dropdown menus (established design - do not change without explicit request)
 - Subcategories appear in dropdown menus when clicking parent categories with down arrows
 - Maintain authentic token logos for USDC and stETH in category hierarchy
+- Risk display: Simple text badges (Low/Medium/High) preferred over emoji-based indicators
 
 **Data Integrity Requirements:**
 - Never use fake, mock, or placeholder data for yield information (APY, TVL, operating days)

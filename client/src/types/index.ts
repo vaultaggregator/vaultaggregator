@@ -30,15 +30,7 @@ export interface YieldOpportunity {
     count?: number;
     [key: string]: any;
   };
-  // Enhanced risk assessment properties
-  riskScore?: number; // 1-100 overall risk score
-  smartContractRisk?: number; // 1-100
-  liquidityRisk?: number; // 1-100  
-  platformRisk?: number; // 1-100
-  marketRisk?: number; // 1-100
-  auditStatus?: 'verified' | 'unaudited' | 'unknown';
-  tvlStability?: number; // volatility score
-  apyVolatility?: number; // APY variance
+
 }
 
 export interface FilterOptions {
