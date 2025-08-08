@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Official Lido gradient background -->
+  <!-- Authentic Lido blue-to-purple gradient -->
   <defs>
     <linearGradient id="lidoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#00A3FF"/>
-      <stop offset="100%" style="stop-color:#7A2EF6"/>
+      <stop offset="100%" style="stop-color:#7B73FF"/>
     </linearGradient>
   </defs>
   
-  <!-- Background circle with Lido's gradient -->
-  <circle cx="32" cy="32" r="32" fill="url(#lidoGradient)"/>
+  <!-- Lido's geometric hexagonal background shape -->
+  <path d="M32 4L56 18V46L32 60L8 46V18L32 4Z" fill="url(#lidoGradient)"/>
   
-  <!-- Lido's characteristic L shape -->
+  <!-- Lido's distinctive inner geometric "L" pattern -->
   <g transform="translate(32,32)">
-    <!-- Main L shape - authentic Lido design -->
-    <path d="M-12,-12 L-12,12 L-6,12 L-6,4 L6,4 L6,-2 L-6,-2 L-6,-12 Z" fill="white"/>
-    
-    <!-- Accent dots representing staking rewards -->
-    <circle cx="10" cy="-8" r="2" fill="white" opacity="0.8"/>
-    <circle cx="10" cy="8" r="2" fill="white" opacity="0.8"/>
+    <!-- Main geometric L shape - authentic Lido identity -->
+    <path d="M-16,-10 L-16,16 L-8,16 L-8,6 L10,6 L10,-2 L-8,-2 L-8,-10 Z" fill="white"/>
+    <!-- Accent geometric elements for depth -->
+    <polygon points="12,-6 16,-6 16,-2 12,-2" fill="white" opacity="0.7"/>
+    <polygon points="12,10 16,10 16,14 12,14" fill="white" opacity="0.7"/>
   </g>
 </svg>
