@@ -21,9 +21,9 @@ export default function AdminNetworks() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch chains
+  // Fetch ALL chains for admin (including inactive ones)
   const { data: chains = [], isLoading: chainsLoading } = useQuery<Chain[]>({
-    queryKey: ["/api/chains"],
+    queryKey: ["/api/admin/chains"],
   });
 
   const updateChainMutation = useMutation({
@@ -31,7 +31,8 @@ export default function AdminNetworks() {
       return await apiRequest(`/api/admin/chains/${chainId}`, "PUT", { isActive });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/chains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chains"] }); // Also invalidate public chains
       toast({
         title: "Success",
         description: "Network updated successfully",
@@ -51,7 +52,8 @@ export default function AdminNetworks() {
       return await apiRequest(`/api/admin/chains/${chainId}/icon`, "PUT", { iconUrl });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/chains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chains"] }); // Also invalidate public chains
       toast({
         title: "Success",
         description: "Network icon uploaded successfully",
