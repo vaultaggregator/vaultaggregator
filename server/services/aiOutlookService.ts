@@ -56,7 +56,7 @@ export class AIOutlookService {
       };
 
       const prompt = `
-You are a professional DeFi analyst. Generate a 70-word market outlook for this yield farming vault:
+You are a professional DeFi yield analyst providing market outlook with specific APY predictions.
 
 **Vault Details:**
 - Token Pair: ${marketFactors.poolData.tokenPair}
@@ -71,24 +71,32 @@ You are a professional DeFi analyst. Generate a 70-word market outlook for this 
 - 7-day trend: ${marketFactors.marketContext.trend}
 - Volume: ${marketFactors.marketContext.volume}
 
-Consider these global factors in your analysis:
-- Current crypto market sentiment and major cryptocurrency trends
-- Global economic factors (inflation, interest rates, stock markets)
-- DeFi sector developments and competitive landscape
-- Regulatory environment and institutional adoption
-- Geopolitical events that could affect risk appetite
+**Analysis Framework - Consider These Data Inputs:**
+- Crypto market state: volatility, recent liquidations
+- Aave/Morpho lending and borrowing rates, utilization trends
+- Market sentiment (DeFi-focused indicators)
+- Vault's historical APY trends and patterns
 
-Write exactly 70 words in simple language that regular investors can understand. Focus on:
-1. Short-term outlook (next few days/weeks)
-2. Key risks and opportunities
-3. Overall sentiment (bullish/bearish/neutral)
+**Required Output (125 words exactly):**
+1. **Short-term APY estimate** (next 2-4 weeks) with specific percentage and reasoning
+2. **Long-term APY estimate** (1-3 months) with specific percentage and reasoning  
+3. Market analysis including volatility, utilization, sentiment factors
+4. Use direct, actionable language with "you"
+5. Include specific numbers and data patterns
+6. No fluff - be concise and data-driven
+
+**Tone Requirements:**
+- Direct and actionable
+- Use "you," brief phrases
+- Include concrete percentages and trends
+- Example format: "Short-term: 3.8% APY, stable. Volatility low, borrowing up 5%. Long-term: 4.2% APY, rising. Utilization growth, sentiment improving."
 
 Respond with JSON in this exact format:
 {
-  "outlook": "Your 70-word prediction here",
-  "sentiment": "bullish|bearish|neutral",
+  "outlook": "Your 125-word analysis with APY predictions here",
+  "sentiment": "bullish|bearish|neutral", 
   "confidence": 75,
-  "marketFactors": ["factor1", "factor2", "factor3"]
+  "marketFactors": ["factor1", "factor2", "factor3", "factor4"]
 }
 `;
 
@@ -97,7 +105,7 @@ Respond with JSON in this exact format:
         messages: [
           {
             role: "system",
-            content: "You are a professional DeFi market analyst. Provide accurate, balanced predictions based on available data. Always respond with valid JSON."
+            content: "You are a professional DeFi market analyst specializing in APY predictions. Provide specific, actionable predictions with concrete percentages based on market data patterns. Always respond with valid JSON and exactly 125 words."
           },
           {
             role: "user",
@@ -106,7 +114,7 @@ Respond with JSON in this exact format:
         ],
         response_format: { type: "json_object" },
         temperature: 0.7,
-        max_tokens: 300
+        max_tokens: 500
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
