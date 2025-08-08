@@ -339,6 +339,80 @@ export const ConvexIcon = ({ className = "", size = 24 }: PlatformIconProps) => 
   </svg>
 );
 
+// Lido - Official blue-to-purple gradient with geometric hexagonal shape and "L" pattern
+export const LidoIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 128 128"
+    className={className}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <linearGradient id="lidoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#00A3FF"/>
+        <stop offset="100%" stopColor="#7C3AED"/>
+      </linearGradient>
+    </defs>
+    <circle cx="64" cy="64" r="64" fill="url(#lidoGradient)"/>
+    {/* Hexagonal L pattern */}
+    <path
+      d="M38 32L58 42L78 32L90 52L78 72L58 82L38 72L26 52L38 32Z"
+      fill="none"
+      stroke="white"
+      strokeWidth="3"
+      strokeLinejoin="round"
+    />
+    {/* L shape inside hexagon */}
+    <path
+      d="M45 45V68H68V62H52V45H45Z"
+      fill="white"
+    />
+    <path
+      d="M52 52L70 52L70 58L58 58L58 70L52 70L52 52Z"
+      fill="rgba(255, 255, 255, 0.7)"
+    />
+  </svg>
+);
+
+// Morpho - Blue background with butterfly-inspired wings design (Blue Morpho identity)
+export const MorphoIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 128 128"
+    className={className}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="64" cy="64" r="64" fill="#2563EB"/>
+    {/* Butterfly wings design */}
+    <path
+      d="M64 32C52 32 42 42 42 54C42 66 52 76 64 76C76 76 86 66 86 54C86 42 76 32 64 32Z"
+      fill="white"
+      fillOpacity="0.9"
+    />
+    <path
+      d="M64 52C52 52 42 62 42 74C42 86 52 96 64 96C76 96 86 86 86 74C86 62 76 52 64 52Z"
+      fill="white"
+      fillOpacity="0.7"
+    />
+    {/* Wing patterns */}
+    <ellipse cx="52" cy="48" rx="8" ry="12" fill="#2563EB" fillOpacity="0.3"/>
+    <ellipse cx="76" cy="48" rx="8" ry="12" fill="#2563EB" fillOpacity="0.3"/>
+    <ellipse cx="52" cy="68" rx="8" ry="12" fill="#2563EB" fillOpacity="0.3"/>
+    <ellipse cx="76" cy="68" rx="8" ry="12" fill="#2563EB" fillOpacity="0.3"/>
+    {/* Wing spots */}
+    <circle cx="52" cy="44" r="3" fill="#1D4ED8"/>
+    <circle cx="76" cy="44" r="3" fill="#1D4ED8"/>
+    <circle cx="52" cy="64" r="3" fill="#1D4ED8"/>
+    <circle cx="76" cy="64" r="3" fill="#1D4ED8"/>
+    {/* Body */}
+    <ellipse cx="64" cy="64" rx="2" ry="24" fill="#1D4ED8"/>
+  </svg>
+);
+
 // Default platform icon
 export const DefaultPlatformIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
@@ -385,6 +459,8 @@ export const getPlatformIcon = (platformName: string): React.FC<PlatformIconProp
   if (name.includes('trader') || name.includes('joe')) return TraderJoeIcon;
   if (name.includes('spooky')) return SpookySwapIcon;
   if (name.includes('convex')) return ConvexIcon;
+  if (name.includes('lido')) return LidoIcon;
+  if (name.includes('morpho')) return MorphoIcon;
   
   return DefaultPlatformIcon;
 };

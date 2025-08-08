@@ -16,8 +16,6 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 import { AIOutlook } from "@/components/ai-outlook";
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
-import { CoinGeckoData } from "@/components/coingecko-data";
-import { MoralisData } from "@/components/moralis-data";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -630,20 +628,7 @@ export default function PoolDetail() {
           <TokenInfo poolId={pool.id} />
         </div>
 
-        {/* Market Data Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-          {/* CoinGecko Market Data */}
-          <CoinGeckoData 
-            tokenAddress={(pool.rawData as any)?.underlyingToken || (pool.rawData as any)?.underlyingTokens?.[0] || ''} 
-            chainName={pool.chain?.name.toLowerCase()} 
-          />
-          
-          {/* Moralis Web3 Data */}
-          <MoralisData 
-            tokenAddress={(pool.rawData as any)?.underlyingToken || (pool.rawData as any)?.underlyingTokens?.[0] || ''} 
-            chainName={pool.chain?.name.toLowerCase()} 
-          />
-        </div>
+
       </div>
       </div>
       <Footer />
