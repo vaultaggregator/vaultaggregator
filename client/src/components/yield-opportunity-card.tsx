@@ -85,30 +85,33 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     {opportunity.tokenPair}
                   </h3>
                   {opportunity.categories && opportunity.categories.length > 0 && (() => {
-                    const categoryName = opportunity.categories[0].name;
+                    // Check all categories for USDC or stETH, not just the first one
+                    const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
+                    const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
                     
-                    // Use Trust Wallet logos for specific tokens
-                    if (categoryName === 'USDC') {
+                    if (usdcCategory) {
                       return (
                         <img 
                           src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
                           alt="USDC"
-                          className="w-3.5 h-3.5 flex-shrink-0"
+                          className="w-5 h-5 flex-shrink-0 rounded-full"
+                          data-testid={`logo-usdc-${opportunity.id}`}
                         />
                       );
-                    } else if (categoryName === 'stETH') {
+                    } else if (stethCategory) {
                       return (
                         <img 
                           src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
                           alt="stETH"
-                          className="w-3.5 h-3.5 flex-shrink-0"
+                          className="w-5 h-5 flex-shrink-0 rounded-full"
+                          data-testid={`logo-steth-${opportunity.id}`}
                         />
                       );
                     }
                     
                     // Fall back to SVG icons for other categories
                     const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                    return <CategoryIcon size={14} className="flex-shrink-0" />;
+                    return <CategoryIcon size={16} className="flex-shrink-0" />;
                   })()}
                 </div>
                 {showNetworkName && (
