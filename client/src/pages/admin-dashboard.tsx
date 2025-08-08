@@ -14,7 +14,7 @@ import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, Arr
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
 
-type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
+type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible' | 'datasource';
 type SortDirection = 'asc' | 'desc' | null;
 import type { PoolWithRelations, Platform, Chain, Category } from "@shared/schema";
 
@@ -454,6 +454,10 @@ export default function AdminDashboard() {
         aValue = a.isVisible ? 1 : 0;
         bValue = b.isVisible ? 1 : 0;
         break;
+      case 'datasource':
+        aValue = a.project?.toLowerCase() || '';
+        bValue = b.project?.toLowerCase() || '';
+        break;
       default:
         return 0;
     }
@@ -480,8 +484,12 @@ export default function AdminDashboard() {
   // Manual scan mutation
   const scanMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("/api/admin/scan-pools", {}, { method: "POST" });
-      return response;
+      const response = await fetch("/api/admin/scan-pools", { 
+        method: "POST", 
+        credentials: "include" 
+      });
+      if (!response.ok) throw new Error("Failed to scan pools");
+      return await response.json();
     },
     onSuccess: (data: any) => {
       setIsScanning(false);
@@ -883,6 +891,16 @@ export default function AdminDashboard() {
                           {getSortIcon('risk')}
                         </div>
                       </th>
+                      <th 
+                        className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => handleSort('datasource')}
+                        data-testid="sort-datasource"
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          Data Source
+                          {getSortIcon('datasource')}
+                        </div>
+                      </th>
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
                         Categories
                       </th>
@@ -953,6 +971,14 @@ export default function AdminDashboard() {
                             }
                           >
                             {pool.riskLevel}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <Badge 
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {pool.project?.toUpperCase() || 'UNKNOWN'}
                           </Badge>
                         </td>
                         <td className="py-3 px-2">
