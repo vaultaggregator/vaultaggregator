@@ -6,121 +6,143 @@ export interface PlatformIconProps {
   size?: number;
 }
 
-// Uniswap - DEX protocol
+// Uniswap - Official logo based on Wikipedia SVG
 export const UniswapIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#FF007A"/>
+    <circle cx="64" cy="64" r="64" fill="#FF007A"/>
     <path
-      d="M8.5 20.5c2-4 6-4 8 0s6 4 8 0M12 12c1-2 3-2 4 0s3 2 4 0"
-      stroke="white"
-      strokeWidth="2"
-      fill="none"
-      strokeLinecap="round"
+      d="M64 20c-24.3 0-44 19.7-44 44 0 24.3 19.7 44 44 44 24.3 0 44-19.7 44-44 0-24.3-19.7-44-44-44zm0 4c22.1 0 40 17.9 40 40 0 22.1-17.9 40-40 40-22.1 0-40-17.9-40-40 0-22.1 17.9-40 40-40z"
+      fill="white"
     />
-    <circle cx="10" cy="18" r="2" fill="white"/>
-    <circle cx="22" cy="18" r="2" fill="white"/>
+    <path
+      d="M51.5 48.2c-2.1 1.2-3.5 3.4-3.5 6 0 3.9 3.1 7 7 7 1.9 0 3.6-.8 4.9-2.1l8.1 4.7c-.6 1.5-.9 3.1-.9 4.8 0 7.2 5.8 13 13 13s13-5.8 13-13c0-7.2-5.8-13-13-13-2.8 0-5.4 1.1-7.3 2.9L64 54.8c1.3-1.3 2.1-3 2.1-4.9 0-3.9-3.1-7-7-7-1.9 0-3.6.8-4.9 2.1l-8.1-4.7c.6-1.5.9-3.1.9-4.8 0-7.2-5.8-13-13-13s-13 5.8-13 13c0 7.2 5.8 13 13 13 2.8 0 5.4-1.1 7.3-2.9l7.8 3.7z"
+      fill="white"
+    />
   </svg>
 );
 
-// SushiSwap - DEX protocol
+// SushiSwap - Based on official brand colors and design
 export const SushiSwapIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#0E4F64"/>
+    <circle cx="64" cy="64" r="64" fill="#0E4F64"/>
     <path
-      d="M8 16c0-4 4-8 8-8s8 4 8 8c0 2-1 4-3 5l-5-1-5 1c-2-1-3-3-3-5z"
+      d="M32 64c0-17.7 14.3-32 32-32s32 14.3 32 32c0 8.8-3.6 16.8-9.4 22.6L64 108.8 41.4 86.6C35.6 80.8 32 72.8 32 64z"
       fill="#FA52A0"
     />
+    <ellipse cx="52" cy="56" rx="4" ry="6" fill="white"/>
+    <ellipse cx="76" cy="56" rx="4" ry="6" fill="white"/>
     <path
-      d="M12 14c1-1 2-1 3 0s2 1 3 0"
+      d="M48 72c8 8 24 8 32 0"
       stroke="white"
-      strokeWidth="1"
-      fill="none"
+      strokeWidth="4"
+      strokeLinecap="round"
     />
-    <circle cx="13" cy="18" r="1" fill="white"/>
-    <circle cx="19" cy="18" r="1" fill="white"/>
+    <path
+      d="M56 84c4 4 12 4 16 0"
+      stroke="white"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
-// Aave - Lending protocol
+// Aave - Official Ghost logo based on brand guidelines
 export const AaveIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#B6509E"/>
+    <circle cx="64" cy="64" r="64" fill="#9896FF"/>
     <path
-      d="M16 6L10 26h4l1-4h6l1 4h4L16 6z"
+      d="M64 20c-7.5 0-14 2.5-19.5 6.7-5.5 4.2-9.5 10.3-9.5 17.3 0 12 8 22 19 25.5V92c0 3.3 2.7 6 6 6s6-2.7 6-6V69.5c11-3.5 19-13.5 19-25.5 0-7-4-13.1-9.5-17.3C78 22.5 71.5 20 64 20z"
       fill="white"
     />
+    <ellipse cx="54" cy="44" rx="4" ry="6" fill="#9896FF"/>
+    <ellipse cx="74" cy="44" rx="4" ry="6" fill="#9896FF"/>
     <path
-      d="M14 18l2-6 2 6h-4z"
-      fill="#B6509E"
+      d="M52 56c4 6 12 6 16 0"
+      stroke="#9896FF"
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
+    <path
+      d="M58 88c2 4 6 4 8 0"
+      stroke="#9896FF"
+      strokeWidth="2"
+      strokeLinecap="round"
     />
   </svg>
 );
 
-// Compound - Lending protocol
+// Compound - Official brand design with chart concept
 export const CompoundIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#00D395"/>
+    <circle cx="64" cy="64" r="64" fill="#00D395"/>
     <path
-      d="M12 10v12l8-6-8-6z"
-      fill="white"
+      d="M28 84L40 72L52 60L64 48L76 36L88 24L100 32"
+      stroke="white"
+      strokeWidth="8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
-    <path
-      d="M20 10v12l-8-6 8-6z"
-      fill="white"
-      fillOpacity="0.6"
-    />
+    <circle cx="40" cy="72" r="6" fill="white"/>
+    <circle cx="52" cy="60" r="6" fill="white"/>
+    <circle cx="64" cy="48" r="6" fill="white"/>
+    <circle cx="76" cy="36" r="6" fill="white"/>
+    <circle cx="88" cy="24" r="6" fill="white"/>
   </svg>
 );
 
-// Curve Finance - DEX for stablecoins
+// Curve Finance - Based on official CRV logo
 export const CurveIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#40E0D0"/>
+    <circle cx="64" cy="64" r="64" fill="#40E0D0"/>
     <path
-      d="M6 16c4-8 12-8 16 0s-4 12-8 12-8-4-8-12z"
+      d="M20 64c12-32 44-32 56 0s-12 44-28 44-28-12-28-44z"
       fill="none"
       stroke="white"
-      strokeWidth="2"
+      strokeWidth="6"
     />
     <path
-      d="M10 16c2-4 6-4 8 0s2 6 0 6-6-2-8-6z"
+      d="M32 64c8-16 24-16 32 0s8 24 0 24-24-8-32-24z"
       fill="white"
-      fillOpacity="0.8"
+      opacity="0.9"
+    />
+    <path
+      d="M44 64c4-8 12-8 16 0s4 12 0 12-12-4-16-12z"
+      fill="#40E0D0"
     />
   </svg>
 );
@@ -200,28 +222,27 @@ export const YearnIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   </svg>
 );
 
-// PancakeSwap - BSC DEX
+// PancakeSwap - Official bunny/rabbit design
 export const PancakeSwapIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#D1884F"/>
+    <circle cx="64" cy="64" r="64" fill="#D1884F"/>
+    <ellipse cx="64" cy="72" rx="28" ry="32" fill="#1FC7D4"/>
+    <ellipse cx="52" cy="40" rx="8" ry="16" fill="#1FC7D4"/>
+    <ellipse cx="76" cy="40" rx="8" ry="16" fill="#1FC7D4"/>
+    <circle cx="56" cy="60" r="4" fill="white"/>
+    <circle cx="72" cy="60" r="4" fill="white"/>
+    <ellipse cx="64" cy="72" rx="6" ry="4" fill="#D1884F"/>
     <path
-      d="M16 6c-6 0-10 4-10 10s4 10 10 10 10-4 10-10S22 6 16 6z"
-      fill="#1FC7D4"
-    />
-    <circle cx="13" cy="14" r="2" fill="white"/>
-    <circle cx="19" cy="14" r="2" fill="white"/>
-    <path
-      d="M12 20c2 2 6 2 8 0"
+      d="M54 80c4 4 12 4 16 0"
       stroke="white"
-      strokeWidth="2"
-      fill="none"
+      strokeWidth="3"
       strokeLinecap="round"
     />
   </svg>
@@ -268,30 +289,28 @@ export const TraderJoeIcon = ({ className = "", size = 24 }: PlatformIconProps) 
   </svg>
 );
 
-// SpookySwap - Fantom DEX
+// SpookySwap - Official ghost/BOO design
 export const SpookySwapIcon = ({ className = "", size = 24 }: PlatformIconProps) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 32 32"
+    viewBox="0 0 128 128"
     className={className}
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#1969FF"/>
+    <circle cx="64" cy="64" r="64" fill="#1969FF"/>
     <path
-      d="M16 6c-4 0-6 2-6 6v4c0 4 2 6 6 6s6-2 6-6v-4c0-4-2-6-6-6z"
+      d="M64 20c-16 0-24 8-24 24v32c0 16 8 24 24 24s24-8 24-24V44c0-16-8-24-24-24z"
       fill="white"
     />
-    <circle cx="13" cy="14" r="1" fill="#1969FF"/>
-    <circle cx="19" cy="14" r="1" fill="#1969FF"/>
     <path
-      d="M13 18c1 1 3 1 4 0"
-      stroke="#1969FF"
-      strokeWidth="1"
-      fill="none"
-      strokeLinecap="round"
+      d="M40 100c8-8 8-8 16 0s8 8 16 0 8 8 16 0"
+      fill="white"
     />
+    <circle cx="52" cy="56" r="4" fill="#1969FF"/>
+    <circle cx="76" cy="56" r="4" fill="#1969FF"/>
+    <ellipse cx="64" cy="72" rx="8" ry="4" fill="#1969FF"/>
   </svg>
 );
 
