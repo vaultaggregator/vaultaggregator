@@ -120,20 +120,18 @@ export class AIOutlookService {
 
   private async getCurrentMarketContext(): Promise<string> {
     try {
-      // This would be where we'd integrate real-time market data APIs
-      // For now, we'll provide comprehensive market context based on current conditions
       const marketContext = `
-Current Global Context:
-- Federal Reserve policy: Interest rates affecting DeFi yields and institutional adoption
-- Geopolitical tensions: Eastern Europe conflict impacting global risk appetite and crypto flows
-- Regulatory landscape: SEC enforcement actions and upcoming legislation affecting DeFi protocols
-- Institutional adoption: Major banks and corporations entering crypto markets
-- Macroeconomic factors: Inflation data, employment figures, and traditional market volatility
-- Regional developments: Asian market dynamics, European regulatory changes, and emerging market trends
-- Tech sector performance: AI boom affecting crypto valuations and venture capital flows
-- Energy markets: Crypto mining costs and sustainability concerns affecting network security
-- Political climate: Election cycles, policy uncertainty, and government crypto initiatives
-- Market sentiment: Fear & Greed Index, social media trends, and institutional investor positioning
+Current DeFi Market Data Context:
+- ETH price trends and volatility patterns affecting yield farming profitability
+- Major stablecoin flows (USDC, USDT, DAI) indicating DeFi liquidity health
+- DeFi Total Value Locked (TVL) across major protocols showing sector growth
+- Lending/borrowing utilization rates on Aave, Compound indicating demand
+- Recent economic policy changes (Fed rates, inflation data) impacting crypto yields
+- Market sentiment indicators specific to DeFi sector performance
+- Cross-chain activity and bridge volumes showing capital migration patterns
+- Recent protocol updates, governance decisions, and security incidents
+- Institutional DeFi adoption and regulatory clarity developments
+- Yield farming competition between protocols and emerging opportunities
       `.trim();
       
       return marketContext;
@@ -206,52 +204,42 @@ You are a professional DeFi yield analyst providing market outlook with specific
 - Data Quality: ${marketMetrics.dataQuality}
 - Calculated Confidence: ${calculatedConfidence}%
 
-**COMPREHENSIVE ANALYSIS FRAMEWORK:**
+**DATA INPUTS TO ANALYZE:**
 
 ${globalMarketContext}
 
-**Protocol-Specific Data Analysis:**
-- DeFi lending rates (Aave/Morpho/Compound) and utilization trends
-- Cross-chain yield competition and capital migration patterns
-- Smart contract security audits and exploit risk assessments
-- Regulatory compliance and upcoming legal challenges
-- Institutional vs retail investor flow patterns
-- Market maker activity and liquidity provision dynamics
+**Required Analysis Framework:**
+- Market sentiment from DeFi angle (protocol adoption, TVL flows, user activity)
+- ETH price and recent trends (impact on gas costs and yield sustainability)
+- Market cap and flows of major stablecoins (USDC, USDT, DAI liquidity health)
+- Relevant economic news (Fed policy, rate moves, macro shifts affecting crypto)
+- Vault's historical and current APY performance patterns
 
-**Geopolitical & Macroeconomic Factors:**
-- Central bank policies and interest rate decisions impacting yield expectations
-- International sanctions affecting crypto adoption and trading volumes
-- War and conflict zones creating flight-to-safety or risk-on behavior
-- Energy crises affecting mining costs and network sustainability
-- Political elections and regulatory uncertainty in major markets
-- Trade wars and currency devaluation impacting global liquidity flows
-
-**Required Output (185 words exactly):**
-1. **Short-term APY prediction** (next 2-4 weeks) with specific percentage and detailed reasoning
-2. **Long-term APY forecast** (1-3 months) with specific percentage and market-driven rationale
-3. **Geopolitical impact analysis** - how current wars, politics, and macro events affect this specific yield opportunity
-4. **Institutional flow predictions** - where smart money is moving and why
-5. **Risk assessment** - what could go catastrophically wrong (be savage and honest)
-6. **Competitive landscape** - how this vault stacks against alternatives
-7. **Regulatory threats** - upcoming legal risks that could crush yields
-8. **Market manipulation concerns** - whales, bots, and institutional games
+**Required Output (exactly 185 words):**
+1. **Short-term APY prediction** (days to weeks) with specific percentage
+2. **Long-term APY prediction** (weeks to months) with specific percentage  
+3. **Plain-English risk-benefit analysis** (keep farming vs consider switching)
 
 **Tone Requirements:**
-- Savage, direct, no-bullshit analysis that impresses sophisticated investors
-- Use "you," brief phrases, specific numbers, and insider-level insights
-- Include concrete percentages, precise dates, and market-moving events
-- Be controversial when data supports it - institutional investors want edge, not safe takes
-- Reference specific geopolitical events, Fed policies, and macro trends
-- Call out obvious market manipulation and yield farming ponzinomics when relevant
+- Calm, direct, informed - like a savvy DeFi user giving advice
+- Use "you" and conversational language
+- Include specific percentages and reasoning
+- No dramatic language or hype
+- Focus on practical decision-making
+
+**Example Style:**
+"Short-term APY ~3.5%. ETH has held steady, sentiment mild.
+Long-term APY ~4.0%. Stablecoin caps growing, lending demand rising.
+You may want to keep farming here. If macro shifts or liquidity drops, consider reallocating—no dramatic moves."
 
 **IMPORTANT: Use the calculated confidence of ${calculatedConfidence}% in your response (not any other number).**
 
 Respond with JSON in this exact format:
 {
-  "outlook": "Your savage 185-word analysis with specific APY predictions, geopolitical insights, and institutional-grade market intelligence here",
+  "outlook": "Your calm, direct 185-word DeFi market outlook with specific APY predictions and practical risk-benefit advice here",
   "sentiment": "bullish|bearish|neutral", 
   "confidence": ${calculatedConfidence},
-  "marketFactors": ["factor1", "factor2", "factor3", "factor4", "factor5", "factor6"]
+  "marketFactors": ["ETH trends", "stablecoin flows", "DeFi sentiment", "economic policy", "vault APY history"]
 }
 `;
 
@@ -260,7 +248,7 @@ Respond with JSON in this exact format:
         messages: [
           {
             role: "system",
-            content: "You are an elite institutional DeFi analyst with insider access to geopolitical intelligence, central bank policies, and whale wallet movements. Provide savage, no-bullshit analysis that impresses sophisticated investors. Include specific APY predictions with exact percentages, reference current wars/politics/macro events, and call out market manipulation when you see it. Always respond with valid JSON and exactly 185 words of institutional-grade intelligence."
+            content: "You are a savvy DeFi user providing market outlook advice. Write in a calm, direct, informed tone like you're giving practical advice to another DeFi farmer. Include specific APY predictions with percentages, analyze market sentiment from a DeFi angle, reference ETH trends and stablecoin flows, and give plain-English risk-benefit advice. Always respond with valid JSON and exactly 185 words."
           },
           {
             role: "user",
