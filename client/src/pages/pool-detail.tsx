@@ -15,6 +15,7 @@ import { TokenDisplay } from "@/components/TokenDisplay";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 import { AIOutlook } from "@/components/ai-outlook";
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
+import { TokenInfo } from "@/components/token-info";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
@@ -622,6 +623,9 @@ export default function PoolDetail() {
 
           {/* Notes Section */}
           <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
+
+          {/* Token Information Section */}
+          <TokenInfo poolId={pool.id} />
         </div>
       </div>
       </div>

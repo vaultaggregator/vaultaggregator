@@ -2209,6 +2209,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Token data endpoints for pool detail page (no API key required)
+  app.get("/api/pools/:poolId/token-info", async (req, res) => {
+    try {
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData = pool.rawData || {};
+      const underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      const { EtherscanTokenService } = await import("./services/etherscanTokenService");
+      const tokenService = new EtherscanTokenService();
+
+      // Fetch all token data in parallel
+      const [
+        tokenInfo,
+        tokenSupply,
+        topHolders,
+        recentTransfers,
+        analytics,
+        gasStats,
+        events
+      ] = await Promise.all([
+        tokenService.getTokenInfo(underlyingToken),
+        tokenService.getTokenSupply(underlyingToken),
+        tokenService.getTopHolders(underlyingToken, 10),
+        tokenService.getRecentTransfers(underlyingToken, 20),
+        tokenService.getTokenAnalytics(underlyingToken),
+        tokenService.getGasUsageStats(underlyingToken),
+        tokenService.getContractEvents(underlyingToken, 50)
+      ]);
+
+      // Get contract info
+      const { EtherscanService } = await import("./services/etherscanService");
+      const etherscan = new EtherscanService();
+      const contractInfo = await etherscan.getContractInfo(underlyingToken);
+
+      res.json({
+        tokenAddress: underlyingToken,
+        tokenInfo,
+        contractInfo,
+        supplyData: tokenSupply,
+        holders: {
+          count: topHolders.length,
+          topHolders
+        },
+        transfers: {
+          recent: recentTransfers,
+          analytics
+        },
+        technical: {
+          gasUsage: gasStats,
+          events: events.slice(0, 10) // Limit events for performance
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching token info:", error);
+      res.status(500).json({ error: "Failed to fetch token information" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
