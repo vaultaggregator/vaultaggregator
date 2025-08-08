@@ -1044,6 +1044,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pool consolidation endpoint
+  app.post("/api/admin/pools/consolidate", requireAuth, async (req, res) => {
+    try {
+      const { 
+        platformId, 
+        chainId, 
+        tokenPair, 
+        apy, 
+        tvl, 
+        riskLevel, 
+        poolAddress, 
+        project, 
+        rawData, 
+        notes,
+        sourcePoolIds 
+      } = req.body;
+
+      // Create the consolidated pool
+      const consolidatedPool = await storage.createPool({
+        platformId,
+        chainId,
+        tokenPair,
+        apy,
+        tvl,
+        riskLevel,
+        poolAddress,
+        project,
+        rawData,
+        isVisible: true,
+        isActive: true,
+      });
+
+      // Add a note indicating this is a consolidated pool
+      if (notes || sourcePoolIds?.length > 0) {
+        const noteContent = [
+          notes ? `User notes: ${notes}` : null,
+          sourcePoolIds?.length ? `Consolidated from pools: ${sourcePoolIds.join(', ')}` : null
+        ].filter(Boolean).join('\n\n');
+
+        if (noteContent) {
+          await storage.createNote({
+            poolId: consolidatedPool.id,
+            content: noteContent,
+            isPublic: true,
+          });
+        }
+      }
+
+      res.json({ 
+        pool: consolidatedPool,
+        message: "Consolidated pool created successfully" 
+      });
+    } catch (error) {
+      console.error("Error creating consolidated pool:", error);
+      res.status(500).json({ message: "Failed to create consolidated pool" });
+    }
+  });
+
   // Notes routes
   app.get("/api/pools/:poolId/notes", async (req, res) => {
     try {

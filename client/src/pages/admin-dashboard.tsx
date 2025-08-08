@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
+import PoolConsolidationModal from "@/components/pool-consolidation-modal";
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
 type SortDirection = 'asc' | 'desc' | null;
@@ -102,6 +103,8 @@ export default function AdminDashboard() {
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState<any>(null);
+  const [selectedPoolsForConsolidation, setSelectedPoolsForConsolidation] = useState<string[]>([]);
+  const [isConsolidationModalOpen, setIsConsolidationModalOpen] = useState(false);
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -392,6 +395,34 @@ export default function AdminDashboard() {
     }
   };
 
+  // Pool consolidation handlers
+  const handlePoolSelectionToggle = (poolId: string) => {
+    setSelectedPoolsForConsolidation(prev => 
+      prev.includes(poolId) 
+        ? prev.filter(id => id !== poolId)
+        : [...prev, poolId]
+    );
+  };
+
+  const handleOpenConsolidationModal = () => {
+    if (selectedPoolsForConsolidation.length < 2) {
+      toast({
+        title: "Error",
+        description: "Please select at least 2 pools to consolidate",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsConsolidationModalOpen(true);
+  };
+
+  const handleCloseConsolidationModal = () => {
+    setIsConsolidationModalOpen(false);
+    setSelectedPoolsForConsolidation([]);
+  };
+
+  const selectedPoolsData = pools.filter(pool => selectedPoolsForConsolidation.includes(pool.id));
+
   // Sorting handlers
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -579,6 +610,18 @@ export default function AdminDashboard() {
               >
                 {isScanning ? "Scanning..." : "Scan Pools"}
               </Button>
+
+              {selectedPoolsForConsolidation.length > 0 && (
+                <Button 
+                  onClick={handleOpenConsolidationModal}
+                  variant="default" 
+                  size="sm"
+                  data-testid="button-consolidate-pools"
+                >
+                  <Merge className="h-4 w-4 mr-2" />
+                  Consolidate ({selectedPoolsForConsolidation.length})
+                </Button>
+              )}
 
               <Button 
                 onClick={handleLogout} 
@@ -804,6 +847,9 @@ export default function AdminDashboard() {
                   <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white w-12">
+                        Select
+                      </th>
                       <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
                         Pool
                       </th>
@@ -883,6 +929,15 @@ export default function AdminDashboard() {
                         className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                         data-testid={`row-pool-${pool.id}`}
                       >
+                        <td className="py-3 px-2 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedPoolsForConsolidation.includes(pool.id)}
+                            onChange={() => handlePoolSelectionToggle(pool.id)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            data-testid={`checkbox-select-${pool.id}`}
+                          />
+                        </td>
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-2">
                             <EditableField
@@ -1069,6 +1124,15 @@ export default function AdminDashboard() {
         onClose={handleClosePoolModal}
         poolId={selectedPoolForModal?.id || ''}
         poolData={selectedPoolForModal}
+      />
+
+      {/* Pool Consolidation Modal */}
+      <PoolConsolidationModal
+        isOpen={isConsolidationModalOpen}
+        onClose={handleCloseConsolidationModal}
+        pools={selectedPoolsData}
+        platforms={platforms}
+        chains={chains}
       />
     </div>
   );
