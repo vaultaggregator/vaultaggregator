@@ -322,6 +322,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced search endpoint
+  app.get("/api/pools/advanced-search", async (req, res) => {
+    try {
+      const { 
+        search, 
+        chainIds, 
+        categoryIds, 
+        minApy, 
+        maxApy, 
+        minTvl, 
+        maxTvl, 
+        riskLevels,
+        platforms,
+        hasAudit,
+        minOperatingDays,
+        limit = "100"
+      } = req.query;
+
+      // Parse parameters
+      const searchOptions: any = {
+        onlyVisible: true,
+        limit: Math.min(parseInt(limit as string) || 100, 100),
+        offset: 0
+      };
+
+      if (search) searchOptions.search = search as string;
+      if (chainIds) {
+        const chainIdArray = (chainIds as string).split(',');
+        searchOptions.chainIds = chainIdArray;
+      }
+
+      const pools = await storage.getPools(searchOptions);
+
+      // Apply additional filters
+      let filteredPools = pools;
+
+      if (minApy) {
+        const minApyNum = parseFloat(minApy as string);
+        filteredPools = filteredPools.filter(p => parseFloat(p.apy) >= minApyNum);
+      }
+
+      if (maxApy) {
+        const maxApyNum = parseFloat(maxApy as string);
+        filteredPools = filteredPools.filter(p => parseFloat(p.apy) <= maxApyNum);
+      }
+
+      if (minTvl) {
+        const minTvlNum = parseFloat(minTvl as string);
+        filteredPools = filteredPools.filter(p => parseFloat(p.tvl) >= minTvlNum);
+      }
+
+      if (maxTvl) {
+        const maxTvlNum = parseFloat(maxTvl as string);
+        filteredPools = filteredPools.filter(p => parseFloat(p.tvl) <= maxTvlNum);
+      }
+
+      if (riskLevels) {
+        const riskArray = (riskLevels as string).split(',');
+        filteredPools = filteredPools.filter(p => riskArray.includes(p.riskLevel));
+      }
+
+      if (platforms) {
+        const platformArray = (platforms as string).split(',');
+        filteredPools = filteredPools.filter(p => platformArray.includes(p.platform.name));
+      }
+
+      if (minOperatingDays) {
+        const minDays = parseInt(minOperatingDays as string);
+        filteredPools = filteredPools.filter(p => (p.count || 0) >= minDays);
+      }
+
+      res.json(filteredPools);
+    } catch (error) {
+      console.error("Error in advanced search:", error);
+      res.status(500).json({ error: "Failed to perform advanced search" });
+    }
+  });
+
+  // Yield forecasting endpoints
+  app.get("/api/yield-forecasts", async (req, res) => {
+    try {
+      const { period = '7d', model = 'ml' } = req.query;
+      
+      // For now, return empty array - this would integrate with ML models
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching yield forecasts:", error);
+      res.status(500).json({ error: "Failed to fetch yield forecasts" });
+    }
+  });
+
+  app.get("/api/yield-forecasts/:poolId", async (req, res) => {
+    try {
+      const { poolId } = req.params;
+      const { period = '7d', model = 'ml' } = req.query;
+      
+      const pool = await storage.getPoolById(poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // For now, return empty - this would integrate with ML models
+      res.json(null);
+    } catch (error) {
+      console.error("Error fetching pool forecast:", error);
+      res.status(500).json({ error: "Failed to fetch pool forecast" });
+    }
+  });
+
+  // Risk assessment endpoints
+  app.get("/api/risk-assessments", async (req, res) => {
+    try {
+      // For now, return empty array - this would integrate with risk analysis models
+      res.json([]);
+    } catch (error) {
+      console.error("Error fetching risk assessments:", error);
+      res.status(500).json({ error: "Failed to fetch risk assessments" });
+    }
+  });
+
+  app.get("/api/risk-assessments/:poolId", async (req, res) => {
+    try {
+      const { poolId } = req.params;
+      
+      const pool = await storage.getPoolById(poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // For now, return null - this would integrate with risk analysis models
+      res.json(null);
+    } catch (error) {
+      console.error("Error fetching pool risk assessment:", error);
+      res.status(500).json({ error: "Failed to fetch pool risk assessment" });
+    }
+  });
+
   // Pool routes
   app.get("/api/pools", async (req, res) => {
     try {

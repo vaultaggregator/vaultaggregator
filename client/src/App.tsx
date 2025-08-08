@@ -40,6 +40,9 @@ import AIYieldPredictor from "@/pages/ai-yield-predictor";
 import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
 import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
 import MarketIntelligence from "@/pages/market-intelligence";
+import AdvancedSearch from "@/pages/advanced-search";
+import YieldForecasting from "@/pages/yield-forecasting";
+import RiskCalculator from "@/pages/risk-calculator";
 
 
 function Router() {
@@ -73,6 +76,9 @@ function Router() {
       <Route path="/ai/yield-predictor" component={AIYieldPredictor} />
       <Route path="/ai/risk-analyzer" component={AIRiskAnalyzer} />
       <Route path="/market-intelligence" component={MarketIntelligence} />
+      <Route path="/advanced-search" component={AdvancedSearch} />
+      <Route path="/yield-forecasting" component={YieldForecasting} />
+      <Route path="/risk-calculator" component={RiskCalculator} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
