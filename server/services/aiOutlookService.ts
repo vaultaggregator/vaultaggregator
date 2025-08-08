@@ -118,6 +118,30 @@ export class AIOutlookService {
     return Math.max(1, Math.min(100, Math.round(confidence)));
   }
 
+  private async getCurrentMarketContext(): Promise<string> {
+    try {
+      // This would be where we'd integrate real-time market data APIs
+      // For now, we'll provide comprehensive market context based on current conditions
+      const marketContext = `
+Current Global Context:
+- Federal Reserve policy: Interest rates affecting DeFi yields and institutional adoption
+- Geopolitical tensions: Eastern Europe conflict impacting global risk appetite and crypto flows
+- Regulatory landscape: SEC enforcement actions and upcoming legislation affecting DeFi protocols
+- Institutional adoption: Major banks and corporations entering crypto markets
+- Macroeconomic factors: Inflation data, employment figures, and traditional market volatility
+- Regional developments: Asian market dynamics, European regulatory changes, and emerging market trends
+- Tech sector performance: AI boom affecting crypto valuations and venture capital flows
+- Energy markets: Crypto mining costs and sustainability concerns affecting network security
+- Political climate: Election cycles, policy uncertainty, and government crypto initiatives
+- Market sentiment: Fear & Greed Index, social media trends, and institutional investor positioning
+      `.trim();
+      
+      return marketContext;
+    } catch (error) {
+      return "Limited market context available due to API constraints.";
+    }
+  }
+
   async generateOutlook(poolId: string): Promise<OutlookResponse | null> {
     try {
       // Get pool data
@@ -146,6 +170,9 @@ export class AIOutlookService {
       // Calculate dynamic confidence score based on market data
       const calculatedConfidence = this.calculateConfidenceScore(pool);
       
+      // Get comprehensive market context
+      const globalMarketContext = await this.getCurrentMarketContext();
+      
       // Get market data for enhanced analysis
       const marketMetrics = {
         tvlStability: parseFloat(pool.tvl || "0") > 10000000 ? "high" : "moderate",
@@ -172,42 +199,59 @@ You are a professional DeFi yield analyst providing market outlook with specific
 - Volume: ${marketFactors.marketContext.volume}
 
 **Enhanced Market Analysis Data:**
-- TVL Stability: ${marketMetrics.tvlStability} (${formatTvl(pool.tvl)})
+- TVL Stability: ${marketMetrics.tvlStability} (${formatTvl(pool.tvl || "0")})
 - Volatility Level: ${marketMetrics.volatilityLevel} (${marketFactors.marketContext.volatility})
 - APY 7-day Change: ${marketMetrics.apyTrend > 0 ? '+' : ''}${marketMetrics.apyTrend?.toFixed(2) || 0}%
 - Operating History: ${marketMetrics.operatingHistory} days
 - Data Quality: ${marketMetrics.dataQuality}
 - Calculated Confidence: ${calculatedConfidence}%
 
-**Analysis Framework - Consider These Data Inputs:**
-- Crypto market volatility and recent liquidation events
-- DeFi lending rates (Aave/Morpho) and utilization trends
-- Market sentiment indicators and DeFi sector momentum
-- Vault's historical APY stability and trend patterns
-- TVL growth/decline and competitive positioning
+**COMPREHENSIVE ANALYSIS FRAMEWORK:**
 
-**Required Output (125 words exactly):**
-1. **Short-term APY estimate** (next 2-4 weeks) with specific percentage and reasoning
-2. **Long-term APY estimate** (1-3 months) with specific percentage and reasoning  
-3. Market analysis including volatility, utilization, sentiment factors
-4. Use direct, actionable language with "you"
-5. Include specific numbers and data patterns
-6. No fluff - be concise and data-driven
+${globalMarketContext}
+
+**Protocol-Specific Data Analysis:**
+- DeFi lending rates (Aave/Morpho/Compound) and utilization trends
+- Cross-chain yield competition and capital migration patterns
+- Smart contract security audits and exploit risk assessments
+- Regulatory compliance and upcoming legal challenges
+- Institutional vs retail investor flow patterns
+- Market maker activity and liquidity provision dynamics
+
+**Geopolitical & Macroeconomic Factors:**
+- Central bank policies and interest rate decisions impacting yield expectations
+- International sanctions affecting crypto adoption and trading volumes
+- War and conflict zones creating flight-to-safety or risk-on behavior
+- Energy crises affecting mining costs and network sustainability
+- Political elections and regulatory uncertainty in major markets
+- Trade wars and currency devaluation impacting global liquidity flows
+
+**Required Output (185 words exactly):**
+1. **Short-term APY prediction** (next 2-4 weeks) with specific percentage and detailed reasoning
+2. **Long-term APY forecast** (1-3 months) with specific percentage and market-driven rationale
+3. **Geopolitical impact analysis** - how current wars, politics, and macro events affect this specific yield opportunity
+4. **Institutional flow predictions** - where smart money is moving and why
+5. **Risk assessment** - what could go catastrophically wrong (be savage and honest)
+6. **Competitive landscape** - how this vault stacks against alternatives
+7. **Regulatory threats** - upcoming legal risks that could crush yields
+8. **Market manipulation concerns** - whales, bots, and institutional games
 
 **Tone Requirements:**
-- Direct and actionable
-- Use "you," brief phrases
-- Include concrete percentages and trends
-- Example format: "Short-term: 3.8% APY, stable. Volatility low, borrowing up 5%. Long-term: 4.2% APY, rising. Utilization growth, sentiment improving."
+- Savage, direct, no-bullshit analysis that impresses sophisticated investors
+- Use "you," brief phrases, specific numbers, and insider-level insights
+- Include concrete percentages, precise dates, and market-moving events
+- Be controversial when data supports it - institutional investors want edge, not safe takes
+- Reference specific geopolitical events, Fed policies, and macro trends
+- Call out obvious market manipulation and yield farming ponzinomics when relevant
 
 **IMPORTANT: Use the calculated confidence of ${calculatedConfidence}% in your response (not any other number).**
 
 Respond with JSON in this exact format:
 {
-  "outlook": "Your 125-word analysis with APY predictions here",
+  "outlook": "Your savage 185-word analysis with specific APY predictions, geopolitical insights, and institutional-grade market intelligence here",
   "sentiment": "bullish|bearish|neutral", 
   "confidence": ${calculatedConfidence},
-  "marketFactors": ["factor1", "factor2", "factor3", "factor4"]
+  "marketFactors": ["factor1", "factor2", "factor3", "factor4", "factor5", "factor6"]
 }
 `;
 
@@ -216,7 +260,7 @@ Respond with JSON in this exact format:
         messages: [
           {
             role: "system",
-            content: "You are a professional DeFi market analyst specializing in APY predictions. Provide specific, actionable predictions with concrete percentages based on market data patterns. Always respond with valid JSON and exactly 125 words."
+            content: "You are an elite institutional DeFi analyst with insider access to geopolitical intelligence, central bank policies, and whale wallet movements. Provide savage, no-bullshit analysis that impresses sophisticated investors. Include specific APY predictions with exact percentages, reference current wars/politics/macro events, and call out market manipulation when you see it. Always respond with valid JSON and exactly 185 words of institutional-grade intelligence."
           },
           {
             role: "user",
@@ -224,8 +268,8 @@ Respond with JSON in this exact format:
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 500
+        temperature: 0.8,
+        max_tokens: 700
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
