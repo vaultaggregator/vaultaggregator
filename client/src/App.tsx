@@ -39,6 +39,7 @@ import AIPortfolioOptimizer from "@/pages/ai-portfolio-optimizer";
 import AIYieldPredictor from "@/pages/ai-yield-predictor";
 import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
 import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
+import MarketIntelligence from "@/pages/market-intelligence";
 
 
 function Router() {
@@ -71,6 +72,7 @@ function Router() {
       <Route path="/ai/portfolio-optimizer" component={AIPortfolioOptimizer} />
       <Route path="/ai/yield-predictor" component={AIYieldPredictor} />
       <Route path="/ai/risk-analyzer" component={AIRiskAnalyzer} />
+      <Route path="/market-intelligence" component={MarketIntelligence} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
