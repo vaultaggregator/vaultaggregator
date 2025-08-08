@@ -117,10 +117,11 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
         </g>
         
         {/* Scale markers */}
-        {[0, 25, 50, 75, 100].map((value, index) => {
+        {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((value, index) => {
           const markerAngle = (value / 100) * 180 - 90;
-          const markerStartX = centerX + (radius - 6) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerStartY = centerY + (radius - 6) * Math.sin((markerAngle * Math.PI) / 180);
+          const isMainMarker = value % 25 === 0;
+          const markerStartX = centerX + (radius - (isMainMarker ? 8 : 4)) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerStartY = centerY + (radius - (isMainMarker ? 8 : 4)) * Math.sin((markerAngle * Math.PI) / 180);
           const markerEndX = centerX + radius * Math.cos((markerAngle * Math.PI) / 180);
           const markerEndY = centerY + radius * Math.sin((markerAngle * Math.PI) / 180);
           
@@ -132,7 +133,8 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
               x2={markerEndX}
               y2={markerEndY}
               stroke="#6b7280"
-              strokeWidth="2"
+              strokeWidth={isMainMarker ? "2" : "1"}
+              opacity={isMainMarker ? "1" : "0.5"}
             />
           );
         })}
@@ -140,7 +142,9 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
         {/* Scale labels */}
         {[
           { value: 0, label: "0" },
+          { value: 25, label: "25" },
           { value: 50, label: "50" },
+          { value: 75, label: "75" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = (value / 100) * 180 - 90;
