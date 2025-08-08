@@ -9,6 +9,8 @@ import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull } from "d
 
 import session from "express-session";
 import bcrypt from "bcrypt";
+import { coingeckoService } from "./services/coingeckoService";
+import { moralisService } from "./services/moralisService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session configuration
@@ -2209,6 +2211,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // CoinGecko API endpoints
+  app.get("/api/coingecko/price/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { platform = 'ethereum' } = req.query;
+      
+      const prices = await coingeckoService.getTokenPrices([address], platform as string);
+      if (!prices) {
+        return res.status(404).json({ error: "Price data not found" });
+      }
+      
+      res.json(prices[address.toLowerCase()] || null);
+    } catch (error) {
+      console.error("Error fetching CoinGecko price:", error);
+      res.status(500).json({ error: "Failed to fetch price data" });
+    }
+  });
+
+  app.get("/api/coingecko/token/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { platform = 'ethereum' } = req.query;
+      
+      const tokenData = await coingeckoService.getTokenByContract(address, platform as string);
+      if (!tokenData) {
+        return res.status(404).json({ error: "Token data not found" });
+      }
+      
+      res.json(tokenData);
+    } catch (error) {
+      console.error("Error fetching CoinGecko token data:", error);
+      res.status(500).json({ error: "Failed to fetch token data" });
+    }
+  });
+
+  app.get("/api/coingecko/market-chart/:coinId", async (req: Request, res: Response) => {
+    try {
+      const { coinId } = req.params;
+      const { days = '30' } = req.query;
+      
+      const chartData = await coingeckoService.getMarketChart(coinId, parseInt(days as string));
+      if (!chartData) {
+        return res.status(404).json({ error: "Chart data not found" });
+      }
+      
+      res.json(chartData);
+    } catch (error) {
+      console.error("Error fetching market chart:", error);
+      res.status(500).json({ error: "Failed to fetch chart data" });
+    }
+  });
+
+  app.get("/api/coingecko/trending", async (req: Request, res: Response) => {
+    try {
+      const trending = await coingeckoService.getTrendingCoins();
+      res.json(trending);
+    } catch (error) {
+      console.error("Error fetching trending coins:", error);
+      res.status(500).json({ error: "Failed to fetch trending coins" });
+    }
+  });
+
+  app.get("/api/coingecko/global", async (req: Request, res: Response) => {
+    try {
+      const globalData = await coingeckoService.getGlobalData();
+      res.json(globalData);
+    } catch (error) {
+      console.error("Error fetching global data:", error);
+      res.status(500).json({ error: "Failed to fetch global market data" });
+    }
+  });
+
+  app.get("/api/coingecko/defi", async (req: Request, res: Response) => {
+    try {
+      const defiData = await coingeckoService.getDefiData();
+      res.json(defiData);
+    } catch (error) {
+      console.error("Error fetching DeFi data:", error);
+      res.status(500).json({ error: "Failed to fetch DeFi market data" });
+    }
+  });
+
+  app.get("/api/coingecko/top-coins", async (req: Request, res: Response) => {
+    try {
+      const { limit = '100' } = req.query;
+      const topCoins = await coingeckoService.getTopCoins(parseInt(limit as string));
+      res.json(topCoins);
+    } catch (error) {
+      console.error("Error fetching top coins:", error);
+      res.status(500).json({ error: "Failed to fetch top coins" });
+    }
+  });
+
+  // Moralis API endpoints
+  app.get("/api/moralis/balance/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chain = 'ethereum' } = req.query;
+      
+      const chainId = moralisService.getChainId(chain as string);
+      const [nativeBalance, tokenBalances] = await Promise.all([
+        moralisService.getNativeBalance(address, chainId),
+        moralisService.getTokenBalances(address, chainId)
+      ]);
+      
+      res.json({
+        native: nativeBalance,
+        tokens: tokenBalances
+      });
+    } catch (error) {
+      console.error("Error fetching Moralis balance:", error);
+      res.status(500).json({ error: "Failed to fetch wallet balance" });
+    }
+  });
+
+  app.get("/api/moralis/defi/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chain = 'ethereum' } = req.query;
+      
+      const chainId = moralisService.getChainId(chain as string);
+      const defiPositions = await moralisService.getDeFiPositions(address, chainId);
+      
+      res.json(defiPositions || []);
+    } catch (error) {
+      console.error("Error fetching DeFi positions:", error);
+      res.status(500).json({ error: "Failed to fetch DeFi positions" });
+    }
+  });
+
+  app.get("/api/moralis/nfts/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chain = 'ethereum' } = req.query;
+      
+      const chainId = moralisService.getChainId(chain as string);
+      const nfts = await moralisService.getNFTs(address, chainId);
+      
+      res.json(nfts || []);
+    } catch (error) {
+      console.error("Error fetching NFTs:", error);
+      res.status(500).json({ error: "Failed to fetch NFTs" });
+    }
+  });
+
+  app.get("/api/moralis/transactions/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chain = 'ethereum', limit = '100' } = req.query;
+      
+      const chainId = moralisService.getChainId(chain as string);
+      const transactions = await moralisService.getTransactions(address, chainId, parseInt(limit as string));
+      
+      res.json(transactions || []);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      res.status(500).json({ error: "Failed to fetch transactions" });
+    }
+  });
+
+  app.get("/api/moralis/token-price/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chain = 'ethereum' } = req.query;
+      
+      const chainId = moralisService.getChainId(chain as string);
+      const price = await moralisService.getTokenPrice(address, chainId);
+      
+      if (!price) {
+        return res.status(404).json({ error: "Price not found" });
+      }
+      
+      res.json(price);
+    } catch (error) {
+      console.error("Error fetching token price:", error);
+      res.status(500).json({ error: "Failed to fetch token price" });
+    }
+  });
+
+  app.get("/api/moralis/net-worth/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chains = 'ethereum' } = req.query;
+      
+      const chainList = (chains as string).split(',').map(c => moralisService.getChainId(c));
+      const netWorth = await moralisService.getWalletNetWorth(address, chainList);
+      
+      res.json(netWorth);
+    } catch (error) {
+      console.error("Error fetching net worth:", error);
+      res.status(500).json({ error: "Failed to fetch wallet net worth" });
+    }
+  });
+
+  app.get("/api/moralis/wallet-stats/:address", async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const { chain = 'ethereum' } = req.query;
+      
+      const chainId = moralisService.getChainId(chain as string);
+      const stats = await moralisService.getWalletStats(address, chainId);
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching wallet stats:", error);
+      res.status(500).json({ error: "Failed to fetch wallet statistics" });
+    }
+  });
+
   // Token data endpoints for pool detail page (no API key required)
   app.get("/api/pools/:poolId/token-info", async (req, res) => {
     try {
@@ -2218,7 +2429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Extract underlying token address from raw data
-      const rawData = pool.rawData || {};
+      const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
       // For testing with Steakhouse pool, use the known token address
