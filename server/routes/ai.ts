@@ -79,7 +79,7 @@ Create a portfolio allocation that maximizes expected returns while managing ris
 
       // Get pool data
       const { storage } = await import('../storage');
-      const pool = await storage.getPool(poolId);
+      const pool = await storage.getPoolById(poolId);
       
       if (!pool) {
         return res.status(404).json({ error: 'Pool not found' });
@@ -178,7 +178,7 @@ Respond in JSON format:
 
       // Get pool data
       const { storage } = await import('../storage');
-      const pool = await storage.getPool(poolId);
+      const pool = await storage.getPoolById(poolId);
       
       if (!pool) {
         return res.status(404).json({ error: 'Pool not found' });
