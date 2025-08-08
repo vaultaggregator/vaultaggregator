@@ -8,9 +8,9 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
   // Normalize confidence to 0-100 range
   const normalizedConfidence = Math.max(0, Math.min(100, confidence));
   
-  // Calculate the angle for the needle (180 degrees total semicircle)
-  // For half-moon: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)  
-  // We need to map 0-100% to 180° to 0° (reverse direction for proper left-to-right)
+  // Calculate the angle for the needle (180 degrees on upper semicircle only)
+  // For upper semicircle: 0% = 180° (left), 50% = 90° (top), 100% = 0° (right)
+  // This keeps the needle in the upper half only
   const angle = 180 - (normalizedConfidence / 100) * 180;
   
   // Color mappings based on confidence level
@@ -34,12 +34,12 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
 
   const confidenceColor = getConfidenceColor(normalizedConfidence);
   
-  // SVG dimensions and positioning for half-moon semicircle
+  // SVG dimensions and positioning for upper semicircle only
   const svgSize = size;
-  const svgHeight = size * 0.6; // Adjusted for half-circle height with label space
-  const radius = size * 0.32;
+  const svgHeight = size * 0.7; // Taller to accommodate upper semicircle
+  const radius = size * 0.35;
   const centerX = svgSize / 2;
-  const centerY = svgHeight - 30; // Position to leave space for labels below
+  const centerY = svgHeight - 40; // Position center so upper arc is visible
   const needleLength = radius * 0.8;
 
   // Calculate needle end position
@@ -64,18 +64,18 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           </linearGradient>
         </defs>
         
-        {/* Background arc - half-moon semicircle */}
+        {/* Background arc - upper semicircle only */}
         <path
-          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
+          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 0 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="#e5e7eb"
           strokeWidth="12"
           strokeLinecap="round"
         />
         
-        {/* Colored gradient arc - half-moon semicircle */}
+        {/* Colored gradient arc - upper semicircle only */}
         <path
-          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 1 ${centerX + radius} ${centerY}`}
+          d={`M ${centerX - radius} ${centerY} A ${radius} ${radius} 0 0 0 ${centerX + radius} ${centerY}`}
           fill="none"
           stroke="url(#gaugeGradient)"
           strokeWidth="12"
@@ -122,13 +122,13 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           />
         </g>
         
-        {/* Scale markers at key points */}
+        {/* Scale markers at key points - upper semicircle only */}
         {[0, 25, 50, 75, 100].map((value, index) => {
           const markerAngle = 180 - (value / 100) * 180;
-          const markerStartX = centerX + (radius - 8) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerStartY = centerY + (radius - 8) * Math.sin((markerAngle * Math.PI) / 180);
-          const markerEndX = centerX + (radius + 5) * Math.cos((markerAngle * Math.PI) / 180);
-          const markerEndY = centerY + (radius + 5) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerStartX = centerX + (radius - 10) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerStartY = centerY + (radius - 10) * Math.sin((markerAngle * Math.PI) / 180);
+          const markerEndX = centerX + (radius + 6) * Math.cos((markerAngle * Math.PI) / 180);
+          const markerEndY = centerY + (radius + 6) * Math.sin((markerAngle * Math.PI) / 180);
           
           return (
             <line
@@ -143,14 +143,14 @@ export function ConfidenceGauge({ confidence, sentiment, size = 200 }: Confidenc
           );
         })}
         
-        {/* Scale labels for half-moon gauge - positioned properly on semicircle */}
+        {/* Scale labels for upper semicircle - positioned on top arc only */}
         {[
           { value: 0, label: "0" },
           { value: 50, label: "50" },
           { value: 100, label: "100" }
         ].map(({ value, label }) => {
           const labelAngle = 180 - (value / 100) * 180;
-          const labelDistance = radius + 22;
+          const labelDistance = radius + 25;
           const labelX = centerX + labelDistance * Math.cos((labelAngle * Math.PI) / 180);
           const labelY = centerY + labelDistance * Math.sin((labelAngle * Math.PI) / 180);
           
