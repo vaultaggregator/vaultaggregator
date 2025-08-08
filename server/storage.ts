@@ -231,7 +231,8 @@ export class DatabaseStorage implements IStorage {
       conditions.push(
         or(
           ilike(platforms.displayName, `%${search}%`),
-          ilike(pools.tokenPair, `%${search}%`)
+          ilike(pools.tokenPair, `%${search}%`),
+          sql`${pools.rawData}::text ILIKE ${'%' + search + '%'}`
         )!
       );
     }
@@ -307,7 +308,8 @@ export class DatabaseStorage implements IStorage {
     if (search) {
       const searchCondition = or(
         ilike(platforms.displayName, `%${search}%`),
-        ilike(pools.tokenPair, `%${search}%`)
+        ilike(pools.tokenPair, `%${search}%`),
+        sql`${pools.rawData}::text ILIKE ${'%' + search + '%'}`
       )!;
       conditions.push(searchCondition);
     }
