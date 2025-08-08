@@ -50,6 +50,13 @@ export default function Header({ onAdminClick }: HeaderProps) {
               Chains
             </Link>
             <Link 
+              href="/companion" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-companion"
+            >
+              AI Companion
+            </Link>
+            <Link 
               href="/api" 
               className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
               data-testid="link-api"

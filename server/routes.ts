@@ -1443,6 +1443,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // No longer need data sources endpoint since we only use DeFi Llama
 
+  // Companion chatbot routes
+  app.post("/api/companion/chat", async (req, res) => {
+    try {
+      const { message, context } = req.body;
+
+      if (!message || typeof message !== "string") {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Get current pools data for context
+      const pools = await storage.getPools({ 
+        limit: 50, 
+        offset: 0,
+        isVisible: true 
+      });
+
+      // Prepare market context
+      const marketContext = {
+        totalPools: pools.length,
+        avgApy: pools.reduce((sum: number, pool: any) => sum + parseFloat(pool.apy || "0"), 0) / pools.length,
+        topPools: pools
+          .sort((a: any, b: any) => parseFloat(b.apy || "0") - parseFloat(a.apy || "0"))
+          .slice(0, 5)
+          .map((pool: any) => ({
+            tokenPair: pool.tokenPair,
+            apy: pool.apy,
+            tvl: pool.tvl,
+            platform: pool.platform?.displayName || "Unknown",
+            riskLevel: pool.riskLevel,
+          })),
+        platforms: Array.from(new Set(pools.map((p: any) => p.platform?.displayName).filter(Boolean))),
+        chains: Array.from(new Set(pools.map((p: any) => p.chain?.displayName).filter(Boolean))),
+      };
+
+      function formatTvl(value: string): string {
+        const num = parseFloat(value);
+        if (isNaN(num)) return "N/A";
+        
+        if (num >= 1e9) {
+          return `$${(num / 1e9).toFixed(2)}B`;
+        } else if (num >= 1e6) {
+          return `$${(num / 1e6).toFixed(2)}M`;
+        } else if (num >= 1e3) {
+          return `$${(num / 1e3).toFixed(2)}K`;
+        } else {
+          return `$${num.toFixed(2)}`;
+        }
+      }
+
+      // Intelligent response based on keywords
+      let response: any = {
+        message: "I'm your DeFi companion! 🤖 I can help you find yield opportunities, analyze market trends, and provide investment insights.",
+        insights: [],
+        recommendedPools: [],
+        marketTip: "Always research protocols before investing and never invest more than you can afford to lose!"
+      };
+
+      const lowerMessage = message.toLowerCase();
+
+      if (lowerMessage.includes("high") && (lowerMessage.includes("yield") || lowerMessage.includes("apy"))) {
+        const highYieldPools = pools
+          .filter((p: any) => parseFloat(p.apy || "0") > 10)
+          .sort((a: any, b: any) => parseFloat(b.apy || "0") - parseFloat(a.apy || "0"))
+          .slice(0, 3);
+
+        response = {
+          message: `Found ${highYieldPools.length} high-yield opportunities! 🚀 These pools offer attractive returns but remember - higher yields often mean higher risk. The top performers are showing ${highYieldPools[0]?.apy}% to ${highYieldPools[2]?.apy}% APY.`,
+          insights: [
+            `${highYieldPools.length} pools above 10% APY`,
+            `Highest yield: ${highYieldPools[0]?.apy}%`,
+            "Higher yields = higher risk"
+          ],
+          recommendedPools: highYieldPools.map((pool: any) => ({
+            id: pool.id,
+            tokenPair: pool.tokenPair,
+            apy: pool.apy,
+            tvl: formatTvl(pool.tvl || "0"),
+            platform: pool.platform?.displayName || "Unknown",
+            reason: "High yield opportunity"
+          })),
+          marketTip: "High yields can be tempting, but always check the protocol's security audit and TVL stability!"
+        };
+      } else if (lowerMessage.includes("low") && lowerMessage.includes("risk")) {
+        const lowRiskPools = pools
+          .filter((p: any) => p.riskLevel?.toLowerCase() === "low")
+          .sort((a: any, b: any) => parseFloat(b.tvl || "0") - parseFloat(a.tvl || "0"))
+          .slice(0, 3);
+
+        response = {
+          message: `Here are ${lowRiskPools.length} low-risk options perfect for conservative DeFi farming! 🛡️ These pools prioritize safety with established protocols and solid TVL. They might not offer moon yields, but they're built for steady growth.`,
+          insights: [
+            `${lowRiskPools.length} low-risk pools available`,
+            "Focus on established protocols",
+            "Steady yields over speculation"
+          ],
+          recommendedPools: lowRiskPools.map((pool: any) => ({
+            id: pool.id,
+            tokenPair: pool.tokenPair,
+            apy: pool.apy,
+            tvl: formatTvl(pool.tvl || "0"),
+            platform: pool.platform?.displayName || "Unknown",
+            reason: "Low-risk, established protocol"
+          })),
+          marketTip: "Low-risk doesn't mean no-risk! Even stable protocols can face smart contract vulnerabilities."
+        };
+      } else if (lowerMessage.includes("stablecoin")) {
+        const stablePools = pools
+          .filter((p: any) => {
+            const pair = p.tokenPair?.toLowerCase() || "";
+            return pair.includes("usdc") || pair.includes("usdt") || pair.includes("dai") || pair.includes("stable");
+          })
+          .sort((a: any, b: any) => parseFloat(b.apy || "0") - parseFloat(a.apy || "0"))
+          .slice(0, 3);
+
+        response = {
+          message: `Found ${stablePools.length} stablecoin yield opportunities! 💰 These are great for earning yield without exposure to volatile crypto prices. Perfect for those who want DeFi gains with traditional asset stability.`,
+          insights: [
+            `${stablePools.length} stablecoin pools`,
+            "Reduced price volatility",
+            "USD-denominated returns"
+          ],
+          recommendedPools: stablePools.map((pool: any) => ({
+            id: pool.id,
+            tokenPair: pool.tokenPair,
+            apy: pool.apy,
+            tvl: formatTvl(pool.tvl || "0"),
+            platform: pool.platform?.displayName || "Unknown",
+            reason: "Stablecoin yield farming"
+          })),
+          marketTip: "Even stablecoins have risks - check if they're properly collateralized and regulated!"
+        };
+      } else if (lowerMessage.includes("market") || lowerMessage.includes("trend")) {
+        response = {
+          message: `The DeFi market is showing interesting patterns! 📊 We're tracking ${marketContext.totalPools} active pools with an average APY of ${marketContext.avgApy.toFixed(2)}%. Top platforms like ${marketContext.platforms.slice(0, 3).join(", ")} are leading the charge.`,
+          insights: [
+            `Average market APY: ${marketContext.avgApy.toFixed(2)}%`,
+            `${marketContext.platforms.length} active platforms`,
+            `${marketContext.chains.length} blockchain networks`
+          ],
+          recommendedPools: marketContext.topPools.slice(0, 3).map((pool: any) => ({
+            id: crypto.randomUUID(),
+            tokenPair: pool.tokenPair,
+            apy: pool.apy,
+            tvl: formatTvl(pool.tvl || "0"),
+            platform: pool.platform,
+            reason: "Top market performer"
+          })),
+          marketTip: "Market trends can change quickly in DeFi - always monitor your positions and stay informed!"
+        };
+      } else {
+        // Default friendly response
+        response = {
+          message: `Hey there! 👋 I'm here to help you navigate the DeFi yield farming space. Currently tracking ${marketContext.totalPools} active pools with an average APY of ${marketContext.avgApy.toFixed(2)}%. Ask me about high yields, low-risk options, stablecoins, or market trends!`,
+          insights: [
+            `${marketContext.totalPools} active pools monitored`,
+            `Average yield: ${marketContext.avgApy.toFixed(2)}%`,
+            "Real-time data from DeFi Llama"
+          ],
+          recommendedPools: marketContext.topPools.slice(0, 3).map((pool: any) => ({
+            id: crypto.randomUUID(),
+            tokenPair: pool.tokenPair,
+            apy: pool.apy,
+            tvl: formatTvl(pool.tvl || "0"),
+            platform: pool.platform,
+            reason: "Top yield opportunity"
+          })),
+          marketTip: "Start with smaller amounts to test strategies before committing larger capital!"
+        };
+      }
+
+      res.json(response);
+
+    } catch (error) {
+      console.error("Companion chat error:", error);
+      res.status(500).json({ 
+        error: "My circuits are a bit fried right now. Try again in a moment!" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
