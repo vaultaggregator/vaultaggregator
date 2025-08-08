@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,7 +160,9 @@ export default function SmartAlerts() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Bell className="h-8 w-8 text-blue-600" />
@@ -427,6 +431,8 @@ export default function SmartAlerts() {
           </div>
         </CardContent>
       </Card>
+      </div>
+      <Footer />
     </div>
   );
 }

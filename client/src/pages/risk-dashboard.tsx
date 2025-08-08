@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -60,7 +62,9 @@ export default function RiskDashboard() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <Shield className="h-8 w-8 text-blue-600" />
         <div>
@@ -282,6 +286,8 @@ export default function RiskDashboard() {
           </div>
         </CardContent>
       </Card>
+      </div>
+      <Footer />
     </div>
   );
 }

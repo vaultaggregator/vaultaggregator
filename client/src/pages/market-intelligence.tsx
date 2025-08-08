@@ -108,43 +108,51 @@ export default function MarketIntelligencePage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Market Intelligence
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Advanced DeFi market analysis and predictions
-          </p>
-        </div>
-        
-        <div className="animate-pulse space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            ))}
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="p-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Market Intelligence
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Advanced DeFi market analysis and predictions
+            </p>
           </div>
-          <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          
+          <div className="animate-pulse space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              ))}
+            </div>
+            <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (error || !intelligence) {
     return (
-      <div className="p-6">
-        <div className="text-center py-12">
-          <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Analysis Unavailable
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Unable to generate market intelligence at this time.
-          </p>
-          <Button onClick={() => window.location.reload()}>
-            Retry Analysis
-          </Button>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header />
+        <div className="p-6">
+          <div className="text-center py-12">
+            <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Analysis Unavailable
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Unable to generate market intelligence at this time.
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Retry Analysis
+            </Button>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -189,7 +191,9 @@ export default function CommunityInsights() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header />
+      <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <Users className="h-8 w-8 text-blue-600" />
         <div>
@@ -558,6 +562,8 @@ export default function CommunityInsights() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
+      <Footer />
     </div>
   );
 }

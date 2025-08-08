@@ -1,8 +1,11 @@
 import { CryptoCompanion } from "@/components/crypto-companion";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 export function CompanionPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -101,6 +104,7 @@ export function CompanionPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
