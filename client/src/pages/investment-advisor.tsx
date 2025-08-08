@@ -20,7 +20,6 @@ interface InvestmentRequest {
   duration: number;
   expectedReturn: number;
   riskTolerance: "conservative" | "moderate" | "aggressive";
-  strategy: string;
 }
 
 interface RecommendedPool {
@@ -55,8 +54,7 @@ export default function InvestmentAdvisor() {
     amount: 10000,
     duration: 12,
     expectedReturn: 8,
-    riskTolerance: "moderate",
-    strategy: ""
+    riskTolerance: "moderate"
   });
 
   const [result, setResult] = useState<InvestmentResponse | null>(null);
@@ -83,7 +81,7 @@ export default function InvestmentAdvisor() {
   });
 
   const handleSubmit = () => {
-    if (!formData.amount || !formData.strategy.trim()) return;
+    if (!formData.amount) return;
     investmentMutation.mutate(formData);
   };
 
@@ -234,22 +232,11 @@ export default function InvestmentAdvisor() {
               </Select>
             </div>
 
-            {/* Investment Strategy */}
-            <div className="space-y-2">
-              <Label htmlFor="strategy">Investment Strategy & Goals</Label>
-              <Textarea
-                id="strategy"
-                value={formData.strategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, strategy: e.target.value }))}
-                placeholder="Describe your investment goals, preferences, and any specific requirements..."
-                className="min-h-[100px]"
-                data-testid="textarea-strategy"
-              />
-            </div>
+
 
             <Button
               onClick={handleSubmit}
-              disabled={investmentMutation.isPending || !formData.amount || !formData.strategy.trim()}
+              disabled={investmentMutation.isPending || !formData.amount}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               size="lg"
               data-testid="button-analyze-investment"

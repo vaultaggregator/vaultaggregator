@@ -1447,9 +1447,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Investment advisor routes
   app.post("/api/investment/analyze", async (req, res) => {
     try {
-      const { amount, duration, expectedReturn, riskTolerance, strategy } = req.body;
+      const { amount, duration, expectedReturn, riskTolerance } = req.body;
 
-      if (!amount || !duration || !expectedReturn || !riskTolerance || !strategy) {
+      if (!amount || !duration || !expectedReturn || !riskTolerance) {
         return res.status(400).json({ error: "All investment parameters are required" });
       }
 
