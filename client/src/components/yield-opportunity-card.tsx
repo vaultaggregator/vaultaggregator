@@ -8,6 +8,7 @@ import { MetricTooltip } from "./metric-tooltip";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
+import { getCategoryIcon } from "@/components/category-icons";
 import { generateYieldUrl } from "@/lib/seo-urls";
 
 interface YieldOpportunityCardProps {
@@ -77,33 +78,28 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-3 mb-1">
-                <h3 className="font-bold text-lg text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
-                  {opportunity.tokenPair}
-                </h3>
+                <div className="flex items-center space-x-2">
+                  {opportunity.categories && opportunity.categories.length > 0 && (() => {
+                    const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
+                    return <CategoryIcon size={16} className="flex-shrink-0" />;
+                  })()}
+                  <h3 className="font-bold text-lg text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
+                    {opportunity.tokenPair}
+                  </h3>
+                </div>
                 {showNetworkName && (
-                  <div className="flex items-center space-x-1.5">
-                    <Badge 
-                      variant="outline"
-                      className="text-xs font-medium px-1.5 py-0.5 flex items-center space-x-1"
-                      style={getChainColor(opportunity.chain.color)}
-                      data-testid={`badge-chain-${opportunity.id}`}
-                    >
-                      {(() => {
-                        const ChainIcon = getChainIcon(opportunity.chain.name);
-                        return <ChainIcon size={12} className="flex-shrink-0" />;
-                      })()}
-                      <span>{opportunity.chain.displayName}</span>
-                    </Badge>
-                    {opportunity.categories && opportunity.categories.length > 0 && (
-                      <Badge 
-                        variant="secondary"
-                        className="text-xs font-medium px-1.5 py-0.5"
-                        data-testid={`badge-category-${opportunity.id}`}
-                      >
-                        {opportunity.categories[0].displayName}
-                      </Badge>
-                    )}
-                  </div>
+                  <Badge 
+                    variant="outline"
+                    className="text-xs font-medium px-1.5 py-0.5 flex items-center space-x-1"
+                    style={getChainColor(opportunity.chain.color)}
+                    data-testid={`badge-chain-${opportunity.id}`}
+                  >
+                    {(() => {
+                      const ChainIcon = getChainIcon(opportunity.chain.name);
+                      return <ChainIcon size={12} className="flex-shrink-0" />;
+                    })()}
+                    <span>{opportunity.chain.displayName}</span>
+                  </Badge>
                 )}
               </div>
             </div>
