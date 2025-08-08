@@ -104,22 +104,22 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
         <div className="space-y-4">
           {filteredPools.map((pool) => (
             <Link key={pool.id} href={`/pool/${pool.id}`}>
-              <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold text-gray-900">{pool.tokenPair}</h4>
-                    <p className="text-sm text-gray-600">{pool.platform.displayName} on {pool.chain.displayName}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">{pool.tokenPair}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{pool.platform.displayName} on {pool.chain.displayName}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-green-600">{pool.apy}%</p>
-                    <p className="text-sm text-gray-500">APY</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">APY</p>
                   </div>
                 </div>
                 <div className="mt-3 flex justify-between text-sm">
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     TVL: {pool.tvl ? formatTvl(pool.tvl) : 'N/A'}
                   </span>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     Risk: {pool.riskLevel}
                   </span>
                 </div>
@@ -215,7 +215,7 @@ function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 italic">No additional notes available for this pool.</p>
+          <p className="text-gray-500 dark:text-gray-400 italic">No additional notes available for this pool.</p>
         )}
 
         {isEditing && (
@@ -224,7 +224,7 @@ function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               placeholder="Add additional information about this pool..."
-              className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
               rows={3}
             />
             <div className="flex gap-2">
@@ -401,10 +401,10 @@ export default function PoolDetail() {
 
                 {/* Pool Info */}
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2" data-testid="text-pool-title">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2" data-testid="text-pool-title">
                     {pool.tokenPair}
                   </h1>
-                  <p className="text-xl text-gray-600 mb-3" data-testid="text-platform-name">
+                  <p className="text-xl text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
                     {pool.platform.displayName}
                   </p>
                   <div className="flex items-center space-x-3">
@@ -436,7 +436,7 @@ export default function PoolDetail() {
                 <Button 
                   variant="outline" 
                   size="lg" 
-                  className="hover:bg-blue-50"
+                  className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   data-testid="button-external-link"
                 >
                   <ExternalLink className="w-5 h-5 mr-2" />
@@ -451,7 +451,7 @@ export default function PoolDetail() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
                 Current APY (24h)
               </CardTitle>
@@ -465,7 +465,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
                 30-Day Average APY
               </CardTitle>
@@ -479,7 +479,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <DollarSign className="w-4 h-4 mr-2 text-blue-600" />
                 Total Value Locked
               </CardTitle>
@@ -493,16 +493,16 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-                <Calendar className="w-4 h-4 mr-2 text-gray-600" />
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                <Calendar className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
                 Operating Since
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-gray-700" data-testid="text-operating-days">
+              <p className="text-3xl font-bold text-gray-700 dark:text-gray-300" data-testid="text-operating-days">
                 {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
               </p>
-              <p className="text-sm text-gray-500 mt-1">days</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">days</p>
             </CardContent>
           </Card>
         </div>
@@ -521,7 +521,7 @@ export default function PoolDetail() {
             {chartLoading ? (
               <div className="h-64 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600">Loading chart data...</span>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">Loading chart data...</span>
               </div>
             ) : chartData && (chartData.hasData || chartData.mockData) ? (
               <div>
@@ -573,25 +573,25 @@ export default function PoolDetail() {
                 {chartData.summary && (
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                     <div className="text-center">
-                      <p className="text-sm text-gray-500">Average APY</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Average APY</p>
                       <p className="text-lg font-semibold text-blue-600">{chartData.summary.averageApy.toFixed(2)}%</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-gray-500">Min APY</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Min APY</p>
                       <p className="text-lg font-semibold text-red-600">{chartData.summary.minApy.toFixed(2)}%</p>
                     </div>
                   </div>
                 )}
                 {!chartData.hasData && chartData.mockData && (
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-sm text-yellow-800">
+                  <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
                       📊 This chart shows simulated data for demonstration purposes. Real historical data from DeFi Llama is not available for this pool.
                     </p>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-gray-500">
+              <div className="h-64 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
                 <Activity className="w-12 h-12 mb-4 opacity-50" />
                 <p className="text-lg font-medium mb-2">No Historical Data Available</p>
                 <p className="text-sm text-center max-w-md">
@@ -616,22 +616,22 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Token Pair</h4>
-                <p className="text-gray-700" data-testid="text-token-pair">{pool.tokenPair}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Token Pair</h4>
+                <p className="text-gray-700 dark:text-gray-300" data-testid="text-token-pair">{pool.tokenPair}</p>
               </div>
               <Separator />
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Platform</h4>
-                <p className="text-gray-700" data-testid="text-platform">{pool.platform.displayName}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Platform</h4>
+                <p className="text-gray-700 dark:text-gray-300" data-testid="text-platform">{pool.platform.displayName}</p>
               </div>
               <Separator />
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Blockchain Network</h4>
-                <p className="text-gray-700" data-testid="text-network">{pool.chain.displayName}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Blockchain Network</h4>
+                <p className="text-gray-700 dark:text-gray-300" data-testid="text-network">{pool.chain.displayName}</p>
               </div>
               <Separator />
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Risk Assessment</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Risk Assessment</h4>
                 <Badge className={`${getRiskColor(pool.riskLevel)}`}>
                   {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
                 </Badge>
