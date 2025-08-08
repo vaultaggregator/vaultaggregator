@@ -44,7 +44,7 @@ export function CryptoCompanion() {
     {
       id: "welcome",
       type: "bot",
-      content: "Hey there, crypto explorer! 👋 I'm your DeFi companion, here to help you navigate the yield farming universe. Ask me about pools, market trends, or get personalized advice based on your risk appetite!",
+      content: "Hi there! 👋 I'm Alex, your friendly DeFi companion. I'm here to chat about yield farming, help you discover amazing pools, or just have a casual conversation! Ask me anything - from \"what's your favorite color?\" to \"show me the best high-yield opportunities.\" How are you doing today?",
       timestamp: new Date(),
     },
   ]);
