@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity } from "lucide-react";
@@ -13,6 +16,23 @@ import { TokenDisplay } from "@/components/TokenDisplay";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import type { YieldOpportunity } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
+
+// Utility function to format TVL values
+function formatTvl(value: string): string {
+  const num = parseFloat(value);
+  if (isNaN(num)) return "N/A";
+  
+  if (num >= 1e9) {
+    return `$${(num / 1e9).toFixed(2)}B`;
+  } else if (num >= 1e6) {
+    return `$${(num / 1e6).toFixed(2)}M`;
+  } else if (num >= 1e3) {
+    return `$${(num / 1e3).toFixed(2)}K`;
+  } else {
+    return `$${num.toFixed(2)}`;
+  }
+}
 
 interface ChartData {
   date: string;
@@ -32,6 +52,205 @@ interface ChartResponse {
     minApy: number;
     maxApy: number;
   };
+}
+
+// Related Pools Component
+function RelatedPools({ currentPoolId, platform, chainId }: { 
+  currentPoolId: string; 
+  platform: string; 
+  chainId: string; 
+}) {
+  const { data: relatedPools = [], isLoading } = useQuery<YieldOpportunity[]>({
+    queryKey: [`/api/pools?platform=${encodeURIComponent(platform)}&chainId=${chainId}&limit=6`],
+  });
+
+  const filteredPools = relatedPools.filter(pool => pool.id !== currentPoolId).slice(0, 3);
+
+  if (isLoading) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
+            Related Pools
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-20 bg-gray-200 rounded-lg"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (filteredPools.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
+          Related Pools
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {filteredPools.map((pool) => (
+            <Link key={pool.id} href={`/pool/${pool.id}`}>
+              <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{pool.tokenPair}</h4>
+                    <p className="text-sm text-gray-600">{pool.platform.displayName} on {pool.chain.displayName}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-green-600">{pool.apy}%</p>
+                    <p className="text-sm text-gray-500">APY</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    TVL: {pool.tvl ? formatTvl(pool.tvl) : 'N/A'}
+                  </span>
+                  <span className="text-gray-600">
+                    Risk: {pool.riskLevel}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Additional Info Component with Admin Edit Capability
+function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }) {
+  const { user } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [newNote, setNewNote] = useState("");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const addNoteMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const response = await fetch(`/api/pools/${poolId}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ content, isPublic: true }),
+      });
+      if (!response.ok) throw new Error("Failed to add note");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Note added successfully" });
+      setNewNote("");
+      setIsEditing(false);
+      queryClient.invalidateQueries({ queryKey: [`/api/pools/${poolId}`] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to add note", variant: "destructive" });
+    },
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (noteId: string) => {
+      const response = await fetch(`/api/pools/${poolId}/notes/${noteId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to delete note");
+    },
+    onSuccess: () => {
+      toast({ title: "Success", description: "Note deleted successfully" });
+      queryClient.invalidateQueries({ queryKey: [`/api/pools/${poolId}`] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete note", variant: "destructive" });
+    },
+  });
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Additional Information</CardTitle>
+        {user && (
+          <Button
+            onClick={() => setIsEditing(!isEditing)}
+            variant="outline"
+            size="sm"
+          >
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {notes && notes.length > 0 ? (
+          <div className="space-y-4">
+            {notes.map((note: any, index: number) => (
+              <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 relative group">
+                <p className="text-gray-700 dark:text-gray-300" data-testid={`text-note-${index}`}>
+                  💡 {note.content}
+                </p>
+                {user && note.id && (
+                  <Button
+                    onClick={() => deleteNoteMutation.mutate(note.id)}
+                    variant="ghost"
+                    size="sm"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 italic">No additional notes available for this pool.</p>
+        )}
+
+        {isEditing && (
+          <div className="mt-4 space-y-3">
+            <textarea
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              placeholder="Add additional information about this pool..."
+              className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={() => addNoteMutation.mutate(newNote)}
+                disabled={!newNote.trim() || addNoteMutation.isPending}
+                size="sm"
+              >
+                {addNoteMutation.isPending ? "Adding..." : "Add Note"}
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsEditing(false);
+                  setNewNote("");
+                }}
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 interface DefiLlamaResponse {
@@ -383,52 +602,8 @@ export default function PoolDetail() {
           </CardContent>
         </Card>
 
-        {/* DeFi Llama Additional Information */}
-        {defiLlamaData && defiLlamaData.defiLlamaData && defiLlamaData.defiLlamaData.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
-                Related Pools from DeFi Llama
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {defiLlamaData.defiLlamaData.slice(0, 3).map((llamaPool: any, index: number) => (
-                  <div key={index} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{llamaPool.symbol}</h4>
-                        <p className="text-sm text-gray-600">{llamaPool.project} on {llamaPool.chain}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-green-600">{llamaPool.apy?.toFixed(2)}%</p>
-                        <p className="text-sm text-gray-500">APY</p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        TVL: {llamaPool.tvlUsd ? formatTvl(llamaPool.tvlUsd.toString()) : 'N/A'}
-                      </span>
-                      {llamaPool.apyBase && (
-                        <span className="text-gray-600">
-                          Base: {llamaPool.apyBase.toFixed(2)}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {defiLlamaData.additionalInfo.matchCount > 3 && (
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-500">
-                    +{defiLlamaData.additionalInfo.matchCount - 3} more similar pools found
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* Related Pools from Website */}
+        <RelatedPools currentPoolId={pool.id} platform={pool.platform.displayName} chainId={pool.chain.id} />
 
 
 
@@ -461,82 +636,30 @@ export default function PoolDetail() {
                   {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
                 </Badge>
               </div>
-              {pool.poolAddress && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Pool Address</h4>
-                    <p className="text-gray-700 font-mono text-sm break-all" data-testid="text-pool-address">
-                      {pool.poolAddress}
-                    </p>
-                  </div>
-                </>
-              )}
+
               {(pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0) && (
                 <>
                   <Separator />
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Underlying Tokens</h4>
-                    <TokenDisplay 
-                      addresses={pool.rawData.underlyingTokens}
-                      maxDisplay={5}
-                      showNormalizeButton={true}
-                      size="md"
-                    />
-                  </div>
-                </>
-              )}
-              {defiLlamaData?.defiLlamaData?.[0] && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">DeFi Llama Match</h4>
-                    <div className="text-sm space-y-1">
-                      {defiLlamaData.defiLlamaData[0].apyBase && (
-                        <p className="text-gray-600">Base APY: <span className="font-medium">{defiLlamaData.defiLlamaData[0].apyBase.toFixed(2)}%</span></p>
-                      )}
-                      {defiLlamaData.defiLlamaData[0].apyReward && (
-                        <p className="text-gray-600">Reward APY: <span className="font-medium">{defiLlamaData.defiLlamaData[0].apyReward.toFixed(2)}%</span></p>
-                      )}
-                      {defiLlamaData.defiLlamaData[0].underlyingTokens && (
-                        <p className="text-gray-600">Underlying Tokens: <span className="font-medium">{defiLlamaData.defiLlamaData[0].underlyingTokens.join(', ')}</span></p>
-                      )}
+                    <div className="space-y-2">
+                      {pool.rawData.underlyingTokens.map((token: string, index: number) => (
+                        <div key={index} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                          <p className="font-mono text-sm break-all text-gray-700 dark:text-gray-300">
+                            {token}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </>
               )}
+
             </CardContent>
           </Card>
 
           {/* Notes Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {pool.notes && pool.notes.length > 0 ? (
-                <div className="space-y-4">
-                  {pool.notes.map((note, index) => (
-                    <div key={index} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <p className="text-gray-700" data-testid={`text-note-${index}`}>
-                        💡 {note.content}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-gray-500 italic">No additional notes available for this pool.</p>
-                  {defiLlamaLoading && (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-3 text-gray-600">Loading additional data...</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
         </div>
       </div>
       </div>

@@ -1226,7 +1226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/pools/:poolId/notes", async (req, res) => {
+  app.post("/api/pools/:poolId/notes", requireAuth, async (req, res) => {
     try {
       const noteData = insertNoteSchema.parse({
         ...req.body,
@@ -1240,6 +1240,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating note:", error);
       res.status(500).json({ message: "Failed to create note" });
+    }
+  });
+
+  app.delete("/api/pools/:poolId/notes/:noteId", requireAuth, async (req, res) => {
+    try {
+      await storage.deleteNote(req.params.noteId);
+      res.json({ message: "Note deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      res.status(500).json({ message: "Failed to delete note" });
     }
   });
 
