@@ -2448,6 +2448,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Token transfers endpoint
+  app.get("/api/pools/:poolId/token-transfers", async (req, res) => {
+    try {
+      const { page = 1, limit = 20 } = req.query;
+      const pool = await storage.getPoolById(req.params.poolId);
+      
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      // Fetch token transfers using Etherscan
+      const { EtherscanService } = await import("./services/etherscanService");
+      const etherscan = new EtherscanService();
+      
+      const transfers = await etherscan.getTokenTransfers(
+        underlyingToken, 
+        Number(page), 
+        Number(limit)
+      );
+
+      res.json({
+        tokenAddress: underlyingToken,
+        transfers: transfers.map(transfer => ({
+          hash: transfer.hash,
+          from: transfer.from,
+          to: transfer.to,
+          value: transfer.value,
+          tokenDecimal: transfer.tokenDecimal,
+          tokenSymbol: transfer.tokenSymbol,
+          tokenName: transfer.tokenName,
+          timestamp: transfer.timeStamp,
+          blockNumber: transfer.blockNumber,
+          gasUsed: transfer.gasUsed,
+          gasPrice: transfer.gasPrice
+        })),
+        page: Number(page),
+        totalRecords: transfers.length,
+        hasMore: transfers.length === Number(limit)
+      });
+    } catch (error) {
+      console.error("Error fetching token transfers:", error);
+      res.status(500).json({ error: "Failed to fetch token transfers" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

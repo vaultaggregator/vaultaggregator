@@ -237,6 +237,12 @@ export default function PoolDetail() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const { data: tokenTransfers, isLoading: tokenTransfersLoading } = useQuery({
+    queryKey: ['/api/pools', poolId, 'token-transfers'],
+    enabled: !!poolId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
 
 
   const formatTvl = (tvl: string): string => {
@@ -731,6 +737,91 @@ export default function PoolDetail() {
               </Card>
             )}
           </div>
+        )}
+
+        {/* Token Transfers Section */}
+        {tokenTransfers && tokenTransfers.transfers && tokenTransfers.transfers.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <ExternalLink className="w-5 h-5 mr-2 text-blue-600" />
+                Recent Token Transfers
+              </CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Latest transfers for {tokenTransfers.tokenAddress}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {tokenTransfersLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-gray-600 dark:text-gray-400">Loading transfers...</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {tokenTransfers.transfers.slice(0, 10).map((transfer: any, index: number) => {
+                    const value = parseFloat(transfer.value) / Math.pow(10, parseInt(transfer.tokenDecimal || '18'));
+                    const timestamp = new Date(parseInt(transfer.timestamp) * 1000);
+                    const isLargeTransfer = value > 1000; // Mark transfers over 1000 tokens as "large"
+                    
+                    return (
+                      <div 
+                        key={`${transfer.hash}-${index}`}
+                        className={`p-4 border rounded-lg ${isLargeTransfer ? 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20' : 'border-gray-200 dark:border-gray-700'} hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
+                                From: {transfer.from.slice(0, 6)}...{transfer.from.slice(-4)}
+                              </span>
+                              <span className="text-gray-400">→</span>
+                              <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
+                                To: {transfer.to.slice(0, 6)}...{transfer.to.slice(-4)}
+                              </span>
+                              {isLargeTransfer && (
+                                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-800 border-orange-200">
+                                  Large Transfer
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                              <span>{formatTimeAgo(timestamp)}</span>
+                              <span>Block #{transfer.blockNumber}</span>
+                              <a 
+                                href={`https://etherscan.io/tx/${transfer.hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
+                              >
+                                View on Etherscan
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-lg font-bold ${isLargeTransfer ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}`}>
+                              {value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
+                               value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
+                               value.toFixed(4)} {transfer.tokenSymbol}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Gas: {(parseInt(transfer.gasUsed) / 1000).toFixed(1)}K
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="text-center pt-4">
+                    <p className="text-sm text-gray-500">
+                      Showing latest {Math.min(10, tokenTransfers.transfers.length)} transfers
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* AI Market Outlook - Only show on visible pools */}

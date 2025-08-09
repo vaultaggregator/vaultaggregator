@@ -50,6 +50,28 @@ interface EtherscanGasTracker {
   gasUsedRatio: string;
 }
 
+interface EtherscanTokenTransfer {
+  blockNumber: string;
+  timeStamp: string;
+  hash: string;
+  nonce: string;
+  blockHash: string;
+  from: string;
+  contractAddress: string;
+  to: string;
+  value: string;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenDecimal: string;
+  transactionIndex: string;
+  gas: string;
+  gasPrice: string;
+  gasUsed: string;
+  cumulativeGasUsed: string;
+  input: string;
+  confirmations: string;
+}
+
 class EtherscanService {
   private apiKey: string;
   private baseUrl: string = 'https://api.etherscan.io/api';
@@ -235,6 +257,27 @@ class EtherscanService {
   }
 
   /**
+   * Get token transfers for a specific contract address
+   */
+  async getTokenTransfers(contractAddress: string, page: number = 1, offset: number = 25): Promise<EtherscanTokenTransfer[]> {
+    try {
+      const url = `${this.baseUrl}?module=account&action=tokentx&contractaddress=${contractAddress}&page=${page}&offset=${offset}&sort=desc&apikey=${this.apiKey}`;
+      
+      const transfers = await this.rateLimitedFetch(url);
+      
+      if (!Array.isArray(transfers)) {
+        console.warn('No transfers found for contract:', contractAddress);
+        return [];
+      }
+      
+      return transfers;
+    } catch (error) {
+      console.error('Error fetching token transfers:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get ETH price in USD
    */
   async getEthPrice(): Promise<{ ethBtc: string; ethUsd: string; ethUsdTimestamp: string }> {
@@ -272,5 +315,6 @@ export {
   type EtherscanTransaction,
   type EtherscanTokenBalance,
   type EtherscanContractInfo,
-  type EtherscanGasTracker
+  type EtherscanGasTracker,
+  type EtherscanTokenTransfer
 };
