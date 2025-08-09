@@ -145,42 +145,47 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Center section - Key metrics */}
           <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl">
             {/* Mobile grid, desktop flex layout */}
-            <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
-              <div className="text-center sm:w-14">
-                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
-                  <p className="text-xs text-muted-foreground font-medium">24h APY</p>
+            <div className="space-y-3 sm:flex sm:items-center sm:justify-between sm:gap-0 sm:space-y-0 w-full">
+              {/* Mobile: First row with 3 metrics */}
+              <div className="grid grid-cols-3 gap-2 sm:contents">
+                <div className="text-center sm:w-14">
+                  <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground font-medium">24h APY</p>
+                  </div>
+                  {showHeaders && (
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">24h APY</p>
+                  )}
+                  <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+                    {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
+                     opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                  </p>
                 </div>
-                {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">24h APY</p>
-                )}
-                <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
-                  {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
-                   opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-                </p>
-              </div>
-              <div className="text-center sm:w-14">
-                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
-                  <p className="text-xs text-muted-foreground font-medium">30d APY</p>
+                <div className="text-center sm:w-14">
+                  <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground font-medium">30d APY</p>
+                  </div>
+                  {showHeaders && (
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">30d APY</p>
+                  )}
+                  <p className="text-xs font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
+                    {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
+                  </p>
                 </div>
-                {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">30d APY</p>
-                )}
-                <p className="text-xs font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
-                  {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
-                </p>
-              </div>
-              <div className="text-center sm:w-16">
-                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
-                  <p className="text-xs text-muted-foreground font-medium">TVL</p>
+                <div className="text-center sm:w-16">
+                  <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground font-medium">TVL</p>
+                  </div>
+                  {showHeaders && (
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">TVL</p>
+                  )}
+                  <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+                    {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
+                     opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
+                  </p>
                 </div>
-                {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">TVL</p>
-                )}
-                <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
-                  {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
-                   opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
-                </p>
               </div>
+              
+              {/* Desktop only: Since metric */}
               <div className="text-center sm:w-16 hidden sm:block">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium">Since</p>
@@ -189,32 +194,36 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-20">
-                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
-                  <p className="text-xs text-muted-foreground font-medium">Holders</p>
+              
+              {/* Mobile: Second row with Holders and Risk */}
+              <div className="grid grid-cols-2 gap-4 sm:contents">
+                <div className="text-center sm:w-20">
+                  <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground font-medium">Holders</p>
+                  </div>
+                  {showHeaders && (
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Holders</p>
+                  )}
+                  <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+                    {formatHolders(opportunity.holdersCount)}
+                  </p>
                 </div>
-                {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Holders</p>
-                )}
-                <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
-                  {formatHolders(opportunity.holdersCount)}
-                </p>
-              </div>
-              <div className="col-span-3 sm:col-span-1 text-center sm:w-16">
-                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
-                  <p className="text-xs text-muted-foreground font-medium">Risk</p>
-                </div>
-                {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
-                )}
-                <div className="flex justify-center">
-                  <Badge 
-                    variant="secondary"
-                    className={`text-xs font-medium px-2 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
-                    data-testid={`badge-risk-${opportunity.id}`}
-                  >
-                    {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
-                  </Badge>
+                <div className="text-center sm:w-16">
+                  <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground font-medium">Risk</p>
+                  </div>
+                  {showHeaders && (
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
+                  )}
+                  <div className="flex justify-center">
+                    <Badge 
+                      variant="secondary"
+                      className={`text-xs font-medium px-2 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
+                      data-testid={`badge-risk-${opportunity.id}`}
+                    >
+                      {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
