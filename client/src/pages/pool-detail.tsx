@@ -279,12 +279,13 @@ export default function PoolDetail() {
   };
 
   const getPlatformInitials = (name: string): string => {
+    if (!name || typeof name !== 'string') return 'UN';
     return name
       .split(' ')
-      .map(word => word[0])
+      .map(word => word && word[0] ? word[0] : '')
       .join('')
       .toUpperCase()
-      .slice(0, 2);
+      .slice(0, 2) || 'UN';
   };
 
   if (isLoading) {
