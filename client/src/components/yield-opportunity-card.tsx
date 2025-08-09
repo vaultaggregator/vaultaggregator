@@ -142,9 +142,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           </div>
 
           {/* Center section - Key metrics */}
-          <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl sm:mx-2 sm:mx-6">
+          <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl">
             {/* Mobile grid, desktop flex layout */}
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
               <div className="text-center sm:w-14">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium">24h APY</p>
@@ -171,7 +171,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                    opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-16 sm:block hidden">
+              <div className="text-center sm:w-16 hidden sm:block">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium">Since</p>
                 )}
@@ -179,7 +179,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-20 sm:block hidden">
+              <div className="text-center sm:w-20">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium">Holders</p>
                 )}
@@ -187,7 +187,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {formatHolders(opportunity.holdersCount)}
                 </p>
               </div>
-              <div className="col-span-2 sm:col-span-1 text-center sm:w-16 flex justify-center">
+              <div className="col-span-3 sm:col-span-1 text-center sm:w-16 flex justify-center">
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium">Risk</p>
                 )}

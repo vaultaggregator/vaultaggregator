@@ -88,7 +88,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
   };
 
   return (
-    <section className="bg-card dark:bg-card shadow-sm py-3 sm:py-6 border-b border-border">
+    <section className="bg-card dark:bg-card shadow-sm py-3 sm:py-6 border-b border-border overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="space-y-3 sm:space-y-6">
           {/* Networks Section */}
