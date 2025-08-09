@@ -68,6 +68,24 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
           {/* Left section - Token and Platform info */}
           <div className="flex items-center space-x-2 min-w-0 flex-1">
+            {/* Network info on the left */}
+            {showNetworkName && (
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <div 
+                  className="flex items-center justify-center flex-shrink-0"
+                  data-testid={`badge-chain-${opportunity.id}`}
+                >
+                  {(() => {
+                    const ChainIcon = getChainIcon(opportunity.chain.name);
+                    return <ChainIcon size={20} className="flex-shrink-0" />;
+                  })()}
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {opportunity.chain.displayName || opportunity.chain.name}
+                </span>
+              </div>
+            )}
+            
             {/* Subcategory Icon and Pool Name together */}
             <div className="flex items-center space-x-3 min-w-0 flex-1">
               <div className="flex items-center justify-center flex-shrink-0 w-6 h-6">
@@ -106,20 +124,6 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 <h3 className="font-bold text-lg text-foreground truncate m-0 leading-6" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
-                
-                {showNetworkName && (
-                  <div className="flex items-center ml-2">
-                    <div 
-                      className="flex items-center justify-center flex-shrink-0"
-                      data-testid={`badge-chain-${opportunity.id}`}
-                    >
-                      {(() => {
-                        const ChainIcon = getChainIcon(opportunity.chain.name);
-                        return <ChainIcon size={16} className="flex-shrink-0" />;
-                      })()}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
