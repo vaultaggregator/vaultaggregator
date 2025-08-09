@@ -248,7 +248,9 @@ export default function PoolDetail() {
 
 
   const formatTvl = (tvl: string): string => {
+    if (!tvl || tvl === '') return 'N/A';
     const num = parseFloat(tvl);
+    if (isNaN(num)) return 'N/A';
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
@@ -256,7 +258,9 @@ export default function PoolDetail() {
   };
 
   const formatApy = (apy: string): string => {
+    if (!apy || apy === '') return 'N/A';
     const num = parseFloat(apy);
+    if (isNaN(num)) return 'N/A';
     return `${num.toFixed(2)}%`;
   };
 
@@ -605,7 +609,7 @@ export default function PoolDetail() {
                         holderAnalytics.analytics.change7d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
                       }`}>
                         {holderAnalytics.analytics.change7d.percentage >= 0 ? '+' : ''}
-                        {holderAnalytics.analytics.change7d.percentage.toFixed(2)}%
+                        {(holderAnalytics.analytics.change7d.percentage || 0).toFixed(2)}%
                       </p>
                     </div>
                   ) : (
@@ -635,7 +639,7 @@ export default function PoolDetail() {
                         holderAnalytics.analytics.change30d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
                       }`}>
                         {holderAnalytics.analytics.change30d.percentage >= 0 ? '+' : ''}
-                        {holderAnalytics.analytics.change30d.percentage.toFixed(2)}%
+                        {(holderAnalytics.analytics.change30d.percentage || 0).toFixed(2)}%
                       </p>
                     </div>
                   ) : (
@@ -665,7 +669,7 @@ export default function PoolDetail() {
                         holderAnalytics.analytics.changeAllTime.percentage >= 0 ? 'text-green-500' : 'text-red-500'
                       }`}>
                         {holderAnalytics.analytics.changeAllTime.percentage >= 0 ? '+' : ''}
-                        {holderAnalytics.analytics.changeAllTime.percentage.toFixed(2)}%
+                        {(holderAnalytics.analytics.changeAllTime.percentage || 0).toFixed(2)}%
                       </p>
                       {holderAnalytics.analytics.firstRecordDate && (
                         <p className="text-xs text-gray-500 mt-1">
@@ -781,11 +785,11 @@ export default function PoolDetail() {
                                 <span className="text-sm font-medium text-green-800 dark:text-green-300">Inflow</span>
                               </div>
                               <p className="text-lg font-bold text-green-900 dark:text-green-100 mt-1">
-                                {metrics.inflow >= 1000000 
-                                  ? `${(metrics.inflow / 1000000).toFixed(2)}M`
-                                  : metrics.inflow >= 1000 
-                                  ? `${(metrics.inflow / 1000).toFixed(2)}K`
-                                  : metrics.inflow.toFixed(2)
+                                {(metrics.inflow || 0) >= 1000000 
+                                  ? `${((metrics.inflow || 0) / 1000000).toFixed(2)}M`
+                                  : (metrics.inflow || 0) >= 1000 
+                                  ? `${((metrics.inflow || 0) / 1000).toFixed(2)}K`
+                                  : (metrics.inflow || 0).toFixed(2)
                                 }
                               </p>
                               <p className="text-xs text-green-700 dark:text-green-400 mt-1">
@@ -799,17 +803,17 @@ export default function PoolDetail() {
                                 <span className="text-sm font-medium text-red-800 dark:text-red-300">Outflow</span>
                               </div>
                               <p className="text-lg font-bold text-red-900 dark:text-red-100 mt-1">
-                                {metrics.outflow >= 1000000 
-                                  ? `${(metrics.outflow / 1000000).toFixed(2)}M`
-                                  : metrics.outflow >= 1000 
-                                  ? `${(metrics.outflow / 1000).toFixed(2)}K`
-                                  : metrics.outflow.toFixed(2)
+                                {(metrics.outflow || 0) >= 1000000 
+                                  ? `${((metrics.outflow || 0) / 1000000).toFixed(2)}M`
+                                  : (metrics.outflow || 0) >= 1000 
+                                  ? `${((metrics.outflow || 0) / 1000).toFixed(2)}K`
+                                  : (metrics.outflow || 0).toFixed(2)
                                 }
                               </p>
                               <p className="text-xs text-red-700 dark:text-red-400 mt-1">
-                                Avg: {metrics.avgSize >= 1000 
-                                  ? `${(metrics.avgSize / 1000).toFixed(1)}K`
-                                  : metrics.avgSize.toFixed(1)
+                                Avg: {(metrics.avgSize || 0) >= 1000 
+                                  ? `${((metrics.avgSize || 0) / 1000).toFixed(1)}K`
+                                  : (metrics.avgSize || 0).toFixed(1)
                                 }
                               </p>
                             </div>
@@ -832,17 +836,17 @@ export default function PoolDetail() {
                                 <span className="text-sm font-medium">Net Flow</span>
                               </div>
                               <p className={`text-lg font-bold mt-1 ${
-                                metrics.netFlow > 0 
+                                (metrics.netFlow || 0) > 0 
                                   ? 'text-blue-900 dark:text-blue-100'
-                                  : metrics.netFlow < 0
+                                  : (metrics.netFlow || 0) < 0
                                   ? 'text-orange-900 dark:text-orange-100'
                                   : 'text-gray-900 dark:text-gray-100'
                               }`}>
-                                {Math.abs(metrics.netFlow) >= 1000000 
-                                  ? `${metrics.netFlow >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow) / 1000000).toFixed(2)}M`
-                                  : Math.abs(metrics.netFlow) >= 1000 
-                                  ? `${metrics.netFlow >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow) / 1000).toFixed(2)}K`
-                                  : `${metrics.netFlow >= 0 ? '+' : ''}${metrics.netFlow.toFixed(2)}`
+                                {Math.abs(metrics.netFlow || 0) >= 1000000 
+                                  ? `${(metrics.netFlow || 0) >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow || 0) / 1000000).toFixed(2)}M`
+                                  : Math.abs(metrics.netFlow || 0) >= 1000 
+                                  ? `${(metrics.netFlow || 0) >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow || 0) / 1000).toFixed(2)}K`
+                                  : `${(metrics.netFlow || 0) >= 0 ? '+' : ''}${(metrics.netFlow || 0).toFixed(2)}`
                                 }
                               </p>
                             </div>
