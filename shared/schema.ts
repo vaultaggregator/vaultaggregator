@@ -87,34 +87,7 @@ export const poolCategories = pgTable("pool_categories", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Token information table
-export const tokenInfo = pgTable("token_info", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  address: text("address").notNull().unique(),
-  name: text("name"),
-  symbol: text("symbol"),
-  decimals: text("decimals"),
-  totalSupply: text("total_supply"),
-  holdersCount: integer("holders_count"),
-  contractCreator: text("contract_creator"),
-  txHash: text("tx_hash"),
-  isVerified: boolean("is_verified").default(false),
-  priceUsd: decimal("price_usd", { precision: 20, scale: 8 }),
-  marketCapUsd: decimal("market_cap_usd", { precision: 20, scale: 2 }),
-  transfers24h: integer("transfers_24h"),
-  lastUpdated: timestamp("last_updated").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
-// Holder history tracking table for analytics
-export const holderHistory = pgTable("holder_history", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  tokenAddress: text("token_address").notNull(),
-  holdersCount: integer("holders_count").notNull(),
-  priceUsd: decimal("price_usd", { precision: 20, scale: 8 }),
-  marketCapUsd: decimal("market_cap_usd", { precision: 20, scale: 2 }),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
 
 export const pools = pgTable("pools", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -128,7 +101,7 @@ export const pools = pgTable("pools", {
   defiLlamaId: text("defi_llama_id"),
   project: text("project"), // Data source identifier (defillama, morpho, lido)
   rawData: jsonb("raw_data"),
-  tokenInfoId: varchar("token_info_id").references(() => tokenInfo.id), // Link to token information
+
   isVisible: boolean("is_visible").notNull().default(true),
   isActive: boolean("is_active").notNull().default(true),
   lastUpdated: timestamp("last_updated").defaultNow(),
@@ -300,9 +273,7 @@ export const tokensRelations = relations(tokens, ({ one }) => ({
   }),
 }));
 
-export const tokenInfoRelations = relations(tokenInfo, ({ many }) => ({
-  pools: many(pools),
-}));
+
 
 export const platformsRelations = relations(platforms, ({ many }) => ({
   pools: many(pools),
@@ -337,10 +308,7 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
     fields: [pools.chainId],
     references: [chains.id],
   }),
-  tokenInfo: one(tokenInfo, {
-    fields: [pools.tokenInfoId],
-    references: [tokenInfo.id],
-  }),
+
   notes: many(notes),
   poolCategories: many(poolCategories),
 
@@ -491,16 +459,7 @@ export const insertTokenSchema = createInsertSchema(tokens).omit({
   createdAt: true,
 });
 
-export const insertTokenInfoSchema = createInsertSchema(tokenInfo).omit({
-  id: true,
-  createdAt: true,
-  lastUpdated: true,
-});
 
-export const insertHolderHistorySchema = createInsertSchema(holderHistory).omit({
-  id: true,
-  timestamp: true,
-});
 
 export const insertPlatformSchema = createInsertSchema(platforms).omit({
   id: true,
@@ -623,11 +582,7 @@ export type InsertChain = z.infer<typeof insertChainSchema>;
 export type Token = typeof tokens.$inferSelect;
 export type InsertToken = z.infer<typeof insertTokenSchema>;
 
-export type TokenInfo = typeof tokenInfo.$inferSelect;
-export type InsertTokenInfo = typeof tokenInfo.$inferInsert;
 
-export type HolderHistory = typeof holderHistory.$inferSelect;
-export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
 
 export type Platform = typeof platforms.$inferSelect;
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
