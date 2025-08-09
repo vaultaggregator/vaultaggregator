@@ -69,6 +69,14 @@ The backend now implements a comprehensive multi-source data collection and anal
 - **Market Intelligence Service**: Market-wide analytics, sentiment analysis, and trend identification
 - **Holder Analytics**: Advanced holder distribution analysis and growth tracking
 - **Flow Analysis**: Sophisticated protocol-aware token flow analysis distinguishing between actual staking/unstaking activities vs regular user transfers, providing accurate inflow/outflow metrics for investment decisions
+- **Cross-Pool Analysis Service**: Revolutionary analytics engine providing:
+  - MEV (Maximal Extractable Value) detection and risk assessment
+  - Gas optimization intelligence with best interaction times
+  - Pool correlation mapping and liquidity migration patterns
+  - Network effects analysis and systemic risk scoring
+  - Behavioral pattern recognition and AI predictions
+  - Social graph analysis for wallet connections
+  - Comprehensive risk scoring based on historical vulnerabilities
 
 #### Scheduled Operations
 - DeFi Llama data sync: Every 10 minutes

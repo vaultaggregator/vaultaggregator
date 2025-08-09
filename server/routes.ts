@@ -2522,6 +2522,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cross-pool analytics endpoints
+  app.get("/api/pools/:poolId/cross-analysis", async (req, res) => {
+    try {
+      const { poolId } = req.params;
+      const CrossPoolAnalysisService = (await import("./services/crossPoolAnalysisService")).CrossPoolAnalysisService;
+      const service = new CrossPoolAnalysisService();
+      
+      // Fetch multiple analytics in parallel
+      const [
+        correlations,
+        gasOptimization,
+        mevActivity,
+        networkEffect,
+        behavioralInsights,
+        riskScore
+      ] = await Promise.all([
+        service.findPoolCorrelations(poolId),
+        service.analyzeGasOptimization(poolId),
+        service.detectMEVActivity(poolId),
+        service.analyzeNetworkEffects(poolId),
+        service.generateBehavioralInsights(poolId),
+        service.calculateRiskScore(poolId)
+      ]);
+      
+      res.json({
+        correlations,
+        gasOptimization,
+        mevActivity,
+        networkEffect,
+        behavioralInsights,
+        riskScore
+      });
+    } catch (error) {
+      console.error("Error in cross-pool analysis:", error);
+      res.status(500).json({ error: "Failed to fetch cross-pool analysis" });
+    }
+  });
+
+  // Wallet journey analysis
+  app.post("/api/analytics/wallet-journeys", async (req, res) => {
+    try {
+      const { poolIds } = req.body;
+      const CrossPoolAnalysisService = (await import("./services/crossPoolAnalysisService")).CrossPoolAnalysisService;
+      const service = new CrossPoolAnalysisService();
+      
+      const journeys = await service.analyzeWalletJourneys(poolIds);
+      res.json({ journeys });
+    } catch (error) {
+      console.error("Error analyzing wallet journeys:", error);
+      res.status(500).json({ error: "Failed to analyze wallet journeys" });
+    }
+  });
+
+  // Social graph analysis for wallet
+  app.get("/api/wallets/:address/social-graph", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const CrossPoolAnalysisService = (await import("./services/crossPoolAnalysisService")).CrossPoolAnalysisService;
+      const service = new CrossPoolAnalysisService();
+      
+      const socialGraph = await service.analyzeSocialGraph(address);
+      res.json(socialGraph);
+    } catch (error) {
+      console.error("Error analyzing social graph:", error);
+      res.status(500).json({ error: "Failed to analyze social graph" });
+    }
+  });
+
   // Enhanced Token Flow Analysis Endpoint with Advanced Metrics
   app.get("/api/pools/:poolId/token-transfers", async (req, res) => {
     try {

@@ -17,6 +17,7 @@ import { AIOutlook } from "@/components/ai-outlook";
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
 import { formatTimeAgo } from "@/lib/utils";
+import { CrossPoolAnalytics } from "@/components/CrossPoolAnalytics";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart, Bar } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -1186,6 +1187,9 @@ export default function PoolDetail() {
             </CardContent>
           </Card>
         )}
+
+        {/* Advanced Cross-Pool Analytics */}
+        {pool.isVisible && <CrossPoolAnalytics poolId={pool.id} />}
 
         {/* AI Market Outlook - Only show on visible pools */}
         {pool.isVisible && <AIOutlook poolId={pool.id} />}
