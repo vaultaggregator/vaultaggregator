@@ -67,26 +67,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
         <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
           {/* Left section - Token and Platform info */}
-          <div className="flex items-center space-x-2 min-w-0 flex-1">
-            {/* Network info on the left */}
-            {showNetworkName && (
-              <div className="flex items-center space-x-2 flex-shrink-0">
-                <div 
-                  className="flex items-center justify-center flex-shrink-0"
-                  data-testid={`badge-chain-${opportunity.id}`}
-                >
-                  {(() => {
-                    const ChainIcon = getChainIcon(opportunity.chain.name);
-                    return <ChainIcon size={20} className="flex-shrink-0" />;
-                  })()}
-                </div>
-                <span className="text-sm font-medium text-muted-foreground">
-                  {opportunity.chain.displayName || opportunity.chain.name}
-                </span>
-              </div>
-            )}
-            
-            {/* Subcategory Icon and Pool Name together */}
+          <div className="flex items-center space-x-4 min-w-0 flex-1">
+            {/* Subcategory Icon and Pool Name together - moved to leftmost position */}
             <div className="flex items-center space-x-3 min-w-0 flex-1">
               <div className="flex items-center justify-center flex-shrink-0 w-6 h-6">
                 {opportunity.categories && opportunity.categories.length > 0 && (() => {
@@ -126,6 +108,24 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 </h3>
               </div>
             </div>
+            
+            {/* Network info - now positioned after pool name */}
+            {showNetworkName && (
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                <div 
+                  className="flex items-center justify-center flex-shrink-0"
+                  data-testid={`badge-chain-${opportunity.id}`}
+                >
+                  {(() => {
+                    const ChainIcon = getChainIcon(opportunity.chain.name);
+                    return <ChainIcon size={20} className="flex-shrink-0" />;
+                  })()}
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {opportunity.chain.displayName || opportunity.chain.name}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Center section - Key metrics */}
