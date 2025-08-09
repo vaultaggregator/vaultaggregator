@@ -2481,6 +2481,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Number(limit)
       );
 
+      // Calculate inflow/outflow metrics
+      const decimals = parseInt(transfers[0]?.tokenDecimal || '18');
+      let totalInflow = 0;
+      let totalOutflow = 0;
+      const flowData: Array<{timestamp: number, inflow: number, outflow: number, netFlow: number}> = [];
+      
+      // Group transfers by hour for chart data
+      const hourlyFlows = new Map<number, {inflow: number, outflow: number}>();
+      
+      for (const transfer of transfers) {
+        const value = parseFloat(transfer.value) / Math.pow(10, decimals);
+        const timestamp = parseInt(transfer.timeStamp) * 1000;
+        const hourTimestamp = Math.floor(timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60); // Round to hour
+        
+        // Determine if this is inflow or outflow based on common patterns
+        // This is a simplified heuristic - in practice you'd want to know the specific pool address
+        const isLikelyInflow = transfer.to.toLowerCase().includes('pool') || 
+                              transfer.to.toLowerCase().includes('vault') ||
+                              transfer.to.toLowerCase().includes('stake') ||
+                              transfer.from.toLowerCase() === '0x0000000000000000000000000000000000000000'; // Minting
+        
+        const isLikelyOutflow = transfer.from.toLowerCase().includes('pool') || 
+                               transfer.from.toLowerCase().includes('vault') ||
+                               transfer.from.toLowerCase().includes('stake') ||
+                               transfer.to.toLowerCase() === '0x0000000000000000000000000000000000000000'; // Burning
+        
+        if (!hourlyFlows.has(hourTimestamp)) {
+          hourlyFlows.set(hourTimestamp, {inflow: 0, outflow: 0});
+        }
+        
+        const hourData = hourlyFlows.get(hourTimestamp)!;
+        
+        if (isLikelyInflow && !isLikelyOutflow) {
+          totalInflow += value;
+          hourData.inflow += value;
+        } else if (isLikelyOutflow && !isLikelyInflow) {
+          totalOutflow += value;
+          hourData.outflow += value;
+        } else {
+          // For ambiguous transfers, analyze by transaction volume patterns
+          if (value > 10000) { // Large transfers are more likely institutional/pool operations
+            totalOutflow += value;
+            hourData.outflow += value;
+          } else {
+            totalInflow += value;
+            hourData.inflow += value;
+          }
+        }
+      }
+      
+      // Convert hourly data to array for chart
+      Array.from(hourlyFlows.entries())
+        .sort(([a], [b]) => a - b)
+        .forEach(([timestamp, flows]) => {
+          flowData.push({
+            timestamp,
+            inflow: flows.inflow,
+            outflow: flows.outflow,
+            netFlow: flows.inflow - flows.outflow
+          });
+        });
+
+      const netFlow = totalInflow - totalOutflow;
+      const flowRatio = totalOutflow > 0 ? totalInflow / totalOutflow : totalInflow > 0 ? 999 : 1;
+      
       res.json({
         tokenAddress: underlyingToken,
         transfers: transfers.map(transfer => ({
@@ -2496,6 +2561,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           gasUsed: transfer.gasUsed,
           gasPrice: transfer.gasPrice
         })),
+        flowAnalysis: {
+          totalInflow,
+          totalOutflow,
+          netFlow,
+          flowRatio,
+          isGrowing: netFlow > 0,
+          trend: netFlow > 0 ? 'positive' : netFlow < 0 ? 'negative' : 'neutral',
+          flowData
+        },
         page: Number(page),
         totalRecords: transfers.length,
         hasMore: transfers.length === Number(limit)

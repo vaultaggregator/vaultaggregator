@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
 import { useEffect } from "react";
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, Calendar, TrendingUp, TrendingDown, Minus, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
@@ -737,6 +737,170 @@ export default function PoolDetail() {
               </Card>
             )}
           </div>
+        )}
+
+        {/* Flow Analysis Section */}
+        {tokenTransfers && tokenTransfers.flowAnalysis && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
+                Token Flow Analysis
+              </CardTitle>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Inflow vs Outflow trends for {tokenTransfers.tokenAddress}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {tokenTransfersLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <span className="ml-3 text-gray-600 dark:text-gray-400">Analyzing flows...</span>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Flow Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center">
+                        <ArrowDown className="w-4 h-4 text-green-600 mr-2" />
+                        <span className="text-sm font-medium text-green-800 dark:text-green-300">Total Inflow</span>
+                      </div>
+                      <p className="text-lg font-bold text-green-900 dark:text-green-100 mt-1">
+                        {tokenTransfers.flowAnalysis.totalInflow >= 1000000 
+                          ? `${(tokenTransfers.flowAnalysis.totalInflow / 1000000).toFixed(2)}M`
+                          : tokenTransfers.flowAnalysis.totalInflow >= 1000 
+                          ? `${(tokenTransfers.flowAnalysis.totalInflow / 1000).toFixed(2)}K`
+                          : tokenTransfers.flowAnalysis.totalInflow.toFixed(2)
+                        }
+                      </p>
+                    </div>
+                    
+                    <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+                      <div className="flex items-center">
+                        <ArrowUp className="w-4 h-4 text-red-600 mr-2" />
+                        <span className="text-sm font-medium text-red-800 dark:text-red-300">Total Outflow</span>
+                      </div>
+                      <p className="text-lg font-bold text-red-900 dark:text-red-100 mt-1">
+                        {tokenTransfers.flowAnalysis.totalOutflow >= 1000000 
+                          ? `${(tokenTransfers.flowAnalysis.totalOutflow / 1000000).toFixed(2)}M`
+                          : tokenTransfers.flowAnalysis.totalOutflow >= 1000 
+                          ? `${(tokenTransfers.flowAnalysis.totalOutflow / 1000).toFixed(2)}K`
+                          : tokenTransfers.flowAnalysis.totalOutflow.toFixed(2)
+                        }
+                      </p>
+                    </div>
+                    
+                    <div className={`p-4 rounded-lg border ${
+                      tokenTransfers.flowAnalysis.netFlow > 0 
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                        : tokenTransfers.flowAnalysis.netFlow < 0
+                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+                        : 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800'
+                    }`}>
+                      <div className="flex items-center">
+                        {tokenTransfers.flowAnalysis.netFlow > 0 ? (
+                          <TrendingUp className="w-4 h-4 text-blue-600 mr-2" />
+                        ) : tokenTransfers.flowAnalysis.netFlow < 0 ? (
+                          <TrendingDown className="w-4 h-4 text-orange-600 mr-2" />
+                        ) : (
+                          <Minus className="w-4 h-4 text-gray-600 mr-2" />
+                        )}
+                        <span className="text-sm font-medium">Net Flow</span>
+                      </div>
+                      <p className={`text-lg font-bold mt-1 ${
+                        tokenTransfers.flowAnalysis.netFlow > 0 
+                          ? 'text-blue-900 dark:text-blue-100'
+                          : tokenTransfers.flowAnalysis.netFlow < 0
+                          ? 'text-orange-900 dark:text-orange-100'
+                          : 'text-gray-900 dark:text-gray-100'
+                      }`}>
+                        {Math.abs(tokenTransfers.flowAnalysis.netFlow) >= 1000000 
+                          ? `${tokenTransfers.flowAnalysis.netFlow >= 0 ? '+' : '-'}${(Math.abs(tokenTransfers.flowAnalysis.netFlow) / 1000000).toFixed(2)}M`
+                          : Math.abs(tokenTransfers.flowAnalysis.netFlow) >= 1000 
+                          ? `${tokenTransfers.flowAnalysis.netFlow >= 0 ? '+' : '-'}${(Math.abs(tokenTransfers.flowAnalysis.netFlow) / 1000).toFixed(2)}K`
+                          : `${tokenTransfers.flowAnalysis.netFlow >= 0 ? '+' : ''}${tokenTransfers.flowAnalysis.netFlow.toFixed(2)}`
+                        }
+                      </p>
+                    </div>
+                    
+                    <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+                      <div className="flex items-center">
+                        <Badge 
+                          variant="outline" 
+                          className={`${
+                            tokenTransfers.flowAnalysis.isGrowing 
+                              ? 'bg-green-100 text-green-800 border-green-200' 
+                              : 'bg-red-100 text-red-800 border-red-200'
+                          }`}
+                        >
+                          {tokenTransfers.flowAnalysis.isGrowing ? 'Growing' : 'Declining'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-2">
+                        Trend: {tokenTransfers.flowAnalysis.trend}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Flow Chart */}
+                  {tokenTransfers.flowAnalysis.flowData && tokenTransfers.flowAnalysis.flowData.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-lg font-medium mb-4">Flow Trend Chart</h4>
+                      <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={tokenTransfers.flowAnalysis.flowData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="timestamp" 
+                              tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
+                            />
+                            <YAxis tickFormatter={(value) => 
+                              value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` :
+                              value >= 1000 ? `${(value / 1000).toFixed(1)}K` :
+                              value.toFixed(0)
+                            } />
+                            <Tooltip
+                              labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
+                              formatter={(value: number, name: string) => [
+                                value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
+                                value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
+                                value.toFixed(2),
+                                name === 'inflow' ? 'Inflow' : name === 'outflow' ? 'Outflow' : 'Net Flow'
+                              ]}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="inflow"
+                              stackId="1"
+                              stroke="#10b981"
+                              fill="#10b981"
+                              fillOpacity={0.6}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="outflow"
+                              stackId="2"
+                              stroke="#ef4444"
+                              fill="#ef4444"
+                              fillOpacity={0.6}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="netFlow"
+                              stroke="#3b82f6"
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Token Transfers Section */}
