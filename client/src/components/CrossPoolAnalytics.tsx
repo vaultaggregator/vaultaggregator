@@ -98,24 +98,27 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Overall Risk Score</span>
                     <span className="text-2xl font-bold text-purple-600">
-                      {analytics.riskScore.totalRisk.toFixed(0)}/100
+                      {(typeof analytics.riskScore.totalRisk === 'number' ? analytics.riskScore.totalRisk : Number(analytics.riskScore.totalRisk) || 0).toFixed(0)}/100
                     </span>
                   </div>
-                  <Progress value={analytics.riskScore.totalRisk} className="h-3" />
+                  <Progress value={typeof analytics.riskScore.totalRisk === 'number' ? analytics.riskScore.totalRisk : Number(analytics.riskScore.totalRisk) || 0} className="h-3" />
                 </div>
                 
                 <div className="mt-4 space-y-2">
-                  {Object.entries(analytics.riskScore.factors).map(([key, value]: [string, any]) => (
-                    <div key={key} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400 capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
-                      </span>
-                      <div className="flex items-center space-x-2">
-                        <Progress value={value} className="w-20 h-2" />
-                        <span className="font-medium w-12 text-right">{value.toFixed(0)}</span>
+                  {Object.entries(analytics.riskScore.factors).map(([key, value]: [string, any]) => {
+                    const numValue = typeof value === 'number' ? value : Number(value) || 0;
+                    return (
+                      <div key={key} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400 capitalize">
+                          {key.replace(/([A-Z])/g, ' $1').trim()}
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          <Progress value={numValue} className="w-20 h-2" />
+                          <span className="font-medium w-12 text-right">{numValue.toFixed(0)}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
               
@@ -184,7 +187,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                 <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                   <span className="text-xs text-gray-600 dark:text-gray-400">Arbitrage Volume</span>
                   <p className="text-lg font-bold mt-1">
-                    ${(analytics.mevActivity.arbitrageVolume / 1000000).toFixed(2)}M
+                    ${((typeof analytics.mevActivity.arbitrageVolume === 'number' ? analytics.mevActivity.arbitrageVolume : Number(analytics.mevActivity.arbitrageVolume) || 0) / 1000000).toFixed(2)}M
                   </p>
                 </div>
               </div>
@@ -220,14 +223,14 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                   <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
                     <span className="text-xs text-gray-600 dark:text-gray-400">Avg Gas Price</span>
                     <p className="text-lg font-bold mt-1">
-                      {analytics.gasOptimization.avgGasPrice.toFixed(0)} Gwei
+                      {(typeof analytics.gasOptimization.avgGasPrice === 'number' ? analytics.gasOptimization.avgGasPrice : Number(analytics.gasOptimization.avgGasPrice) || 0).toFixed(0)} Gwei
                     </p>
                   </div>
                   
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
                     <span className="text-xs text-blue-600 dark:text-blue-400">Savings Potential</span>
                     <p className="text-lg font-bold text-blue-900 dark:text-blue-100 mt-1">
-                      {analytics.gasOptimization.savingsPotential.toFixed(0)}%
+                      {(typeof analytics.gasOptimization.savingsPotential === 'number' ? analytics.gasOptimization.savingsPotential : Number(analytics.gasOptimization.savingsPotential) || 0).toFixed(0)}%
                     </p>
                   </div>
                 </div>
@@ -235,7 +238,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                 <Alert>
                   <Sparkles className="h-4 w-4" />
                   <AlertDescription>
-                    Save up to ${(analytics.gasOptimization.savingsPotential * 50).toFixed(0)} per transaction by timing your interactions
+                    Save up to ${((typeof analytics.gasOptimization.savingsPotential === 'number' ? analytics.gasOptimization.savingsPotential : Number(analytics.gasOptimization.savingsPotential) || 0) * 50).toFixed(0)} per transaction by timing your interactions
                   </AlertDescription>
                 </Alert>
               </div>
@@ -271,7 +274,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                         <Network className="w-4 h-4 text-indigo-600" />
                       </div>
                       <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mt-1">
-                        {analytics.networkEffect.influenceScore.toFixed(0)}/100
+                        {(typeof analytics.networkEffect.influenceScore === 'number' ? analytics.networkEffect.influenceScore : Number(analytics.networkEffect.influenceScore) || 0).toFixed(0)}/100
                       </p>
                     </div>
                     
@@ -281,7 +284,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                         <Shield className="w-4 h-4 text-purple-600" />
                       </div>
                       <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
-                        {analytics.networkEffect.systemicRisk.toFixed(1)}/10
+                        {(typeof analytics.networkEffect.systemicRisk === 'number' ? analytics.networkEffect.systemicRisk : Number(analytics.networkEffect.systemicRisk) || 0).toFixed(1)}/10
                       </p>
                     </div>
                     
@@ -327,7 +330,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                           <AlertDescription>
                             <strong>Accumulation Phase</strong>
                             <br />
-                            Confidence: {(analytics.behavioralInsights.patterns.accumulation.confidence * 100).toFixed(0)}%
+                            Confidence: {((typeof analytics.behavioralInsights.patterns.accumulation.confidence === 'number' ? analytics.behavioralInsights.patterns.accumulation.confidence : Number(analytics.behavioralInsights.patterns.accumulation.confidence) || 0) * 100).toFixed(0)}%
                             <br />
                             Timeframe: {analytics.behavioralInsights.patterns.accumulation.timeframe}
                           </AlertDescription>
@@ -340,7 +343,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                           <AlertDescription>
                             <strong>Distribution Phase</strong>
                             <br />
-                            Confidence: {(analytics.behavioralInsights.patterns.distribution.confidence * 100).toFixed(0)}%
+                            Confidence: {((typeof analytics.behavioralInsights.patterns.distribution.confidence === 'number' ? analytics.behavioralInsights.patterns.distribution.confidence : Number(analytics.behavioralInsights.patterns.distribution.confidence) || 0) * 100).toFixed(0)}%
                             <br />
                             Timeframe: {analytics.behavioralInsights.patterns.distribution.timeframe}
                           </AlertDescription>
@@ -368,7 +371,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                           <Wind className="w-4 h-4 text-yellow-600" />
                         </div>
                         <p className="text-sm font-bold">
-                          {analytics.behavioralInsights.predictions.expectedVolatility.toFixed(0)}%
+                          {(typeof analytics.behavioralInsights.predictions.expectedVolatility === 'number' ? analytics.behavioralInsights.predictions.expectedVolatility : Number(analytics.behavioralInsights.predictions.expectedVolatility) || 0).toFixed(0)}%
                         </p>
                       </div>
                       
@@ -391,7 +394,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                       <AlertDescription>
                         <strong>Liquidity Rotation Detected</strong>
                         <br />
-                        Volume: ${(analytics.behavioralInsights.patterns.rotation.volume / 1000000).toFixed(2)}M
+                        Volume: ${((typeof analytics.behavioralInsights.patterns.rotation.volume === 'number' ? analytics.behavioralInsights.patterns.rotation.volume : Number(analytics.behavioralInsights.patterns.rotation.volume) || 0) / 1000000).toFixed(2)}M
                         <br />
                         From: {analytics.behavioralInsights.patterns.rotation.fromPools.join(', ')}
                         <br />
@@ -424,7 +427,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
                         <div className="flex items-center space-x-4">
                           <div className="text-right">
                             <p className="text-sm font-medium">
-                              {(corr.correlation * 100).toFixed(0)}% correlation
+                              {((typeof corr.correlation === 'number' ? corr.correlation : Number(corr.correlation) || 0) * 100).toFixed(0)}% correlation
                             </p>
                             <p className="text-xs text-gray-500">
                               {corr.sharedWallets} shared wallets
