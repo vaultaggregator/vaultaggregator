@@ -2384,7 +2384,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tokenService.getContractEvents(underlyingToken, 50)
         ]);
 
-        tokenInfo = fetchedTokenInfo || storedTokenInfo;
+        // Use fetched token info if available, otherwise fall back to stored
+        if (fetchedTokenInfo) {
+          // Create a compatible tokenInfo object with data from Etherscan
+          tokenInfo = {
+            ...storedTokenInfo,
+            address: fetchedTokenInfo.address,
+            name: fetchedTokenInfo.name,
+            symbol: fetchedTokenInfo.symbol,
+            decimals: fetchedTokenInfo.decimals,
+            totalSupply: fetchedTokenInfo.totalSupply,
+            holdersCount: fetchedTokenInfo.holdersCount,
+            lastUpdated: new Date()
+          } as any;
+        } else {
+          tokenInfo = storedTokenInfo;
+        }
         tokenSupply = fetchedTokenSupply;
         topHolders = fetchedTopHolders;
         recentTransfers = fetchedRecentTransfers;
