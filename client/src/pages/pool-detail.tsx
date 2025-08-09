@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
 import { useEffect } from "react";
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, Clock, Users } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
@@ -219,6 +219,12 @@ export default function PoolDetail() {
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
+  const { data: tokenInfo } = useQuery({
+    queryKey: ['/api/pools', poolId, 'token-info'],
+    enabled: !!poolId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
 
 
   const formatTvl = (tvl: string): string => {
@@ -412,7 +418,7 @@ export default function PoolDetail() {
         </Card>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
@@ -492,7 +498,23 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
-                {pool.holdersCount ? formatHolders(pool.holdersCount) : 'N/A'}
+                {tokenInfo?.holders?.count ? formatHolders(tokenInfo.holders.count) : 
+                 tokenInfo?.tokenInfo?.holdersCount ? formatHolders(tokenInfo.tokenInfo.holdersCount) : 'N/A'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                <Layers className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-orange-600" />
+                <span className="hidden sm:inline">Protocol</span>
+                <span className="sm:hidden">Protocol</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600" data-testid="text-protocol">
+                {pool.platform.displayName}
               </p>
             </CardContent>
           </Card>
