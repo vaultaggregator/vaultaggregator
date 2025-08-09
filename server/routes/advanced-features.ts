@@ -25,7 +25,7 @@ export function registerAdvancedRoutes(app: Express) {
       let riskScore = await storage.getRiskScore(poolId);
       
       // Calculate if not exists or outdated (older than 24 hours)
-      if (!riskScore || new Date(riskScore.updatedAt).getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+      if (!riskScore || (riskScore.updatedAt && new Date(riskScore.updatedAt).getTime() < Date.now() - 24 * 60 * 60 * 1000)) {
         riskScore = await storage.calculateAndStoreRiskScore(poolId);
       }
       

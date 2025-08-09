@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
-import { AIOutlook } from "@/components/ai-outlook";
+
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
 import { formatTimeAgo } from "@/lib/utils";
@@ -1191,8 +1191,8 @@ export default function PoolDetail() {
         {/* Advanced Cross-Pool Analytics */}
         {pool.isVisible && <CrossPoolAnalytics poolId={pool.id} />}
 
-        {/* AI Market Outlook - Only show on visible pools */}
-        {pool.isVisible && <AIOutlook poolId={pool.id} />}
+
+
 
         {/* APY Historical Chart */}
         <Card className="mb-8">

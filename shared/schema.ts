@@ -74,7 +74,7 @@ export const categories = pgTable("categories", {
   iconUrl: text("icon_url"),
   description: text("description"),
   color: text("color").notNull().default("#3B82F6"),
-  parentId: varchar("parent_id").references(() => categories.id),
+  parentId: varchar("parent_id"),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -144,16 +144,7 @@ export const notes = pgTable("notes", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const aiOutlooks = pgTable("ai_outlooks", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
-  outlook: text("outlook").notNull(), // AI-generated prediction text
-  sentiment: text("sentiment").notNull(), // "bullish", "bearish", "neutral"
-  confidence: integer("confidence").notNull(), // 1-100 confidence score
-  marketFactors: json("market_factors"), // JSON array of considered factors
-  generatedAt: timestamp("generated_at").defaultNow(),
-  expiresAt: timestamp("expires_at").notNull(), // When this prediction expires (2 hours)
-});
+
 
 // Enhanced features tables
 
@@ -263,7 +254,7 @@ export const discussionReplies = pgTable("discussion_replies", {
   discussionId: varchar("discussion_id").notNull().references(() => discussions.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
-  parentReplyId: varchar("parent_reply_id").references(() => discussionReplies.id),
+  parentReplyId: varchar("parent_reply_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -369,7 +360,7 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
   }),
   notes: many(notes),
   poolCategories: many(poolCategories),
-  aiOutlooks: many(aiOutlooks),
+
   riskScores: many(riskScores),
   poolReviews: many(poolReviews),
   userAlerts: many(userAlerts),
@@ -385,12 +376,7 @@ export const notesRelations = relations(notes, ({ one }) => ({
   }),
 }));
 
-export const aiOutlooksRelations = relations(aiOutlooks, ({ one }) => ({
-  pool: one(pools, {
-    fields: [aiOutlooks.poolId],
-    references: [pools.id],
-  }),
-}));
+
 
 // Enhanced features relations
 export const riskScoresRelations = relations(riskScores, ({ one }) => ({
@@ -586,10 +572,7 @@ export const insertPoolCategorySchema = createInsertSchema(poolCategories).omit(
   createdAt: true,
 });
 
-export const insertAIOutlookSchema = createInsertSchema(aiOutlooks).omit({
-  id: true,
-  generatedAt: true,
-});
+
 
 // Enhanced features insert schemas
 export const insertRiskScoreSchema = createInsertSchema(riskScores).omit({
@@ -705,8 +688,7 @@ export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type PoolCategory = typeof poolCategories.$inferSelect;
 export type InsertPoolCategory = z.infer<typeof insertPoolCategorySchema>;
 
-export type AIOutlook = typeof aiOutlooks.$inferSelect;
-export type InsertAIOutlook = z.infer<typeof insertAIOutlookSchema>;
+
 
 // Enhanced features types
 export type RiskScore = typeof riskScores.$inferSelect;
@@ -756,7 +738,7 @@ export type PoolWithRelations = Pool & {
   categories?: Category[];
   riskScores?: RiskScore[];
   poolReviews?: PoolReview[];
-  aiOutlooks?: AIOutlook[];
+
   holdersCount?: number | null;
 };
 

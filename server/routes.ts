@@ -609,30 +609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Outlook routes
-  app.get("/api/pools/:id/outlook", async (req, res) => {
-    try {
-      const { AIOutlookService } = await import("./services/aiOutlookService");
-      const aiOutlookService = new AIOutlookService(storage);
-      
-      // Try to get existing valid outlook first
-      let outlook = await aiOutlookService.getValidOutlook(req.params.id);
-      
-      // If no valid outlook exists, generate a new one
-      if (!outlook) {
-        outlook = await aiOutlookService.generateAndSaveOutlook(req.params.id);
-      }
-      
-      if (!outlook) {
-        return res.status(500).json({ message: "Failed to generate AI outlook" });
-      }
-      
-      res.json(outlook);
-    } catch (error) {
-      console.error("Error fetching AI outlook:", error);
-      res.status(500).json({ message: "Failed to fetch AI outlook" });
-    }
-  });
+
 
   // Enhanced Pool Analytics - Comprehensive analysis combining all data sources
   app.get("/api/pools/:poolId/enhanced-analytics", async (req, res) => {
@@ -652,75 +629,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market Intelligence Endpoints
-  app.get("/api/market/overview", async (req, res) => {
-    try {
-      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
-      const marketService = new MarketIntelligenceService();
-      
-      const overview = await marketService.getMarketOverview();
-      
-      res.json(overview);
-    } catch (error) {
-      console.error("Error generating market overview:", error);
-      res.status(500).json({ 
-        error: "Failed to generate market overview",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
 
-  app.get("/api/market/top-performers", async (req, res) => {
-    try {
-      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
-      const marketService = new MarketIntelligenceService();
-      
-      const topPerformers = await marketService.getTopPerformers();
-      
-      res.json(topPerformers);
-    } catch (error) {
-      console.error("Error getting top performers:", error);
-      res.status(500).json({ 
-        error: "Failed to get top performers",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
 
-  app.get("/api/market/sentiment", async (req, res) => {
-    try {
-      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
-      const marketService = new MarketIntelligenceService();
-      
-      const sentiment = await marketService.getMarketSentiment();
-      
-      res.json(sentiment);
-    } catch (error) {
-      console.error("Error getting market sentiment:", error);
-      res.status(500).json({ 
-        error: "Failed to get market sentiment",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
 
-  app.post("/api/pools/:id/outlook/regenerate", async (req, res) => {
-    try {
-      const { AIOutlookService } = await import("./services/aiOutlookService");
-      const aiOutlookService = new AIOutlookService(storage);
-      
-      const outlook = await aiOutlookService.generateAndSaveOutlook(req.params.id);
-      
-      if (!outlook) {
-        return res.status(500).json({ message: "Failed to regenerate AI outlook" });
-      }
-      
-      res.json(outlook);
-    } catch (error) {
-      console.error("Error regenerating AI outlook:", error);
-      res.status(500).json({ message: "Failed to regenerate AI outlook" });
-    }
-  });
 
   // Manual sync endpoints for admin use
 
@@ -2034,13 +1945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerAdvancedRoutes } = await import('./routes/advanced-features');
   registerAdvancedRoutes(app);
 
-  // Register AI routes
-  const { registerAIRoutes } = await import('./routes/ai');
-  registerAIRoutes(app);
 
-  // Register market intelligence routes
-  const { registerMarketIntelligenceRoutes } = await import('./routes/market-intelligence');
-  registerMarketIntelligenceRoutes(app);
 
   // Start data sync scheduler
   const { startScheduler } = await import('./services/scheduler');

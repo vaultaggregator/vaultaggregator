@@ -1,5 +1,5 @@
 import { 
-  pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage, aiOutlooks,
+  pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
   type Pool, type Platform, type Chain, type Token, type TokenInfo, type Note,
@@ -7,7 +7,7 @@ import {
   type PoolWithRelations, type User, type InsertUser,
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage,
-  type AIOutlook, type InsertAIOutlook, type RiskScore, type InsertRiskScore,
+  type RiskScore, type InsertRiskScore,
   type UserAlert, type InsertUserAlert, type AlertNotification, type InsertAlertNotification,
   type PoolReview, type InsertPoolReview, type PoolReviewWithUser, type ReviewVote, type InsertReviewVote,
   type Strategy, type InsertStrategy, type StrategyWithPools, type StrategyPool, type InsertStrategyPool,
@@ -123,10 +123,7 @@ export interface IStorage {
   logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void>;
   getApiKeyUsage(keyId: string, hours?: number): Promise<number>;
 
-  // AI Outlook methods
-  createAIOutlook(outlook: InsertAIOutlook): Promise<AIOutlook>;
-  getValidAIOutlook(poolId: string): Promise<AIOutlook | undefined>;
-  deleteExpiredOutlooks(): Promise<number>;
+
 
   // 1. Risk Scoring methods
   calculateAndStoreRiskScore(poolId: string): Promise<RiskScore>;
@@ -993,38 +990,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(pools).where(eq(pools.isVisible, true));
   }
 
-  // AI Outlook methods
-  async createAIOutlook(insertOutlook: InsertAIOutlook): Promise<AIOutlook> {
-    const [outlook] = await db
-      .insert(aiOutlooks)
-      .values(insertOutlook)
-      .returning();
-    return outlook;
-  }
 
-  async getValidAIOutlook(poolId: string): Promise<AIOutlook | undefined> {
-    const now = new Date();
-    const [outlook] = await db
-      .select()
-      .from(aiOutlooks)
-      .where(and(
-        eq(aiOutlooks.poolId, poolId),
-        sql`${aiOutlooks.expiresAt} > ${now}`
-      ))
-      .orderBy(desc(aiOutlooks.generatedAt))
-      .limit(1);
-    
-    return outlook || undefined;
-  }
-
-  async deleteExpiredOutlooks(): Promise<number> {
-    const now = new Date();
-    const result = await db
-      .delete(aiOutlooks)
-      .where(sql`${aiOutlooks.expiresAt} <= ${now}`);
-    
-    return result.rowCount || 0;
-  }
 
   // 1. Risk Scoring implementations
   async calculateAndStoreRiskScore(poolId: string): Promise<RiskScore> {
