@@ -106,30 +106,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 {opportunity.tokenPair}
               </h3>
               
-              {/* Platform info positioned prominently below token name */}
-              <div className="flex items-center space-x-2 mb-0.5">
-                <div className="flex items-center space-x-1">
-                  <div 
-                    className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                    data-testid={`logo-${opportunity.platform.name}`}
-                  >
-                    {opportunity.platform.logoUrl ? (
-                      <img 
-                        src={opportunity.platform.logoUrl} 
-                        alt={opportunity.platform.displayName}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      (() => {
-                        const PlatformIcon = getPlatformIcon(opportunity.platform.name);
-                        return <PlatformIcon size={16} className="flex-shrink-0" />;
-                      })()
-                    )}
-                  </div>
-                  <span className="text-sm font-medium text-foreground leading-none">{opportunity.platform.displayName || opportunity.platform.name}</span>
-                </div>
-                
-                {showNetworkName && (
+              
+              {showNetworkName && (
+                <div className="flex items-center space-x-2 mb-0.5">
                   <div 
                     className="flex items-center justify-center flex-shrink-0"
                     data-testid={`badge-chain-${opportunity.id}`}
@@ -139,8 +118,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       return <ChainIcon size={16} className="flex-shrink-0" />;
                     })()}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -197,8 +176,36 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 </p>
               </div>
               
-              {/* Mobile: Second row with Holders and Risk */}
-              <div className="grid grid-cols-2 gap-4 sm:contents">
+              {/* Mobile: Second row with Platform, Holders and Risk */}
+              <div className="grid grid-cols-3 gap-2 sm:contents">
+                <div className="text-center sm:w-20">
+                  <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                    <p className="text-xs text-muted-foreground font-medium">Platform</p>
+                  </div>
+                  {showHeaders && (
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Platform</p>
+                  )}
+                  <div className="flex items-center justify-center space-x-1">
+                    <div 
+                      className="w-3 h-3 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                      data-testid={`logo-${opportunity.platform.name}`}
+                    >
+                      {opportunity.platform.logoUrl ? (
+                        <img 
+                          src={opportunity.platform.logoUrl} 
+                          alt={opportunity.platform.displayName}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        (() => {
+                          const PlatformIcon = getPlatformIcon(opportunity.platform.name);
+                          return <PlatformIcon size={12} className="flex-shrink-0" />;
+                        })()
+                      )}
+                    </div>
+                    <span className="text-xs text-foreground leading-none truncate max-w-12">{opportunity.platform.displayName || opportunity.platform.name}</span>
+                  </div>
+                </div>
                 <div className="text-center sm:w-20">
                   <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">Holders</p>
