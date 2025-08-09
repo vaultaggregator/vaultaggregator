@@ -2565,17 +2565,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const timestamp = parseInt(transfer.timeStamp) * 1000;
         const hourTimestamp = Math.floor(timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60); // Round to hour
         
-        // Determine if this is inflow or outflow based on common patterns
-        // This is a simplified heuristic - in practice you'd want to know the specific pool address
-        const isLikelyInflow = transfer.to.toLowerCase().includes('pool') || 
-                              transfer.to.toLowerCase().includes('vault') ||
-                              transfer.to.toLowerCase().includes('stake') ||
-                              transfer.from.toLowerCase() === '0x0000000000000000000000000000000000000000'; // Minting
+        // Enhanced flow analysis with protocol-specific logic
+        const fromAddr = transfer.from.toLowerCase();
+        const toAddr = transfer.to.toLowerCase();
         
-        const isLikelyOutflow = transfer.from.toLowerCase().includes('pool') || 
-                               transfer.from.toLowerCase().includes('vault') ||
-                               transfer.from.toLowerCase().includes('stake') ||
-                               transfer.to.toLowerCase() === '0x0000000000000000000000000000000000000000'; // Burning
+        // Known protocol addresses for better classification (all lowercase)
+        const protocolAddresses = {
+          // Lido stETH specific addresses
+          lido: [
+            '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH token contract
+            '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0', // wstETH wrapper  
+            '0x1643e812ae58766192cf7d2cf9567df2c37e9b7f', // Lido: Oracle
+            '0x442af784a788a5bd6f989e78c9421f53b84d57d5', // Lido: NodeOperatorsRegistry  
+            '0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb', // Lido: Staking Router
+            '0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f', // Lido: Execution Layer Rewards Vault
+            '0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e', // Lido: stETH/ETH Curve Pool
+            '0x21e27a5e5513d6e65c4f830167390997aa84843a' // Additional Lido-related address seen in transfers
+          ]
+        };
+        
+        // Zero address operations (minting/burning)
+        const isZeroAddress = (addr: string) => addr === '0x0000000000000000000000000000000000000000';
+        const isMinting = isZeroAddress(fromAddr);
+        const isBurning = isZeroAddress(toAddr);
+        
+        // Protocol interaction detection  
+        const isFromProtocol = protocolAddresses.lido.some(addr => fromAddr === addr);
+        const isToProtocol = protocolAddresses.lido.some(addr => toAddr === addr);
+        
+        // Enhanced classification logic
+        let isInflow = false;
+        let isOutflow = false;
+        
+        // Simplified debug logging
+        const isSignificant = value > 1; // Only log significant transfers
+        if (isSignificant && (isMinting || isBurning || isFromProtocol || isToProtocol)) {
+          console.log(`🔄 ${value.toFixed(2)} stETH: ${fromAddr.substring(0,10)}... → ${toAddr.substring(0,10)}...`);
+          console.log(`   Minting: ${isMinting} | Burning: ${isBurning} | From Protocol: ${isFromProtocol} | To Protocol: ${isToProtocol}`);
+        }
+        
+        if (isMinting) {
+          // New tokens created = inflow to ecosystem
+          isInflow = true;
+        } else if (isBurning) {
+          // Tokens destroyed = outflow from ecosystem  
+          isOutflow = true;
+        } else if (isToProtocol && !isFromProtocol) {
+          // User -> Protocol = inflow (staking, deposits)
+          isInflow = true;
+        } else if (isFromProtocol && !isToProtocol) {
+          // Protocol -> User = outflow (unstaking, withdrawals)
+          isOutflow = true;
+        }
+        // Note: User-to-user transfers are neutral and don't count as protocol flows
         
         if (!hourlyFlows.has(hourTimestamp)) {
           hourlyFlows.set(hourTimestamp, {inflow: 0, outflow: 0});
@@ -2583,22 +2625,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const hourData = hourlyFlows.get(hourTimestamp)!;
         
-        if (isLikelyInflow && !isLikelyOutflow) {
+        if (isInflow) {
           totalInflow += value;
           hourData.inflow += value;
-        } else if (isLikelyOutflow && !isLikelyInflow) {
+          console.log(`✅ INFLOW: ${value.toFixed(2)} stETH (${isMinting ? 'minting' : 'to protocol'})`);
+        } else if (isOutflow) {
           totalOutflow += value;
           hourData.outflow += value;
-        } else {
-          // For ambiguous transfers, analyze by transaction volume patterns
-          if (value > 10000) { // Large transfers are more likely institutional/pool operations
-            totalOutflow += value;
-            hourData.outflow += value;
-          } else {
-            totalInflow += value;
-            hourData.inflow += value;
-          }
+          console.log(`❌ OUTFLOW: ${value.toFixed(2)} stETH (${isBurning ? 'burning' : 'from protocol'})`);
         }
+        // Note: User-to-user transfers are neutral and ignored for protocol flow calculation
       }
       
       // Convert hourly data to array for chart
