@@ -2322,6 +2322,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { EtherscanService } = await import("./services/etherscanService");
         const etherscan = new EtherscanService();
         contractInfo = await etherscan.getContractInfo(underlyingToken);
+
+        // Store holder history data for analytics when we have fresh data
+        if (tokenInfo && tokenInfo.holdersCount && tokenInfo.holdersCount > 0) {
+          try {
+            await storage.storeHolderHistory({
+              tokenAddress: underlyingToken,
+              holdersCount: tokenInfo.holdersCount,
+              priceUsd: tokenInfo.priceUsd || null,
+              marketCapUsd: tokenInfo.marketCapUsd || null,
+            });
+            console.log(`Stored holder history for ${underlyingToken}: ${tokenInfo.holdersCount} holders`);
+          } catch (error) {
+            console.error("Error storing holder history:", error);
+          }
+        }
       } else {
         // Use stored data and provide minimal additional data
         tokenSupply = { totalSupply: storedTokenInfo?.totalSupply || "0" };
@@ -2357,6 +2372,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching token info:", error);
       res.status(500).json({ error: "Failed to fetch token information" });
+    }
+  });
+
+  // Holder analytics endpoints
+  app.get("/api/pools/:poolId/holder-analytics", async (req, res) => {
+    try {
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      const analytics = await storage.getHolderAnalytics(underlyingToken);
+      
+      res.json({
+        tokenAddress: underlyingToken,
+        analytics
+      });
+    } catch (error) {
+      console.error("Error fetching holder analytics:", error);
+      res.status(500).json({ error: "Failed to fetch holder analytics" });
+    }
+  });
+
+  app.get("/api/pools/:poolId/holder-history", async (req, res) => {
+    try {
+      const { days } = req.query;
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      const dayLimit = days ? parseInt(days as string) : undefined;
+      const history = await storage.getHolderHistory(underlyingToken, dayLimit);
+      
+      res.json({
+        tokenAddress: underlyingToken,
+        history: history.map(record => ({
+          holdersCount: record.holdersCount,
+          priceUsd: record.priceUsd,
+          marketCapUsd: record.marketCapUsd,
+          timestamp: record.timestamp
+        })),
+        totalRecords: history.length
+      });
+    } catch (error) {
+      console.error("Error fetching holder history:", error);
+      res.status(500).json({ error: "Failed to fetch holder history" });
     }
   });
 

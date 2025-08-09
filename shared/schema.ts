@@ -106,6 +106,16 @@ export const tokenInfo = pgTable("token_info", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Holder history tracking table for analytics
+export const holderHistory = pgTable("holder_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tokenAddress: text("token_address").notNull(),
+  holdersCount: integer("holders_count").notNull(),
+  priceUsd: decimal("price_usd", { precision: 20, scale: 8 }),
+  marketCapUsd: decimal("market_cap_usd", { precision: 20, scale: 2 }),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
 export const pools = pgTable("pools", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   platformId: varchar("platform_id").notNull().references(() => platforms.id),
@@ -536,6 +546,11 @@ export const insertTokenInfoSchema = createInsertSchema(tokenInfo).omit({
   lastUpdated: true,
 });
 
+export const insertHolderHistorySchema = createInsertSchema(holderHistory).omit({
+  id: true,
+  timestamp: true,
+});
+
 export const insertPlatformSchema = createInsertSchema(platforms).omit({
   id: true,
   createdAt: true,
@@ -671,6 +686,9 @@ export type InsertToken = z.infer<typeof insertTokenSchema>;
 
 export type TokenInfo = typeof tokenInfo.$inferSelect;
 export type InsertTokenInfo = typeof tokenInfo.$inferInsert;
+
+export type HolderHistory = typeof holderHistory.$inferSelect;
+export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
 
 export type Platform = typeof platforms.$inferSelect;
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
