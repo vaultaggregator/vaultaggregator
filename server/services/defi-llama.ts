@@ -102,16 +102,46 @@ export async function syncData(): Promise<void> {
     console.log(`Fetched ${pools.length} pools from DeFi Llama`);
 
     // Only sync pools that are marked as visible in our database
-    const filteredPools = pools.filter(pool => 
-      visibleDefiLlamaIds.has(pool.pool) && // Only sync visible pools
-      pool.tvlUsd > 10000 && // Min $10k TVL
-      pool.apy > 0.01 && // Min 1% APY
-      pool.apy < 1000 && // Max 1000% APY (filter out obvious outliers)
-      !pool.outlier &&
-      CHAIN_MAPPING[pool.chain?.toLowerCase()]
-    );
+    const filteredPools = [];
+    const debugInfo = { totalVisible: 0, passedFilters: 0, failReasons: [] as string[] };
+    
+    for (const pool of pools) {
+      if (visibleDefiLlamaIds.has(pool.pool)) {
+        debugInfo.totalVisible++;
+        
+        // Check each filter and log failures for debugging
+        const checks = [
+          { name: 'TVL > $10k', pass: pool.tvlUsd > 10000, value: pool.tvlUsd },
+          { name: 'APY > 1%', pass: pool.apy > 0.01, value: pool.apy },
+          { name: 'APY < 1000%', pass: pool.apy < 1000, value: pool.apy },
+          { name: 'Not outlier', pass: !pool.outlier, value: pool.outlier },
+          { name: 'Supported chain', pass: !!CHAIN_MAPPING[pool.chain?.toLowerCase()], value: pool.chain }
+        ];
+        
+        const failedChecks = checks.filter(check => !check.pass);
+        
+        if (failedChecks.length === 0) {
+          filteredPools.push(pool);
+          debugInfo.passedFilters++;
+        } else {
+          // For visible pools that fail filters, still update them but with relaxed criteria
+          // This ensures the lastUpdated timestamp gets refreshed
+          if (pool.apy > 0 && pool.tvlUsd > 0 && CHAIN_MAPPING[pool.chain?.toLowerCase()]) {
+            filteredPools.push(pool);
+            debugInfo.passedFilters++;
+            console.log(`Including visible pool ${pool.pool} despite filter failures:`, 
+              failedChecks.map(f => `${f.name}: ${f.value}`).join(', '));
+          } else {
+            debugInfo.failReasons.push(`${pool.pool}: ${failedChecks.map(f => f.name).join(', ')}`);
+          }
+        }
+      }
+    }
 
     console.log(`Filtered to ${filteredPools.length} visible pools for sync`);
+    if (debugInfo.failReasons.length > 0) {
+      console.log('Pools filtered out:', debugInfo.failReasons);
+    }
     
     if (filteredPools.length === 0) {
       console.log("No visible pools found in DeFi Llama data - sync complete");
