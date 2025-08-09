@@ -10,8 +10,8 @@ import {
   insertStrategyPoolSchema,
   insertDiscussionSchema,
   insertDiscussionReplySchema,
-  insertWatchlistSchema,
-  insertWatchlistPoolSchema,
+
+
   insertApiEndpointSchema,
   insertDeveloperApplicationSchema
 } from "@shared/schema";
@@ -399,112 +399,11 @@ export function registerAdvancedRoutes(app: Express) {
     }
   });
 
-  // 5. Custom Watchlists API Routes
-  app.post('/api/users/:userId/watchlists', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const watchlistData = insertWatchlistSchema.parse({ ...req.body, userId });
-      
-      const watchlist = await storage.createWatchlist(watchlistData);
-      res.status(201).json(watchlist);
-    } catch (error) {
-      console.error('Error creating watchlist:', error);
-      res.status(400).json({ message: 'Failed to create watchlist' });
-    }
-  });
 
-  app.get('/api/users/:userId/watchlists', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const watchlists = await storage.getUserWatchlists(userId);
-      res.json(watchlists);
-    } catch (error) {
-      console.error('Error getting watchlists:', error);
-      res.status(500).json({ message: 'Failed to get watchlists' });
-    }
-  });
 
-  app.get('/api/watchlists/:watchlistId', async (req, res) => {
-    try {
-      const { watchlistId } = req.params;
-      const watchlist = await storage.getWatchlist(watchlistId);
-      
-      if (!watchlist) {
-        return res.status(404).json({ message: 'Watchlist not found' });
-      }
-      
-      res.json(watchlist);
-    } catch (error) {
-      console.error('Error getting watchlist:', error);
-      res.status(500).json({ message: 'Failed to get watchlist' });
-    }
-  });
 
-  app.put('/api/watchlists/:watchlistId', async (req, res) => {
-    try {
-      const { watchlistId } = req.params;
-      const updateData = req.body;
-      
-      const watchlist = await storage.updateWatchlist(watchlistId, updateData);
-      if (!watchlist) {
-        return res.status(404).json({ message: 'Watchlist not found' });
-      }
-      
-      res.json(watchlist);
-    } catch (error) {
-      console.error('Error updating watchlist:', error);
-      res.status(400).json({ message: 'Failed to update watchlist' });
-    }
-  });
 
-  app.delete('/api/watchlists/:watchlistId', async (req, res) => {
-    try {
-      const { watchlistId } = req.params;
-      const deleted = await storage.deleteWatchlist(watchlistId);
-      
-      if (!deleted) {
-        return res.status(404).json({ message: 'Watchlist not found' });
-      }
-      
-      res.status(204).send();
-    } catch (error) {
-      console.error('Error deleting watchlist:', error);
-      res.status(500).json({ message: 'Failed to delete watchlist' });
-    }
-  });
-
-  app.post('/api/watchlists/:watchlistId/pools', async (req, res) => {
-    try {
-      const { watchlistId } = req.params;
-      const { poolId } = req.body;
-      
-      const watchlistPoolData = insertWatchlistPoolSchema.parse({ watchlistId, poolId });
-      const watchlistPool = await storage.addPoolToWatchlist(watchlistPoolData);
-      
-      res.status(201).json(watchlistPool);
-    } catch (error) {
-      console.error('Error adding pool to watchlist:', error);
-      res.status(400).json({ message: 'Failed to add pool to watchlist' });
-    }
-  });
-
-  app.delete('/api/watchlists/:watchlistId/pools/:poolId', async (req, res) => {
-    try {
-      const { watchlistId, poolId } = req.params;
-      const deleted = await storage.removePoolFromWatchlist(watchlistId, poolId);
-      
-      if (!deleted) {
-        return res.status(404).json({ message: 'Pool not found in watchlist' });
-      }
-      
-      res.status(204).send();
-    } catch (error) {
-      console.error('Error removing pool from watchlist:', error);
-      res.status(500).json({ message: 'Failed to remove pool from watchlist' });
-    }
-  });
-
-  // 6. API Marketplace Routes
+  // 5. API Marketplace Routes
   app.get('/api/marketplace/endpoints', async (req, res) => {
     try {
       const { category, accessLevel } = req.query;

@@ -110,11 +110,7 @@ export default function Footer() {
                   Press / Media
                 </Link>
               </li>
-              <li>
-                <Link href="/watchlist" className="hover:text-white transition-colors duration-200" data-testid="link-watchlist">
-                  Watchlist
-                </Link>
-              </li>
+
               <li>
                 <Link href="/jobs" className="hover:text-white transition-colors duration-200" data-testid="link-jobs">
                   Jobs

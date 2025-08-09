@@ -258,24 +258,7 @@ export const discussionReplies = pgTable("discussion_replies", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// 5. Custom Watchlists System
-export const watchlists = pgTable("watchlists", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  description: text("description"),
-  isPublic: boolean("is_public").notNull().default(false),
-  alertsEnabled: boolean("alerts_enabled").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
 
-export const watchlistPools = pgTable("watchlist_pools", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  watchlistId: varchar("watchlist_id").notNull().references(() => watchlists.id, { onDelete: "cascade" }),
-  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
-  addedAt: timestamp("added_at").defaultNow(),
-});
 
 // 6. API Marketplace System
 export const apiEndpoints = pgTable("api_endpoints", {
@@ -366,7 +349,6 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
   userAlerts: many(userAlerts),
   strategyPools: many(strategyPools),
   discussions: many(discussions),
-  watchlistPools: many(watchlistPools),
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
@@ -480,24 +462,7 @@ export const discussionRepliesRelations = relations(discussionReplies, ({ one, m
   childReplies: many(discussionReplies),
 }));
 
-export const watchlistsRelations = relations(watchlists, ({ one, many }) => ({
-  user: one(users, {
-    fields: [watchlists.userId],
-    references: [users.id],
-  }),
-  watchlistPools: many(watchlistPools),
-}));
 
-export const watchlistPoolsRelations = relations(watchlistPools, ({ one }) => ({
-  watchlist: one(watchlists, {
-    fields: [watchlistPools.watchlistId],
-    references: [watchlists.id],
-  }),
-  pool: one(pools, {
-    fields: [watchlistPools.poolId],
-    references: [pools.id],
-  }),
-}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -628,16 +593,7 @@ export const insertDiscussionReplySchema = createInsertSchema(discussionReplies)
   createdAt: true,
 });
 
-export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
 
-export const insertWatchlistPoolSchema = createInsertSchema(watchlistPools).omit({
-  id: true,
-  addedAt: true,
-});
 
 export const insertApiEndpointSchema = createInsertSchema(apiEndpoints).omit({
   id: true,
@@ -718,11 +674,7 @@ export type InsertDiscussion = z.infer<typeof insertDiscussionSchema>;
 export type DiscussionReply = typeof discussionReplies.$inferSelect;
 export type InsertDiscussionReply = z.infer<typeof insertDiscussionReplySchema>;
 
-export type Watchlist = typeof watchlists.$inferSelect;
-export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
 
-export type WatchlistPool = typeof watchlistPools.$inferSelect;
-export type InsertWatchlistPool = z.infer<typeof insertWatchlistPoolSchema>;
 
 export type ApiEndpoint = typeof apiEndpoints.$inferSelect;
 export type InsertApiEndpoint = z.infer<typeof insertApiEndpointSchema>;
@@ -763,9 +715,7 @@ export type DiscussionWithReplies = Discussion & {
   replies: (DiscussionReply & { user: User })[];
 };
 
-export type WatchlistWithPools = Watchlist & {
-  watchlistPools: (WatchlistPool & { pool: Pool & { platform: Platform; chain: Chain } })[];
-};
+
 
 export type UserWithAlerts = User & {
   userAlerts: (UserAlert & { notifications: AlertNotification[] })[];

@@ -14,8 +14,7 @@ import Documentation from "@/pages/documentation";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Terms from "@/pages/terms";
 import ListYourProject from "@/pages/list-your-project";
-import PressMedia from "@/pages/press-media";
-import Watchlist from "@/pages/watchlist";
+
 import AdminLogin from "@/pages/admin-login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminNetworks from "@/pages/admin-networks";
@@ -27,7 +26,7 @@ import RiskDashboard from "@/pages/risk-dashboard";
 import SmartAlerts from "@/pages/smart-alerts";
 import PoolReviews from "@/pages/pool-reviews";
 import CommunityInsights from "@/pages/community-insights";
-import Watchlists from "@/pages/watchlists";
+
 import ApiMarketplace from "@/pages/api-marketplace";
 import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
 import AdminLogoManagement from "@/pages/admin-logo-management";
@@ -49,15 +48,14 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />
       <Route path="/list-your-project" component={ListYourProject} />
-      <Route path="/press-media" component={PressMedia} />
-      <Route path="/watchlist" component={Watchlist} />
+
       <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
       <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
       <Route path="/risk-dashboard" component={RiskDashboard} />
       <Route path="/smart-alerts" component={SmartAlerts} />
       <Route path="/pool-reviews" component={PoolReviews} />
       <Route path="/community-insights" component={CommunityInsights} />
-      <Route path="/watchlists" component={Watchlists} />
+
       <Route path="/api-marketplace" component={ApiMarketplace} />
       <Route path="/advanced-search" component={AdvancedSearch} />
       <Route path="/yield-forecasting" component={YieldForecasting} />

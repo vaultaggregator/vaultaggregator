@@ -112,13 +112,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
                   >
                     Community Insights
                   </Link>
-                  <Link
-                    href="/watchlists"
-                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    data-testid="link-watchlists"
-                  >
-                    Custom Watchlists
-                  </Link>
+
                   <Link
                     href="/api-marketplace"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -245,14 +239,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               >
                 Community Insights
               </Link>
-              <Link 
-                href="/watchlists" 
-                className="block px-6 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-watchlists"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Watchlists
-              </Link>
+
               <Link 
                 href="/api-marketplace" 
                 className="block px-6 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"

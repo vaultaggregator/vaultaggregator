@@ -1,7 +1,7 @@
 import { 
   pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
-  discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
+  discussions, discussionReplies, apiEndpoints, developerApplications, holderHistory,
   type Pool, type Platform, type Chain, type Token, type TokenInfo, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
@@ -12,7 +12,7 @@ import {
   type PoolReview, type InsertPoolReview, type PoolReviewWithUser, type ReviewVote, type InsertReviewVote,
   type Strategy, type InsertStrategy, type StrategyWithPools, type StrategyPool, type InsertStrategyPool,
   type Discussion, type InsertDiscussion, type DiscussionWithReplies, type DiscussionReply, type InsertDiscussionReply,
-  type Watchlist, type InsertWatchlist, type WatchlistWithPools, type WatchlistPool, type InsertWatchlistPool,
+
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
   type HolderHistory, type InsertHolderHistory
 } from "@shared/schema";
@@ -165,17 +165,9 @@ export interface IStorage {
   getDiscussions(options?: { poolId?: string; strategyId?: string; category?: string; }): Promise<DiscussionWithReplies[]>;
   createDiscussionReply(reply: InsertDiscussionReply): Promise<DiscussionReply>;
 
-  // 5. Custom Watchlists methods
-  createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist>;
-  getUserWatchlists(userId: string): Promise<WatchlistWithPools[]>;
-  getWatchlist(id: string): Promise<WatchlistWithPools | undefined>;
-  updateWatchlist(id: string, watchlist: Partial<InsertWatchlist>): Promise<Watchlist | undefined>;
-  deleteWatchlist(id: string): Promise<boolean>;
-  addPoolToWatchlist(watchlistPool: InsertWatchlistPool): Promise<WatchlistPool>;
-  removePoolFromWatchlist(watchlistId: string, poolId: string): Promise<boolean>;
-  getWatchlistAlerts(userId: string): Promise<UserAlert[]>;
 
-  // 6. API Marketplace methods
+
+  // 5. API Marketplace methods
   createApiEndpoint(endpoint: InsertApiEndpoint): Promise<ApiEndpoint>;
   getApiEndpoints(category?: string, accessLevel?: string): Promise<ApiEndpoint[]>;
   getApiEndpoint(id: string): Promise<ApiEndpoint | undefined>;
@@ -1476,112 +1468,15 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
-  // 5. Custom Watchlists implementations
-  async createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist> {
-    const [created] = await db.insert(watchlists).values(watchlist).returning();
-    return created;
-  }
 
-  async getUserWatchlists(userId: string): Promise<WatchlistWithPools[]> {
-    const results = await db.select()
-      .from(watchlists)
-      .leftJoin(watchlistPools, eq(watchlists.id, watchlistPools.watchlistId))
-      .leftJoin(pools, eq(watchlistPools.poolId, pools.id))
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
-      .where(eq(watchlists.userId, userId))
-      .orderBy(desc(watchlists.createdAt));
 
-    const watchlistsMap = new Map();
-    results.forEach(result => {
-      const watchlist = result.watchlists;
-      if (!watchlistsMap.has(watchlist.id)) {
-        watchlistsMap.set(watchlist.id, {
-          ...watchlist,
-          watchlistPools: []
-        });
-      }
-      if (result.watchlist_pools && result.pools) {
-        watchlistsMap.get(watchlist.id).watchlistPools.push({
-          ...result.watchlist_pools,
-          pool: {
-            ...result.pools,
-            platform: result.platforms,
-            chain: result.chains
-          }
-        });
-      }
-    });
 
-    return Array.from(watchlistsMap.values());
-  }
 
-  async getWatchlist(id: string): Promise<WatchlistWithPools | undefined> {
-    const results = await db.select()
-      .from(watchlists)
-      .leftJoin(watchlistPools, eq(watchlists.id, watchlistPools.watchlistId))
-      .leftJoin(pools, eq(watchlistPools.poolId, pools.id))
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
-      .where(eq(watchlists.id, id));
 
-    if (results.length === 0) return undefined;
 
-    const watchlist = results[0].watchlists;
-    const watchlistPools = results
-      .filter(r => r.watchlist_pools && r.pools)
-      .map(r => ({
-        ...r.watchlist_pools!,
-        pool: {
-          ...r.pools!,
-          platform: r.platforms!,
-          chain: r.chains!
-        }
-      }));
 
-    return {
-      ...watchlist,
-      watchlistPools
-    };
-  }
 
-  async updateWatchlist(id: string, watchlist: Partial<InsertWatchlist>): Promise<Watchlist | undefined> {
-    const [updated] = await db
-      .update(watchlists)
-      .set({ ...watchlist, updatedAt: new Date() })
-      .where(eq(watchlists.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteWatchlist(id: string): Promise<boolean> {
-    const result = await db.delete(watchlists).where(eq(watchlists.id, id));
-    return (result.rowCount || 0) > 0;
-  }
-
-  async addPoolToWatchlist(watchlistPool: InsertWatchlistPool): Promise<WatchlistPool> {
-    const [created] = await db.insert(watchlistPools).values(watchlistPool).returning();
-    return created;
-  }
-
-  async removePoolFromWatchlist(watchlistId: string, poolId: string): Promise<boolean> {
-    const result = await db.delete(watchlistPools)
-      .where(and(
-        eq(watchlistPools.watchlistId, watchlistId),
-        eq(watchlistPools.poolId, poolId)
-      ));
-    return (result.rowCount || 0) > 0;
-  }
-
-  async getWatchlistAlerts(userId: string): Promise<UserAlert[]> {
-    return await db.select().from(userAlerts)
-      .where(and(
-        eq(userAlerts.userId, userId),
-        eq(userAlerts.alertType, 'watchlist_change')
-      ));
-  }
-
-  // 6. API Marketplace implementations
+  // 5. API Marketplace implementations
   async createApiEndpoint(endpoint: InsertApiEndpoint): Promise<ApiEndpoint> {
     const [created] = await db.insert(apiEndpoints).values(endpoint).returning();
     return created;
