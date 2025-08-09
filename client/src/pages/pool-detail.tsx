@@ -745,10 +745,10 @@ export default function PoolDetail() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
-                Token Flow Analysis
+                24-Hour Token Flow Analysis
               </CardTitle>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Inflow vs Outflow trends for {tokenTransfers.tokenAddress}
+                24h inflow vs outflow trends for {tokenTransfers.tokenAddress}
               </p>
             </CardHeader>
             <CardContent>
@@ -764,7 +764,7 @@ export default function PoolDetail() {
                     <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
                       <div className="flex items-center">
                         <ArrowDown className="w-4 h-4 text-green-600 mr-2" />
-                        <span className="text-sm font-medium text-green-800 dark:text-green-300">Total Inflow</span>
+                        <span className="text-sm font-medium text-green-800 dark:text-green-300">24h Inflow</span>
                       </div>
                       <p className="text-lg font-bold text-green-900 dark:text-green-100 mt-1">
                         {tokenTransfers.flowAnalysis.totalInflow >= 1000000 
@@ -779,7 +779,7 @@ export default function PoolDetail() {
                     <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
                       <div className="flex items-center">
                         <ArrowUp className="w-4 h-4 text-red-600 mr-2" />
-                        <span className="text-sm font-medium text-red-800 dark:text-red-300">Total Outflow</span>
+                        <span className="text-sm font-medium text-red-800 dark:text-red-300">24h Outflow</span>
                       </div>
                       <p className="text-lg font-bold text-red-900 dark:text-red-100 mt-1">
                         {tokenTransfers.flowAnalysis.totalOutflow >= 1000000 
@@ -806,7 +806,7 @@ export default function PoolDetail() {
                         ) : (
                           <Minus className="w-4 h-4 text-gray-600 mr-2" />
                         )}
-                        <span className="text-sm font-medium">Net Flow</span>
+                        <span className="text-sm font-medium">24h Net Flow</span>
                       </div>
                       <p className={`text-lg font-bold mt-1 ${
                         tokenTransfers.flowAnalysis.netFlow > 0 

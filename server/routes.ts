@@ -2555,18 +2555,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Number(limit)
       );
 
-      // Calculate inflow/outflow metrics
+      // Calculate inflow/outflow metrics for last 24 hours
       const decimals = parseInt(transfers[0]?.tokenDecimal || '18');
       let totalInflow = 0;
       let totalOutflow = 0;
       const flowData: Array<{timestamp: number, inflow: number, outflow: number, netFlow: number}> = [];
       
+      // Filter for last 24 hours
+      const now = Date.now();
+      const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
+      
       // Group transfers by hour for chart data
       const hourlyFlows = new Map<number, {inflow: number, outflow: number}>();
       
       for (const transfer of transfers) {
-        const value = parseFloat(transfer.value) / Math.pow(10, decimals);
         const timestamp = parseInt(transfer.timeStamp) * 1000;
+        
+        // Skip transfers older than 24 hours
+        if (timestamp < twentyFourHoursAgo) {
+          continue;
+        }
+        
+        const value = parseFloat(transfer.value) / Math.pow(10, decimals);
         const hourTimestamp = Math.floor(timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60); // Round to hour
         
         // Enhanced flow analysis with protocol-specific logic
@@ -2649,9 +2659,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const netFlow = totalInflow - totalOutflow;
       const flowRatio = totalOutflow > 0 ? totalInflow / totalOutflow : totalInflow > 0 ? 999 : 1;
       
+      // Filter transfers for display (only last 24h)
+      const recentTransfers = transfers.filter(t => parseInt(t.timeStamp) * 1000 >= twentyFourHoursAgo);
+      
       res.json({
         tokenAddress: underlyingToken,
-        transfers: transfers.map(transfer => ({
+        transfers: recentTransfers.map(transfer => ({
           hash: transfer.hash,
           from: transfer.from,
           to: transfer.to,
@@ -2671,10 +2684,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           flowRatio,
           isGrowing: netFlow > 0,
           trend: netFlow > 0 ? 'positive' : netFlow < 0 ? 'negative' : 'neutral',
-          flowData
+          flowData,
+          period: '24h' // Explicitly indicate this is 24-hour data
         },
         page: Number(page),
-        totalRecords: transfers.length,
+        totalRecords: recentTransfers.length,
         hasMore: transfers.length === Number(limit)
       });
     } catch (error) {
