@@ -85,15 +85,15 @@ export async function syncData(): Promise<void> {
     
     // First, get only visible pools from database to sync
     const visiblePools = await storage.getPools({ onlyVisible: true });
-    const visibleDefiLlamaIds = new Set(
+    const visiblePoolIds = new Set(
       visiblePools
-        .filter(p => p.defiLlamaId && p.project === 'defillama')
-        .map(p => p.defiLlamaId)
+        .filter(p => (p.defiLlamaId || p.poolAddress) && p.project === 'defillama')
+        .map(p => p.defiLlamaId || p.poolAddress)
     );
     
-    console.log(`Found ${visibleDefiLlamaIds.size} visible pools to sync`);
+    console.log(`Found ${visiblePoolIds.size} visible pools to sync`);
     
-    if (visibleDefiLlamaIds.size === 0) {
+    if (visiblePoolIds.size === 0) {
       console.log("No visible pools to sync - skipping DeFi Llama API call");
       return;
     }
@@ -106,7 +106,7 @@ export async function syncData(): Promise<void> {
     const debugInfo = { totalVisible: 0, passedFilters: 0, failReasons: [] as string[] };
     
     for (const pool of pools) {
-      if (visibleDefiLlamaIds.has(pool.pool)) {
+      if (visiblePoolIds.has(pool.pool)) {
         debugInfo.totalVisible++;
         
         // Check each filter and log failures for debugging
