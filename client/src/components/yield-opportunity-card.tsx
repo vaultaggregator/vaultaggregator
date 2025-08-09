@@ -146,8 +146,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* Mobile grid, desktop flex layout */}
             <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
               <div className="text-center sm:w-14">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">24h APY</p>
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">24h APY</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">24h APY</p>
                 )}
                 <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                   {opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
@@ -155,16 +156,18 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 </p>
               </div>
               <div className="text-center sm:w-14">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">30d APY</p>
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">30d APY</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">30d APY</p>
                 )}
                 <p className="text-xs font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
                   {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
                 </p>
               </div>
               <div className="text-center sm:w-16">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">TVL</p>
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">TVL</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">TVL</p>
                 )}
                 <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                   {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
@@ -180,16 +183,18 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 </p>
               </div>
               <div className="text-center sm:w-20">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">Holders</p>
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">Holders</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Holders</p>
                 )}
                 <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                   {formatHolders(opportunity.holdersCount)}
                 </p>
               </div>
-              <div className="col-span-3 sm:col-span-1 text-center sm:w-16 flex justify-center">
+              <div className="col-span-3 sm:col-span-1 text-center sm:w-16 flex flex-col justify-center items-center">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">Risk</p>
                 {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">Risk</p>
+                  <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
                 )}
                 <Badge 
                   variant="secondary"
