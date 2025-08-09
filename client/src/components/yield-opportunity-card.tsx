@@ -146,8 +146,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl">
             {/* Mobile grid, desktop flex layout */}
             <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
-              <div className="text-center sm:w-14 flex flex-col justify-start">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">24h APY</p>
+              <div className="text-center sm:w-14">
+                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground font-medium">24h APY</p>
+                </div>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">24h APY</p>
                 )}
@@ -156,8 +158,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                    opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-14 flex flex-col justify-start">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">30d APY</p>
+              <div className="text-center sm:w-14">
+                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground font-medium">30d APY</p>
+                </div>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">30d APY</p>
                 )}
@@ -165,8 +169,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-16 flex flex-col justify-start">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">TVL</p>
+              <div className="text-center sm:w-16">
+                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground font-medium">TVL</p>
+                </div>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">TVL</p>
                 )}
@@ -183,8 +189,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-20 flex flex-col justify-start">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">Holders</p>
+              <div className="text-center sm:w-20">
+                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground font-medium">Holders</p>
+                </div>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Holders</p>
                 )}
@@ -192,8 +200,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {formatHolders(opportunity.holdersCount)}
                 </p>
               </div>
-              <div className="col-span-3 sm:col-span-1 text-center sm:w-16 flex flex-col justify-start">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">Risk</p>
+              <div className="col-span-3 sm:col-span-1 text-center sm:w-16">
+                <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
+                  <p className="text-xs text-muted-foreground font-medium">Risk</p>
+                </div>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
                 )}
