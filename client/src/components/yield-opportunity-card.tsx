@@ -102,30 +102,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             
             <div className="min-w-0 flex-1">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="flex items-center space-x-1.5">
-                  <h3 className="font-bold text-base text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
-                    {opportunity.tokenPair}
-                  </h3>
-                  {/* Protocol Icon - Smaller */}
-                  <div 
-                    className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                    data-testid={`logo-${opportunity.platform.name}`}
-                  >
-                    {opportunity.platform.logoUrl ? (
-                      <img 
-                        src={opportunity.platform.logoUrl} 
-                        alt={opportunity.platform.displayName}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      (() => {
-                        const PlatformIcon = getPlatformIcon(opportunity.platform.name);
-                        return <PlatformIcon size={16} className="flex-shrink-0" />;
-                      })()
-                    )}
-                  </div>
-                </div>
+              <div className="flex items-center space-x-2 mb-0.5">
+                <h3 className="font-bold text-base text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
+                  {opportunity.tokenPair}
+                </h3>
                 {showNetworkName && (
                   <div 
                     className="flex items-center justify-center flex-shrink-0"
@@ -137,6 +117,27 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     })()}
                   </div>
                 )}
+              </div>
+              {/* Platform info below */}
+              <div className="flex items-center space-x-1">
+                <div 
+                  className="w-3 h-3 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                  data-testid={`logo-${opportunity.platform.name}`}
+                >
+                  {opportunity.platform.logoUrl ? (
+                    <img 
+                      src={opportunity.platform.logoUrl} 
+                      alt={opportunity.platform.displayName}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    (() => {
+                      const PlatformIcon = getPlatformIcon(opportunity.platform.name);
+                      return <PlatformIcon size={12} className="flex-shrink-0" />;
+                    })()
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">{opportunity.platform.displayName || opportunity.platform.name}</span>
               </div>
             </div>
           </div>
@@ -191,18 +192,20 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {formatHolders(opportunity.holdersCount)}
                 </p>
               </div>
-              <div className="col-span-3 sm:col-span-1 text-center sm:w-16 flex flex-col justify-center items-center">
+              <div className="col-span-3 sm:col-span-1 text-center sm:w-16">
                 <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">Risk</p>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
                 )}
-                <Badge 
-                  variant="secondary"
-                  className={`text-xs font-medium px-2 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
-                  data-testid={`badge-risk-${opportunity.id}`}
-                >
-                  {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
-                </Badge>
+                <div className="flex justify-center">
+                  <Badge 
+                    variant="secondary"
+                    className={`text-xs font-medium px-2 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
+                    data-testid={`badge-risk-${opportunity.id}`}
+                  >
+                    {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
+                  </Badge>
+                </div>
               </div>
             </div>
           </div>
