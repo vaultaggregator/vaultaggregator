@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
 import { useEffect } from "react";
-import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, Clock } from "lucide-react";
+import { ArrowLeft, ExternalLink, Calendar, TrendingUp, Shield, DollarSign, BarChart3, Activity, Clock, Users } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
@@ -234,6 +234,11 @@ export default function PoolDetail() {
     return `${num.toFixed(2)}%`;
   };
 
+  const formatHolders = (holders: number): string => {
+    if (isNaN(holders)) return "N/A";
+    return holders.toLocaleString();
+  };
+
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
       case 'low': return 'bg-green-100 text-green-800 border-green-200';
@@ -407,7 +412,7 @@ export default function PoolDetail() {
         </Card>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
@@ -474,6 +479,21 @@ export default function PoolDetail() {
                 {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">days</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-purple-600" />
+                <span className="hidden sm:inline">Token Holders</span>
+                <span className="sm:hidden">Holders</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
+                {pool.holdersCount ? formatHolders(pool.holdersCount) : 'N/A'}
+              </p>
             </CardContent>
           </Card>
         </div>
