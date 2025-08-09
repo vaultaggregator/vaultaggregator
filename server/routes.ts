@@ -367,22 +367,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (minApy) {
         const minApyNum = parseFloat(minApy as string);
-        filteredPools = filteredPools.filter(p => parseFloat(p.apy) >= minApyNum);
+        filteredPools = filteredPools.filter(p => p.apy && parseFloat(p.apy) >= minApyNum);
       }
 
       if (maxApy) {
         const maxApyNum = parseFloat(maxApy as string);
-        filteredPools = filteredPools.filter(p => parseFloat(p.apy) <= maxApyNum);
+        filteredPools = filteredPools.filter(p => p.apy && parseFloat(p.apy) <= maxApyNum);
       }
 
       if (minTvl) {
         const minTvlNum = parseFloat(minTvl as string);
-        filteredPools = filteredPools.filter(p => parseFloat(p.tvl) >= minTvlNum);
+        filteredPools = filteredPools.filter(p => p.tvl && parseFloat(p.tvl) >= minTvlNum);
       }
 
       if (maxTvl) {
         const maxTvlNum = parseFloat(maxTvl as string);
-        filteredPools = filteredPools.filter(p => parseFloat(p.tvl) <= maxTvlNum);
+        filteredPools = filteredPools.filter(p => p.tvl && parseFloat(p.tvl) <= maxTvlNum);
       }
 
       if (riskLevels) {
@@ -397,7 +397,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (minOperatingDays) {
         const minDays = parseInt(minOperatingDays as string);
-        filteredPools = filteredPools.filter(p => (p.count || 0) >= minDays);
+        filteredPools = filteredPools.filter(p => {
+          // Use rawData.count from DeFi Llama data for operating days
+          const rawData = p.rawData as any;
+          return (rawData?.count || 0) >= minDays;
+        });
       }
 
       res.json(filteredPools);
@@ -2597,12 +2601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let isInflow = false;
         let isOutflow = false;
         
-        // Simplified debug logging
-        const isSignificant = value > 1; // Only log significant transfers
-        if (isSignificant && (isMinting || isBurning || isFromProtocol || isToProtocol)) {
-          console.log(`🔄 ${value.toFixed(2)} stETH: ${fromAddr.substring(0,10)}... → ${toAddr.substring(0,10)}...`);
-          console.log(`   Minting: ${isMinting} | Burning: ${isBurning} | From Protocol: ${isFromProtocol} | To Protocol: ${isToProtocol}`);
-        }
+        // Protocol flow analysis complete
         
         if (isMinting) {
           // New tokens created = inflow to ecosystem
@@ -2628,11 +2627,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (isInflow) {
           totalInflow += value;
           hourData.inflow += value;
-          console.log(`✅ INFLOW: ${value.toFixed(2)} stETH (${isMinting ? 'minting' : 'to protocol'})`);
         } else if (isOutflow) {
           totalOutflow += value;
           hourData.outflow += value;
-          console.log(`❌ OUTFLOW: ${value.toFixed(2)} stETH (${isBurning ? 'burning' : 'from protocol'})`);
         }
         // Note: User-to-user transfers are neutral and ignored for protocol flow calculation
       }

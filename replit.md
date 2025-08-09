@@ -62,13 +62,13 @@ The backend now implements a comprehensive multi-source data collection and anal
 - **Holder Data Sync**: Token holder analytics from Etherscan every 6 hours  
 - **Token Info Sync**: Comprehensive token data with 24-hour caching
 - **AI Outlook Generation**: Market predictions every 2 hours
-- **Token Transfer Analysis**: Real-time flow analysis with inflow/outflow calculations
+- **Token Transfer Analysis**: Protocol-aware flow analysis with accurate inflow/outflow calculations for complex DeFi protocols like Lido
 
 #### Analytics Services
 - **Data Analysis Service**: Comprehensive pool analytics combining all data sources
 - **Market Intelligence Service**: Market-wide analytics, sentiment analysis, and trend identification
 - **Holder Analytics**: Advanced holder distribution analysis and growth tracking
-- **Flow Analysis**: Token inflow/outflow calculations with growth trend visualization
+- **Flow Analysis**: Sophisticated protocol-aware token flow analysis distinguishing between actual staking/unstaking activities vs regular user transfers, providing accurate inflow/outflow metrics for investment decisions
 
 #### Scheduled Operations
 - DeFi Llama data sync: Every 10 minutes
