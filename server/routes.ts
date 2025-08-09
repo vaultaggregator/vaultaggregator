@@ -630,6 +630,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Pool Analytics - Comprehensive analysis combining all data sources
+  app.get("/api/pools/:poolId/enhanced-analytics", async (req, res) => {
+    try {
+      const { DataAnalysisService } = await import("./services/dataAnalysisService");
+      const analysisService = new DataAnalysisService();
+      
+      const analytics = await analysisService.getPoolAnalytics(req.params.poolId);
+      
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error generating enhanced pool analytics:", error);
+      res.status(500).json({ 
+        error: "Failed to generate enhanced analytics",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Market Intelligence Endpoints
+  app.get("/api/market/overview", async (req, res) => {
+    try {
+      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
+      const marketService = new MarketIntelligenceService();
+      
+      const overview = await marketService.getMarketOverview();
+      
+      res.json(overview);
+    } catch (error) {
+      console.error("Error generating market overview:", error);
+      res.status(500).json({ 
+        error: "Failed to generate market overview",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/api/market/top-performers", async (req, res) => {
+    try {
+      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
+      const marketService = new MarketIntelligenceService();
+      
+      const topPerformers = await marketService.getTopPerformers();
+      
+      res.json(topPerformers);
+    } catch (error) {
+      console.error("Error getting top performers:", error);
+      res.status(500).json({ 
+        error: "Failed to get top performers",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/api/market/sentiment", async (req, res) => {
+    try {
+      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
+      const marketService = new MarketIntelligenceService();
+      
+      const sentiment = await marketService.getMarketSentiment();
+      
+      res.json(sentiment);
+    } catch (error) {
+      console.error("Error getting market sentiment:", error);
+      res.status(500).json({ 
+        error: "Failed to get market sentiment",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   app.post("/api/pools/:id/outlook/regenerate", async (req, res) => {
     try {
       const { AIOutlookService } = await import("./services/aiOutlookService");

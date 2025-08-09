@@ -1,9 +1,11 @@
 import { syncData } from "./defi-llama";
 import { AIOutlookService } from "./aiOutlookService";
+import { HolderDataSyncService } from "./holderDataSyncService";
 import { storage } from "../storage";
 
 let defiLlamaInterval: NodeJS.Timeout | null = null;
 let aiOutlookInterval: NodeJS.Timeout | null = null;
+let holderDataInterval: NodeJS.Timeout | null = null;
 let cleanupInterval: NodeJS.Timeout | null = null;
 
 export function startScheduler(): void {
@@ -36,14 +38,35 @@ export function startScheduler(): void {
     }
   }, 2 * 60 * 60 * 1000); // 2 hours
 
-  // Clean expired outlooks every hour
+  // Sync holder data every 6 hours
+  holderDataInterval = setInterval(async () => {
+    try {
+      console.log("Running scheduled holder data sync...");
+      const holderSyncService = new HolderDataSyncService();
+      await holderSyncService.syncAllHolderData();
+      console.log("Scheduled holder data sync completed");
+    } catch (error) {
+      console.error("Error in scheduled holder data sync:", error);
+    }
+  }, 6 * 60 * 60 * 1000); // 6 hours
+
+  // Clean expired outlooks and old data every hour
   cleanupInterval = setInterval(async () => {
     try {
-      console.log("Cleaning expired AI outlooks...");
-      const deletedCount = await storage.deleteExpiredOutlooks();
-      console.log(`Deleted ${deletedCount} expired AI outlooks`);
+      console.log("Running data cleanup tasks...");
+      
+      // Clean expired AI outlooks
+      const deletedOutlooks = await storage.deleteExpiredOutlooks();
+      console.log(`Deleted ${deletedOutlooks} expired AI outlooks`);
+      
+      // Clean old holder data (keep last 90 days)
+      const holderSyncService = new HolderDataSyncService();
+      const deletedHolderRecords = await holderSyncService.cleanOldHolderData();
+      console.log(`Cleaned ${deletedHolderRecords} old holder history records`);
+      
+      console.log("Data cleanup tasks completed");
     } catch (error) {
-      console.error("Error cleaning expired outlooks:", error);
+      console.error("Error in data cleanup tasks:", error);
     }
   }, 60 * 60 * 1000); // 1 hour
 
@@ -58,7 +81,19 @@ export function startScheduler(): void {
     }
   }, 2 * 60 * 1000); // 2 minutes
 
-  console.log("Scheduler started - syncing DeFi Llama data every 10 minutes and AI outlooks every 2 hours");
+  console.log("Scheduler started - DeFi Llama: 10min, AI outlooks: 2h, Holder data: 6h, Cleanup: 1h");
+
+  // Initial holder data sync after 5 minutes (after DeFi Llama sync)
+  setTimeout(async () => {
+    try {
+      console.log("Running initial holder data sync...");
+      const holderSyncService = new HolderDataSyncService();
+      await holderSyncService.syncAllHolderData();
+      console.log("Initial holder data sync completed");
+    } catch (error) {
+      console.error("Error in initial holder data sync:", error);
+    }
+  }, 5 * 60 * 1000); // 5 minutes
 }
 
 async function generateOutlooksForActivePools() {

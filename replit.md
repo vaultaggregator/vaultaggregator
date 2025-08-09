@@ -50,10 +50,31 @@ The frontend has a modular structure with reusable components, custom hooks, and
 The server is built with Express.js, following a layered architecture:
 - **API Layer**: RESTful endpoints for data and admin functions
 - **Storage Layer**: Abstracted data access via an `IStorage` interface (Drizzle-based)
-- **Service Layer**: External API integration (DeFi Llama) and background scheduling
+- **Service Layer**: External API integration and comprehensive data analysis
 - **Database**: PostgreSQL with Drizzle ORM
 
-The backend implements automatic data synchronization with DeFi Llama's yield API, with scheduled updates every 10 minutes.
+### Enhanced Data Collection & Analysis System
+
+The backend now implements a comprehensive multi-source data collection and analysis system:
+
+#### Data Collection Services (Updated: August 2025)
+- **DeFi Llama Sync**: Pool data, TVL, APY updates every 10 minutes
+- **Holder Data Sync**: Token holder analytics from Etherscan every 6 hours  
+- **Token Info Sync**: Comprehensive token data with 24-hour caching
+- **AI Outlook Generation**: Market predictions every 2 hours
+- **Token Transfer Analysis**: Real-time flow analysis with inflow/outflow calculations
+
+#### Analytics Services
+- **Data Analysis Service**: Comprehensive pool analytics combining all data sources
+- **Market Intelligence Service**: Market-wide analytics, sentiment analysis, and trend identification
+- **Holder Analytics**: Advanced holder distribution analysis and growth tracking
+- **Flow Analysis**: Token inflow/outflow calculations with growth trend visualization
+
+#### Scheduled Operations
+- DeFi Llama data sync: Every 10 minutes
+- AI outlook generation: Every 2 hours  
+- Holder data sync: Every 6 hours
+- Data cleanup tasks: Every hour
 
 ## Data Storage Solutions
 
