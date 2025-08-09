@@ -17,13 +17,13 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Branding */}
-          <Link href="/" className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0">
               <BarChart3 className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white" data-testid="text-site-title">Vault Aggregator</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400" data-testid="text-site-subtitle">DeFi Yield Aggregator</p>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white" data-testid="text-site-title">Vault Aggregator</h1>
+              <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400" data-testid="text-site-subtitle">DeFi Yield Aggregator</p>
             </div>
           </Link>
 

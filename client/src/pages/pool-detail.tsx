@@ -307,13 +307,13 @@ export default function PoolDetail() {
         </div>
 
         {/* Pool Header */}
-        <Card className="mb-8">
-          <CardContent className="p-8">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center space-x-6">
+        <Card className="mb-6">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
                 {/* Platform Logo */}
                 <div 
-                  className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden shadow-lg"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0"
                   data-testid={`logo-${pool.platform.name}`}
                 >
                   {pool.platform.logoUrl ? (
@@ -324,7 +324,7 @@ export default function PoolDetail() {
                     />
                   ) : (
                     <div 
-                      className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-xl"
+                      className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl"
                       style={{
                         background: `linear-gradient(135deg, ${pool.chain.color}80, ${pool.chain.color})`
                       }}
@@ -335,17 +335,17 @@ export default function PoolDetail() {
                 </div>
 
                 {/* Pool Info */}
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2" data-testid="text-pool-title">
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2" data-testid="text-pool-title">
                     {pool.tokenPair}
                   </h1>
-                  <p className="text-xl text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
+                  <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
                     {pool.platform.displayName}
                   </p>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
                     <Badge 
                       variant="outline"
-                      className="text-sm px-3 py-1"
+                      className="text-xs sm:text-sm px-2 sm:px-3 py-1"
                       style={{ 
                         backgroundColor: `${pool.chain.color}20`, 
                         color: pool.chain.color,
@@ -357,7 +357,7 @@ export default function PoolDetail() {
                     </Badge>
                     <MetricTooltip metric="risk-level" variant="icon" side="bottom">
                       <Badge 
-                        className={`text-sm px-3 py-1 ${getRiskColor(pool.riskLevel)}`}
+                        className={`text-xs sm:text-sm px-2 sm:px-3 py-1 ${getRiskColor(pool.riskLevel)}`}
                         data-testid="badge-risk"
                       >
                         <Shield className="w-3 h-3 mr-1" />
@@ -366,26 +366,26 @@ export default function PoolDetail() {
                     </MetricTooltip>
                   </div>
                   {/* Last Synced Info */}
-                  <div className="flex items-center mt-3 text-sm text-gray-500 dark:text-gray-400">
-                    <Clock className="w-4 h-4 mr-1" />
+                  <div className="flex items-center justify-center sm:justify-start mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     <span>Data synced {formatTimeAgo(pool.lastUpdated)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex space-x-3">
+              <div className="flex justify-center sm:justify-end mt-4 sm:mt-0">
                 {(() => {
                   const linkData = generatePlatformVisitUrl(pool);
                   return linkData ? (
                     <Button 
                       variant="outline" 
-                      size="lg" 
-                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      size="default" 
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6"
                       data-testid="button-external-link"
                       onClick={() => window.open(linkData.url, '_blank', 'noopener,noreferrer')}
                     >
-                      <ExternalLink className="w-5 h-5 mr-2" />
+                      <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                       Visit Platform
                     </Button>
                   ) : (
@@ -407,69 +407,73 @@ export default function PoolDetail() {
         </Card>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
-                  Current APY (24h)
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-600" />
+                  <span className="hidden sm:inline">Current APY (24h)</span>
+                  <span className="sm:hidden">24h APY</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-600" data-testid="text-apy-current">
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600" data-testid="text-apy-current">
                 {formatApy(pool.apy)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <MetricTooltip metric="30d-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
-                  30-Day Average APY
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
+                  <span className="hidden sm:inline">30-Day Average APY</span>
+                  <span className="sm:hidden">30d APY</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-green-500" data-testid="text-apy-30d">
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-500" data-testid="text-apy-30d">
                 {pool.rawData?.apyMean30d ? formatApy(pool.rawData.apyMean30d.toString()) : 'N/A'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <MetricTooltip metric="tvl" variant="icon" side="bottom">
-                  <DollarSign className="w-4 h-4 mr-2 text-blue-600" />
-                  Total Value Locked
+                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-600" />
+                  <span className="hidden sm:inline">Total Value Locked</span>
+                  <span className="sm:hidden">TVL</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-blue-600" data-testid="text-tvl">
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600" data-testid="text-tvl">
                 {formatTvl(pool.tvl)}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
                 <MetricTooltip metric="operating-days" variant="icon" side="bottom">
-                  <Calendar className="w-4 h-4 mr-2 text-gray-600 dark:text-gray-400" />
-                  Operating Since
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-600 dark:text-gray-400" />
+                  <span className="hidden sm:inline">Operating Since</span>
+                  <span className="sm:hidden">Since</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-gray-700 dark:text-gray-300" data-testid="text-operating-days">
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-300" data-testid="text-operating-days">
                 {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">days</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">days</p>
             </CardContent>
           </Card>
         </div>

@@ -63,11 +63,11 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
 
   return (
     <Link href={generateYieldUrl(opportunity)} className="block">
-      <Card className={`bg-card cursor-pointer ${showHeaders ? 'rounded-xl shadow-sm border border-border hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
-        <CardContent className="p-1.5 sm:p-3">
-        <div className="flex items-center flex-col sm:flex-row gap-2 sm:gap-0">
+      <Card className={`bg-card cursor-pointer ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-sm border border-border hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
+        <CardContent className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
           {/* Left section - Token and Platform info */}
-          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 w-full sm:w-auto">
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
             {/* Subcategory Icon First */}
             <div className="flex-shrink-0">
               {opportunity.categories && opportunity.categories.length > 0 && (() => {
