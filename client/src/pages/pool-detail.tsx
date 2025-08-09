@@ -3,8 +3,8 @@ import { useParams, Link } from "wouter";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
-import { useEffect } from "react";
-import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, Calendar, TrendingUp, TrendingDown, Minus, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, Calendar, TrendingUp, TrendingDown, Minus, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe, Zap, Brain, Target, Waves } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,8 @@ import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
 import { formatTimeAgo } from "@/lib/utils";
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart, Bar } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { YieldOpportunity } from "@/types";
 
 // Utility function to format TVL values
@@ -739,168 +740,366 @@ export default function PoolDetail() {
           </div>
         )}
 
-        {/* Flow Analysis Section */}
+        {/* Advanced Multi-Period Flow Analysis Section */}
         {tokenTransfers && tokenTransfers.flowAnalysis && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2 text-blue-600" />
-                24-Hour Token Flow Analysis
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                24h inflow vs outflow trends for {tokenTransfers.tokenAddress}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {tokenTransfersLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-3 text-gray-600 dark:text-gray-400">Analyzing flows...</span>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Flow Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
-                      <div className="flex items-center">
-                        <ArrowDown className="w-4 h-4 text-green-600 mr-2" />
-                        <span className="text-sm font-medium text-green-800 dark:text-green-300">24h Inflow</span>
-                      </div>
-                      <p className="text-lg font-bold text-green-900 dark:text-green-100 mt-1">
-                        {tokenTransfers.flowAnalysis.totalInflow >= 1000000 
-                          ? `${(tokenTransfers.flowAnalysis.totalInflow / 1000000).toFixed(2)}M`
-                          : tokenTransfers.flowAnalysis.totalInflow >= 1000 
-                          ? `${(tokenTransfers.flowAnalysis.totalInflow / 1000).toFixed(2)}K`
-                          : tokenTransfers.flowAnalysis.totalInflow.toFixed(2)
-                        }
-                      </p>
-                    </div>
-                    
-                    <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
-                      <div className="flex items-center">
-                        <ArrowUp className="w-4 h-4 text-red-600 mr-2" />
-                        <span className="text-sm font-medium text-red-800 dark:text-red-300">24h Outflow</span>
-                      </div>
-                      <p className="text-lg font-bold text-red-900 dark:text-red-100 mt-1">
-                        {tokenTransfers.flowAnalysis.totalOutflow >= 1000000 
-                          ? `${(tokenTransfers.flowAnalysis.totalOutflow / 1000000).toFixed(2)}M`
-                          : tokenTransfers.flowAnalysis.totalOutflow >= 1000 
-                          ? `${(tokenTransfers.flowAnalysis.totalOutflow / 1000).toFixed(2)}K`
-                          : tokenTransfers.flowAnalysis.totalOutflow.toFixed(2)
-                        }
-                      </p>
-                    </div>
-                    
-                    <div className={`p-4 rounded-lg border ${
-                      tokenTransfers.flowAnalysis.netFlow > 0 
-                        ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                        : tokenTransfers.flowAnalysis.netFlow < 0
-                        ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
-                        : 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800'
-                    }`}>
-                      <div className="flex items-center">
-                        {tokenTransfers.flowAnalysis.netFlow > 0 ? (
-                          <TrendingUp className="w-4 h-4 text-blue-600 mr-2" />
-                        ) : tokenTransfers.flowAnalysis.netFlow < 0 ? (
-                          <TrendingDown className="w-4 h-4 text-orange-600 mr-2" />
-                        ) : (
-                          <Minus className="w-4 h-4 text-gray-600 mr-2" />
-                        )}
-                        <span className="text-sm font-medium">24h Net Flow</span>
-                      </div>
-                      <p className={`text-lg font-bold mt-1 ${
-                        tokenTransfers.flowAnalysis.netFlow > 0 
-                          ? 'text-blue-900 dark:text-blue-100'
-                          : tokenTransfers.flowAnalysis.netFlow < 0
-                          ? 'text-orange-900 dark:text-orange-100'
-                          : 'text-gray-900 dark:text-gray-100'
-                      }`}>
-                        {Math.abs(tokenTransfers.flowAnalysis.netFlow) >= 1000000 
-                          ? `${tokenTransfers.flowAnalysis.netFlow >= 0 ? '+' : '-'}${(Math.abs(tokenTransfers.flowAnalysis.netFlow) / 1000000).toFixed(2)}M`
-                          : Math.abs(tokenTransfers.flowAnalysis.netFlow) >= 1000 
-                          ? `${tokenTransfers.flowAnalysis.netFlow >= 0 ? '+' : '-'}${(Math.abs(tokenTransfers.flowAnalysis.netFlow) / 1000).toFixed(2)}K`
-                          : `${tokenTransfers.flowAnalysis.netFlow >= 0 ? '+' : ''}${tokenTransfers.flowAnalysis.netFlow.toFixed(2)}`
-                        }
-                      </p>
-                    </div>
-                    
-                    <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-                      <div className="flex items-center">
-                        <Badge 
-                          variant="outline" 
-                          className={`${
-                            tokenTransfers.flowAnalysis.isGrowing 
-                              ? 'bg-green-100 text-green-800 border-green-200' 
-                              : 'bg-red-100 text-red-800 border-red-200'
-                          }`}
-                        >
-                          {tokenTransfers.flowAnalysis.isGrowing ? 'Growing' : 'Declining'}
-                        </Badge>
-                      </div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-2">
-                        Trend: {tokenTransfers.flowAnalysis.trend}
-                      </p>
-                    </div>
+          <div className="space-y-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Waves className="w-5 h-5 mr-2 text-blue-600" />
+                  Token Flow Analysis - {tokenTransfers.tokenSymbol || 'TOKEN'}
+                </CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Comprehensive flow metrics and intelligent insights
+                </p>
+              </CardHeader>
+              <CardContent>
+                {tokenTransfersLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-3 text-gray-600 dark:text-gray-400">Analyzing flows...</span>
                   </div>
+                ) : tokenTransfers.flowAnalysis.periods ? (
+                  <div className="space-y-6">
+                    {/* Period Selector Tabs */}
+                    <Tabs defaultValue="24h" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="24h">24 Hours</TabsTrigger>
+                        <TabsTrigger value="7d">7 Days</TabsTrigger>
+                        <TabsTrigger value="30d">30 Days</TabsTrigger>
+                        <TabsTrigger value="all">All Time</TabsTrigger>
+                      </TabsList>
+                      
+                      {Object.entries(tokenTransfers.flowAnalysis.periods).map(([period, metrics]: [string, any]) => (
+                        <TabsContent key={period} value={period} className="space-y-4">
+                          {/* Flow Metrics Grid */}
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                              <div className="flex items-center">
+                                <ArrowDown className="w-4 h-4 text-green-600 mr-2" />
+                                <span className="text-sm font-medium text-green-800 dark:text-green-300">Inflow</span>
+                              </div>
+                              <p className="text-lg font-bold text-green-900 dark:text-green-100 mt-1">
+                                {metrics.inflow >= 1000000 
+                                  ? `${(metrics.inflow / 1000000).toFixed(2)}M`
+                                  : metrics.inflow >= 1000 
+                                  ? `${(metrics.inflow / 1000).toFixed(2)}K`
+                                  : metrics.inflow.toFixed(2)
+                                }
+                              </p>
+                              <p className="text-xs text-green-700 dark:text-green-400 mt-1">
+                                {metrics.txCount} txns
+                              </p>
+                            </div>
+                            
+                            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+                              <div className="flex items-center">
+                                <ArrowUp className="w-4 h-4 text-red-600 mr-2" />
+                                <span className="text-sm font-medium text-red-800 dark:text-red-300">Outflow</span>
+                              </div>
+                              <p className="text-lg font-bold text-red-900 dark:text-red-100 mt-1">
+                                {metrics.outflow >= 1000000 
+                                  ? `${(metrics.outflow / 1000000).toFixed(2)}M`
+                                  : metrics.outflow >= 1000 
+                                  ? `${(metrics.outflow / 1000).toFixed(2)}K`
+                                  : metrics.outflow.toFixed(2)
+                                }
+                              </p>
+                              <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+                                Avg: {metrics.avgSize >= 1000 
+                                  ? `${(metrics.avgSize / 1000).toFixed(1)}K`
+                                  : metrics.avgSize.toFixed(1)
+                                }
+                              </p>
+                            </div>
+                            
+                            <div className={`p-4 rounded-lg border ${
+                              metrics.netFlow > 0 
+                                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                : metrics.netFlow < 0
+                                ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+                                : 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800'
+                            }`}>
+                              <div className="flex items-center">
+                                {metrics.netFlow > 0 ? (
+                                  <TrendingUp className="w-4 h-4 text-blue-600 mr-2" />
+                                ) : metrics.netFlow < 0 ? (
+                                  <TrendingDown className="w-4 h-4 text-orange-600 mr-2" />
+                                ) : (
+                                  <Minus className="w-4 h-4 text-gray-600 mr-2" />
+                                )}
+                                <span className="text-sm font-medium">Net Flow</span>
+                              </div>
+                              <p className={`text-lg font-bold mt-1 ${
+                                metrics.netFlow > 0 
+                                  ? 'text-blue-900 dark:text-blue-100'
+                                  : metrics.netFlow < 0
+                                  ? 'text-orange-900 dark:text-orange-100'
+                                  : 'text-gray-900 dark:text-gray-100'
+                              }`}>
+                                {Math.abs(metrics.netFlow) >= 1000000 
+                                  ? `${metrics.netFlow >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow) / 1000000).toFixed(2)}M`
+                                  : Math.abs(metrics.netFlow) >= 1000 
+                                  ? `${metrics.netFlow >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow) / 1000).toFixed(2)}K`
+                                  : `${metrics.netFlow >= 0 ? '+' : ''}${metrics.netFlow.toFixed(2)}`
+                                }
+                              </p>
+                            </div>
+                            
+                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                              <div className="flex items-center">
+                                <Users className="w-4 h-4 text-purple-600 mr-2" />
+                                <span className="text-sm font-medium text-purple-800 dark:text-purple-300">Active Addresses</span>
+                              </div>
+                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100 mt-1">
+                                {metrics.uniqueAddressCount || 0}
+                              </p>
+                              <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
+                                Unique participants
+                              </p>
+                            </div>
+                          </div>
+                        </TabsContent>
+                      ))}
+                    </Tabs>
 
-                  {/* Flow Chart */}
-                  {tokenTransfers.flowAnalysis.flowData && tokenTransfers.flowAnalysis.flowData.length > 0 && (
-                    <div className="mt-6">
-                      <h4 className="text-lg font-medium mb-4">Flow Trend Chart</h4>
-                      <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={tokenTransfers.flowAnalysis.flowData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="timestamp" 
-                              tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
-                            />
-                            <YAxis tickFormatter={(value) => 
-                              value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` :
-                              value >= 1000 ? `${(value / 1000).toFixed(1)}K` :
-                              value.toFixed(0)
-                            } />
-                            <Tooltip
-                              labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
-                              formatter={(value: number, name: string) => [
-                                value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
-                                value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
-                                value.toFixed(2),
-                                name === 'inflow' ? 'Inflow' : name === 'outflow' ? 'Outflow' : 'Net Flow'
-                              ]}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="inflow"
-                              stackId="1"
-                              stroke="#10b981"
-                              fill="#10b981"
-                              fillOpacity={0.6}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="outflow"
-                              stackId="2"
-                              stroke="#ef4444"
-                              fill="#ef4444"
-                              fillOpacity={0.6}
-                            />
-                            <Line
-                              type="monotone"
-                              dataKey="netFlow"
-                              stroke="#3b82f6"
-                              strokeWidth={2}
-                              dot={false}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                    {/* Advanced Analytics Cards */}
+                    {tokenTransfers.flowAnalysis.advanced && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Whale Activity Card */}
+                        <Card className="border-2 border-indigo-200 dark:border-indigo-800">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center">
+                              <Target className="w-4 h-4 mr-2 text-indigo-600" />
+                              Whale Activity
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <Badge variant={tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? "destructive" : "secondary"}>
+                                {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? 'DETECTED' : 'NOT DETECTED'}
+                              </Badge>
+                              {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected && (
+                                <>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    {tokenTransfers.flowAnalysis.advanced.whaleActivity.count} whale addresses
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Volume: {tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume >= 1000000 
+                                      ? `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000000).toFixed(2)}M`
+                                      : `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000).toFixed(2)}K`
+                                    }
+                                  </p>
+                                </>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Smart Money Signal Card */}
+                        <Card className="border-2 border-green-200 dark:border-green-800">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center">
+                              <Brain className="w-4 h-4 mr-2 text-green-600" />
+                              Smart Money
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <Badge variant={tokenTransfers.flowAnalysis.advanced.smartMoney.signal === 'strong' ? "default" : "outline"}>
+                                {tokenTransfers.flowAnalysis.advanced.smartMoney.signal.toUpperCase()} SIGNAL
+                              </Badge>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length} smart addresses
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Flow Velocity Card */}
+                        <Card className="border-2 border-yellow-200 dark:border-yellow-800">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center">
+                              <Zap className="w-4 h-4 mr-2 text-yellow-600" />
+                              Flow Velocity
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <Badge variant={
+                                tokenTransfers.flowAnalysis.advanced.flowVelocity.trend === 'accelerating' ? "default" :
+                                tokenTransfers.flowAnalysis.advanced.flowVelocity.trend === 'decelerating' ? "destructive" :
+                                "secondary"
+                              }>
+                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.trend.toUpperCase()}
+                              </Badge>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent > 0 ? '+' : ''}
+                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent.toFixed(1)}% change
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Market Phase Card */}
+                        {tokenTransfers.flowAnalysis.advanced.marketPhase && (
+                          <Card className="border-2 border-blue-200 dark:border-blue-800">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm flex items-center">
+                                <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                                Market Phase
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2">
+                                <Badge variant={
+                                  tokenTransfers.flowAnalysis.advanced.marketPhase.current === 'accumulation' ? "default" :
+                                  tokenTransfers.flowAnalysis.advanced.marketPhase.current === 'distribution' ? "destructive" :
+                                  "secondary"
+                                }>
+                                  {tokenTransfers.flowAnalysis.advanced.marketPhase.current.toUpperCase()}
+                                </Badge>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Confidence: {(tokenTransfers.flowAnalysis.advanced.marketPhase.confidence * 100).toFixed(0)}%
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    )}
+
+                    {/* Flow Charts */}
+                    {tokenTransfers.flowAnalysis.chartData && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Flow Visualization</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <Tabs defaultValue="hourly" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                              <TabsTrigger value="hourly">24H Hourly</TabsTrigger>
+                              <TabsTrigger value="daily">30D Daily</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="hourly">
+                              {tokenTransfers.flowAnalysis.chartData.hourly && tokenTransfers.flowAnalysis.chartData.hourly.length > 0 ? (
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <ComposedChart data={tokenTransfers.flowAnalysis.chartData.hourly}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis 
+                                        dataKey="timestamp" 
+                                        tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                      />
+                                      <YAxis tickFormatter={(value) => 
+                                        value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` :
+                                        value >= 1000 ? `${(value / 1000).toFixed(1)}K` :
+                                        value.toFixed(0)
+                                      } />
+                                      <Tooltip
+                                        labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
+                                        formatter={(value: number) => [
+                                          value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
+                                          value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
+                                          value.toFixed(2)
+                                        ]}
+                                      />
+                                      <Legend />
+                                      <Bar dataKey="inflow" fill="#10b981" name="Inflow" />
+                                      <Bar dataKey="outflow" fill="#ef4444" name="Outflow" />
+                                      <Line type="monotone" dataKey="netFlow" stroke="#3b82f6" strokeWidth={2} name="Net Flow" />
+                                    </ComposedChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              ) : (
+                                <p className="text-center text-gray-500 py-8">No hourly data available</p>
+                              )}
+                            </TabsContent>
+                            
+                            <TabsContent value="daily">
+                              {tokenTransfers.flowAnalysis.chartData.daily && tokenTransfers.flowAnalysis.chartData.daily.length > 0 ? (
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={tokenTransfers.flowAnalysis.chartData.daily}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis 
+                                        dataKey="timestamp" 
+                                        tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
+                                      />
+                                      <YAxis tickFormatter={(value) => 
+                                        value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` :
+                                        value >= 1000 ? `${(value / 1000).toFixed(1)}K` :
+                                        value.toFixed(0)
+                                      } />
+                                      <Tooltip
+                                        labelFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
+                                        formatter={(value: number) => [
+                                          value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
+                                          value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
+                                          value.toFixed(2)
+                                        ]}
+                                      />
+                                      <Legend />
+                                      <Area type="monotone" dataKey="inflow" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Inflow" />
+                                      <Area type="monotone" dataKey="outflow" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} name="Outflow" />
+                                    </AreaChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              ) : (
+                                <p className="text-center text-gray-500 py-8">No daily data available</p>
+                              )}
+                            </TabsContent>
+                          </Tabs>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Top Whales List */}
+                    {tokenTransfers.flowAnalysis.advanced?.whaleActivity?.topWhales && 
+                     tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm flex items-center">
+                            <Target className="w-4 h-4 mr-2" />
+                            Top Whale Addresses
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            {tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.map((whale: any, index: number) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs font-mono">{whale.address}</span>
+                                  <Badge variant={whale.type === 'accumulator' ? "default" : "destructive"} className="text-xs">
+                                    {whale.type}
+                                  </Badge>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-medium">
+                                    {whale.totalVolume >= 1000000 
+                                      ? `${(whale.totalVolume / 1000000).toFixed(2)}M`
+                                      : `${(whale.totalVolume / 1000).toFixed(2)}K`
+                                    }
+                                  </p>
+                                  <p className="text-xs text-gray-500">{whale.txCount} txns</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                ) : (
+                  // Fallback for old format
+                  <div className="text-center text-gray-500 py-8">
+                    No flow analysis data available
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Token Transfers Section */}

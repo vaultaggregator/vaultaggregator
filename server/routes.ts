@@ -2522,10 +2522,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Token transfers endpoint
+  // Enhanced Token Flow Analysis Endpoint with Advanced Metrics
   app.get("/api/pools/:poolId/token-transfers", async (req, res) => {
     try {
-      const { page = 1, limit = 20 } = req.query;
+      const { page = 1, limit = 100 } = req.query; // Increased default limit for better analysis
       const pool = await storage.getPoolById(req.params.poolId);
       
       if (!pool) {
@@ -2545,151 +2545,321 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No underlying token found for this pool" });
       }
 
-      // Fetch token transfers using Etherscan
+      // Fetch more transfers for comprehensive analysis
       const { EtherscanService } = await import("./services/etherscanService");
       const etherscan = new EtherscanService();
       
+      // Fetch up to 1000 transfers for proper time coverage
       const transfers = await etherscan.getTokenTransfers(
         underlyingToken, 
-        Number(page), 
-        Number(limit)
+        1, 
+        1000 // Get much more data for accurate multi-period analysis
       );
 
-      // Calculate inflow/outflow metrics for last 24 hours
+      if (!transfers || transfers.length === 0) {
+        return res.json({
+          tokenAddress: underlyingToken,
+          transfers: [],
+          flowAnalysis: {
+            periods: {
+              '24h': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 },
+              '7d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 },
+              '30d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 },
+              'all': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 }
+            },
+            advanced: {
+              whaleActivity: { detected: false },
+              smartMoney: { movements: [] },
+              flowVelocity: { trend: 'neutral' }
+            }
+          }
+        });
+      }
+
       const decimals = parseInt(transfers[0]?.tokenDecimal || '18');
-      let totalInflow = 0;
-      let totalOutflow = 0;
-      const flowData: Array<{timestamp: number, inflow: number, outflow: number, netFlow: number}> = [];
-      
-      // Filter for last 24 hours
+      const tokenSymbol = transfers[0]?.tokenSymbol || 'TOKEN';
       const now = Date.now();
-      const twentyFourHoursAgo = now - (24 * 60 * 60 * 1000);
       
-      // Group transfers by hour for chart data
-      const hourlyFlows = new Map<number, {inflow: number, outflow: number}>();
+      // Time boundaries for different periods
+      const periods = {
+        '24h': now - (24 * 60 * 60 * 1000),
+        '7d': now - (7 * 24 * 60 * 60 * 1000),
+        '30d': now - (30 * 24 * 60 * 60 * 1000),
+        'all': 0
+      };
       
+      // Initialize metrics for each period
+      const flowMetrics: any = {
+        '24h': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() },
+        '7d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() },
+        '30d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() },
+        'all': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() }
+      };
+      
+      // Chart data structures
+      const hourlyData = new Map<number, {inflow: number, outflow: number, volume: number, txCount: number}>();
+      const dailyData = new Map<number, {inflow: number, outflow: number, volume: number, txCount: number}>();
+      
+      // Advanced analytics structures
+      const addressActivity = new Map<string, {inflow: number, outflow: number, txCount: number, isWhale: boolean, label?: string}>();
+      const transferSizes: number[] = [];
+      
+      // Calculate median transfer size for whale detection
+      const calculateMedianTransferSize = () => {
+        if (transferSizes.length === 0) return 0;
+        const sorted = [...transferSizes].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      };
+      
+      // Protocol addresses for accurate flow detection
+      const protocolAddresses = {
+        lido: [
+          '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH token contract
+          '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0', // wstETH wrapper  
+          '0x1643e812ae58766192cf7d2cf9567df2c37e9b7f', // Lido: Oracle
+          '0x442af784a788a5bd6f989e78c9421f53b84d57d5', // Lido: NodeOperatorsRegistry  
+          '0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb', // Lido: Staking Router
+          '0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f', // Lido: Execution Layer Rewards Vault
+          '0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e', // Lido: stETH/ETH Curve Pool
+          '0x21e27a5e5513d6e65c4f830167390997aa84843a' // Additional Lido-related address
+        ]
+      };
+      
+      // Process all transfers for comprehensive analysis
       for (const transfer of transfers) {
         const timestamp = parseInt(transfer.timeStamp) * 1000;
-        
-        // Skip transfers older than 24 hours
-        if (timestamp < twentyFourHoursAgo) {
-          continue;
-        }
-        
         const value = parseFloat(transfer.value) / Math.pow(10, decimals);
-        const hourTimestamp = Math.floor(timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60); // Round to hour
-        
-        // Enhanced flow analysis with protocol-specific logic
         const fromAddr = transfer.from.toLowerCase();
         const toAddr = transfer.to.toLowerCase();
         
-        // Known protocol addresses for better classification (all lowercase)
-        const protocolAddresses = {
-          // Lido stETH specific addresses
-          lido: [
-            '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH token contract
-            '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0', // wstETH wrapper  
-            '0x1643e812ae58766192cf7d2cf9567df2c37e9b7f', // Lido: Oracle
-            '0x442af784a788a5bd6f989e78c9421f53b84d57d5', // Lido: NodeOperatorsRegistry  
-            '0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb', // Lido: Staking Router
-            '0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f', // Lido: Execution Layer Rewards Vault
-            '0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e', // Lido: stETH/ETH Curve Pool
-            '0x21e27a5e5513d6e65c4f830167390997aa84843a' // Additional Lido-related address seen in transfers
-          ]
-        };
+        // Skip zero-value transfers
+        if (value === 0) continue;
         
-        // Zero address operations (minting/burning)
+        // Track transfer sizes for whale detection
+        transferSizes.push(value);
+        
+        // Calculate chart data timestamps
+        const hourTimestamp = Math.floor(timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60);
+        const dayTimestamp = Math.floor(timestamp / (1000 * 60 * 60 * 24)) * (1000 * 60 * 60 * 24);
+        
+        // Determine flow direction with protocol awareness
         const isZeroAddress = (addr: string) => addr === '0x0000000000000000000000000000000000000000';
-        const isMinting = isZeroAddress(fromAddr);
-        const isBurning = isZeroAddress(toAddr);
+        const isProtocolAddress = (addr: string) => protocolAddresses.lido.includes(addr);
         
-        // Protocol interaction detection  
-        const isFromProtocol = protocolAddresses.lido.some(addr => fromAddr === addr);
-        const isToProtocol = protocolAddresses.lido.some(addr => toAddr === addr);
-        
-        // Enhanced classification logic
         let isInflow = false;
         let isOutflow = false;
         
-        // Protocol flow analysis complete
-        
-        if (isMinting) {
-          // New tokens created = inflow to ecosystem
+        // Classification logic
+        if (isZeroAddress(fromAddr)) {
+          // Minting = inflow
           isInflow = true;
-        } else if (isBurning) {
-          // Tokens destroyed = outflow from ecosystem  
+        } else if (isZeroAddress(toAddr)) {
+          // Burning = outflow
           isOutflow = true;
-        } else if (isToProtocol && !isFromProtocol) {
-          // User -> Protocol = inflow (staking, deposits)
+        } else if (isProtocolAddress(toAddr) && !isProtocolAddress(fromAddr)) {
+          // User -> Protocol = inflow (staking/deposits)
           isInflow = true;
-        } else if (isFromProtocol && !isToProtocol) {
-          // Protocol -> User = outflow (unstaking, withdrawals)
+        } else if (isProtocolAddress(fromAddr) && !isProtocolAddress(toAddr)) {
+          // Protocol -> User = outflow (unstaking/withdrawals)
           isOutflow = true;
         }
-        // Note: User-to-user transfers are neutral and don't count as protocol flows
+        // User-to-user transfers are neutral (not counted)
         
-        if (!hourlyFlows.has(hourTimestamp)) {
-          hourlyFlows.set(hourTimestamp, {inflow: 0, outflow: 0});
+        // Update metrics for each applicable period
+        Object.entries(periods).forEach(([period, startTime]) => {
+          if (timestamp >= startTime) {
+            const metrics = flowMetrics[period];
+            
+            if (isInflow) {
+              metrics.inflow += value;
+              metrics.txCount++;
+            } else if (isOutflow) {
+              metrics.outflow += value;
+              metrics.txCount++;
+            }
+            
+            // Track unique addresses
+            metrics.uniqueAddresses.add(fromAddr);
+            metrics.uniqueAddresses.add(toAddr);
+          }
+        });
+        
+        // Update chart data
+        if (!hourlyData.has(hourTimestamp)) {
+          hourlyData.set(hourTimestamp, {inflow: 0, outflow: 0, volume: 0, txCount: 0});
+        }
+        if (!dailyData.has(dayTimestamp)) {
+          dailyData.set(dayTimestamp, {inflow: 0, outflow: 0, volume: 0, txCount: 0});
         }
         
-        const hourData = hourlyFlows.get(hourTimestamp)!;
+        const hourData = hourlyData.get(hourTimestamp)!;
+        const dayData = dailyData.get(dayTimestamp)!;
         
         if (isInflow) {
-          totalInflow += value;
           hourData.inflow += value;
+          dayData.inflow += value;
         } else if (isOutflow) {
-          totalOutflow += value;
           hourData.outflow += value;
+          dayData.outflow += value;
         }
-        // Note: User-to-user transfers are neutral and ignored for protocol flow calculation
+        
+        hourData.volume += value;
+        hourData.txCount++;
+        dayData.volume += value;
+        dayData.txCount++;
+        
+        // Track address activity for whale detection
+        if (!addressActivity.has(fromAddr)) {
+          addressActivity.set(fromAddr, {inflow: 0, outflow: 0, txCount: 0, isWhale: false});
+        }
+        if (!addressActivity.has(toAddr)) {
+          addressActivity.set(toAddr, {inflow: 0, outflow: 0, txCount: 0, isWhale: false});
+        }
+        
+        addressActivity.get(fromAddr)!.outflow += value;
+        addressActivity.get(fromAddr)!.txCount++;
+        addressActivity.get(toAddr)!.inflow += value;
+        addressActivity.get(toAddr)!.txCount++;
       }
       
-      // Convert hourly data to array for chart
-      Array.from(hourlyFlows.entries())
-        .sort(([a], [b]) => a - b)
-        .forEach(([timestamp, flows]) => {
-          flowData.push({
+      // Calculate metrics and finalize periods
+      Object.keys(flowMetrics).forEach(period => {
+        const metrics = flowMetrics[period];
+        metrics.netFlow = metrics.inflow - metrics.outflow;
+        metrics.uniqueAddressCount = metrics.uniqueAddresses.size;
+        metrics.avgSize = metrics.txCount > 0 ? (metrics.inflow + metrics.outflow) / metrics.txCount : 0;
+        delete metrics.uniqueAddresses; // Remove Set from response
+      });
+      
+      // Whale detection - find addresses with large volumes
+      const medianTransferSize = calculateMedianTransferSize();
+      const whaleThreshold = medianTransferSize * 10; // 10x median = whale
+      
+      const whales = Array.from(addressActivity.entries())
+        .filter(([_, activity]) => (activity.inflow + activity.outflow) > whaleThreshold)
+        .map(([address, activity]) => ({
+          address: address.slice(0, 6) + '...' + address.slice(-4), // Abbreviated address
+          totalVolume: activity.inflow + activity.outflow,
+          netFlow: activity.inflow - activity.outflow,
+          txCount: activity.txCount,
+          type: activity.inflow > activity.outflow ? 'accumulator' : 'distributor'
+        }))
+        .sort((a, b) => b.totalVolume - a.totalVolume)
+        .slice(0, 10); // Top 10 whales
+      
+      // Smart money detection - addresses with consistent profitable patterns
+      const smartMoneyAddresses = Array.from(addressActivity.entries())
+        .filter(([_, activity]) => activity.txCount >= 5) // Minimum 5 transactions
+        .map(([address, activity]) => ({
+          address: address.slice(0, 6) + '...' + address.slice(-4),
+          profitability: activity.inflow - activity.outflow,
+          txCount: activity.txCount,
+          avgTxSize: (activity.inflow + activity.outflow) / activity.txCount
+        }))
+        .filter(addr => addr.profitability > 0) // Profitable addresses
+        .sort((a, b) => b.profitability - a.profitability)
+        .slice(0, 5); // Top 5 smart money addresses
+      
+      // Flow velocity analysis
+      const recentFlows = transfers.slice(0, 100); // Last 100 transfers
+      const oldFlows = transfers.slice(100, 200); // Previous 100 transfers
+      
+      const recentVolume = recentFlows.reduce((sum, t) => sum + parseFloat(t.value) / Math.pow(10, decimals), 0);
+      const oldVolume = oldFlows.reduce((sum, t) => sum + parseFloat(t.value) / Math.pow(10, decimals), 0);
+      
+      const velocityTrend = recentVolume > oldVolume * 1.2 ? 'accelerating' : 
+                           recentVolume < oldVolume * 0.8 ? 'decelerating' : 'stable';
+      
+      // Accumulation/Distribution phase detection
+      const last24hMetrics = flowMetrics['24h'];
+      const last7dMetrics = flowMetrics['7d'];
+      
+      const phase = last24hMetrics.netFlow > 0 && last7dMetrics.netFlow > 0 ? 'accumulation' :
+                   last24hMetrics.netFlow < 0 && last7dMetrics.netFlow < 0 ? 'distribution' :
+                   'transition';
+      
+      // Prepare chart data
+      const chartData = {
+        hourly: Array.from(hourlyData.entries())
+          .map(([timestamp, data]) => ({
             timestamp,
-            inflow: flows.inflow,
-            outflow: flows.outflow,
-            netFlow: flows.inflow - flows.outflow
-          });
-        });
+            inflow: data.inflow,
+            outflow: data.outflow,
+            netFlow: data.inflow - data.outflow,
+            volume: data.volume,
+            txCount: data.txCount
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp)
+          .slice(-24), // Last 24 hours
+        daily: Array.from(dailyData.entries())
+          .map(([timestamp, data]) => ({
+            timestamp,
+            inflow: data.inflow,
+            outflow: data.outflow,
+            netFlow: data.inflow - data.outflow,
+            volume: data.volume,
+            txCount: data.txCount
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp)
+          .slice(-30) // Last 30 days
+      };
+      
+      // Predictive insights
+      const insights = {
+        trend: last24hMetrics.netFlow > 0 ? 'bullish' : last24hMetrics.netFlow < 0 ? 'bearish' : 'neutral',
+        momentum: velocityTrend,
+        phase,
+        whaleActivity: whales.length > 0 ? 'high' : 'low',
+        smartMoneySignal: smartMoneyAddresses.length > 3 ? 'strong' : 'weak',
+        volumeProfile: {
+          '24h': last24hMetrics.inflow + last24hMetrics.outflow,
+          '7d': last7dMetrics.inflow + last7dMetrics.outflow,
+          '30d': flowMetrics['30d'].inflow + flowMetrics['30d'].outflow
+        }
+      };
 
-      const netFlow = totalInflow - totalOutflow;
-      const flowRatio = totalOutflow > 0 ? totalInflow / totalOutflow : totalInflow > 0 ? 999 : 1;
-      
-      // Filter transfers for display (only last 24h)
-      const recentTransfers = transfers.filter(t => parseInt(t.timeStamp) * 1000 >= twentyFourHoursAgo);
-      
       res.json({
         tokenAddress: underlyingToken,
-        transfers: recentTransfers.map(transfer => ({
-          hash: transfer.hash,
-          from: transfer.from,
-          to: transfer.to,
-          value: transfer.value,
-          tokenDecimal: transfer.tokenDecimal,
-          tokenSymbol: transfer.tokenSymbol,
-          tokenName: transfer.tokenName,
-          timestamp: transfer.timeStamp,
-          blockNumber: transfer.blockNumber,
-          gasUsed: transfer.gasUsed,
-          gasPrice: transfer.gasPrice
-        })),
+        tokenSymbol,
+        transfers: transfers.slice(0, Math.min(Number(limit), 50)), // Limited for display
         flowAnalysis: {
-          totalInflow,
-          totalOutflow,
-          netFlow,
-          flowRatio,
-          isGrowing: netFlow > 0,
-          trend: netFlow > 0 ? 'positive' : netFlow < 0 ? 'negative' : 'neutral',
-          flowData,
-          period: '24h' // Explicitly indicate this is 24-hour data
-        },
-        page: Number(page),
-        totalRecords: recentTransfers.length,
-        hasMore: transfers.length === Number(limit)
+          periods: flowMetrics,
+          advanced: {
+            whaleActivity: {
+              detected: whales.length > 0,
+              count: whales.length,
+              topWhales: whales.slice(0, 5),
+              totalWhaleVolume: whales.reduce((sum, w) => sum + w.totalVolume, 0)
+            },
+            smartMoney: {
+              movements: smartMoneyAddresses,
+              signal: insights.smartMoneySignal
+            },
+            flowVelocity: {
+              trend: velocityTrend,
+              recentVolume,
+              previousVolume: oldVolume,
+              changePercent: oldVolume > 0 ? ((recentVolume - oldVolume) / oldVolume) * 100 : 0
+            },
+            marketPhase: {
+              current: phase,
+              confidence: Math.abs(last24hMetrics.netFlow) / (last24hMetrics.inflow + last24hMetrics.outflow) || 0
+            }
+          },
+          chartData,
+          insights,
+          statistics: {
+            medianTransferSize,
+            totalAddresses: addressActivity.size,
+            activeAddresses24h: flowMetrics['24h'].uniqueAddressCount,
+            volumeDistribution: {
+              small: transferSizes.filter(s => s < medianTransferSize * 0.5).length,
+              medium: transferSizes.filter(s => s >= medianTransferSize * 0.5 && s < medianTransferSize * 2).length,
+              large: transferSizes.filter(s => s >= medianTransferSize * 2).length
+            }
+          }
+        }
       });
     } catch (error) {
       console.error("Error fetching token transfers:", error);
