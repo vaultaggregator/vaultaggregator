@@ -2532,14 +2532,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch multiple analytics in parallel
       const [
         correlations,
-        gasOptimization,
         mevActivity,
         networkEffect,
         behavioralInsights,
         riskScore
       ] = await Promise.all([
         service.findPoolCorrelations(poolId),
-        service.analyzeGasOptimization(poolId),
         service.detectMEVActivity(poolId),
         service.analyzeNetworkEffects(poolId),
         service.generateBehavioralInsights(poolId),
@@ -2548,7 +2546,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         correlations,
-        gasOptimization,
         mevActivity,
         networkEffect,
         behavioralInsights,

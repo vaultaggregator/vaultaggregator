@@ -71,7 +71,6 @@ The backend now implements a comprehensive multi-source data collection and anal
 - **Flow Analysis**: Sophisticated protocol-aware token flow analysis distinguishing between actual staking/unstaking activities vs regular user transfers, providing accurate inflow/outflow metrics for investment decisions
 - **Cross-Pool Analysis Service**: Revolutionary analytics engine providing:
   - MEV (Maximal Extractable Value) detection and risk assessment
-  - Gas optimization intelligence with best interaction times
   - Pool correlation mapping and liquidity migration patterns
   - Network effects analysis and systemic risk scoring
   - Behavioral pattern recognition and AI predictions
