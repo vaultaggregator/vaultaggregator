@@ -67,59 +67,60 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
         <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
           {/* Left section - Token and Platform info */}
-          <div className="flex items-center space-x-3 min-w-0 flex-1">
-            {/* Subcategory Icon First */}
-            <div className="flex-shrink-0">
-              {opportunity.categories && opportunity.categories.length > 0 && (() => {
-                // Check all categories for USDC or stETH, not just the first one
-                const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
-                const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
-                
-                if (usdcCategory) {
-                  return (
-                    <img 
-                      src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
-                      alt="USDC"
-                      className="w-4 h-4 flex-shrink-0 rounded-full"
-                      data-testid={`logo-usdc-${opportunity.id}`}
-                    />
-                  );
-                } else if (stethCategory) {
-                  return (
-                    <img 
-                      src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
-                      alt="stETH"
-                      className="w-4 h-4 flex-shrink-0 rounded-full"
-                      data-testid={`logo-steth-${opportunity.id}`}
-                    />
-                  );
-                }
-                
-                // Fall back to SVG icons for other categories
-                const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                return <CategoryIcon size={16} className="flex-shrink-0" />;
-              })()}
-            </div>
-            
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-base text-foreground truncate mb-1" data-testid={`text-token-pair-${opportunity.id}`}>
-                {opportunity.tokenPair}
-              </h3>
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            {/* Subcategory Icon and Pool Name together */}
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <div className="flex-shrink-0">
+                {opportunity.categories && opportunity.categories.length > 0 && (() => {
+                  // Check all categories for USDC or stETH, not just the first one
+                  const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
+                  const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
+                  
+                  if (usdcCategory) {
+                    return (
+                      <img 
+                        src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
+                        alt="USDC"
+                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        data-testid={`logo-usdc-${opportunity.id}`}
+                      />
+                    );
+                  } else if (stethCategory) {
+                    return (
+                      <img 
+                        src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
+                        alt="stETH"
+                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        data-testid={`logo-steth-${opportunity.id}`}
+                      />
+                    );
+                  }
+                  
+                  // Fall back to SVG icons for other categories
+                  const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
+                  return <CategoryIcon size={24} className="flex-shrink-0" />;
+                })()}
+              </div>
               
-              
-              {showNetworkName && (
-                <div className="flex items-center space-x-2 mb-0.5">
-                  <div 
-                    className="flex items-center justify-center flex-shrink-0"
-                    data-testid={`badge-chain-${opportunity.id}`}
-                  >
-                    {(() => {
-                      const ChainIcon = getChainIcon(opportunity.chain.name);
-                      return <ChainIcon size={16} className="flex-shrink-0" />;
-                    })()}
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-lg text-foreground truncate leading-tight" data-testid={`text-token-pair-${opportunity.id}`}>
+                  {opportunity.tokenPair}
+                </h3>
+                
+                {showNetworkName && (
+                  <div className="flex items-center mt-1">
+                    <div 
+                      className="flex items-center justify-center flex-shrink-0"
+                      data-testid={`badge-chain-${opportunity.id}`}
+                    >
+                      {(() => {
+                        const ChainIcon = getChainIcon(opportunity.chain.name);
+                        return <ChainIcon size={16} className="flex-shrink-0" />;
+                      })()}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
