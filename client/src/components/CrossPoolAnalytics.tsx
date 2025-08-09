@@ -44,12 +44,98 @@ import {
   Pie
 } from "recharts";
 
+interface CrossPoolAnalytics {
+  correlations: Array<{
+    pool1: string;
+    pool2: string;
+    correlation: number;
+    sharedWallets: number;
+    migrationFlow: string;
+  }>;
+  walletJourneys?: Array<{
+    wallet: string;
+    journey: Array<{
+      pool: string;
+      timestamp: string;
+      action: string;
+      amount: number;
+    }>;
+    profitability: number;
+  }>;
+  riskScore?: {
+    totalRisk: number;
+    factors: {
+      mevRisk: number;
+      impermanentLoss: number;
+      protocolRisk: number;
+      liquidityRisk: number;
+      smartContractRisk: number;
+    };
+    historicalIncidents: number;
+    riskLevel: string;
+    recommendations: string[];
+  };
+  mevActivity?: {
+    sandwichAttacks: number;
+    arbitrageVolume: number;
+    victimTransactions: number;
+    mevRisk: string;
+    lastAttack: string | null;
+  };
+  gasOptimization?: {
+    avgGasPrice: number;
+    bestHour: number;
+    bestDay: string;
+    savingsPotential: number;
+    gasPatterns?: Array<{
+      hour: number;
+      avgGas: number;
+      txCount: number;
+    }>;
+  };
+  networkEffect?: {
+    influenceScore: number;
+    systemicRisk: number;
+    dependentPools: string[];
+    networkCentrality: number;
+  };
+  behavioralInsights?: {
+    patterns: {
+      accumulation: {
+        detected: boolean;
+        confidence: number;
+        timeframe: string;
+      };
+      distribution: {
+        detected: boolean;
+        confidence: number;
+        timeframe: string;
+      };
+      rotation?: {
+        volume: number;
+        fromPools: string[];
+        toPools: string[];
+      };
+    };
+    predictions: {
+      nextInflowPeak: string;
+      expectedVolatility: number;
+      liquidityTrend: string;
+    };
+  };
+  socialGraphAnalysis?: {
+    influentialWallets: string[];
+    communitySize: number;
+    growthRate: number;
+  };
+}
+
 interface CrossPoolAnalyticsProps {
   poolId: string;
 }
 
 export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
-  const { data: analytics, isLoading } = useQuery({
+  const { data: analytics, isLoading } = useQuery<CrossPoolAnalytics>({
     queryKey: [`/api/pools/${poolId}/cross-analysis`],
     refetchInterval: 60000 // Refresh every minute
   });
