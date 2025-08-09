@@ -102,10 +102,33 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             
             <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-base text-foreground truncate mb-1" data-testid={`text-token-pair-${opportunity.id}`}>
+                {opportunity.tokenPair}
+              </h3>
+              
+              {/* Platform info positioned prominently below token name */}
               <div className="flex items-center space-x-2 mb-0.5">
-                <h3 className="font-bold text-base text-foreground truncate" data-testid={`text-token-pair-${opportunity.id}`}>
-                  {opportunity.tokenPair}
-                </h3>
+                <div className="flex items-center space-x-1">
+                  <div 
+                    className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                    data-testid={`logo-${opportunity.platform.name}`}
+                  >
+                    {opportunity.platform.logoUrl ? (
+                      <img 
+                        src={opportunity.platform.logoUrl} 
+                        alt={opportunity.platform.displayName}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      (() => {
+                        const PlatformIcon = getPlatformIcon(opportunity.platform.name);
+                        return <PlatformIcon size={16} className="flex-shrink-0" />;
+                      })()
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-foreground leading-none">{opportunity.platform.displayName || opportunity.platform.name}</span>
+                </div>
+                
                 {showNetworkName && (
                   <div 
                     className="flex items-center justify-center flex-shrink-0"
@@ -117,27 +140,6 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     })()}
                   </div>
                 )}
-              </div>
-              {/* Platform info below */}
-              <div className="flex items-center space-x-1 h-4">
-                <div 
-                  className="w-3 h-3 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-                  data-testid={`logo-${opportunity.platform.name}`}
-                >
-                  {opportunity.platform.logoUrl ? (
-                    <img 
-                      src={opportunity.platform.logoUrl} 
-                      alt={opportunity.platform.displayName}
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  ) : (
-                    (() => {
-                      const PlatformIcon = getPlatformIcon(opportunity.platform.name);
-                      return <PlatformIcon size={12} className="flex-shrink-0" />;
-                    })()
-                  )}
-                </div>
-                <span className="text-xs text-muted-foreground leading-none">{opportunity.platform.displayName || opportunity.platform.name}</span>
               </div>
             </div>
           </div>
