@@ -609,7 +609,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
+  // AI Outlook routes
+  app.get("/api/pools/:id/outlook", async (req, res) => {
+    try {
+      const { AIOutlookService } = await import("./services/aiOutlookService");
+      const aiOutlookService = new AIOutlookService(storage);
+      
+      // Try to get existing valid outlook first
+      let outlook = await aiOutlookService.getValidOutlook(req.params.id);
+      
+      // If no valid outlook exists, generate a new one
+      if (!outlook) {
+        outlook = await aiOutlookService.generateAndSaveOutlook(req.params.id);
+      }
+      
+      if (!outlook) {
+        return res.status(500).json({ message: "Failed to generate AI outlook" });
+      }
+      
+      res.json(outlook);
+    } catch (error) {
+      console.error("Error fetching AI outlook:", error);
+      res.status(500).json({ message: "Failed to fetch AI outlook" });
+    }
+  });
 
   // Enhanced Pool Analytics - Comprehensive analysis combining all data sources
   app.get("/api/pools/:poolId/enhanced-analytics", async (req, res) => {
@@ -629,9 +652,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Market Intelligence Endpoints
+  app.get("/api/market/overview", async (req, res) => {
+    try {
+      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
+      const marketService = new MarketIntelligenceService();
+      
+      const overview = await marketService.getMarketOverview();
+      
+      res.json(overview);
+    } catch (error) {
+      console.error("Error generating market overview:", error);
+      res.status(500).json({ 
+        error: "Failed to generate market overview",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
+  app.get("/api/market/top-performers", async (req, res) => {
+    try {
+      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
+      const marketService = new MarketIntelligenceService();
+      
+      const topPerformers = await marketService.getTopPerformers();
+      
+      res.json(topPerformers);
+    } catch (error) {
+      console.error("Error getting top performers:", error);
+      res.status(500).json({ 
+        error: "Failed to get top performers",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
+  app.get("/api/market/sentiment", async (req, res) => {
+    try {
+      const { MarketIntelligenceService } = await import("./services/marketIntelligenceService");
+      const marketService = new MarketIntelligenceService();
+      
+      const sentiment = await marketService.getMarketSentiment();
+      
+      res.json(sentiment);
+    } catch (error) {
+      console.error("Error getting market sentiment:", error);
+      res.status(500).json({ 
+        error: "Failed to get market sentiment",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
+  app.post("/api/pools/:id/outlook/regenerate", async (req, res) => {
+    try {
+      const { AIOutlookService } = await import("./services/aiOutlookService");
+      const aiOutlookService = new AIOutlookService(storage);
+      
+      const outlook = await aiOutlookService.generateAndSaveOutlook(req.params.id);
+      
+      if (!outlook) {
+        return res.status(500).json({ message: "Failed to regenerate AI outlook" });
+      }
+      
+      res.json(outlook);
+    } catch (error) {
+      console.error("Error regenerating AI outlook:", error);
+      res.status(500).json({ message: "Failed to regenerate AI outlook" });
+    }
+  });
 
   // Manual sync endpoints for admin use
 
@@ -1945,7 +2034,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerAdvancedRoutes } = await import('./routes/advanced-features');
   registerAdvancedRoutes(app);
 
+  // Register AI routes
+  const { registerAIRoutes } = await import('./routes/ai');
+  registerAIRoutes(app);
 
+  // Register market intelligence routes
+  const { registerMarketIntelligenceRoutes } = await import('./routes/market-intelligence');
+  registerMarketIntelligenceRoutes(app);
 
   // Start data sync scheduler
   const { startScheduler } = await import('./services/scheduler');
@@ -2219,7 +2314,213 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Token data endpoints for pool detail page (no API key required)
+  app.get("/api/pools/:poolId/token-info", async (req, res) => {
+    try {
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
 
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+      
+      console.log(`Fetching token info for pool ${pool.id}, token: ${underlyingToken}`);
+
+      // First check for stored token info in database
+      const storedTokenInfo = await storage.getTokenInfoByAddress(underlyingToken);
+      let tokenInfo = storedTokenInfo;
+      let shouldFetchFromEtherscan = true;
+
+      // If we have stored data that's less than 24 hours old, use it
+      if (storedTokenInfo && storedTokenInfo.lastUpdated) {
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        if (storedTokenInfo.lastUpdated > dayAgo) {
+          console.log(`Using stored token info for ${underlyingToken}`);
+          shouldFetchFromEtherscan = false;
+        }
+      }
+
+      let tokenSupply: any;
+      let topHolders: any[] = [];
+      let recentTransfers: any[] = [];
+      let analytics: any;
+      let gasStats: any;
+      let events: any[] = [];
+      let contractInfo: any;
+      
+      if (shouldFetchFromEtherscan) {
+        console.log(`Fetching fresh token info from Etherscan for ${underlyingToken}`);
+        
+        const { EtherscanTokenService } = await import("./services/etherscanTokenService");
+        const tokenService = new EtherscanTokenService();
+
+        // Fetch all token data in parallel
+        const [
+          fetchedTokenInfo,
+          fetchedTokenSupply,
+          fetchedTopHolders,
+          fetchedRecentTransfers,
+          fetchedAnalytics,
+          fetchedGasStats,
+          fetchedEvents
+        ] = await Promise.all([
+          tokenService.getTokenInfo(underlyingToken),
+          tokenService.getTokenSupply(underlyingToken),
+          tokenService.getTopHolders(underlyingToken, 10),
+          tokenService.getRecentTransfers(underlyingToken, 20),
+          tokenService.getTokenAnalytics(underlyingToken),
+          tokenService.getGasUsageStats(underlyingToken),
+          tokenService.getContractEvents(underlyingToken, 50)
+        ]);
+
+        tokenInfo = fetchedTokenInfo || storedTokenInfo;
+        tokenSupply = fetchedTokenSupply;
+        topHolders = fetchedTopHolders;
+        recentTransfers = fetchedRecentTransfers;
+        analytics = fetchedAnalytics;
+        gasStats = fetchedGasStats;
+        events = fetchedEvents;
+
+        // Get contract info
+        const { EtherscanService } = await import("./services/etherscanService");
+        const etherscan = new EtherscanService();
+        contractInfo = await etherscan.getContractInfo(underlyingToken);
+
+        // Store holder history data for analytics when we have fresh data
+        if (tokenInfo && tokenInfo.holdersCount && tokenInfo.holdersCount > 0) {
+          try {
+            await storage.storeHolderHistory({
+              tokenAddress: underlyingToken,
+              holdersCount: tokenInfo.holdersCount,
+              priceUsd: tokenInfo.priceUsd || null,
+              marketCapUsd: tokenInfo.marketCapUsd || null,
+            });
+            console.log(`Stored holder history for ${underlyingToken}: ${tokenInfo.holdersCount} holders`);
+          } catch (error) {
+            console.error("Error storing holder history:", error);
+          }
+        }
+      } else {
+        // Use stored data and provide minimal additional data
+        tokenSupply = { totalSupply: storedTokenInfo?.totalSupply || "0" };
+        topHolders = [];
+        recentTransfers = [];
+        analytics = null;
+        gasStats = null;
+        events = [];
+        contractInfo = null;
+      }
+
+      // Use holdersCount from tokenInfo if available
+      const holdersCount = tokenInfo?.holdersCount || topHolders.length;
+      
+      res.json({
+        tokenAddress: underlyingToken,
+        tokenInfo,
+        contractInfo,
+        supplyData: tokenSupply,
+        holders: {
+          count: holdersCount,
+          topHolders
+        },
+        transfers: {
+          recent: recentTransfers,
+          analytics
+        },
+        technical: {
+          gasUsage: gasStats,
+          events: events.slice(0, 10) // Limit events for performance
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching token info:", error);
+      res.status(500).json({ error: "Failed to fetch token information" });
+    }
+  });
+
+  // Holder analytics endpoints
+  app.get("/api/pools/:poolId/holder-analytics", async (req, res) => {
+    try {
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      const analytics = await storage.getHolderAnalytics(underlyingToken);
+      
+      res.json({
+        tokenAddress: underlyingToken,
+        analytics
+      });
+    } catch (error) {
+      console.error("Error fetching holder analytics:", error);
+      res.status(500).json({ error: "Failed to fetch holder analytics" });
+    }
+  });
+
+  app.get("/api/pools/:poolId/holder-history", async (req, res) => {
+    try {
+      const { days } = req.query;
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      const dayLimit = days ? parseInt(days as string) : undefined;
+      const history = await storage.getHolderHistory(underlyingToken, dayLimit);
+      
+      res.json({
+        tokenAddress: underlyingToken,
+        history: history.map(record => ({
+          holdersCount: record.holdersCount,
+          priceUsd: record.priceUsd,
+          marketCapUsd: record.marketCapUsd,
+          timestamp: record.timestamp
+        })),
+        totalRecords: history.length
+      });
+    } catch (error) {
+      console.error("Error fetching holder history:", error);
+      res.status(500).json({ error: "Failed to fetch holder history" });
+    }
+  });
 
   // Cross-pool analytics endpoints
   app.get("/api/pools/:poolId/cross-analysis", async (req, res) => {
@@ -2231,12 +2532,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch multiple analytics in parallel
       const [
         correlations,
+        gasOptimization,
         mevActivity,
         networkEffect,
         behavioralInsights,
         riskScore
       ] = await Promise.all([
         service.findPoolCorrelations(poolId),
+        service.analyzeGasOptimization(poolId),
         service.detectMEVActivity(poolId),
         service.analyzeNetworkEffects(poolId),
         service.generateBehavioralInsights(poolId),
@@ -2245,6 +2548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         correlations,
+        gasOptimization,
         mevActivity,
         networkEffect,
         behavioralInsights,
@@ -2286,6 +2590,350 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Token Flow Analysis Endpoint with Advanced Metrics
+  app.get("/api/pools/:poolId/token-transfers", async (req, res) => {
+    try {
+      const { page = 1, limit = 100 } = req.query; // Increased default limit for better analysis
+      const pool = await storage.getPoolById(req.params.poolId);
+      
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract underlying token address from raw data
+      const rawData: any = pool.rawData || {};
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      
+      // For testing with Steakhouse pool, use the known token address
+      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (!underlyingToken) {
+        return res.status(404).json({ error: "No underlying token found for this pool" });
+      }
+
+      // Fetch more transfers for comprehensive analysis
+      const { EtherscanService } = await import("./services/etherscanService");
+      const etherscan = new EtherscanService();
+      
+      // Fetch up to 1000 transfers for proper time coverage
+      const transfers = await etherscan.getTokenTransfers(
+        underlyingToken, 
+        1, 
+        1000 // Get much more data for accurate multi-period analysis
+      );
+
+      if (!transfers || transfers.length === 0) {
+        return res.json({
+          tokenAddress: underlyingToken,
+          transfers: [],
+          flowAnalysis: {
+            periods: {
+              '24h': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 },
+              '7d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 },
+              '30d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 },
+              'all': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0 }
+            },
+            advanced: {
+              whaleActivity: { detected: false },
+              smartMoney: { movements: [] },
+              flowVelocity: { trend: 'neutral' }
+            }
+          }
+        });
+      }
+
+      const decimals = parseInt(transfers[0]?.tokenDecimal || '18');
+      const tokenSymbol = transfers[0]?.tokenSymbol || 'TOKEN';
+      const now = Date.now();
+      
+      // Time boundaries for different periods
+      const periods = {
+        '24h': now - (24 * 60 * 60 * 1000),
+        '7d': now - (7 * 24 * 60 * 60 * 1000),
+        '30d': now - (30 * 24 * 60 * 60 * 1000),
+        'all': 0
+      };
+      
+      // Initialize metrics for each period
+      const flowMetrics: any = {
+        '24h': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() },
+        '7d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() },
+        '30d': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() },
+        'all': { inflow: 0, outflow: 0, netFlow: 0, txCount: 0, whaleTransfers: [], avgSize: 0, uniqueAddresses: new Set() }
+      };
+      
+      // Chart data structures
+      const hourlyData = new Map<number, {inflow: number, outflow: number, volume: number, txCount: number}>();
+      const dailyData = new Map<number, {inflow: number, outflow: number, volume: number, txCount: number}>();
+      
+      // Advanced analytics structures
+      const addressActivity = new Map<string, {inflow: number, outflow: number, txCount: number, isWhale: boolean, label?: string}>();
+      const transferSizes: number[] = [];
+      
+      // Calculate median transfer size for whale detection
+      const calculateMedianTransferSize = () => {
+        if (transferSizes.length === 0) return 0;
+        const sorted = [...transferSizes].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      };
+      
+      // Protocol addresses for accurate flow detection
+      const protocolAddresses = {
+        lido: [
+          '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH token contract
+          '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0', // wstETH wrapper  
+          '0x1643e812ae58766192cf7d2cf9567df2c37e9b7f', // Lido: Oracle
+          '0x442af784a788a5bd6f989e78c9421f53b84d57d5', // Lido: NodeOperatorsRegistry  
+          '0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb', // Lido: Staking Router
+          '0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f', // Lido: Execution Layer Rewards Vault
+          '0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e', // Lido: stETH/ETH Curve Pool
+          '0x21e27a5e5513d6e65c4f830167390997aa84843a' // Additional Lido-related address
+        ]
+      };
+      
+      // Process all transfers for comprehensive analysis
+      for (const transfer of transfers) {
+        const timestamp = parseInt(transfer.timeStamp) * 1000;
+        const value = parseFloat(transfer.value) / Math.pow(10, decimals);
+        const fromAddr = transfer.from.toLowerCase();
+        const toAddr = transfer.to.toLowerCase();
+        
+        // Skip zero-value transfers
+        if (value === 0) continue;
+        
+        // Track transfer sizes for whale detection
+        transferSizes.push(value);
+        
+        // Calculate chart data timestamps
+        const hourTimestamp = Math.floor(timestamp / (1000 * 60 * 60)) * (1000 * 60 * 60);
+        const dayTimestamp = Math.floor(timestamp / (1000 * 60 * 60 * 24)) * (1000 * 60 * 60 * 24);
+        
+        // Determine flow direction with protocol awareness
+        const isZeroAddress = (addr: string) => addr === '0x0000000000000000000000000000000000000000';
+        const isProtocolAddress = (addr: string) => protocolAddresses.lido.includes(addr);
+        
+        let isInflow = false;
+        let isOutflow = false;
+        
+        // Classification logic
+        if (isZeroAddress(fromAddr)) {
+          // Minting = inflow
+          isInflow = true;
+        } else if (isZeroAddress(toAddr)) {
+          // Burning = outflow
+          isOutflow = true;
+        } else if (isProtocolAddress(toAddr) && !isProtocolAddress(fromAddr)) {
+          // User -> Protocol = inflow (staking/deposits)
+          isInflow = true;
+        } else if (isProtocolAddress(fromAddr) && !isProtocolAddress(toAddr)) {
+          // Protocol -> User = outflow (unstaking/withdrawals)
+          isOutflow = true;
+        }
+        // User-to-user transfers are neutral (not counted)
+        
+        // Update metrics for each applicable period
+        Object.entries(periods).forEach(([period, startTime]) => {
+          if (timestamp >= startTime) {
+            const metrics = flowMetrics[period];
+            
+            if (isInflow) {
+              metrics.inflow += value;
+              metrics.txCount++;
+            } else if (isOutflow) {
+              metrics.outflow += value;
+              metrics.txCount++;
+            }
+            
+            // Track unique addresses
+            metrics.uniqueAddresses.add(fromAddr);
+            metrics.uniqueAddresses.add(toAddr);
+          }
+        });
+        
+        // Update chart data
+        if (!hourlyData.has(hourTimestamp)) {
+          hourlyData.set(hourTimestamp, {inflow: 0, outflow: 0, volume: 0, txCount: 0});
+        }
+        if (!dailyData.has(dayTimestamp)) {
+          dailyData.set(dayTimestamp, {inflow: 0, outflow: 0, volume: 0, txCount: 0});
+        }
+        
+        const hourData = hourlyData.get(hourTimestamp)!;
+        const dayData = dailyData.get(dayTimestamp)!;
+        
+        if (isInflow) {
+          hourData.inflow += value;
+          dayData.inflow += value;
+        } else if (isOutflow) {
+          hourData.outflow += value;
+          dayData.outflow += value;
+        }
+        
+        hourData.volume += value;
+        hourData.txCount++;
+        dayData.volume += value;
+        dayData.txCount++;
+        
+        // Track address activity for whale detection
+        if (!addressActivity.has(fromAddr)) {
+          addressActivity.set(fromAddr, {inflow: 0, outflow: 0, txCount: 0, isWhale: false});
+        }
+        if (!addressActivity.has(toAddr)) {
+          addressActivity.set(toAddr, {inflow: 0, outflow: 0, txCount: 0, isWhale: false});
+        }
+        
+        addressActivity.get(fromAddr)!.outflow += value;
+        addressActivity.get(fromAddr)!.txCount++;
+        addressActivity.get(toAddr)!.inflow += value;
+        addressActivity.get(toAddr)!.txCount++;
+      }
+      
+      // Calculate metrics and finalize periods
+      Object.keys(flowMetrics).forEach(period => {
+        const metrics = flowMetrics[period];
+        metrics.netFlow = metrics.inflow - metrics.outflow;
+        metrics.uniqueAddressCount = metrics.uniqueAddresses.size;
+        metrics.avgSize = metrics.txCount > 0 ? (metrics.inflow + metrics.outflow) / metrics.txCount : 0;
+        delete metrics.uniqueAddresses; // Remove Set from response
+      });
+      
+      // Whale detection - find addresses with large volumes
+      const medianTransferSize = calculateMedianTransferSize();
+      const whaleThreshold = medianTransferSize * 10; // 10x median = whale
+      
+      const whales = Array.from(addressActivity.entries())
+        .filter(([_, activity]) => (activity.inflow + activity.outflow) > whaleThreshold)
+        .map(([address, activity]) => ({
+          address: address.slice(0, 6) + '...' + address.slice(-4), // Abbreviated address
+          totalVolume: activity.inflow + activity.outflow,
+          netFlow: activity.inflow - activity.outflow,
+          txCount: activity.txCount,
+          type: activity.inflow > activity.outflow ? 'accumulator' : 'distributor'
+        }))
+        .sort((a, b) => b.totalVolume - a.totalVolume)
+        .slice(0, 10); // Top 10 whales
+      
+      // Smart money detection - addresses with consistent profitable patterns
+      const smartMoneyAddresses = Array.from(addressActivity.entries())
+        .filter(([_, activity]) => activity.txCount >= 5) // Minimum 5 transactions
+        .map(([address, activity]) => ({
+          address: address.slice(0, 6) + '...' + address.slice(-4),
+          profitability: activity.inflow - activity.outflow,
+          txCount: activity.txCount,
+          avgTxSize: (activity.inflow + activity.outflow) / activity.txCount
+        }))
+        .filter(addr => addr.profitability > 0) // Profitable addresses
+        .sort((a, b) => b.profitability - a.profitability)
+        .slice(0, 5); // Top 5 smart money addresses
+      
+      // Flow velocity analysis
+      const recentFlows = transfers.slice(0, 100); // Last 100 transfers
+      const oldFlows = transfers.slice(100, 200); // Previous 100 transfers
+      
+      const recentVolume = recentFlows.reduce((sum, t) => sum + parseFloat(t.value) / Math.pow(10, decimals), 0);
+      const oldVolume = oldFlows.reduce((sum, t) => sum + parseFloat(t.value) / Math.pow(10, decimals), 0);
+      
+      const velocityTrend = recentVolume > oldVolume * 1.2 ? 'accelerating' : 
+                           recentVolume < oldVolume * 0.8 ? 'decelerating' : 'stable';
+      
+      // Accumulation/Distribution phase detection
+      const last24hMetrics = flowMetrics['24h'];
+      const last7dMetrics = flowMetrics['7d'];
+      
+      const phase = last24hMetrics.netFlow > 0 && last7dMetrics.netFlow > 0 ? 'accumulation' :
+                   last24hMetrics.netFlow < 0 && last7dMetrics.netFlow < 0 ? 'distribution' :
+                   'transition';
+      
+      // Prepare chart data
+      const chartData = {
+        hourly: Array.from(hourlyData.entries())
+          .map(([timestamp, data]) => ({
+            timestamp,
+            inflow: data.inflow,
+            outflow: data.outflow,
+            netFlow: data.inflow - data.outflow,
+            volume: data.volume,
+            txCount: data.txCount
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp)
+          .slice(-24), // Last 24 hours
+        daily: Array.from(dailyData.entries())
+          .map(([timestamp, data]) => ({
+            timestamp,
+            inflow: data.inflow,
+            outflow: data.outflow,
+            netFlow: data.inflow - data.outflow,
+            volume: data.volume,
+            txCount: data.txCount
+          }))
+          .sort((a, b) => a.timestamp - b.timestamp)
+          .slice(-30) // Last 30 days
+      };
+      
+      // Predictive insights
+      const insights = {
+        trend: last24hMetrics.netFlow > 0 ? 'bullish' : last24hMetrics.netFlow < 0 ? 'bearish' : 'neutral',
+        momentum: velocityTrend,
+        phase,
+        whaleActivity: whales.length > 0 ? 'high' : 'low',
+        smartMoneySignal: smartMoneyAddresses.length > 3 ? 'strong' : 'weak',
+        volumeProfile: {
+          '24h': last24hMetrics.inflow + last24hMetrics.outflow,
+          '7d': last7dMetrics.inflow + last7dMetrics.outflow,
+          '30d': flowMetrics['30d'].inflow + flowMetrics['30d'].outflow
+        }
+      };
+
+      res.json({
+        tokenAddress: underlyingToken,
+        tokenSymbol,
+        transfers: transfers.slice(0, Math.min(Number(limit), 50)), // Limited for display
+        flowAnalysis: {
+          periods: flowMetrics,
+          advanced: {
+            whaleActivity: {
+              detected: whales.length > 0,
+              count: whales.length,
+              topWhales: whales.slice(0, 5),
+              totalWhaleVolume: whales.reduce((sum, w) => sum + w.totalVolume, 0)
+            },
+            smartMoney: {
+              movements: smartMoneyAddresses,
+              signal: insights.smartMoneySignal
+            },
+            flowVelocity: {
+              trend: velocityTrend,
+              recentVolume,
+              previousVolume: oldVolume,
+              changePercent: oldVolume > 0 ? ((recentVolume - oldVolume) / oldVolume) * 100 : 0
+            },
+            marketPhase: {
+              current: phase,
+              confidence: Math.abs(last24hMetrics.netFlow) / (last24hMetrics.inflow + last24hMetrics.outflow) || 0
+            }
+          },
+          chartData,
+          insights,
+          statistics: {
+            medianTransferSize,
+            totalAddresses: addressActivity.size,
+            activeAddresses24h: flowMetrics['24h'].uniqueAddressCount,
+            volumeDistribution: {
+              small: transferSizes.filter(s => s < medianTransferSize * 0.5).length,
+              medium: transferSizes.filter(s => s >= medianTransferSize * 0.5 && s < medianTransferSize * 2).length,
+              large: transferSizes.filter(s => s >= medianTransferSize * 2).length
+            }
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching token transfers:", error);
+      res.status(500).json({ error: "Failed to fetch token transfers" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

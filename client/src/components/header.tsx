@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, BarChart3, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AINavigationMenu } from "@/components/ai-navigation-menu";
 
 interface HeaderProps {
   onAdminClick?: () => void;
@@ -50,7 +51,20 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               Chains
             </Link>
 
-
+            <Link 
+              href="/market-intelligence" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-market-intelligence"
+            >
+              Intelligence
+            </Link>
+            <Link 
+              href="/investment-advisor" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-investment-advisor"
+            >
+              AI Advisor
+            </Link>
 
             {/* Advanced Features Dropdown */}
             <div className="relative group">
@@ -112,7 +126,13 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
                   >
                     Community Insights
                   </Link>
-
+                  <Link
+                    href="/watchlists"
+                    className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    data-testid="link-watchlists"
+                  >
+                    Custom Watchlists
+                  </Link>
                   <Link
                     href="/api-marketplace"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -137,6 +157,7 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
+            <AINavigationMenu />
             <ThemeToggle />
             {/* Mobile Menu Button */}
             <button 
@@ -178,7 +199,14 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
                 Chains
               </Link>
 
-
+              <Link 
+                href="/investment-advisor" 
+                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                data-testid="link-mobile-investment-advisor"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                AI Investment Advisor
+              </Link>
               
               <div className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">
                 Advanced Features
@@ -239,7 +267,14 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               >
                 Community Insights
               </Link>
-
+              <Link 
+                href="/watchlists" 
+                className="block px-6 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                data-testid="link-mobile-watchlists"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Watchlists
+              </Link>
               <Link 
                 href="/api-marketplace" 
                 className="block px-6 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"

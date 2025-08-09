@@ -31,7 +31,6 @@ Preferred communication style: Simple, everyday language.
 - Always display "N/A" when authentic data is not available
 - Users rely on accurate data for investment decisions
 - Use correct field mappings: 24h APY = "apyBase", 30d APY = "apyMean30d", TVL = "tvlUsd", Operating = "count"
-- **TOKEN INFORMATION REMOVED**: All token-specific functionality (holder analytics, token transfers, token info endpoints) has been completely removed per user request (August 2025)
 
 # System Architecture
 
@@ -60,24 +59,34 @@ The backend now implements a comprehensive multi-source data collection and anal
 
 #### Data Collection Services (Updated: August 2025)
 - **DeFi Llama Sync**: Pool data, TVL, APY updates every 10 minutes
-- **Cross-Pool Analytics**: Advanced correlation analysis and MEV detection
-- **Etherscan Integration**: Block data and ETH price feeds for enhanced analytics
+- **Holder Data Sync**: Token holder analytics from Etherscan every 6 hours  
+- **Token Info Sync**: Comprehensive token data with 24-hour caching
+- **AI Outlook Generation**: Market predictions every 2 hours
+- **Token Transfer Analysis**: Protocol-aware flow analysis with accurate inflow/outflow calculations for complex DeFi protocols like Lido
 
 #### Analytics Services
-- **Cross-Pool Analysis Service**: Advanced analytics engine providing:
+- **Data Analysis Service**: Comprehensive pool analytics combining all data sources
+- **Market Intelligence Service**: Market-wide analytics, sentiment analysis, and trend identification
+- **Holder Analytics**: Advanced holder distribution analysis and growth tracking
+- **Flow Analysis**: Sophisticated protocol-aware token flow analysis distinguishing between actual staking/unstaking activities vs regular user transfers, providing accurate inflow/outflow metrics for investment decisions
+- **Cross-Pool Analysis Service**: Revolutionary analytics engine providing:
   - MEV (Maximal Extractable Value) detection and risk assessment
+  - Gas optimization intelligence with best interaction times
   - Pool correlation mapping and liquidity migration patterns
   - Network effects analysis and systemic risk scoring
-  - Behavioral pattern recognition for institutional analysis
+  - Behavioral pattern recognition and AI predictions
   - Social graph analysis for wallet connections
   - Comprehensive risk scoring based on historical vulnerabilities
 
 #### Scheduled Operations
 - DeFi Llama data sync: Every 10 minutes
+- AI outlook generation: Every 2 hours  
+- Holder data sync: Every 6 hours
+- Data cleanup tasks: Every hour
 
 ## Data Storage Solutions
 
-The database schema includes tables for Chains, Platforms, Pools, Notes, and Users, utilizing UUIDs for primary keys and proper foreign key relationships. Drizzle ORM ensures type-safe operations focused on pool and platform data.
+The database schema includes tables for Chains, Platforms, Tokens, Pools, Notes, and Users, utilizing UUIDs for primary keys and proper foreign key relationships. Drizzle ORM ensures type-safe operations. Token information is stored in a `tokenInfo` table and cached for 24 hours to improve performance.
 
 ## Authentication and Authorization
 
@@ -85,7 +94,7 @@ A basic user system for admin access includes password-based authentication, ses
 
 ## UI/UX Decisions
 
-The application prioritizes a consistent UI architecture with standardized header/footer layouts, responsive design, and consistent branding. It uses professional brand assets for blockchain network icons and DeFi protocol logos (Lido, Morpho) based on official brand assets. The dark theme is set as default. Risk display uses simple text badges. Focus is on authentic DeFi pool data without token-specific analysis.
+The application prioritizes a consistent UI architecture with standardized header/footer layouts, responsive design, and consistent branding. It uses professional brand assets for blockchain network icons and DeFi protocol logos (Lido, Morpho) based on official brand assets. The dark theme is set as default. AI-powered market outlooks are generated with a calm, DeFi-savvy tone. Risk display uses simple text badges.
 
 # External Dependencies
 

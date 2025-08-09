@@ -1,20 +1,20 @@
 import { 
-  pools, platforms, chains, tokens, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
+  pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage, aiOutlooks,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
-  discussions, discussionReplies, apiEndpoints, developerApplications,
-  type Pool, type Platform, type Chain, type Token, type Note,
-  type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertNote,
+  discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
+  type Pool, type Platform, type Chain, type Token, type TokenInfo, type Note,
+  type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage,
-  type RiskScore, type InsertRiskScore,
+  type AIOutlook, type InsertAIOutlook, type RiskScore, type InsertRiskScore,
   type UserAlert, type InsertUserAlert, type AlertNotification, type InsertAlertNotification,
   type PoolReview, type InsertPoolReview, type PoolReviewWithUser, type ReviewVote, type InsertReviewVote,
   type Strategy, type InsertStrategy, type StrategyWithPools, type StrategyPool, type InsertStrategyPool,
   type Discussion, type InsertDiscussion, type DiscussionWithReplies, type DiscussionReply, type InsertDiscussionReply,
-
+  type Watchlist, type InsertWatchlist, type WatchlistWithPools, type WatchlistPool, type InsertWatchlistPool,
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
-
+  type HolderHistory, type InsertHolderHistory
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
@@ -46,7 +46,22 @@ export interface IStorage {
   getTokensByChain(chainId: string): Promise<Token[]>;
   createToken(token: InsertToken): Promise<Token>;
 
+  // Token Info methods
+  getTokenInfoByAddress(address: string): Promise<TokenInfo | undefined>;
+  createTokenInfo(tokenInfo: InsertTokenInfo): Promise<TokenInfo>;
+  updateTokenInfo(address: string, tokenInfo: Partial<InsertTokenInfo>): Promise<TokenInfo | undefined>;
+  upsertTokenInfo(address: string, tokenInfo: InsertTokenInfo): Promise<TokenInfo>;
 
+  // Holder History methods
+  storeHolderHistory(holderData: InsertHolderHistory): Promise<HolderHistory>;
+  getHolderHistory(tokenAddress: string, days?: number): Promise<HolderHistory[]>;
+  getHolderAnalytics(tokenAddress: string): Promise<{
+    current: number;
+    change7d: { value: number; percentage: number } | null;
+    change30d: { value: number; percentage: number } | null;
+    changeAllTime: { value: number; percentage: number } | null;
+    firstRecordDate: Date | null;
+  }>;
 
   // Pool methods
   getPools(options?: {
@@ -108,7 +123,10 @@ export interface IStorage {
   logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void>;
   getApiKeyUsage(keyId: string, hours?: number): Promise<number>;
 
-
+  // AI Outlook methods
+  createAIOutlook(outlook: InsertAIOutlook): Promise<AIOutlook>;
+  getValidAIOutlook(poolId: string): Promise<AIOutlook | undefined>;
+  deleteExpiredOutlooks(): Promise<number>;
 
   // 1. Risk Scoring methods
   calculateAndStoreRiskScore(poolId: string): Promise<RiskScore>;
@@ -150,9 +168,17 @@ export interface IStorage {
   getDiscussions(options?: { poolId?: string; strategyId?: string; category?: string; }): Promise<DiscussionWithReplies[]>;
   createDiscussionReply(reply: InsertDiscussionReply): Promise<DiscussionReply>;
 
+  // 5. Custom Watchlists methods
+  createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist>;
+  getUserWatchlists(userId: string): Promise<WatchlistWithPools[]>;
+  getWatchlist(id: string): Promise<WatchlistWithPools | undefined>;
+  updateWatchlist(id: string, watchlist: Partial<InsertWatchlist>): Promise<Watchlist | undefined>;
+  deleteWatchlist(id: string): Promise<boolean>;
+  addPoolToWatchlist(watchlistPool: InsertWatchlistPool): Promise<WatchlistPool>;
+  removePoolFromWatchlist(watchlistId: string, poolId: string): Promise<boolean>;
+  getWatchlistAlerts(userId: string): Promise<UserAlert[]>;
 
-
-  // 5. API Marketplace methods
+  // 6. API Marketplace methods
   createApiEndpoint(endpoint: InsertApiEndpoint): Promise<ApiEndpoint>;
   getApiEndpoints(category?: string, accessLevel?: string): Promise<ApiEndpoint[]>;
   getApiEndpoint(id: string): Promise<ApiEndpoint | undefined>;
@@ -294,9 +320,128 @@ export class DatabaseStorage implements IStorage {
     return newToken;
   }
 
+  // Token Info methods
+  async getTokenInfoByAddress(address: string): Promise<TokenInfo | undefined> {
+    const [tokenInfoRecord] = await db.select().from(tokenInfo).where(eq(tokenInfo.address, address));
+    return tokenInfoRecord || undefined;
+  }
 
+  async createTokenInfo(tokenInfoData: InsertTokenInfo): Promise<TokenInfo> {
+    const [newTokenInfo] = await db.insert(tokenInfo).values(tokenInfoData).returning();
+    return newTokenInfo;
+  }
 
+  async updateTokenInfo(address: string, tokenInfoData: Partial<InsertTokenInfo>): Promise<TokenInfo | undefined> {
+    const [updatedTokenInfo] = await db.update(tokenInfo).set({
+      ...tokenInfoData,
+      lastUpdated: new Date()
+    }).where(eq(tokenInfo.address, address)).returning();
+    return updatedTokenInfo || undefined;
+  }
 
+  async upsertTokenInfo(address: string, tokenInfoData: InsertTokenInfo): Promise<TokenInfo> {
+    const existing = await this.getTokenInfoByAddress(address);
+    if (existing) {
+      return await this.updateTokenInfo(address, tokenInfoData) || existing;
+    } else {
+      return await this.createTokenInfo(tokenInfoData);
+    }
+  }
+
+  // Holder History methods
+  async storeHolderHistory(holderData: InsertHolderHistory): Promise<HolderHistory> {
+    const [newHolderHistory] = await db.insert(holderHistory).values(holderData).returning();
+    return newHolderHistory;
+  }
+
+  async getHolderHistory(tokenAddress: string, days?: number): Promise<HolderHistory[]> {
+    let query = db.select().from(holderHistory).where(eq(holderHistory.tokenAddress, tokenAddress));
+    
+    if (days) {
+      const dateFilter = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      query = query.where(and(
+        eq(holderHistory.tokenAddress, tokenAddress),
+        sql`${holderHistory.timestamp} >= ${dateFilter}`
+      ));
+    }
+    
+    return await query.orderBy(desc(holderHistory.timestamp));
+  }
+
+  async getHolderAnalytics(tokenAddress: string): Promise<{
+    current: number;
+    change7d: { value: number; percentage: number } | null;
+    change30d: { value: number; percentage: number } | null;
+    changeAllTime: { value: number; percentage: number } | null;
+    firstRecordDate: Date | null;
+  }> {
+    // Get the most recent record
+    const [latestRecord] = await db
+      .select()
+      .from(holderHistory)
+      .where(eq(holderHistory.tokenAddress, tokenAddress))
+      .orderBy(desc(holderHistory.timestamp))
+      .limit(1);
+
+    if (!latestRecord) {
+      return {
+        current: 0,
+        change7d: null,
+        change30d: null,
+        changeAllTime: null,
+        firstRecordDate: null,
+      };
+    }
+
+    const current = latestRecord.holdersCount;
+
+    // Get records for 7 days ago and 30 days ago
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [record7d] = await db
+      .select()
+      .from(holderHistory)
+      .where(and(
+        eq(holderHistory.tokenAddress, tokenAddress),
+        sql`${holderHistory.timestamp} <= ${sevenDaysAgo}`
+      ))
+      .orderBy(desc(holderHistory.timestamp))
+      .limit(1);
+
+    const [record30d] = await db
+      .select()
+      .from(holderHistory)
+      .where(and(
+        eq(holderHistory.tokenAddress, tokenAddress),
+        sql`${holderHistory.timestamp} <= ${thirtyDaysAgo}`
+      ))
+      .orderBy(desc(holderHistory.timestamp))
+      .limit(1);
+
+    // Get the earliest record (all-time)
+    const [firstRecord] = await db
+      .select()
+      .from(holderHistory)
+      .where(eq(holderHistory.tokenAddress, tokenAddress))
+      .orderBy(holderHistory.timestamp)
+      .limit(1);
+
+    // Calculate changes
+    const calculateChange = (oldValue: number, newValue: number) => {
+      const value = newValue - oldValue;
+      const percentage = oldValue > 0 ? (value / oldValue) * 100 : 0;
+      return { value, percentage };
+    };
+
+    return {
+      current,
+      change7d: record7d ? calculateChange(record7d.holdersCount, current) : null,
+      change30d: record30d ? calculateChange(record30d.holdersCount, current) : null,
+      changeAllTime: firstRecord ? calculateChange(firstRecord.holdersCount, current) : null,
+      firstRecordDate: firstRecord?.timestamp || null,
+    };
+  }
 
   async getPools(options: {
     chainId?: string;
@@ -317,7 +462,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(notes, eq(pools.id, notes.poolId))
       .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
       .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
-
+      .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id));
 
     const conditions = [eq(pools.isActive, true)];
 
@@ -848,7 +993,38 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(pools).where(eq(pools.isVisible, true));
   }
 
+  // AI Outlook methods
+  async createAIOutlook(insertOutlook: InsertAIOutlook): Promise<AIOutlook> {
+    const [outlook] = await db
+      .insert(aiOutlooks)
+      .values(insertOutlook)
+      .returning();
+    return outlook;
+  }
 
+  async getValidAIOutlook(poolId: string): Promise<AIOutlook | undefined> {
+    const now = new Date();
+    const [outlook] = await db
+      .select()
+      .from(aiOutlooks)
+      .where(and(
+        eq(aiOutlooks.poolId, poolId),
+        sql`${aiOutlooks.expiresAt} > ${now}`
+      ))
+      .orderBy(desc(aiOutlooks.generatedAt))
+      .limit(1);
+    
+    return outlook || undefined;
+  }
+
+  async deleteExpiredOutlooks(): Promise<number> {
+    const now = new Date();
+    const result = await db
+      .delete(aiOutlooks)
+      .where(sql`${aiOutlooks.expiresAt} <= ${now}`);
+    
+    return result.rowCount || 0;
+  }
 
   // 1. Risk Scoring implementations
   async calculateAndStoreRiskScore(poolId: string): Promise<RiskScore> {
@@ -1334,15 +1510,112 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  // 5. Custom Watchlists implementations
+  async createWatchlist(watchlist: InsertWatchlist): Promise<Watchlist> {
+    const [created] = await db.insert(watchlists).values(watchlist).returning();
+    return created;
+  }
 
+  async getUserWatchlists(userId: string): Promise<WatchlistWithPools[]> {
+    const results = await db.select()
+      .from(watchlists)
+      .leftJoin(watchlistPools, eq(watchlists.id, watchlistPools.watchlistId))
+      .leftJoin(pools, eq(watchlistPools.poolId, pools.id))
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(eq(watchlists.userId, userId))
+      .orderBy(desc(watchlists.createdAt));
 
+    const watchlistsMap = new Map();
+    results.forEach(result => {
+      const watchlist = result.watchlists;
+      if (!watchlistsMap.has(watchlist.id)) {
+        watchlistsMap.set(watchlist.id, {
+          ...watchlist,
+          watchlistPools: []
+        });
+      }
+      if (result.watchlist_pools && result.pools) {
+        watchlistsMap.get(watchlist.id).watchlistPools.push({
+          ...result.watchlist_pools,
+          pool: {
+            ...result.pools,
+            platform: result.platforms,
+            chain: result.chains
+          }
+        });
+      }
+    });
 
+    return Array.from(watchlistsMap.values());
+  }
 
+  async getWatchlist(id: string): Promise<WatchlistWithPools | undefined> {
+    const results = await db.select()
+      .from(watchlists)
+      .leftJoin(watchlistPools, eq(watchlists.id, watchlistPools.watchlistId))
+      .leftJoin(pools, eq(watchlistPools.poolId, pools.id))
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(eq(watchlists.id, id));
 
+    if (results.length === 0) return undefined;
 
+    const watchlist = results[0].watchlists;
+    const watchlistPools = results
+      .filter(r => r.watchlist_pools && r.pools)
+      .map(r => ({
+        ...r.watchlist_pools!,
+        pool: {
+          ...r.pools!,
+          platform: r.platforms!,
+          chain: r.chains!
+        }
+      }));
 
+    return {
+      ...watchlist,
+      watchlistPools
+    };
+  }
 
-  // 5. API Marketplace implementations
+  async updateWatchlist(id: string, watchlist: Partial<InsertWatchlist>): Promise<Watchlist | undefined> {
+    const [updated] = await db
+      .update(watchlists)
+      .set({ ...watchlist, updatedAt: new Date() })
+      .where(eq(watchlists.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteWatchlist(id: string): Promise<boolean> {
+    const result = await db.delete(watchlists).where(eq(watchlists.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async addPoolToWatchlist(watchlistPool: InsertWatchlistPool): Promise<WatchlistPool> {
+    const [created] = await db.insert(watchlistPools).values(watchlistPool).returning();
+    return created;
+  }
+
+  async removePoolFromWatchlist(watchlistId: string, poolId: string): Promise<boolean> {
+    const result = await db.delete(watchlistPools)
+      .where(and(
+        eq(watchlistPools.watchlistId, watchlistId),
+        eq(watchlistPools.poolId, poolId)
+      ));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getWatchlistAlerts(userId: string): Promise<UserAlert[]> {
+    return await db.select().from(userAlerts)
+      .where(and(
+        eq(userAlerts.userId, userId),
+        eq(userAlerts.alertType, 'watchlist_change')
+      ));
+  }
+
+  // 6. API Marketplace implementations
   async createApiEndpoint(endpoint: InsertApiEndpoint): Promise<ApiEndpoint> {
     const [created] = await db.insert(apiEndpoints).values(endpoint).returning();
     return created;

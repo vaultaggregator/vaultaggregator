@@ -74,7 +74,7 @@ export const categories = pgTable("categories", {
   iconUrl: text("icon_url"),
   description: text("description"),
   color: text("color").notNull().default("#3B82F6"),
-  parentId: varchar("parent_id"),
+  parentId: varchar("parent_id").references(() => categories.id),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -87,7 +87,34 @@ export const poolCategories = pgTable("pool_categories", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Token information table
+export const tokenInfo = pgTable("token_info", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  address: text("address").notNull().unique(),
+  name: text("name"),
+  symbol: text("symbol"),
+  decimals: text("decimals"),
+  totalSupply: text("total_supply"),
+  holdersCount: integer("holders_count"),
+  contractCreator: text("contract_creator"),
+  txHash: text("tx_hash"),
+  isVerified: boolean("is_verified").default(false),
+  priceUsd: decimal("price_usd", { precision: 20, scale: 8 }),
+  marketCapUsd: decimal("market_cap_usd", { precision: 20, scale: 2 }),
+  transfers24h: integer("transfers_24h"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
+// Holder history tracking table for analytics
+export const holderHistory = pgTable("holder_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tokenAddress: text("token_address").notNull(),
+  holdersCount: integer("holders_count").notNull(),
+  priceUsd: decimal("price_usd", { precision: 20, scale: 8 }),
+  marketCapUsd: decimal("market_cap_usd", { precision: 20, scale: 2 }),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
 
 export const pools = pgTable("pools", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -101,7 +128,7 @@ export const pools = pgTable("pools", {
   defiLlamaId: text("defi_llama_id"),
   project: text("project"), // Data source identifier (defillama, morpho, lido)
   rawData: jsonb("raw_data"),
-
+  tokenInfoId: varchar("token_info_id").references(() => tokenInfo.id), // Link to token information
   isVisible: boolean("is_visible").notNull().default(true),
   isActive: boolean("is_active").notNull().default(true),
   lastUpdated: timestamp("last_updated").defaultNow(),
@@ -117,7 +144,16 @@ export const notes = pgTable("notes", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-
+export const aiOutlooks = pgTable("ai_outlooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  outlook: text("outlook").notNull(), // AI-generated prediction text
+  sentiment: text("sentiment").notNull(), // "bullish", "bearish", "neutral"
+  confidence: integer("confidence").notNull(), // 1-100 confidence score
+  marketFactors: json("market_factors"), // JSON array of considered factors
+  generatedAt: timestamp("generated_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(), // When this prediction expires (2 hours)
+});
 
 // Enhanced features tables
 
@@ -227,11 +263,28 @@ export const discussionReplies = pgTable("discussion_replies", {
   discussionId: varchar("discussion_id").notNull().references(() => discussions.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
-  parentReplyId: varchar("parent_reply_id"),
+  parentReplyId: varchar("parent_reply_id").references(() => discussionReplies.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 5. Custom Watchlists System
+export const watchlists = pgTable("watchlists", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  isPublic: boolean("is_public").notNull().default(false),
+  alertsEnabled: boolean("alerts_enabled").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
+export const watchlistPools = pgTable("watchlist_pools", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  watchlistId: varchar("watchlist_id").notNull().references(() => watchlists.id, { onDelete: "cascade" }),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  addedAt: timestamp("added_at").defaultNow(),
+});
 
 // 6. API Marketplace System
 export const apiEndpoints = pgTable("api_endpoints", {
@@ -273,7 +326,9 @@ export const tokensRelations = relations(tokens, ({ one }) => ({
   }),
 }));
 
-
+export const tokenInfoRelations = relations(tokenInfo, ({ many }) => ({
+  pools: many(pools),
+}));
 
 export const platformsRelations = relations(platforms, ({ many }) => ({
   pools: many(pools),
@@ -308,15 +363,19 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
     fields: [pools.chainId],
     references: [chains.id],
   }),
-
+  tokenInfo: one(tokenInfo, {
+    fields: [pools.tokenInfoId],
+    references: [tokenInfo.id],
+  }),
   notes: many(notes),
   poolCategories: many(poolCategories),
-
+  aiOutlooks: many(aiOutlooks),
   riskScores: many(riskScores),
   poolReviews: many(poolReviews),
   userAlerts: many(userAlerts),
   strategyPools: many(strategyPools),
   discussions: many(discussions),
+  watchlistPools: many(watchlistPools),
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
@@ -326,7 +385,12 @@ export const notesRelations = relations(notes, ({ one }) => ({
   }),
 }));
 
-
+export const aiOutlooksRelations = relations(aiOutlooks, ({ one }) => ({
+  pool: one(pools, {
+    fields: [aiOutlooks.poolId],
+    references: [pools.id],
+  }),
+}));
 
 // Enhanced features relations
 export const riskScoresRelations = relations(riskScores, ({ one }) => ({
@@ -430,7 +494,24 @@ export const discussionRepliesRelations = relations(discussionReplies, ({ one, m
   childReplies: many(discussionReplies),
 }));
 
+export const watchlistsRelations = relations(watchlists, ({ one, many }) => ({
+  user: one(users, {
+    fields: [watchlists.userId],
+    references: [users.id],
+  }),
+  watchlistPools: many(watchlistPools),
+}));
 
+export const watchlistPoolsRelations = relations(watchlistPools, ({ one }) => ({
+  watchlist: one(watchlists, {
+    fields: [watchlistPools.watchlistId],
+    references: [watchlists.id],
+  }),
+  pool: one(pools, {
+    fields: [watchlistPools.poolId],
+    references: [pools.id],
+  }),
+}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -459,7 +540,16 @@ export const insertTokenSchema = createInsertSchema(tokens).omit({
   createdAt: true,
 });
 
+export const insertTokenInfoSchema = createInsertSchema(tokenInfo).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
 
+export const insertHolderHistorySchema = createInsertSchema(holderHistory).omit({
+  id: true,
+  timestamp: true,
+});
 
 export const insertPlatformSchema = createInsertSchema(platforms).omit({
   id: true,
@@ -496,7 +586,10 @@ export const insertPoolCategorySchema = createInsertSchema(poolCategories).omit(
   createdAt: true,
 });
 
-
+export const insertAIOutlookSchema = createInsertSchema(aiOutlooks).omit({
+  id: true,
+  generatedAt: true,
+});
 
 // Enhanced features insert schemas
 export const insertRiskScoreSchema = createInsertSchema(riskScores).omit({
@@ -552,7 +645,16 @@ export const insertDiscussionReplySchema = createInsertSchema(discussionReplies)
   createdAt: true,
 });
 
+export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
+export const insertWatchlistPoolSchema = createInsertSchema(watchlistPools).omit({
+  id: true,
+  addedAt: true,
+});
 
 export const insertApiEndpointSchema = createInsertSchema(apiEndpoints).omit({
   id: true,
@@ -582,7 +684,11 @@ export type InsertChain = z.infer<typeof insertChainSchema>;
 export type Token = typeof tokens.$inferSelect;
 export type InsertToken = z.infer<typeof insertTokenSchema>;
 
+export type TokenInfo = typeof tokenInfo.$inferSelect;
+export type InsertTokenInfo = typeof tokenInfo.$inferInsert;
 
+export type HolderHistory = typeof holderHistory.$inferSelect;
+export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
 
 export type Platform = typeof platforms.$inferSelect;
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;
@@ -599,7 +705,8 @@ export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type PoolCategory = typeof poolCategories.$inferSelect;
 export type InsertPoolCategory = z.infer<typeof insertPoolCategorySchema>;
 
-
+export type AIOutlook = typeof aiOutlooks.$inferSelect;
+export type InsertAIOutlook = z.infer<typeof insertAIOutlookSchema>;
 
 // Enhanced features types
 export type RiskScore = typeof riskScores.$inferSelect;
@@ -629,7 +736,11 @@ export type InsertDiscussion = z.infer<typeof insertDiscussionSchema>;
 export type DiscussionReply = typeof discussionReplies.$inferSelect;
 export type InsertDiscussionReply = z.infer<typeof insertDiscussionReplySchema>;
 
+export type Watchlist = typeof watchlists.$inferSelect;
+export type InsertWatchlist = z.infer<typeof insertWatchlistSchema>;
 
+export type WatchlistPool = typeof watchlistPools.$inferSelect;
+export type InsertWatchlistPool = z.infer<typeof insertWatchlistPoolSchema>;
 
 export type ApiEndpoint = typeof apiEndpoints.$inferSelect;
 export type InsertApiEndpoint = z.infer<typeof insertApiEndpointSchema>;
@@ -645,7 +756,7 @@ export type PoolWithRelations = Pool & {
   categories?: Category[];
   riskScores?: RiskScore[];
   poolReviews?: PoolReview[];
-
+  aiOutlooks?: AIOutlook[];
   holdersCount?: number | null;
 };
 
@@ -670,7 +781,9 @@ export type DiscussionWithReplies = Discussion & {
   replies: (DiscussionReply & { user: User })[];
 };
 
-
+export type WatchlistWithPools = Watchlist & {
+  watchlistPools: (WatchlistPool & { pool: Pool & { platform: Platform; chain: Chain } })[];
+};
 
 export type UserWithAlerts = User & {
   userAlerts: (UserAlert & { notifications: AlertNotification[] })[];

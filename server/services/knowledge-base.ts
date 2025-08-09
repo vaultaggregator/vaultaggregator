@@ -146,7 +146,16 @@ export class KnowledgeBase {
         lastUpdated: new Date(),
         isActive: true
       },
-
+      {
+        id: "watchlists",
+        category: "features",
+        question: "how to create watchlists",
+        answer: "Create custom watchlists to track your favorite yield farming opportunities. Save pools, set up alerts, and monitor performance over time. Access the watchlist feature from the Advanced menu.",
+        keywords: ["watchlist", "favorite", "tracking", "custom", "monitor"],
+        urls: ["/watchlists"],
+        lastUpdated: new Date(),
+        isActive: true
+      }
     ];
   }
 
