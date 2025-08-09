@@ -69,8 +69,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Left section - Token and Platform info */}
           <div className="flex items-center space-x-2 min-w-0 flex-1">
             {/* Subcategory Icon and Pool Name together */}
-            <div className="flex items-center space-x-2 min-w-0 flex-1">
-              <div className="flex-shrink-0">
+            <div className="flex items-center space-x-3 min-w-0 flex-1">
+              <div className="flex items-center justify-center flex-shrink-0">
                 {opportunity.categories && opportunity.categories.length > 0 && (() => {
                   // Check all categories for USDC or stETH, not just the first one
                   const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
@@ -102,8 +102,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 })()}
               </div>
               
-              <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-lg text-foreground truncate leading-tight" data-testid={`text-token-pair-${opportunity.id}`}>
+              <div className="min-w-0 flex-1 flex flex-col justify-center">
+                <h3 className="font-bold text-lg text-foreground truncate leading-none" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
                 
