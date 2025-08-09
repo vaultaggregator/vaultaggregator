@@ -69,8 +69,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           {/* Left section - Token and Platform info */}
           <div className="flex items-center space-x-2 min-w-0 flex-1">
             {/* Subcategory Icon and Pool Name together */}
-            <div className="flex items-center space-x-3 min-w-0 flex-1">
-              <div className="flex items-center justify-center flex-shrink-0">
+            <div className="flex items-baseline space-x-3 min-w-0 flex-1">
+              <div className="flex items-center justify-center flex-shrink-0 self-center">
                 {opportunity.categories && opportunity.categories.length > 0 && (() => {
                   // Check all categories for USDC or stETH, not just the first one
                   const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
@@ -81,7 +81,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       <img 
                         src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
                         alt="USDC"
-                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        className="w-5 h-5 flex-shrink-0 rounded-full"
                         data-testid={`logo-usdc-${opportunity.id}`}
                       />
                     );
@@ -90,7 +90,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       <img 
                         src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
                         alt="stETH"
-                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        className="w-5 h-5 flex-shrink-0 rounded-full"
                         data-testid={`logo-steth-${opportunity.id}`}
                       />
                     );
@@ -98,12 +98,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   
                   // Fall back to SVG icons for other categories
                   const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                  return <CategoryIcon size={24} className="flex-shrink-0" />;
+                  return <CategoryIcon size={20} className="flex-shrink-0" />;
                 })()}
               </div>
               
-              <div className="min-w-0 flex-1 flex flex-col justify-center">
-                <h3 className="font-bold text-lg text-foreground truncate leading-none" data-testid={`text-token-pair-${opportunity.id}`}>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold text-lg text-foreground truncate leading-normal" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
                 
