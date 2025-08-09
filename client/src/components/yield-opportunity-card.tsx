@@ -119,7 +119,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 )}
               </div>
               {/* Platform info below */}
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 h-4">
                 <div 
                   className="w-3 h-3 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                   data-testid={`logo-${opportunity.platform.name}`}
@@ -137,7 +137,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     })()
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">{opportunity.platform.displayName || opportunity.platform.name}</span>
+                <span className="text-xs text-muted-foreground leading-none">{opportunity.platform.displayName || opportunity.platform.name}</span>
               </div>
             </div>
           </div>
@@ -146,8 +146,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="w-full sm:flex sm:items-center sm:justify-between sm:flex-1 sm:max-w-4xl">
             {/* Mobile grid, desktop flex layout */}
             <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-between sm:gap-0 w-full">
-              <div className="text-center sm:w-14">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">24h APY</p>
+              <div className="text-center sm:w-14 flex flex-col justify-start">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">24h APY</p>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">24h APY</p>
                 )}
@@ -156,8 +156,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                    opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-14">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">30d APY</p>
+              <div className="text-center sm:w-14 flex flex-col justify-start">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">30d APY</p>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">30d APY</p>
                 )}
@@ -165,8 +165,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-16">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">TVL</p>
+              <div className="text-center sm:w-16 flex flex-col justify-start">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">TVL</p>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">TVL</p>
                 )}
@@ -183,8 +183,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
                 </p>
               </div>
-              <div className="text-center sm:w-20">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">Holders</p>
+              <div className="text-center sm:w-20 flex flex-col justify-start">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">Holders</p>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Holders</p>
                 )}
@@ -192,8 +192,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   {formatHolders(opportunity.holdersCount)}
                 </p>
               </div>
-              <div className="col-span-3 sm:col-span-1 text-center sm:w-16">
-                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden">Risk</p>
+              <div className="col-span-3 sm:col-span-1 text-center sm:w-16 flex flex-col justify-start">
+                <p className="text-xs text-muted-foreground mb-0.5 font-medium sm:hidden h-4 leading-4">Risk</p>
                 {showHeaders && (
                   <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
                 )}
