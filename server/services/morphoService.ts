@@ -101,10 +101,11 @@ export class MorphoService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'User-Agent': 'VaultAggregator/1.0'
         },
         body: JSON.stringify({
-          query,
+          query: query.trim(),
           variables
         }),
         signal: AbortSignal.timeout(MorphoService.REQUEST_TIMEOUT)
@@ -142,7 +143,8 @@ export class MorphoService {
     }
 
     const query = `
-      query GetMorphoVaults($chainId: Int!) {
+      query {
+        vaults(first: 50, where: { chainId: ${chainId} }) {
         vaults(
           where: { chainId: $chainId }
           first: 1000
@@ -428,12 +430,12 @@ export class MorphoService {
    * Test connection to Morpho API
    */
   async testConnection(): Promise<boolean> {
+    // Simple test query for Morpho API
     const query = `
-      query TestConnection {
-        chains {
-          items {
-            id
-            network
+      query {
+        __schema {
+          queryType {
+            name
           }
         }
       }
@@ -442,7 +444,6 @@ export class MorphoService {
     try {
       const data = await this.executeQuery(query);
       console.log('✅ Morpho API connection test successful');
-      console.log('🌐 Available chains:', data.chains?.items?.map((c: any) => `${c.network} (${c.id})`).join(', '));
       return true;
     } catch (error) {
       console.error('🔴 Morpho API connection test failed:', error);

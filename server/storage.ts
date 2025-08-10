@@ -192,7 +192,7 @@ export interface IStorage {
 
   // Admin methods
   getAllPoolsForAdmin(): Promise<any[]>;
-  updatePool(id: string, updates: Partial<Pool>): Promise<Pool | undefined>;
+  updatePool(id: string, updates: Partial<InsertPool>): Promise<Pool | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {

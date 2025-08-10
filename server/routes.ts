@@ -536,6 +536,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Chart endpoint removed - historical data now available via Morpho API
 
+  // Data migration route - Replace DeFi Llama with Morpho format
+  app.post("/api/migrate/morpho", async (req, res) => {
+    try {
+      const { morphoMigrationService } = await import("./services/morphoDataMigration");
+      await morphoMigrationService.migratePoolData();
+      
+      res.json({ 
+        success: true,
+        message: 'Successfully migrated pool data from DeFi Llama to Morpho format'
+      });
+    } catch (error) {
+      console.error("Error migrating to Morpho format:", error);
+      res.status(500).json({ error: "Failed to migrate pool data" });
+    }
+  });
+
   // Morpho API integration routes
   app.get("/api/morpho/test", async (req, res) => {
     try {
