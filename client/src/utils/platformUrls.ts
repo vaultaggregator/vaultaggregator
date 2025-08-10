@@ -33,7 +33,13 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
     if (pool.rawData && typeof pool.rawData === 'object') {
       const rawData = pool.rawData as any;
       if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
-        const underlyingToken = rawData.underlyingTokens[0];
+        let underlyingToken = rawData.underlyingTokens[0];
+        
+        // Special handling for steakUSDC - use vault contract instead of USDC
+        if (pool.tokenPair?.toUpperCase() === 'STEAKUSDC') {
+          underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'; // steakUSDC vault contract
+        }
+        
         url = url.replace(/\{underlyingToken\}/g, underlyingToken);
       }
     }
@@ -67,7 +73,13 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
   if (isMorpho && pool.rawData && typeof pool.rawData === 'object') {
     const rawData = pool.rawData as any;
     if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
-      const underlyingToken = rawData.underlyingTokens[0];
+      let underlyingToken = rawData.underlyingTokens[0];
+      
+      // Special handling for steakUSDC - use vault contract instead of USDC
+      if (pool.tokenPair?.toUpperCase() === 'STEAKUSDC') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'; // steakUSDC vault contract
+      }
+      
       const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
       return {
         url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
