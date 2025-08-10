@@ -6,6 +6,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import { db } from "./db";
 import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull } from "drizzle-orm";
+import { morphoService } from "./services/morphoService";
 
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -634,6 +635,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching chart data:", error);
       res.status(500).json({ message: "Failed to fetch chart data" });
+    }
+  });
+
+  // Morpho API integration routes
+  app.get("/api/morpho/test", async (req, res) => {
+    try {
+      const isConnected = await morphoService.testConnection();
+      res.json({ 
+        connected: isConnected,
+        endpoint: 'https://api.morpho.org/graphql',
+        message: isConnected ? 'Successfully connected to Morpho API' : 'Failed to connect to Morpho API'
+      });
+    } catch (error) {
+      console.error("Error testing Morpho connection:", error);
+      res.status(500).json({ error: "Failed to test Morpho connection" });
+    }
+  });
+
+  app.get("/api/morpho/vaults", async (req, res) => {
+    try {
+      const { chainId = 1 } = req.query;
+      const vaults = await morphoService.getAllVaults(parseInt(chainId as string));
+      
+      res.json({
+        count: vaults.length,
+        vaults: vaults
+      });
+    } catch (error) {
+      console.error("Error fetching Morpho vaults:", error);
+      res.status(500).json({ error: "Failed to fetch Morpho vaults" });
+    }
+  });
+
+  app.get("/api/morpho/markets", async (req, res) => {
+    try {
+      const { chainId = 1 } = req.query;
+      const markets = await morphoService.getAllMarkets(parseInt(chainId as string));
+      
+      res.json({
+        count: markets.length,
+        markets: markets
+      });
+    } catch (error) {
+      console.error("Error fetching Morpho markets:", error);
+      res.status(500).json({ error: "Failed to fetch Morpho markets" });
+    }
+  });
+
+  app.get("/api/morpho/vaults/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const { chainId = 1 } = req.query;
+      
+      const vault = await morphoService.getVaultByAddress(
+        address, 
+        parseInt(chainId as string)
+      );
+      
+      if (!vault) {
+        return res.status(404).json({ error: "Vault not found" });
+      }
+      
+      res.json(vault);
+    } catch (error) {
+      console.error("Error fetching Morpho vault details:", error);
+      res.status(500).json({ error: "Failed to fetch vault details" });
+    }
+  });
+
+  app.get("/api/morpho/vaults/:address/history", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const { chainId = 1, days = 30 } = req.query;
+      
+      const history = await morphoService.getVaultHistoricalData(
+        address,
+        parseInt(chainId as string),
+        parseInt(days as string)
+      );
+      
+      res.json({
+        vault: address,
+        dataPoints: history.length,
+        history: history
+      });
+    } catch (error) {
+      console.error("Error fetching Morpho vault history:", error);
+      res.status(500).json({ error: "Failed to fetch vault history" });
+    }
+  });
+
+  app.get("/api/morpho/users/:address/positions", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const { chainId = 1 } = req.query;
+      
+      const positions = await morphoService.getUserPositions(
+        address,
+        parseInt(chainId as string)
+      );
+      
+      if (!positions) {
+        return res.status(404).json({ error: "No positions found for user" });
+      }
+      
+      res.json(positions);
+    } catch (error) {
+      console.error("Error fetching Morpho user positions:", error);
+      res.status(500).json({ error: "Failed to fetch user positions" });
     }
   });
 

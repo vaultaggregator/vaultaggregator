@@ -1,0 +1,454 @@
+// Simple in-memory cache for Morpho data
+class SimpleCache {
+  private cache = new Map<string, { data: any; expiry: number }>();
+
+  set(key: string, data: any, ttl: number = 5 * 60 * 1000): void {
+    this.cache.set(key, {
+      data,
+      expiry: Date.now() + ttl
+    });
+  }
+
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    
+    if (Date.now() > entry.expiry) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return entry.data as T;
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+export interface MorphoMarket {
+  uniqueKey: string;
+  collateralAsset: {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+  };
+  borrowAsset: {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+  };
+  state: {
+    borrowApy: number;
+    supplyApy: number;
+    utilization: number;
+    totalBorrowUsd: number;
+    totalSupplyUsd: number;
+  };
+  lltv: string;
+  chain: {
+    id: number;
+    network: string;
+  };
+}
+
+export interface MorphoVault {
+  address: string;
+  symbol: string;
+  name: string;
+  asset: {
+    address: string;
+    symbol: string;
+    name: string;
+    decimals: number;
+  };
+  state: {
+    apy: number;
+    netApy: number;
+    totalAssetsUsd: number;
+    totalSupplyUsd: number;
+    fee: number;
+  };
+  chain: {
+    id: number;
+    network: string;
+  };
+  curator: {
+    name: string;
+    image: string;
+  };
+}
+
+export class MorphoService {
+  private static readonly MORPHO_API_ENDPOINT = 'https://api.morpho.org/graphql';
+  private static readonly REQUEST_TIMEOUT = 30000; // 30 seconds
+  private cache: SimpleCache;
+
+  constructor() {
+    this.cache = new SimpleCache();
+  }
+
+  /**
+   * Execute a GraphQL query against the Morpho API
+   */
+  private async executeQuery(query: string, variables: any = {}): Promise<any> {
+    try {
+      console.log('🔵 Morpho API: Executing GraphQL query');
+      
+      const response = await fetch(MorphoService.MORPHO_API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'VaultAggregator/1.0'
+        },
+        body: JSON.stringify({
+          query,
+          variables
+        }),
+        signal: AbortSignal.timeout(MorphoService.REQUEST_TIMEOUT)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Morpho API responded with ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.errors) {
+        console.error('🔴 Morpho API GraphQL errors:', data.errors);
+        throw new Error(`GraphQL errors: ${data.errors.map((e: any) => e.message).join(', ')}`);
+      }
+
+      console.log('✅ Morpho API: Query executed successfully');
+      return data.data;
+    } catch (error) {
+      console.error('🔴 Morpho API error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch all Morpho vaults with their current state
+   */
+  async getAllVaults(chainId: number = 1): Promise<MorphoVault[]> {
+    const cacheKey = `morpho_vaults_${chainId}`;
+    const cachedData = this.cache.get<MorphoVault[]>(cacheKey);
+    
+    if (cachedData) {
+      console.log('📦 Using cached Morpho vaults data');
+      return cachedData;
+    }
+
+    const query = `
+      query GetMorphoVaults($chainId: Int!) {
+        vaults(
+          where: { chainId: $chainId }
+          first: 1000
+        ) {
+          items {
+            address
+            symbol
+            name
+            asset {
+              address
+              symbol
+              name
+              decimals
+            }
+            state {
+              apy
+              netApy
+              totalAssetsUsd
+              totalSupplyUsd
+              fee
+            }
+            chain {
+              id
+              network
+            }
+            curator {
+              name
+              image
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query, { chainId });
+      const vaults = data.vaults?.items || [];
+      
+      // Cache for 5 minutes
+      this.cache.set(cacheKey, vaults, 5 * 60 * 1000);
+      
+      console.log(`📊 Fetched ${vaults.length} Morpho vaults from API`);
+      return vaults;
+    } catch (error) {
+      console.error('🔴 Failed to fetch Morpho vaults:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch all Morpho markets with their current state
+   */
+  async getAllMarkets(chainId: number = 1): Promise<MorphoMarket[]> {
+    const cacheKey = `morpho_markets_${chainId}`;
+    const cachedData = this.cache.get<MorphoMarket[]>(cacheKey);
+    
+    if (cachedData) {
+      console.log('📦 Using cached Morpho markets data');
+      return cachedData;
+    }
+
+    const query = `
+      query GetMorphoMarkets($chainId: Int!) {
+        markets(
+          where: { chainId: $chainId }
+          first: 1000
+        ) {
+          items {
+            uniqueKey
+            collateralAsset {
+              address
+              symbol
+              name
+              decimals
+            }
+            borrowAsset {
+              address
+              symbol
+              name
+              decimals
+            }
+            state {
+              borrowApy
+              supplyApy
+              utilization
+              totalBorrowUsd
+              totalSupplyUsd
+            }
+            lltv
+            chain {
+              id
+              network
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query, { chainId });
+      const markets = data.markets?.items || [];
+      
+      // Cache for 5 minutes
+      this.cache.set(cacheKey, markets, 5 * 60 * 1000);
+      
+      console.log(`📊 Fetched ${markets.length} Morpho markets from API`);
+      return markets;
+    } catch (error) {
+      console.error('🔴 Failed to fetch Morpho markets:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get specific vault details by address
+   */
+  async getVaultByAddress(address: string, chainId: number = 1): Promise<MorphoVault | null> {
+    const query = `
+      query GetVault($address: Address!, $chainId: Int!) {
+        vaultByAddress(address: $address, chainId: $chainId) {
+          address
+          symbol
+          name
+          asset {
+            address
+            symbol
+            name
+            decimals
+          }
+          state {
+            apy
+            netApy
+            totalAssetsUsd
+            totalSupplyUsd
+            fee
+          }
+          chain {
+            id
+            network
+          }
+          curator {
+            name
+            image
+          }
+          allocations {
+            supplyAssetsUsd
+            market {
+              uniqueKey
+              collateralAsset {
+                symbol
+              }
+              borrowAsset {
+                symbol
+              }
+              state {
+                borrowApy
+                supplyApy
+                utilization
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query, { address, chainId });
+      const vault = data.vaultByAddress;
+      
+      if (vault) {
+        console.log(`📊 Fetched Morpho vault details for ${address}`);
+      }
+      
+      return vault || null;
+    } catch (error) {
+      console.error('🔴 Failed to fetch Morpho vault details:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get historical APY data for a vault
+   */
+  async getVaultHistoricalData(
+    address: string, 
+    chainId: number = 1,
+    days: number = 30
+  ): Promise<Array<{ timestamp: string; apy: number; netApy: number }>> {
+    const startTimestamp = Math.floor((Date.now() - days * 24 * 60 * 60 * 1000) / 1000);
+    
+    const query = `
+      query GetVaultHistory($address: Address!, $chainId: Int!, $startTimestamp: Int!) {
+        vaultByAddress(address: $address, chainId: $chainId) {
+          historicalState(
+            where: { timestamp_gte: $startTimestamp }
+            orderBy: { timestamp: ASC }
+            first: 1000
+          ) {
+            items {
+              timestamp
+              apy
+              netApy
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query, { address, chainId, startTimestamp });
+      const historicalData = data.vaultByAddress?.historicalState?.items || [];
+      
+      console.log(`📊 Fetched ${historicalData.length} historical data points for vault ${address}`);
+      return historicalData.map((item: any) => ({
+        timestamp: new Date(item.timestamp * 1000).toISOString(),
+        apy: item.apy,
+        netApy: item.netApy
+      }));
+    } catch (error) {
+      console.error('🔴 Failed to fetch Morpho vault historical data:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get user positions across all Morpho markets and vaults
+   */
+  async getUserPositions(userAddress: string, chainId: number = 1): Promise<any> {
+    const query = `
+      query GetUserPositions($userAddress: Address!, $chainId: Int!) {
+        user(address: $userAddress, chainId: $chainId) {
+          morphoPositions {
+            supplyShares
+            borrowShares
+            collateral
+            supplyAssetsUsd
+            borrowAssetsUsd
+            market {
+              uniqueKey
+              collateralAsset {
+                symbol
+              }
+              borrowAsset {
+                symbol
+              }
+              state {
+                supplyApy
+                borrowApy
+              }
+            }
+          }
+          vaultPositions {
+            supplyShares
+            supplyAssetsUsd
+            vault {
+              address
+              symbol
+              state {
+                apy
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query, { userAddress, chainId });
+      const user = data.user;
+      
+      if (user) {
+        console.log(`📊 Fetched Morpho positions for user ${userAddress}`);
+      }
+      
+      return user;
+    } catch (error) {
+      console.error('🔴 Failed to fetch Morpho user positions:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Test connection to Morpho API
+   */
+  async testConnection(): Promise<boolean> {
+    const query = `
+      query TestConnection {
+        chains {
+          items {
+            id
+            network
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query);
+      console.log('✅ Morpho API connection test successful');
+      console.log('🌐 Available chains:', data.chains?.items?.map((c: any) => `${c.network} (${c.id})`).join(', '));
+      return true;
+    } catch (error) {
+      console.error('🔴 Morpho API connection test failed:', error);
+      return false;
+    }
+  }
+}
+
+export const morphoService = new MorphoService();
