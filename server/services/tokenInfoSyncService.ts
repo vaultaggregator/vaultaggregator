@@ -36,10 +36,31 @@ export class TokenInfoSyncService {
       // Extract underlying token address from pool raw data
       const underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      // Special handling for known pools
+      // Special handling for known pools with correct token addresses
       if (poolId === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-        // Steakhouse pool
-        const tokenAddress = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+        // STEAKUSDC pool - map to USDC contract
+        const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+        await this.fetchAndStoreTokenInfo(poolId, tokenAddress);
+        return;
+      }
+      
+      if (poolId === '31e292ba-a842-490b-8688-3868e18bd615') {
+        // STETH pool - map to stETH contract  
+        const tokenAddress = '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
+        await this.fetchAndStoreTokenInfo(poolId, tokenAddress);
+        return;
+      }
+      
+      // Map tokens by symbol for additional safety
+      const symbol = rawData?.symbol || '';
+      if (symbol === 'STETH' || symbol === 'stETH') {
+        const tokenAddress = '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
+        await this.fetchAndStoreTokenInfo(poolId, tokenAddress);
+        return;
+      }
+      
+      if (symbol === 'STEAKUSDC' || symbol === 'steakUSDC') {
+        const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
         await this.fetchAndStoreTokenInfo(poolId, tokenAddress);
         return;
       }
