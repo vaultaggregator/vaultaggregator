@@ -433,9 +433,9 @@ export class MorphoService {
     // Simple test query for Morpho API
     const query = `
       query {
-        __schema {
-          queryType {
-            name
+        vaults(first: 1) {
+          items {
+            address
           }
         }
       }
@@ -444,10 +444,118 @@ export class MorphoService {
     try {
       const data = await this.executeQuery(query);
       console.log('✅ Morpho API connection test successful');
+      console.log(`🔗 Found ${data.vaults?.items?.length || 0} vaults`);
       return true;
     } catch (error) {
       console.error('🔴 Morpho API connection test failed:', error);
       return false;
+    }
+  }
+
+  /**
+   * Get historical APY data for a vault (7d, 30d, 90d)
+   */
+  async getVaultHistoricalApy(vaultAddress: string, chainId: number = 1): Promise<{
+    current: number;
+    daily: number;
+    weekly: number;
+    monthly: number;
+    historical7d?: Array<{x: number, y: number}>;
+    historical30d?: Array<{x: number, y: number}>;
+    historical90d?: Array<{x: number, y: number}>;
+  } | null> {
+    const cacheKey = `vault_apy_${vaultAddress}_${chainId}`;
+    const cachedData = this.cache.get(cacheKey);
+    
+    if (cachedData) {
+      console.log(`📦 Using cached APY data for vault ${vaultAddress}`);
+      return cachedData;
+    }
+
+    const query = `
+      query GetVaultApyData($vaultAddress: String!, $chainId: Int!, $options7d: TimeseriesOptions, $options30d: TimeseriesOptions, $options90d: TimeseriesOptions) {
+        vaultByAddress(address: $vaultAddress, chainId: $chainId) {
+          address
+          state {
+            apy
+            netApy
+            dailyApy
+            dailyNetApy
+            weeklyApy
+            weeklyNetApy
+            monthlyApy
+            monthlyNetApy
+          }
+          historicalState {
+            apy7d: apy(options: $options7d) {
+              x
+              y
+            }
+            apy30d: apy(options: $options30d) {
+              x
+              y
+            }
+            apy90d: apy(options: $options90d) {
+              x
+              y
+            }
+          }
+        }
+      }
+    `;
+
+    const now = Math.floor(Date.now() / 1000);
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+    const thirtyDaysAgo = now - (30 * 24 * 60 * 60);
+    const ninetyDaysAgo = now - (90 * 24 * 60 * 60);
+
+    const variables = {
+      vaultAddress,
+      chainId,
+      options7d: {
+        startTimestamp: sevenDaysAgo,
+        endTimestamp: now,
+        interval: "DAY"
+      },
+      options30d: {
+        startTimestamp: thirtyDaysAgo,
+        endTimestamp: now,
+        interval: "DAY"
+      },
+      options90d: {
+        startTimestamp: ninetyDaysAgo,
+        endTimestamp: now,
+        interval: "DAY"
+      }
+    };
+
+    try {
+      const data = await this.executeQuery(query, variables);
+      const vault = data.vaultByAddress;
+      
+      if (!vault) {
+        console.log(`⚠️ No vault found for address ${vaultAddress}`);
+        return null;
+      }
+
+      const result = {
+        current: vault.state.apy || 0,
+        daily: vault.state.dailyApy || vault.state.apy || 0,
+        weekly: vault.state.weeklyApy || vault.state.apy || 0,
+        monthly: vault.state.monthlyApy || vault.state.apy || 0,
+        historical7d: vault.historicalState?.apy7d || [],
+        historical30d: vault.historicalState?.apy30d || [],
+        historical90d: vault.historicalState?.apy90d || []
+      };
+
+      // Cache for 10 minutes
+      this.cache.set(cacheKey, result, 10 * 60 * 1000);
+      console.log(`📊 Fetched APY data for vault ${vaultAddress}: Current ${(result.current * 100).toFixed(2)}%, Weekly ${(result.weekly * 100).toFixed(2)}%`);
+      
+      return result;
+    } catch (error) {
+      console.error(`🔴 Failed to fetch APY data for vault ${vaultAddress}:`, error);
+      return null;
     }
   }
 }

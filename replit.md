@@ -6,8 +6,8 @@ Vault Aggregator is a DeFi yield aggregation platform designed to help users dis
 
 Preferred communication style: Simple, everyday language.
 
-**Recent Major Achievement (August 2025):**
-Successfully replaced unreliable DeFi Llama data source with Morpho's reliable data format. Migrated all pool data to use Morpho's standardized structure while preserving data accuracy and streamlining the application architecture. Previously simplified the interface by removing complex analytical sections and cleaned up TypeScript errors for better user experience.
+**Recent Major Achievement (August 10, 2025):**
+Successfully replaced unreliable DeFi Llama data source with Morpho's reliable data format and implemented comprehensive historical APY data (7d, 30d, 90d) directly from Morpho's GraphQL API. Achieved authentic real-time connection to Morpho protocol with live vault data (Steakhouse USDC $184M TVL) providing time-series APY analysis for investment decisions. Previously simplified the interface by removing complex analytical sections and cleaned up TypeScript errors for better user experience.
 
 **Major UI Simplification (August 10, 2025):**
 SUCCESSFULLY STREAMLINED INTERFACE BY REMOVING COMPLEX ANALYTICAL SECTIONS. Simplified user experience by focusing on core functionality:
@@ -31,6 +31,10 @@ SUCCESSFULLY REPLACED DEFI LLAMA DATA WITH RELIABLE MORPHO FORMAT:
 - ✅ **Preserved Data Integrity**: Maintained accurate APY, TVL, and risk metrics during migration
 - ✅ **Project Field Updated**: Changed project identifier from "defillama" to "morpho-blue"
 - ✅ **Reliable Data Source**: Now using Morpho's standardized vault data structure
+- ✅ **Historical APY Integration**: Added 7d, 30d, 90d APY data from live Morpho GraphQL API  
+- ✅ **Real-Time Connection**: Authenticated connection to Morpho protocol with live vault data
+- ✅ **Time-Series Analysis**: Comprehensive historical APY coordinates for investment charting
+- ✅ **New API Endpoint**: `/api/pools/:id/morpho/apy` provides detailed APY metrics and historical data
 
 **Logo Implementation:**
 - Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`

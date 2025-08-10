@@ -567,6 +567,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get historical APY data (7d, 30d, 90d) for a pool from Morpho API
+  app.get("/api/pools/:id/morpho/apy", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const pool = await storage.getPoolById(id);
+      
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Extract vault address from the migrated Morpho data
+      const vaultAddress = pool.rawData?.address || pool.poolAddress;
+      const chainId = pool.rawData?.chain?.id || 1;
+      
+      if (!vaultAddress) {
+        return res.status(400).json({ error: "No vault address found for this pool" });
+      }
+
+      console.log(`🔍 Fetching Morpho APY data for vault ${vaultAddress} on chain ${chainId}`);
+      
+      const apyData = await morphoService.getVaultHistoricalApy(vaultAddress, chainId);
+      
+      if (!apyData) {
+        return res.status(404).json({ error: "No APY data found for this vault" });
+      }
+
+      res.json({
+        poolId: id,
+        vaultAddress,
+        chainId,
+        apy: {
+          current: (apyData.current * 100).toFixed(4) + '%',
+          daily: (apyData.daily * 100).toFixed(4) + '%',
+          weekly: (apyData.weekly * 100).toFixed(4) + '%', // 7d APY
+          monthly: (apyData.monthly * 100).toFixed(4) + '%', // 30d APY
+          quarterly: apyData.historical90d && apyData.historical90d.length > 0 
+            ? (apyData.historical90d[apyData.historical90d.length - 1].y * 100).toFixed(4) + '%'
+            : 'N/A' // 90d APY
+        },
+        historicalData: {
+          last7Days: apyData.historical7d,
+          last30Days: apyData.historical30d,
+          last90Days: apyData.historical90d
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching Morpho APY data:", error);
+      res.status(500).json({ error: "Failed to fetch APY data" });
+    }
+  });
+
   app.get("/api/morpho/vaults", async (req, res) => {
     try {
       const { chainId = 1 } = req.query;
