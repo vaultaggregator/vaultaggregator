@@ -870,8 +870,22 @@ export default function PoolDetail() {
                                   : Math.abs(metrics.netFlow || 0) >= 1000 
                                   ? `${(metrics.netFlow || 0) >= 0 ? '+' : '-'}${(Math.abs(metrics.netFlow || 0) / 1000).toFixed(2)}K`
                                   : `${(metrics.netFlow || 0) >= 0 ? '+' : ''}${(metrics.netFlow || 0).toFixed(2)}`
-                                }
+                                } {tokenTransfers.tokenSymbol}
                               </p>
+                              {tokenInfo?.tokenInfo?.priceUsd && (
+                                <p className={`text-sm mt-1 ${
+                                  (metrics.netFlow || 0) > 0 
+                                    ? 'text-blue-700 dark:text-blue-400'
+                                    : (metrics.netFlow || 0) < 0
+                                    ? 'text-orange-700 dark:text-orange-400'
+                                    : 'text-gray-700 dark:text-gray-400'
+                                }`}>
+                                  ${(metrics.netFlow || 0) >= 0 ? '+' : ''}${((metrics.netFlow || 0) * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                  })} USD
+                                </p>
+                              )}
                             </div>
                             
                             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
