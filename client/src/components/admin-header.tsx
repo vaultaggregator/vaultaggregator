@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3 } from "lucide-react";
+import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminHeader() {
@@ -23,6 +23,7 @@ export default function AdminHeader() {
     { path: "/admin-networks", icon: Settings, label: "Networks" },
     { path: "/admin-categories", icon: Tag, label: "Categories" },
     { path: "/admin-api-keys", icon: Key, label: "API Keys" },
+    { path: "/admin-errors", icon: AlertTriangle, label: "Error Logs", highlight: true },
   ];
 
   return (
@@ -46,14 +47,19 @@ export default function AdminHeader() {
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.path;
+              const isErrorsTab = item.highlight;
               
               return (
                 <Link key={item.path} href={item.path}>
                   <a
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                        ? (isErrorsTab 
+                            ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300" 
+                            : "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300")
+                        : (isErrorsTab
+                            ? "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white")
                     }`}
                   >
                     <Icon className="w-4 h-4" />

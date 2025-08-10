@@ -33,6 +33,25 @@ export const apiKeyUsage = pgTable("api_key_usage", {
   userAgent: text("user_agent"),
 });
 
+// 🚨 Creative Error Logging System for Admin Dashboard
+export const errorLogs = pgTable("error_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(), // Human-readable error title
+  description: text("description").notNull(), // Detailed description  
+  errorType: varchar("error_type", { length: 100 }).notNull(), // API, Database, Validation, Service
+  severity: varchar("severity", { length: 50 }).notNull().default("medium"), // low, medium, high, critical
+  source: text("source"), // Which service/function caused the error
+  stackTrace: text("stack_trace"), // Technical stack trace
+  fixPrompt: text("fix_prompt").notNull(), // The AI prompt to copy for fixing
+  metadata: jsonb("metadata"), // Additional context (API responses, user actions, etc.)
+  isResolved: boolean("is_resolved").notNull().default(false),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: varchar("resolved_by"), // Admin who marked as resolved
+  occurredAt: timestamp("occurred_at").defaultNow(),
+  lastOccurredAt: timestamp("last_occurred_at").defaultNow(),
+  count: integer("count").notNull().default(1), // How many times this error occurred
+});
+
 export const chains = pgTable("chains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
@@ -668,6 +687,13 @@ export const insertDeveloperApplicationSchema = createInsertSchema(developerAppl
   createdAt: true,
 });
 
+export const insertErrorLogSchema = createInsertSchema(errorLogs).omit({
+  id: true,
+  occurredAt: true,
+  lastOccurredAt: true,
+  count: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -747,6 +773,9 @@ export type InsertApiEndpoint = z.infer<typeof insertApiEndpointSchema>;
 
 export type DeveloperApplication = typeof developerApplications.$inferSelect;
 export type InsertDeveloperApplication = z.infer<typeof insertDeveloperApplicationSchema>;
+
+export type ErrorLog = typeof errorLogs.$inferSelect;
+export type InsertErrorLog = z.infer<typeof insertErrorLogSchema>;
 
 // Extended types for API responses
 export type PoolWithRelations = Pool & {

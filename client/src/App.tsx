@@ -37,6 +37,7 @@ import AIYieldPredictor from "@/pages/ai-yield-predictor";
 import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
 import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
 import AdminLogoManagement from "@/pages/admin-logo-management";
+import AdminErrors from "@/pages/admin-errors";
 import MarketIntelligence from "@/pages/market-intelligence";
 import AdvancedSearch from "@/pages/advanced-search";
 import YieldForecasting from "@/pages/yield-forecasting";
@@ -87,6 +88,7 @@ function Router() {
       <Route path="/admin-categories" component={AdminCategories} />
       <Route path="/admin-api-keys" component={AdminApiKeys} />
       <Route path="/admin-logo-management" component={AdminLogoManagement} />
+      <Route path="/admin-errors" component={AdminErrors} />
       <Route component={NotFound} />
     </Switch>
   );

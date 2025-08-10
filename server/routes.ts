@@ -2046,6 +2046,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { startScheduler } = await import('./services/scheduler');
   startScheduler();
 
+  // Admin Error Management Routes
+  const adminErrorsRouter = (await import("./routes/admin-errors")).default;
+  app.use("/api/admin/errors", requireAuth, adminErrorsRouter);
+
   // Logo Management Routes
   app.post("/api/admin/logos/update-all", requireAuth, async (req, res) => {
     try {
