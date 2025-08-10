@@ -26,6 +26,15 @@ Preferred communication style: Simple, everyday language.
 - Lido protocol addresses already functioning correctly for stETH analysis
 - Flow analysis now provides authentic data showing real inflow/outflow metrics across all time periods
 
+**Data Synchronization Issues (Resolved: August 2025):**
+- Fixed critical sync failure where pool data wasn't updating every 10 minutes as scheduled
+- Root cause: Database defiLlamaId mismatch prevented pool updates during sync
+- Solution: Updated steakUSDC pool's defiLlamaId from null to proper UUID value
+- Fixed platform mapping case sensitivity issue ("Lido"/"Morpho" vs "lido"/"morpho-blue")
+- Added comprehensive platform name mapping to handle DeFi Llama naming variations
+- Corrected storage method usage in sync process (upsertPool handles visibility preservation automatically)
+- Sync process now successfully updates lastUpdated timestamps to current dates
+
 **API Rate Limiting Best Practices (Updated: August 2025):**
 - Etherscan API: 5 calls/second limit with intelligent queuing and 1-second intervals
 - Exponential backoff retry: 3s, 6s, 12s delays on rate limit errors

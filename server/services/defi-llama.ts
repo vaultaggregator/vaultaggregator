@@ -143,6 +143,11 @@ export async function syncData(): Promise<void> {
       console.log('Pools filtered out:', debugInfo.failReasons);
     }
     
+    // Debug: Check if our visible pools are in the filtered list
+    const ourPoolIds = ['747c1d2a-c668-4682-b9f9-296708a3dd90', 'a44febf3-34f6-4cd5-8ab1-f246ebe49f9e'];
+    const foundPools = filteredPools.filter(p => ourPoolIds.includes(p.pool));
+    console.log(`Found ${foundPools.length} of our visible pools in DeFi Llama data:`, foundPools.map(p => p.pool));
+    
     if (filteredPools.length === 0) {
       console.log("No visible pools found in DeFi Llama data - sync complete");
       return;
@@ -186,7 +191,21 @@ export async function syncData(): Promise<void> {
     const allPlatforms = await storage.getPlatforms();
 
     const chainMap = new Map(allChains.map(c => [c.name, c.id]));
-    const platformMap = new Map(allPlatforms.map(p => [p.name, p.id]));
+    
+    // Create comprehensive platform mapping to handle DeFi Llama naming variations
+    const platformMap = new Map();
+    for (const platform of allPlatforms) {
+      const platformName = platform.name.toLowerCase();
+      platformMap.set(platformName, platform.id);
+      
+      // Handle specific naming variations from DeFi Llama
+      if (platformName === 'morpho') {
+        platformMap.set('morpho-blue', platform.id);
+      }
+      if (platformName === 'lido') {
+        platformMap.set('lido', platform.id);
+      }
+    }
 
     let syncedCount = 0;
     let errorCount = 0;
@@ -200,10 +219,10 @@ export async function syncData(): Promise<void> {
         const chainId = chainMap.get(pool.chain?.toLowerCase());
         const platformId = platformMap.get(pool.project?.toLowerCase().replace(/\s+/g, '-'));
 
+        console.log(`Pool ${pool.pool} (${pool.symbol}): chain=${pool.chain} -> chainId=${chainId}, platform=${pool.project} -> platformId=${platformId}`);
+
         if (!chainId || !platformId) {
-          if (pool.project?.toLowerCase() === 'beefy') {
-            console.warn(`Skipping Beefy pool ${pool.pool} - missing chain (${pool.chain}) or platform mapping`);
-          }
+          console.warn(`Skipping pool ${pool.pool} - missing chain (${pool.chain}) or platform (${pool.project}) mapping`);
           continue;
         }
 
@@ -218,11 +237,13 @@ export async function syncData(): Promise<void> {
           defiLlamaId: pool.pool,
           project: 'defillama', // Data source identifier
           rawData: pool,
-          isVisible: false, // Let admin control visibility
+          isVisible: false, // upsertPool will preserve existing visibility automatically
           isActive: true,
         };
 
+        console.log(`Attempting to upsert pool ${pool.pool} for ${pool.symbol}...`);
         const upsertedPool = await storage.upsertPool(pool.pool, poolData);
+        console.log(`Successfully upserted pool ${pool.pool}, new lastUpdated: ${upsertedPool.lastUpdated}`);
         syncedCount++;
 
         // Sync token info for this pool if it has underlying tokens
