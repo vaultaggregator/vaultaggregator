@@ -74,7 +74,7 @@ export const categories = pgTable("categories", {
   iconUrl: text("icon_url"),
   description: text("description"),
   color: text("color").notNull().default("#3B82F6"),
-  parentId: varchar("parent_id").references(() => categories.id),
+  parentId: varchar("parent_id"),
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
@@ -263,7 +263,7 @@ export const discussionReplies = pgTable("discussion_replies", {
   discussionId: varchar("discussion_id").notNull().references(() => discussions.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
-  parentReplyId: varchar("parent_reply_id").references(() => discussionReplies.id),
+  parentReplyId: varchar("parent_reply_id"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
