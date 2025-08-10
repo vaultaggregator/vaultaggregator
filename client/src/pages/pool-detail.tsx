@@ -1061,41 +1061,7 @@ export default function PoolDetail() {
                       </Card>
                     )}
 
-                    {/* Top Whales List */}
-                    {tokenTransfers.flowAnalysis.advanced?.whaleActivity?.topWhales && 
-                     tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.length > 0 && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-sm flex items-center">
-                            <Target className="w-4 h-4 mr-2" />
-                            Top Whale Addresses
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            {tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.map((whale: any, index: number) => (
-                              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-xs font-mono">{whale.address}</span>
-                                  <Badge variant={whale.type === 'accumulator' ? "default" : "destructive"} className="text-xs">
-                                    {whale.type}
-                                  </Badge>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-sm font-medium">
-                                    {whale.totalVolume >= 1000000 
-                                      ? `${(whale.totalVolume / 1000000).toFixed(2)}M`
-                                      : `${(whale.totalVolume / 1000).toFixed(2)}K`
-                                    }
-                                  </p>
-                                  <p className="text-xs text-gray-500">{whale.txCount} txns</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+
                   </div>
                 ) : (
                   // Fallback for old format
