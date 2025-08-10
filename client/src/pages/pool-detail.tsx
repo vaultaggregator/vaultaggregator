@@ -1273,63 +1273,8 @@ export default function PoolDetail() {
 
 
 
-        {/* Pool Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Pool Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Pool Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Token Pair</h4>
-                <p className="text-gray-700 dark:text-gray-300" data-testid="text-token-pair">{pool.tokenPair}</p>
-              </div>
-              <Separator />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Platform</h4>
-                <p className="text-gray-700 dark:text-gray-300" data-testid="text-platform">{pool.platform.displayName}</p>
-              </div>
-              <Separator />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Blockchain Network</h4>
-                <p className="text-gray-700 dark:text-gray-300" data-testid="text-network">{pool.chain.displayName}</p>
-              </div>
-              <Separator />
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Risk Assessment</h4>
-                <Badge className={`${getRiskColor(pool.riskLevel)}`}>
-                  {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
-                </Badge>
-              </div>
-
-              {(pool.rawData?.underlyingTokens && Array.isArray(pool.rawData.underlyingTokens) && pool.rawData.underlyingTokens.length > 0 && pool.platform.showUnderlyingTokens) && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Underlying Tokens</h4>
-                    <div className="space-y-2">
-                      <TokenDisplay 
-                        addresses={pool.rawData.underlyingTokens}
-                        maxDisplay={5}
-                        showNormalizeButton={true}
-                        size="md"
-                        variant="outline"
-                        className="space-y-2"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-
-            </CardContent>
-          </Card>
-
-          {/* Notes Section */}
-          <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
-
-
-        </div>
+        {/* Notes Section */}
+        <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
 
 
       </div>
