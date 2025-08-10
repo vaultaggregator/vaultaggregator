@@ -862,7 +862,7 @@ export default function PoolDetail() {
                                 {metrics.uniqueAddressCount || 0}
                               </p>
                               <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
-                                Unique participants
+                                Unique participants ({period === '24h' ? '24 hours' : period === '7d' ? '7 days' : period === '30d' ? '30 days' : 'all time'})
                               </p>
                             </div>
                           </div>
