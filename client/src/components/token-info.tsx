@@ -36,6 +36,8 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
   const { data: tokenData, isLoading, error } = useQuery({
     queryKey: [`/api/pools/${poolId}/token-info`],
     retry: 1,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
   });
 
   const copyToClipboard = (text: string) => {
@@ -59,10 +61,14 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
   };
 
   const formatTokenAmount = (amount: string, decimals: string = "18") => {
-    const value = BigInt(amount);
-    const divisor = BigInt(10) ** BigInt(decimals);
-    const result = value / divisor;
-    return formatNumber(result.toString());
+    try {
+      const value = BigInt(amount);
+      const divisor = BigInt(Math.pow(10, parseInt(decimals)));
+      const result = value / divisor;
+      return formatNumber(result.toString());
+    } catch {
+      return "0";
+    }
   };
 
   if (isLoading) {
@@ -89,7 +95,7 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
     return null; // Silently fail if no token data available
   }
 
-  const { tokenInfo, contractInfo, supplyData, holders, transfers, technical } = tokenData;
+  const { tokenInfo, contractInfo, supplyData, holders, transfers, technical } = tokenData as any;
 
   return (
     <Card className="mt-8">
@@ -121,19 +127,19 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
             </div>
             <div className="flex items-center gap-2">
               <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                {formatAddress(tokenData.tokenAddress)}
+                {formatAddress((tokenData as any).tokenAddress)}
               </code>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => copyToClipboard(tokenData.tokenAddress)}
+                onClick={() => copyToClipboard((tokenData as any).tokenAddress)}
               >
                 {copiedAddress ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => window.open(`https://etherscan.io/token/${tokenData.tokenAddress}`, '_blank')}
+                onClick={() => window.open(`https://etherscan.io/token/${(tokenData as any).tokenAddress}`, '_blank')}
               >
                 <ExternalLink className="w-4 h-4" />
               </Button>
@@ -145,19 +151,46 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Total Supply</p>
               <p className="text-sm font-semibold">
-                {supplyData ? formatTokenAmount(supplyData.totalSupply, tokenInfo?.decimals) : "N/A"}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                    Loading...
+                  </span>
+                ) : supplyData ? (
+                  formatTokenAmount(supplyData.totalSupply, tokenInfo?.decimals)
+                ) : (
+                  "N/A"
+                )}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Holders</p>
               <p className="text-sm font-semibold">
-                {holders?.count > 0 ? holders.count : "N/A"}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                    Loading...
+                  </span>
+                ) : holders?.count > 0 ? (
+                  holders.count.toLocaleString()
+                ) : (
+                  "N/A"
+                )}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
               <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">24h Transfers</p>
               <p className="text-sm font-semibold">
-                {transfers?.analytics?.transferCount24h > 0 ? transfers.analytics.transferCount24h : "N/A"}
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+                    Loading...
+                  </span>
+                ) : transfers?.analytics?.transferCount24h > 0 ? (
+                  transfers.analytics.transferCount24h.toLocaleString()
+                ) : (
+                  "N/A"
+                )}
               </p>
             </div>
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">

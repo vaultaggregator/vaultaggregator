@@ -62,6 +62,7 @@ export interface IStorage {
     changeAllTime: { value: number; percentage: number } | null;
     firstRecordDate: Date | null;
   }>;
+  getLatestHolderHistory(tokenAddress: string): Promise<HolderHistory | undefined>;
 
   // Pool methods
   getPools(options?: {
@@ -441,6 +442,16 @@ export class DatabaseStorage implements IStorage {
       changeAllTime: firstRecord ? calculateChange(firstRecord.holdersCount, current) : null,
       firstRecordDate: firstRecord?.timestamp || null,
     };
+  }
+
+  async getLatestHolderHistory(tokenAddress: string): Promise<HolderHistory | undefined> {
+    const [latestRecord] = await db
+      .select()
+      .from(holderHistory)
+      .where(eq(holderHistory.tokenAddress, tokenAddress))
+      .orderBy(desc(holderHistory.timestamp))
+      .limit(1);
+    return latestRecord || undefined;
   }
 
   async getPools(options: {
