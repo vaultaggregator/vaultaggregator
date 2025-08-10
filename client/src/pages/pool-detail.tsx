@@ -528,8 +528,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
-                {tokenInfo?.holders?.count ? formatHolders(tokenInfo.holders.count) : 
-                 tokenInfo?.tokenInfo?.holdersCount ? formatHolders(tokenInfo.tokenInfo.holdersCount) : 'N/A'}
+                {holderAnalytics?.analytics?.current ? formatHolders(holderAnalytics.analytics.current) : 'N/A'}
               </p>
             </CardContent>
           </Card>
