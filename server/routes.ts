@@ -2840,7 +2840,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dataSource = 'alchemy';
           console.log(`✓ Alchemy: Successfully fetched ${allTransfers.length} transfers`);
         } catch (error) {
-          console.warn('Alchemy API failed, falling back to Etherscan:', error.message);
+          console.warn('Alchemy API failed, falling back to Etherscan:', error instanceof Error ? error.message : String(error));
           allTransfers = []; // Reset for Etherscan fallback
         }
       } else {
