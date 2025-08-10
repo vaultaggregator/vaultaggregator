@@ -165,7 +165,24 @@ function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }
 
 // DeFi Llama integration removed - using Morpho API instead
 
-
+// Morpho APY Data Type
+interface MorphoApyData {
+  poolId: string;
+  vaultAddress: string;
+  chainId: number;
+  apy: {
+    current: string;
+    daily: string;
+    weekly: string;
+    monthly: string;
+    quarterly: string;
+  };
+  historicalData: {
+    last7Days: Array<{x: number, y: number}>;
+    last30Days: Array<{x: number, y: number}>;
+    last90Days: Array<{x: number, y: number}>;
+  };
+}
 
 export default function PoolDetail() {
   const params = useParams<{ 
@@ -182,6 +199,14 @@ export default function PoolDetail() {
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: ['/api/pools', poolId],
     enabled: !!poolId,
+  });
+
+  // Fetch Morpho APY data for historical metrics (7d, 30d, 90d)
+  const { data: morphoApyData, isLoading: morphoApyLoading } = useQuery<MorphoApyData>({
+    queryKey: ['/api/pools', poolId, 'morpho/apy'],
+    enabled: !!poolId && !!pool && pool.platform.name === 'Morpho',
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
   });
 
   // Scroll to top when page loads or pool ID changes (mobile navigation fix)
@@ -423,14 +448,31 @@ export default function PoolDetail() {
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
                   <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-600" />
-                  <span className="hidden sm:inline">Current APY (24h)</span>
-                  <span className="sm:hidden">24h APY</span>
+                  <span className="hidden sm:inline">Current APY</span>
+                  <span className="sm:hidden">Current</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600" data-testid="text-apy-current">
-                {formatApy(pool.apy)}
+                {morphoApyData?.apy?.current || formatApy(pool.apy)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                <MetricTooltip metric="7d-apy" variant="icon" side="bottom">
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
+                  <span className="hidden sm:inline">7-Day APY</span>
+                  <span className="sm:hidden">7d APY</span>
+                </MetricTooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-500" data-testid="text-apy-7d">
+                {morphoApyData?.apy?.weekly || 'N/A'}
               </p>
             </CardContent>
           </Card>
@@ -439,15 +481,32 @@ export default function PoolDetail() {
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <MetricTooltip metric="30d-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
-                  <span className="hidden sm:inline">30-Day Average APY</span>
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-500" />
+                  <span className="hidden sm:inline">30-Day APY</span>
                   <span className="sm:hidden">30d APY</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-500" data-testid="text-apy-30d">
-                {pool.rawData?.apyMean30d ? formatApy(pool.rawData.apyMean30d.toString()) : 'N/A'}
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-500" data-testid="text-apy-30d">
+                {morphoApyData?.apy?.monthly || 'N/A'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                <MetricTooltip metric="90d-apy" variant="icon" side="bottom">
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-purple-500" />
+                  <span className="hidden sm:inline">90-Day APY</span>
+                  <span className="sm:hidden">90d APY</span>
+                </MetricTooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-500" data-testid="text-apy-90d">
+                {morphoApyData?.apy?.quarterly || 'N/A'}
               </p>
             </CardContent>
           </Card>
