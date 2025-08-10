@@ -8,6 +8,29 @@ export class TokenInfoSyncService {
     this.etherscanApiKey = process.env.ETHERSCAN_API_KEY || "demo";
   }
 
+  private async logError(title: string, description: string, error: string, tokenAddress?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+    try {
+      const { errorLogger } = await import('./errorLogger.js');
+      await errorLogger.logError({
+        title,
+        description,
+        errorType: 'Service',
+        severity,
+        source: 'TokenInfoSyncService',
+        stackTrace: error,
+        fixPrompt: `Token synchronization issue detected. Check if the Etherscan API is accessible, verify the ETHERSCAN_API_KEY, and ensure proper token address mapping. This affects token information display and accuracy.`,
+        metadata: {
+          error,
+          tokenAddress,
+          timestamp: new Date().toISOString(),
+          service: 'TokenInfoSync'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log Token Info Sync error:', logError);
+    }
+  }
+
   async syncTokenInfo(poolId: string, rawData: any): Promise<void> {
     try {
       // Extract underlying token address from pool raw data
@@ -23,12 +46,28 @@ export class TokenInfoSyncService {
       
       if (!underlyingToken) {
         console.log(`No underlying token found for pool ${poolId}`);
+        await this.logError(
+          'Token Sync Missing Underlying Token',
+          `No underlying token address found for pool ${poolId}. This affects token information display and pool details accuracy.`,
+          `Missing underlying token for pool ${poolId}`,
+          undefined,
+          'low'
+        );
         return;
       }
 
       await this.fetchAndStoreTokenInfo(poolId, underlyingToken);
     } catch (error) {
-      console.error(`Error syncing token info for pool ${poolId}:`, error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`Error syncing token info for pool ${poolId}:`, errorMsg);
+      
+      await this.logError(
+        'Token Sync General Error',
+        `Failed to synchronize token information for pool ${poolId}. This affects token details, logos, and related pool information.`,
+        errorMsg,
+        undefined,
+        'medium'
+      );
     }
   }
 
@@ -50,6 +89,13 @@ export class TokenInfoSyncService {
       const tokenInfo = await this.fetchTokenInfoFromEtherscan(tokenAddress);
       if (!tokenInfo) {
         console.log(`Could not fetch token info for ${tokenAddress}`);
+        await this.logError(
+          'Token Info Fetch Failed',
+          `Could not fetch token information for address ${tokenAddress} from Etherscan. This affects token display, logos, and pool details.`,
+          `Failed to fetch token info for ${tokenAddress}`,
+          tokenAddress,
+          'medium'
+        );
         return;
       }
 
@@ -61,7 +107,16 @@ export class TokenInfoSyncService {
       
       console.log(`Successfully synced token info for ${tokenAddress}`);
     } catch (error) {
-      console.error(`Error fetching and storing token info for ${tokenAddress}:`, error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`Error fetching and storing token info for ${tokenAddress}:`, errorMsg);
+      
+      await this.logError(
+        'Token Info Fetch and Store Error',
+        `Error during token information fetch and storage process for address ${tokenAddress}. This may be due to API issues, database problems, or network connectivity.`,
+        errorMsg,
+        tokenAddress,
+        'medium'
+      );
     }
   }
 

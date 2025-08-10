@@ -7,6 +7,29 @@ import type { Pool } from "@shared/schema";
  */
 export class MarketIntelligenceService {
 
+  private async logError(title: string, description: string, error: string, operation?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+    try {
+      const { errorLogger } = await import('./errorLogger.js');
+      await errorLogger.logError({
+        title,
+        description,
+        errorType: 'Service',
+        severity,
+        source: 'MarketIntelligenceService',
+        stackTrace: error,
+        fixPrompt: `Market intelligence analysis failed. Check database connectivity, verify data integrity, and ensure all required data sources are available. This affects market analytics and insights.`,
+        metadata: {
+          error,
+          operation,
+          timestamp: new Date().toISOString(),
+          service: 'MarketIntelligence'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log Market Intelligence error:', logError);
+    }
+  }
+
   /**
    * Get comprehensive market overview
    */
@@ -14,8 +37,8 @@ export class MarketIntelligenceService {
     try {
       const [pools, chains, platforms, categories] = await Promise.all([
         storage.getPools({ onlyVisible: true, limit: 1000 }),
-        storage.getAllChains(),
-        storage.getAllPlatforms(),
+        storage.getChains(),
+        storage.getPlatforms(),
         storage.getAllCategories()
       ]);
 
@@ -46,7 +69,17 @@ export class MarketIntelligenceService {
       };
 
     } catch (error) {
-      console.error("Error generating market overview:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error generating market overview:", errorMsg);
+      
+      await this.logError(
+        'Market Overview Generation Failed',
+        'Failed to generate comprehensive market overview. This affects the main market intelligence dashboard and analytics functionality.',
+        errorMsg,
+        'getMarketOverview',
+        'high'
+      );
+      
       throw error;
     }
   }
@@ -67,7 +100,17 @@ export class MarketIntelligenceService {
       };
 
     } catch (error) {
-      console.error("Error getting top performers:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error getting top performers:", errorMsg);
+      
+      await this.logError(
+        'Top Performers Analysis Failed',
+        'Failed to analyze top performing pools. This affects the performance rankings and trending pool displays.',
+        errorMsg,
+        'getTopPerformers',
+        'medium'
+      );
+      
       throw error;
     }
   }

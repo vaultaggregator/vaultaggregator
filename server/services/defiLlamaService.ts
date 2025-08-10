@@ -31,11 +31,44 @@ export class DefiLlamaService {
   private static readonly BASE_URL = 'https://yields.llama.fi';
   private static readonly API_BASE_URL = 'https://api.llama.fi';
 
+  private static async logError(title: string, description: string, error: string, endpoint: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+    try {
+      const { errorLogger } = await import('./errorLogger.js');
+      await errorLogger.logError({
+        title,
+        description,
+        errorType: 'API',
+        severity,
+        source: 'DefiLlamaService',
+        stackTrace: error,
+        fixPrompt: `DeFi Llama API issue detected. Check if the DeFi Llama service is operational, verify network connectivity, and consider implementing retry logic. This affects pool data, APY rates, and TVL information. Endpoint: ${endpoint}`,
+        metadata: {
+          endpoint,
+          error,
+          timestamp: new Date().toISOString(),
+          service: 'DeFi Llama'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log DeFi Llama error:', logError);
+    }
+  }
+
   static async getPoolDetails(poolId: string): Promise<DefiLlamaPoolData | null> {
     try {
       const response = await fetch(`${this.BASE_URL}/pools`);
       if (!response.ok) {
-        console.error(`Failed to fetch pool details: ${response.status}`);
+        const errorMsg = `Failed to fetch pool details: ${response.status}`;
+        console.error(errorMsg);
+        
+        await this.logError(
+          'DeFi Llama Pool Details API Error',
+          `Failed to fetch pool details from DeFi Llama API with status ${response.status}. This affects individual pool information display and data accuracy.`,
+          errorMsg,
+          `${this.BASE_URL}/pools`,
+          response.status >= 500 ? 'high' : 'medium'
+        );
+        
         return null;
       }
 
@@ -51,7 +84,17 @@ export class DefiLlamaService {
 
       return pool || null;
     } catch (error) {
-      console.error('Error fetching pool details from DeFi Llama:', error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error('Error fetching pool details from DeFi Llama:', errorMsg);
+      
+      await this.logError(
+        'DeFi Llama Pool Details Network Error',
+        `Network error while fetching pool details from DeFi Llama. This may be due to connectivity issues, server downtime, or DNS problems. Pool detail pages will show cached or incomplete data.`,
+        errorMsg,
+        `${this.BASE_URL}/pools`,
+        'high'
+      );
+      
       return null;
     }
   }
@@ -60,7 +103,17 @@ export class DefiLlamaService {
     try {
       const response = await fetch(`${this.BASE_URL}/pools`);
       if (!response.ok) {
-        console.error(`Failed to fetch pools: ${response.status}`);
+        const errorMsg = `Failed to fetch pools: ${response.status}`;
+        console.error(errorMsg);
+        
+        await this.logError(
+          'DeFi Llama Pools by Project API Error',
+          `Failed to fetch pools for project "${projectName}" from DeFi Llama API with status ${response.status}. This affects project-specific pool listings and filtering.`,
+          errorMsg,
+          `${this.BASE_URL}/pools`,
+          response.status >= 500 ? 'high' : 'medium'
+        );
+        
         return [];
       }
 
@@ -72,7 +125,17 @@ export class DefiLlamaService {
         pool.project.toLowerCase().includes(projectName.toLowerCase())
       );
     } catch (error) {
-      console.error('Error fetching pools from DeFi Llama:', error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error('Error fetching pools from DeFi Llama:', errorMsg);
+      
+      await this.logError(
+        'DeFi Llama Pools by Project Network Error',
+        `Network error while fetching pools for project "${projectName}" from DeFi Llama. This may be due to connectivity issues or server problems. Project filtering will show incomplete results.`,
+        errorMsg,
+        `${this.BASE_URL}/pools`,
+        'high'
+      );
+      
       return [];
     }
   }

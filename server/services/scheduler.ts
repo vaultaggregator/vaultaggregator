@@ -3,6 +3,29 @@ import { AIOutlookService } from "./aiOutlookService";
 import { HolderDataSyncService } from "./holderDataSyncService";
 import { storage } from "../storage";
 
+async function logError(title: string, description: string, error: string, service: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+  try {
+    const { errorLogger } = await import('./errorLogger.js');
+    await errorLogger.logError({
+      title,
+      description,
+      errorType: 'Service',
+      severity,
+      source: 'Scheduler',
+      stackTrace: error,
+      fixPrompt: `Scheduled task failure detected. Check if all services are properly configured, verify database connectivity, and ensure proper error handling. This affects automated data synchronization and background tasks.`,
+      metadata: {
+        error,
+        service,
+        timestamp: new Date().toISOString(),
+        operation: 'ScheduledTask'
+      }
+    });
+  } catch (logError) {
+    console.error('Failed to log Scheduler error:', logError);
+  }
+}
+
 let defiLlamaInterval: NodeJS.Timeout | null = null;
 let aiOutlookInterval: NodeJS.Timeout | null = null;
 let holderDataInterval: NodeJS.Timeout | null = null;
@@ -12,8 +35,16 @@ export function startScheduler(): void {
   console.log("Starting data sync scheduler for DeFi Llama and AI Outlooks...");
   
   // Initial DeFi Llama sync
-  syncData().catch((error: any) => {
-    console.error("DeFi Llama initial sync failed:", error);
+  syncData().catch(async (error: any) => {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error("DeFi Llama initial sync failed:", errorMsg);
+    await logError(
+      'DeFi Llama Initial Sync Failed',
+      'Initial DeFi Llama data synchronization failed during application startup. This affects pool data, APY rates, and TVL information availability.',
+      errorMsg,
+      'DefiLlamaSync',
+      'critical'
+    );
   });
 
   // Schedule DeFi Llama sync every 10 minutes
@@ -23,7 +54,15 @@ export function startScheduler(): void {
       await syncData();
       console.log("Scheduled DeFi Llama sync completed");
     } catch (error) {
-      console.error("Error in scheduled DeFi Llama sync:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error in scheduled DeFi Llama sync:", errorMsg);
+      await logError(
+        'Scheduled DeFi Llama Sync Failed',
+        'Scheduled DeFi Llama data synchronization failed. Pool data, APY rates, and TVL information may become stale.',
+        errorMsg,
+        'DefiLlamaSync',
+        'high'
+      );
     }
   }, 10 * 60 * 1000); // 10 minutes
 
@@ -34,7 +73,15 @@ export function startScheduler(): void {
       await generateOutlooksForActivePools();
       console.log("Scheduled AI outlook generation completed");
     } catch (error) {
-      console.error("Error in scheduled AI outlook generation:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error in scheduled AI outlook generation:", errorMsg);
+      await logError(
+        'Scheduled AI Outlook Generation Failed',
+        'Scheduled AI outlook generation failed. Users will not receive updated market insights and predictions.',
+        errorMsg,
+        'AIOutlookGeneration',
+        'medium'
+      );
     }
   }, 2 * 60 * 60 * 1000); // 2 hours
 
@@ -46,7 +93,15 @@ export function startScheduler(): void {
       await holderSyncService.syncAllHolderData();
       console.log("Scheduled holder data sync completed");
     } catch (error) {
-      console.error("Error in scheduled holder data sync:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error in scheduled holder data sync:", errorMsg);
+      await logError(
+        'Scheduled Holder Data Sync Failed',
+        'Scheduled holder data synchronization failed. Holder analytics and growth statistics will not be updated.',
+        errorMsg,
+        'HolderDataSync',
+        'medium'
+      );
     }
   }, 6 * 60 * 60 * 1000); // 6 hours
 
@@ -66,7 +121,15 @@ export function startScheduler(): void {
       
       console.log("Data cleanup tasks completed");
     } catch (error) {
-      console.error("Error in data cleanup tasks:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error in data cleanup tasks:", errorMsg);
+      await logError(
+        'Data Cleanup Tasks Failed',
+        'Scheduled data cleanup tasks failed. Old data may accumulate and affect database performance.',
+        errorMsg,
+        'DataCleanup',
+        'low'
+      );
     }
   }, 60 * 60 * 1000); // 1 hour
 

@@ -59,6 +59,29 @@ interface OutlookResponse {
 export class AIOutlookService {
   constructor(private storage: IStorage) {}
 
+  private async logError(title: string, description: string, error: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+    try {
+      const { errorLogger } = await import('./errorLogger.js');
+      await errorLogger.logError({
+        title,
+        description,
+        errorType: 'External',
+        severity,
+        source: 'AIOutlookService',
+        stackTrace: error,
+        fixPrompt: `OpenAI API issue detected. Check if the OPENAI_API_KEY is properly configured, verify API quota and billing status, and ensure network connectivity. This affects AI-generated market outlooks and predictions.`,
+        metadata: {
+          error,
+          timestamp: new Date().toISOString(),
+          service: 'OpenAI',
+          model: 'gpt-4o'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log AI Outlook error:', logError);
+    }
+  }
+
   /**
    * Calculate dynamic confidence score based on comprehensive market factors
    * New formula considers: APY stability, TVL health, platform maturity, social sentiment
@@ -364,7 +387,16 @@ Respond with JSON in this exact format:
       };
 
     } catch (error) {
-      console.error("Error generating AI outlook:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error generating AI outlook:", errorMsg);
+      
+      await this.logError(
+        'AI Outlook Generation Failed',
+        `Failed to generate AI outlook for pool ${poolId}. This may be due to OpenAI API issues, quota limits, or network problems. Users will not see AI-generated market insights.`,
+        errorMsg,
+        'critical'
+      );
+      
       return null;
     }
   }
@@ -383,7 +415,16 @@ Respond with JSON in this exact format:
         expiresAt
       });
     } catch (error) {
-      console.error("Error saving AI outlook:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error saving AI outlook:", errorMsg);
+      
+      await this.logError(
+        'AI Outlook Save Failed',
+        `Failed to save AI outlook to database for pool ${poolId}. This may be due to database connectivity issues or data validation problems.`,
+        errorMsg,
+        'high'
+      );
+      
       throw error;
     }
   }

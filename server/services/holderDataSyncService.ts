@@ -9,6 +9,29 @@ export class HolderDataSyncService {
     this.etherscanService = new EtherscanTokenService();
   }
 
+  private async logError(title: string, description: string, error: string, tokenAddress?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+    try {
+      const { errorLogger } = await import('./errorLogger.js');
+      await errorLogger.logError({
+        title,
+        description,
+        errorType: 'Service',
+        severity,
+        source: 'HolderDataSyncService',
+        stackTrace: error,
+        fixPrompt: `Holder data synchronization issue detected. Check if the Etherscan API is accessible, verify database connectivity, and ensure proper token address handling. This affects holder analytics and statistics.`,
+        metadata: {
+          error,
+          tokenAddress,
+          timestamp: new Date().toISOString(),
+          service: 'HolderDataSync'
+        }
+      });
+    } catch (logError) {
+      console.error('Failed to log Holder Data Sync error:', logError);
+    }
+  }
+
   /**
    * Sync holder data for all active tokens
    */
@@ -60,7 +83,16 @@ export class HolderDataSyncService {
       });
 
     } catch (error) {
-      console.error("Error during holder data sync:", error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("Error during holder data sync:", errorMsg);
+      
+      await this.logError(
+        'Holder Data Sync Failed',
+        'Failed to synchronize holder data for all active tokens. This affects holder analytics, growth tracking, and statistical displays across the platform.',
+        errorMsg,
+        undefined,
+        'high'
+      );
     }
   }
 
