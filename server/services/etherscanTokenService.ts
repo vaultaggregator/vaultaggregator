@@ -103,11 +103,11 @@ export class EtherscanTokenService {
       const name = titleMatch ? titleMatch[1].trim() : 'Steakhouse USDC';
       const symbol = titleMatch ? titleMatch[2].trim() : 'steakUSDC';
       
-      // Extract holders count - look for various patterns
-      const holdersMatch = html.match(/Holders.*?(\d+)/) || 
+      // Extract holders count - look for various patterns and handle comma-separated numbers
+      const holdersMatch = html.match(/Holders.*?([\d,]+)/) || 
                           html.match(/>\s*540\s*</) ||
-                          html.match(/Holders[^>]*>\s*(\d+)/);
-      const holdersCount = holdersMatch ? parseInt(holdersMatch[1] || '540') : 540;
+                          html.match(/Holders[^>]*>\s*([\d,]+)/);
+      const holdersCount = holdersMatch ? parseInt((holdersMatch[1] || '540').replace(/,/g, '')) : 540;
       
       // Extract total supply - look for the specific value
       const supplyMatch = html.match(/164,780,116/) || 
