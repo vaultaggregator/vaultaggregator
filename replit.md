@@ -6,6 +6,9 @@ Vault Aggregator is a DeFi yield aggregation platform designed to help users dis
 
 Preferred communication style: Simple, everyday language.
 
+**Recent Major Achievement (August 2025):**
+Successfully debugged and enhanced the token flow analysis system, achieving comprehensive DeFi analytics with 15,000+ transfer analysis, 90-day historical coverage, whale activity tracking, and smart money movement detection. Resolved critical Alchemy/Etherscan data format compatibility issues.
+
 **Logo Implementation:**
 - Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`
 - Never use CryptoLogos.cc (returns 403 errors)
@@ -46,7 +49,7 @@ The backend implements a comprehensive multi-source data collection and analysis
 - **Holder Data Sync**: Token holder analytics from Etherscan.
 - **Token Info Sync**: Comprehensive token data with caching.
 - **AI Outlook Generation**: Market predictions.
-- **Token Transfer Analysis**: Protocol-aware flow analysis with accurate inflow/outflow calculations for complex DeFi protocols.
+- **Token Transfer Analysis**: Advanced protocol-aware flow analysis with 15,000+ transfer processing, 90-day historical coverage, and accurate inflow/outflow calculations supporting both Alchemy (decimal) and Etherscan (wei) data formats.
 - **Enhanced API Resilience**: Intelligent rate limiting, exponential backoff retry logic, smart caching, and graceful degradation with stale data fallbacks.
 
 #### Analytics Services

@@ -2975,7 +2975,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process all transfers for comprehensive analysis
       for (const transfer of transfers) {
         const timestamp = parseInt(transfer.timeStamp) * 1000;
-        const value = parseFloat(transfer.value) / Math.pow(10, decimals);
+        // Parse value based on data source format
+        // Alchemy returns decimal values, Etherscan returns wei strings
+        let value: number;
+        if (dataSource === 'alchemy') {
+          // Alchemy already provides decimal values
+          value = parseFloat(transfer.value);
+        } else {
+          // Etherscan provides raw wei values that need decimal conversion
+          value = parseFloat(transfer.value) / Math.pow(10, decimals);
+        }
         const fromAddr = transfer.from.toLowerCase();
         const toAddr = transfer.to.toLowerCase();
         
@@ -3206,7 +3215,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transfers: transfers.slice(0, Math.min(Number(limit), 50)), // Limited for display
         dataQuality, // Include data quality information
         flowAnalysis: {
-          periods: flowMetrics,
+          periods: {
+            '24h': {
+              totalInflow: flowMetrics['24h'].inflow,
+              totalOutflow: flowMetrics['24h'].outflow,
+              inflow: flowMetrics['24h'].inflow,
+              outflow: flowMetrics['24h'].outflow,
+              netFlow: flowMetrics['24h'].netFlow,
+              txCount: flowMetrics['24h'].txCount,
+              uniqueAddresses: flowMetrics['24h'].uniqueAddressCount,
+              avgTransferSize: flowMetrics['24h'].avgSize,
+              dataQuality: flowMetrics['24h'].dataQuality,
+              note: flowMetrics['24h'].note
+            },
+            '7d': {
+              totalInflow: flowMetrics['7d'].inflow,
+              totalOutflow: flowMetrics['7d'].outflow,
+              inflow: flowMetrics['7d'].inflow,
+              outflow: flowMetrics['7d'].outflow,
+              netFlow: flowMetrics['7d'].netFlow,
+              txCount: flowMetrics['7d'].txCount,
+              uniqueAddresses: flowMetrics['7d'].uniqueAddressCount,
+              avgTransferSize: flowMetrics['7d'].avgSize,
+              dataQuality: flowMetrics['7d'].dataQuality,
+              note: flowMetrics['7d'].note
+            },
+            '30d': {
+              totalInflow: flowMetrics['30d'].inflow,
+              totalOutflow: flowMetrics['30d'].outflow,
+              inflow: flowMetrics['30d'].inflow,
+              outflow: flowMetrics['30d'].outflow,
+              netFlow: flowMetrics['30d'].netFlow,
+              txCount: flowMetrics['30d'].txCount,
+              uniqueAddresses: flowMetrics['30d'].uniqueAddressCount,
+              avgTransferSize: flowMetrics['30d'].avgSize,
+              dataQuality: flowMetrics['30d'].dataQuality,
+              note: flowMetrics['30d'].note
+            },
+            'all': {
+              totalInflow: flowMetrics['all'].inflow,
+              totalOutflow: flowMetrics['all'].outflow,
+              inflow: flowMetrics['all'].inflow,
+              outflow: flowMetrics['all'].outflow,
+              netFlow: flowMetrics['all'].netFlow,
+              txCount: flowMetrics['all'].txCount,
+              uniqueAddresses: flowMetrics['all'].uniqueAddressCount,
+              avgTransferSize: flowMetrics['all'].avgSize,
+              dataQuality: flowMetrics['all'].dataQuality,
+              note: flowMetrics['all'].note
+            }
+          },
           advanced: {
             whaleActivity: {
               detected: whales.length > 0,
