@@ -142,10 +142,17 @@ export class AlchemyService {
 
     const allTransfers: any[] = [];
     let pageKey: string | undefined;
-    const startTime = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
-    const startBlock = await this.getBlockByTimestamp(startTime);
-
-    console.log(`Fetching ${daysBack} days of transfers for ${contractAddress} using Alchemy (targeting historical coverage)...`);
+    
+    // For comprehensive holder analysis, get ALL transfers since token creation
+    let startBlock: string;
+    if (daysBack > 180) {
+      startBlock = '0x0'; // Get ALL transfers from the beginning
+      console.log(`🔍 Fetching ALL transfers since token creation for ${contractAddress} using Alchemy...`);
+    } else {
+      const startTime = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
+      startBlock = await this.getBlockByTimestamp(startTime);
+      console.log(`Fetching ${daysBack} days of transfers for ${contractAddress} using Alchemy (targeting historical coverage)...`);
+    }
 
     try {
       while (allTransfers.length < maxTransfers) {

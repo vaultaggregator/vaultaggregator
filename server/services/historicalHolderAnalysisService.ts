@@ -32,10 +32,14 @@ export class HistoricalHolderAnalysisService {
     }
 
     try {
-      // Get 90 days of transfer data from Alchemy
-      const transfers = await this.alchemyService.getHistoricalTransfers(tokenAddress, 90, 15000);
+      // Get ALL transfers since token creation - increase days significantly  
+      console.log(`🔍 DEBUG: Fetching comprehensive transfer history for ${tokenAddress}`);
+      const transfers = await this.alchemyService.getHistoricalTransfers(tokenAddress, 365, 15000); // Get 1 year of data
+      
+      console.log(`🔍 DEBUG: Retrieved ${transfers.length} transfers`);
       
       if (transfers.length === 0) {
+        console.log(`🔍 DEBUG: No transfers found - this seems wrong!`);
         return null;
       }
 
@@ -88,11 +92,32 @@ export class HistoricalHolderAnalysisService {
     const holderBalances = new Map<string, number>();
     const snapshots: HolderSnapshot[] = [];
     
-    // Group transfers by day to create daily snapshots
+    // Process ALL transfers to get current state, then create snapshots
+    for (const transfer of sortedTransfers) {
+      const from = transfer.from.toLowerCase();
+      const to = transfer.to.toLowerCase();
+      const value = parseFloat(transfer.value) || 0;
+      
+      // Skip zero address (minting/burning)
+      if (from !== '0x0000000000000000000000000000000000000000') {
+        const currentBalance = holderBalances.get(from) || 0;
+        holderBalances.set(from, Math.max(0, currentBalance - value));
+      }
+      
+      if (to !== '0x0000000000000000000000000000000000000000') {
+        const currentBalance = holderBalances.get(to) || 0;
+        holderBalances.set(to, currentBalance + value);
+      }
+    }
+    
+    // Now create daily snapshots for historical trend analysis
     const dailyTransfers = this.groupTransfersByDay(sortedTransfers);
     
+    // Reset balances for historical reconstruction
+    const historicalBalances = new Map<string, number>();
+    
     for (const [date, dayTransfers] of Array.from(dailyTransfers.entries())) {
-      const previousHolders = new Set(Array.from(holderBalances.keys()).filter(addr => holderBalances.get(addr)! > 0));
+      const previousHolders = new Set(Array.from(historicalBalances.keys()).filter(addr => historicalBalances.get(addr)! > 0));
       
       // Process all transfers for this day
       for (const transfer of dayTransfers) {
@@ -102,26 +127,26 @@ export class HistoricalHolderAnalysisService {
         
         // Skip zero address (minting/burning)
         if (from !== '0x0000000000000000000000000000000000000000') {
-          const currentBalance = holderBalances.get(from) || 0;
-          holderBalances.set(from, Math.max(0, currentBalance - value));
+          const currentBalance = historicalBalances.get(from) || 0;
+          historicalBalances.set(from, Math.max(0, currentBalance - value));
         }
         
         if (to !== '0x0000000000000000000000000000000000000000') {
-          const currentBalance = holderBalances.get(to) || 0;
-          holderBalances.set(to, currentBalance + value);
+          const currentBalance = historicalBalances.get(to) || 0;
+          historicalBalances.set(to, currentBalance + value);
         }
       }
       
       // Count current holders (addresses with positive balance)
-      const currentHolders = new Set(Array.from(holderBalances.keys()).filter(addr => holderBalances.get(addr)! > 0));
+      const dayHolders = new Set(Array.from(historicalBalances.keys()).filter(addr => historicalBalances.get(addr)! > 0));
       
       // Calculate new and exited holders
-      const newHolders = Array.from(currentHolders).filter(addr => !previousHolders.has(addr)).length;
-      const exitedHolders = Array.from(previousHolders).filter(addr => !currentHolders.has(addr)).length;
+      const newHolders = Array.from(dayHolders).filter(addr => !previousHolders.has(addr)).length;
+      const exitedHolders = Array.from(previousHolders).filter(addr => !dayHolders.has(addr)).length;
       
       snapshots.push({
         timestamp: new Date(date),
-        uniqueHolders: currentHolders.size,
+        uniqueHolders: dayHolders.size,
         newHolders,
         exitedHolders
       });
