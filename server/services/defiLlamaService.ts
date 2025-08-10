@@ -30,6 +30,16 @@ interface ChartDataPoint {
 export class DefiLlamaService {
   private static readonly BASE_URL = 'https://yields.llama.fi';
   private static readonly API_BASE_URL = 'https://api.llama.fi';
+  
+  // Import cache service
+  private static cacheService = (() => {
+    try {
+      const { cacheService } = require('./cacheService');
+      return cacheService;
+    } catch {
+      return null;
+    }
+  })();
 
   private static async logError(title: string, description: string, error: string, endpoint: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
     try {
@@ -55,7 +65,18 @@ export class DefiLlamaService {
   }
 
   static async getPoolDetails(poolId: string): Promise<DefiLlamaPoolData | null> {
+    const cacheKey = `defi-llama:pool-details:${poolId}`;
+    
     try {
+      // Try cache first
+      if (this.cacheService) {
+        const cached = this.cacheService.get<DefiLlamaPoolData>(cacheKey);
+        if (cached) {
+          console.log(`Pool details for ${poolId} served from cache`);
+          return cached;
+        }
+      }
+
       const response = await fetch(`${this.BASE_URL}/pools`);
       if (!response.ok) {
         const errorMsg = `Failed to fetch pool details: ${response.status}`;
@@ -82,6 +103,12 @@ export class DefiLlamaService {
         poolId.includes(p.pool)
       );
 
+      // Cache the result if found
+      if (pool && this.cacheService) {
+        this.cacheService.set(cacheKey, pool, 'DefiLlama', 10 * 60 * 1000);
+        console.log(`Cached pool details for ${poolId}`);
+      }
+
       return pool || null;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -100,7 +127,18 @@ export class DefiLlamaService {
   }
 
   static async getPoolsByProject(projectName: string): Promise<DefiLlamaPoolData[]> {
+    const cacheKey = `defi-llama:pools-by-project:${projectName.toLowerCase()}`;
+    
     try {
+      // Try cache first
+      if (this.cacheService) {
+        const cached = this.cacheService.get<DefiLlamaPoolData[]>(cacheKey);
+        if (cached) {
+          console.log(`Pools for project ${projectName} served from cache (${cached.length} pools)`);
+          return cached;
+        }
+      }
+
       const response = await fetch(`${this.BASE_URL}/pools`);
       if (!response.ok) {
         const errorMsg = `Failed to fetch pools: ${response.status}`;
@@ -121,9 +159,17 @@ export class DefiLlamaService {
       const pools = data.data || [];
       
       // Filter pools by project name (case insensitive)
-      return pools.filter((pool: DefiLlamaPoolData) => 
+      const filtered = pools.filter((pool: DefiLlamaPoolData) => 
         pool.project.toLowerCase().includes(projectName.toLowerCase())
       );
+
+      // Cache the filtered results
+      if (this.cacheService && filtered.length > 0) {
+        this.cacheService.set(cacheKey, filtered, 'DefiLlama', 10 * 60 * 1000);
+        console.log(`Cached ${filtered.length} pools for project ${projectName}`);
+      }
+      
+      return filtered;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error('Error fetching pools from DeFi Llama:', errorMsg);

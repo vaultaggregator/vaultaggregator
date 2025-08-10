@@ -11,6 +11,12 @@ import session from "express-session";
 import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Import and register admin routes
+  const { registerAdminCacheRoutes } = await import("./routes/admin-cache");
+  const { registerAdminSystemRoutes } = await import("./routes/admin-system");
+  
+  registerAdminCacheRoutes(app);
+  registerAdminSystemRoutes(app);
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here',

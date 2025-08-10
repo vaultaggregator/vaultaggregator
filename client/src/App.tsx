@@ -38,6 +38,8 @@ import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
 import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
 import AdminLogoManagement from "@/pages/admin-logo-management";
 import AdminErrors from "@/pages/admin-errors";
+import AdminCache from "@/pages/admin-cache";
+import AdminSystem from "@/pages/admin-system";
 import MarketIntelligence from "@/pages/market-intelligence";
 import AdvancedSearch from "@/pages/advanced-search";
 import YieldForecasting from "@/pages/yield-forecasting";
@@ -83,6 +85,8 @@ function Router() {
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/cache" component={AdminCache} />
+      <Route path="/admin/system" component={AdminSystem} />
       <Route path="/admin-networks" component={AdminNetworks} />
       <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route path="/admin-categories" component={AdminCategories} />
