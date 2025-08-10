@@ -557,96 +557,23 @@ export default function PoolDetail() {
 
 
 
-        {/* APY Historical Chart */}
+        {/* Historical data note - Chart functionality moved to Morpho API integration */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
               <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-              APY Performance History
+              Historical Performance Data
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {chartLoading ? (
-              <div className="h-64 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600 dark:text-gray-400">Loading chart data...</span>
-              </div>
-            ) : chartData && (chartData.hasData || chartData.mockData) ? (
-              <div>
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData.data || chartData.mockData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="#666"
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis 
-                        stroke="#666"
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => `${value.toFixed(1)}%`}
-                      />
-                      <Tooltip 
-                        labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
-                        })}
-                        formatter={(value: any, name: string) => [
-                          `${Number(value).toFixed(2)}%`,
-                          'APY'
-                        ]}
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                        }}
-                      />
-                      <Legend />
-                      <Area 
-                        type="monotone" 
-                        dataKey="apy" 
-                        stroke="#3b82f6" 
-                        fill="#3b82f6" 
-                        fillOpacity={0.1}
-                        strokeWidth={2}
-                        name="APY"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                {chartData.summary && (
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Average APY</p>
-                      <p className="text-lg font-semibold text-blue-600">{chartData.summary.averageApy.toFixed(2)}%</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Min APY</p>
-                      <p className="text-lg font-semibold text-red-600">{chartData.summary.minApy.toFixed(2)}%</p>
-                    </div>
-                  </div>
-                )}
-                {!chartData.hasData && chartData.mockData && (
-                  <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                      📊 This chart shows simulated data for demonstration purposes. Real historical data from DeFi Llama is not available for this pool.
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="h-64 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                <Activity className="w-12 h-12 mb-4 opacity-50" />
-                <p className="text-lg font-medium mb-2">No Historical Data Available</p>
-                <p className="text-sm text-center max-w-md">
-                  Historical performance data is not available for this pool. This may be because it's a new pool or not tracked in our data sources.
-                </p>
-              </div>
-            )}
+            <div className="h-32 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+              <Activity className="w-8 h-8 mb-2 opacity-50" />
+              <p className="text-lg font-medium mb-1">Historical Data Available</p>
+              <p className="text-sm text-center max-w-md">
+                Historical performance data is now accessible via the Morpho API integration. 
+                Visit the platform directly for detailed charts and analytics.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
