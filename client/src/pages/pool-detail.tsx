@@ -253,7 +253,8 @@ interface YieldOpportunity {
 }
 
 interface Params {
-  id: string;
+  id?: string;
+  poolId?: string;
 }
 
 function CopyableText({ text, label }: { text: string; label: string }) {
@@ -301,7 +302,8 @@ function CopyableText({ text, label }: { text: string; label: string }) {
 }
 
 export default function PoolDetail() {
-  const { id } = useParams<Params>();
+  const params = useParams<Params>();
+  const id = params.id || params.poolId;
   const { toast } = useToast();
 
   // Pool data query
