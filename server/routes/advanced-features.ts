@@ -22,6 +22,17 @@ export function registerAdvancedRoutes(app: Express) {
     try {
       const { poolId } = req.params;
       
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(poolId);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       let riskScore = await storage.getRiskScore(poolId);
       
       // Calculate if not exists or outdated (older than 24 hours)
@@ -157,6 +168,18 @@ export function registerAdvancedRoutes(app: Express) {
   app.get('/api/pools/:poolId/reviews', async (req, res) => {
     try {
       const { poolId } = req.params;
+      
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(poolId);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       const reviews = await storage.getPoolReviews(poolId);
       res.json(reviews);
     } catch (error) {

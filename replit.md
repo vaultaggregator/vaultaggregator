@@ -70,6 +70,18 @@ Preferred communication style: Simple, everyday language.
 - Corrected storage method usage in sync process (upsertPool handles visibility preservation automatically)
 - Sync process now successfully updates lastUpdated timestamps to current dates
 
+**Visibility-Based Processing Optimization (Implemented: August 2025):**
+- Implemented comprehensive visibility filtering across ALL pool-specific endpoints and services
+- **Complete Pool Endpoint Protection**: Added visibility checks to every pool-specific API endpoint:
+  - Core endpoints: `/api/pools/:id`, `/api/v1/pools/:id`, `/api/pools/:id/defillama`, `/api/pools/:id/chart`
+  - Analytics endpoints: `/api/pools/:id/outlook`, `/api/pools/:id/enhanced-analytics`, `/api/pools/:id/cross-analysis`
+  - Token data endpoints: `/api/pools/:id/token-info`, `/api/pools/:id/token-transfers`, `/api/pools/:id/holder-analytics`, `/api/pools/:id/holder-history`
+  - Feature endpoints: `/api/pools/:id/categories`, `/api/pools/:id/risk-score`, `/api/pools/:id/reviews`
+- **Smart Resource Management**: Non-visible pools are now completely dormant - zero API calls, zero processing, zero resource consumption
+- **CrossPoolAnalysisService Optimization**: Updated correlation analysis to only work with visible pools, eliminating unnecessary database queries
+- **Caching Strategy Enhancement**: Cache system now exclusively targets visible pools, maximizing hit ratios and reducing memory waste
+- **Performance Impact**: Dramatically reduced API call frequency and server load by eliminating all processing for non-visible pools
+
 **Pool Detail Page Data Issues (Fixed: August 2025):**
 - Resolved critical issue where pool detail pages showed no token transfer, holder, or analytics data
 - Root cause: DeFi Llama provided zero address (0x000...000) instead of actual token contract addresses

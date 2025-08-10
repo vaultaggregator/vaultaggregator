@@ -298,6 +298,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pool) {
         return res.status(404).json({ error: "Pool not found" });
       }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      
       res.json(pool);
     } catch (error) {
       console.error("Error fetching pool:", error);
@@ -512,6 +518,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pool) {
         return res.status(404).json({ message: "Pool not found" });
       }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       res.json(pool);
     } catch (error) {
       console.error("Error fetching pool:", error);
@@ -526,6 +538,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const pool = await storage.getPoolById(req.params.id);
       if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
         return res.status(404).json({ message: "Pool not found" });
       }
 
@@ -556,6 +573,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const pool = await storage.getPoolById(req.params.id);
       if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
         return res.status(404).json({ message: "Pool not found" });
       }
 
@@ -618,6 +640,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Outlook routes
   app.get("/api/pools/:id/outlook", async (req, res) => {
     try {
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       const { AIOutlookService } = await import("./services/aiOutlookService");
       const aiOutlookService = new AIOutlookService(storage);
       
@@ -643,6 +676,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced Pool Analytics - Comprehensive analysis combining all data sources
   app.get("/api/pools/:poolId/enhanced-analytics", async (req, res) => {
     try {
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       const { DataAnalysisService } = await import("./services/dataAnalysisService");
       const analysisService = new DataAnalysisService();
       
@@ -712,6 +756,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/pools/:id/outlook/regenerate", async (req, res) => {
     try {
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only process visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       const { AIOutlookService } = await import("./services/aiOutlookService");
       const aiOutlookService = new AIOutlookService(storage);
       
@@ -1096,6 +1151,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pool-Category assignment routes
   app.get("/api/pools/:poolId/categories", async (req, res) => {
     try {
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(req.params.poolId);
+      if (!pool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
       const categories = await storage.getPoolCategories(req.params.poolId);
       res.json(categories);
     } catch (error) {
@@ -2331,6 +2397,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pool) {
         return res.status(404).json({ error: "Pool not found" });
       }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
 
       // Extract underlying token address from raw data with proper mapping
       const rawData: any = pool.rawData || {};
@@ -2519,6 +2590,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!pool) {
         return res.status(404).json({ error: "Pool not found" });
       }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
 
       // Extract underlying token address from raw data with proper mapping
       const rawData: any = pool.rawData || {};
@@ -2561,6 +2637,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { days } = req.query;
       const pool = await storage.getPoolById(req.params.poolId);
       if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
         return res.status(404).json({ error: "Pool not found" });
       }
 
@@ -2611,6 +2692,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pools/:poolId/cross-analysis", async (req, res) => {
     try {
       const { poolId } = req.params;
+      
+      // Check if pool exists and is visible first
+      const pool = await storage.getPoolById(poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      
       const CrossPoolAnalysisService = (await import("./services/crossPoolAnalysisService")).CrossPoolAnalysisService;
       const service = new CrossPoolAnalysisService();
       
@@ -2682,6 +2775,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pool = await storage.getPoolById(req.params.poolId);
       
       if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      
+      // Only serve data for visible pools
+      if (!pool.isVisible) {
         return res.status(404).json({ error: "Pool not found" });
       }
 

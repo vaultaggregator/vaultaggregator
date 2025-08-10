@@ -64,8 +64,8 @@ export class CrossPoolAnalysisService {
   async findPoolCorrelations(poolId: string): Promise<PoolCorrelation[]> {
     const correlations: PoolCorrelation[] = [];
     
-    // Get all pools for correlation analysis
-    const allPools = await db.select().from(pools).limit(10);
+    // Only get VISIBLE pools for correlation analysis
+    const allPools = await db.select().from(pools).where(eq(pools.isVisible, true)).limit(10);
     
     for (const pool of allPools) {
       if (pool.id === poolId) continue;
