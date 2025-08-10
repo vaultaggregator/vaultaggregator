@@ -219,10 +219,11 @@ class EtherscanService {
       return data.result;
     } catch (error) {
       // Retry on network errors
+      const errorMessage = error instanceof Error ? error.message : String(error);
       if (retryAttempt < maxRetries && (
-          error.message.includes('fetch') || 
-          error.message.includes('network') ||
-          error.message.includes('timeout'))) {
+          errorMessage.includes('fetch') || 
+          errorMessage.includes('network') ||
+          errorMessage.includes('timeout'))) {
         
         const backoffDelay = Math.pow(2, retryAttempt) * 1000;
         console.log(`Network error, retrying in ${backoffDelay}ms (attempt ${retryAttempt + 1}/${maxRetries + 1})`);
@@ -231,7 +232,7 @@ class EtherscanService {
         return this.makeRequest(url, retryAttempt + 1);
       }
 
-      console.error(`Etherscan API fetch error for URL: ${url.split('&apikey=')[0]}:`, error.message);
+      console.error(`Etherscan API fetch error for URL: ${url.split('&apikey=')[0]}:`, errorMessage);
       throw error;
     }
   }

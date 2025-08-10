@@ -243,7 +243,7 @@ export default function PoolDetail() {
     queryKey: ['/api/pools', poolId, 'token-transfers'],
     enabled: !!poolId,
     staleTime: 2 * 60 * 1000, // 2 minutes
-  });
+  }) as { data: any; isLoading: boolean };
 
 
 
