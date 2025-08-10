@@ -2674,16 +2674,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      // Fix known token addresses (DeFi Llama sometimes provides zero address)
+      // Fix known token addresses - for steakUSDC, always use the vault contract
       const tokenAddressMap: { [key: string]: string } = {
         'STETH': '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH
-        'STEAKUSDC': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+        'STEAKUSDC': '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB', // steakUSDC vault contract
         'WETH': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' // WETH
       };
 
-      // If we have a zero address or null, try to map from token pair name
-      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
-        const tokenPair = pool.tokenPair.toUpperCase();
+      // Special handling for known vault tokens - always use the correct contract
+      const tokenPair = pool.tokenPair.toUpperCase();
+      if (tokenPair === 'STEAKUSDC') {
+        underlyingToken = tokenAddressMap['STEAKUSDC'];
+        console.log(`Using steakUSDC vault contract: ${underlyingToken}`);
+      } else if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        // For other tokens, map if we have a zero address or null
         if (tokenAddressMap[tokenPair]) {
           underlyingToken = tokenAddressMap[tokenPair];
           console.log(`Mapped ${tokenPair} to correct address: ${underlyingToken}`);
