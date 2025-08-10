@@ -746,6 +746,29 @@ export default function PoolDetail() {
           </div>
         )}
 
+        {/* 24h Active Addresses Highlight */}
+        {tokenTransfers && tokenTransfers.flowAnalysis && tokenTransfers.flowAnalysis.periods && (
+          <Card className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-800">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Users className="w-8 h-8 text-purple-600 mr-4" />
+                  <div>
+                    <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100">Active Addresses (24h)</h3>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">Unique participants in last 24 hours</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-purple-900 dark:text-purple-100" data-testid="active-addresses-24h">
+                    {tokenTransfers.flowAnalysis.periods['24h']?.uniqueAddressCount || 0}
+                  </p>
+                  <p className="text-sm text-purple-600 dark:text-purple-400">addresses</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Advanced Multi-Period Flow Analysis Section */}
         {tokenTransfers && tokenTransfers.flowAnalysis && (
           <div className="space-y-6 mb-8">
