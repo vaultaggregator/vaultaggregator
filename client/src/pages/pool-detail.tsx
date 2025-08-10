@@ -1322,8 +1322,7 @@ export default function PoolDetail() {
           {/* Notes Section */}
           <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
 
-          {/* Token Information Section */}
-          <TokenInfo poolId={pool.id} />
+
         </div>
 
 
