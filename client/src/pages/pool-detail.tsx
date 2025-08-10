@@ -30,7 +30,7 @@ import {
   Copy, 
   CheckCircle,
   Users,
-  BookOpen,
+
   Edit3,
   Plus,
   Trash2
@@ -322,11 +322,7 @@ export default function PoolDetail() {
     enabled: !!id
   });
 
-  // AI Outlook query
-  const { data: outlook, isLoading: outlookLoading } = useQuery({
-    queryKey: [`/api/pools/${id}/outlook`],
-    enabled: !!id
-  });
+
 
   // Token transfers query
   const { data: tokenTransfers, isLoading: tokenTransfersLoading } = useQuery({
@@ -712,46 +708,7 @@ export default function PoolDetail() {
           </div>
         )}
 
-        {/* AI Outlook Section */}
-        {outlook && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BookOpen className="w-5 h-5 mr-2 text-indigo-600" />
-                AI Market Outlook
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Intelligent analysis and market predictions for this pool
-              </p>
-            </CardHeader>
-            <CardContent>
-              {outlookLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                  <span className="ml-3 text-gray-600 dark:text-gray-400">Generating insights...</span>
-                </div>
-              ) : outlook.outlook ? (
-                <div className="prose prose-gray dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-                    {outlook.outlook}
-                  </div>
-                  <div className="mt-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                      ⚡ AI-Generated • Updated {new Date(outlook.lastUpdated).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">
-                    No AI outlook available for this pool yet.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Historical Chart */}
         <div className="mb-8">
