@@ -2322,12 +2322,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Pool not found" });
       }
 
-      // Extract underlying token address from raw data
+      // Extract underlying token address from raw data with proper mapping
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      if (!underlyingToken) {
-        return res.status(404).json({ error: "No underlying token found for this pool" });
+      // Fix known token addresses (DeFi Llama sometimes provides zero address)
+      const tokenAddressMap: { [key: string]: string } = {
+        'STETH': '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH
+        'STEAKUSDC': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+        'WETH': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' // WETH
+      };
+
+      // If we have a zero address or null, try to map from token pair name
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        const tokenPair = pool.tokenPair.toUpperCase();
+        if (tokenAddressMap[tokenPair]) {
+          underlyingToken = tokenAddressMap[tokenPair];
+          console.log(`Mapped ${tokenPair} to correct address: ${underlyingToken}`);
+        }
+      }
+      
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        return res.status(404).json({ error: "No valid underlying token found for this pool" });
       }
       
       console.log(`Fetching token info for pool ${pool.id}, token: ${underlyingToken}`);
@@ -2452,12 +2468,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Pool not found" });
       }
 
-      // Extract underlying token address from raw data
+      // Extract underlying token address from raw data with proper mapping
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      if (!underlyingToken) {
-        return res.status(404).json({ error: "No underlying token found for this pool" });
+      // Fix known token addresses (DeFi Llama sometimes provides zero address)
+      const tokenAddressMap: { [key: string]: string } = {
+        'STETH': '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH
+        'STEAKUSDC': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+        'WETH': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' // WETH
+      };
+
+      // If we have a zero address or null, try to map from token pair name
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        const tokenPair = pool.tokenPair.toUpperCase();
+        if (tokenAddressMap[tokenPair]) {
+          underlyingToken = tokenAddressMap[tokenPair];
+          console.log(`Mapped ${tokenPair} to correct address: ${underlyingToken}`);
+        }
+      }
+      
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        return res.status(404).json({ error: "No valid underlying token found for this pool" });
       }
 
       const analytics = await storage.getHolderAnalytics(underlyingToken);
@@ -2480,12 +2512,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Pool not found" });
       }
 
-      // Extract underlying token address from raw data
+      // Extract underlying token address from raw data with proper mapping
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      if (!underlyingToken) {
-        return res.status(404).json({ error: "No underlying token found for this pool" });
+      // Fix known token addresses (DeFi Llama sometimes provides zero address)
+      const tokenAddressMap: { [key: string]: string } = {
+        'STETH': '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH
+        'STEAKUSDC': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+        'WETH': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' // WETH
+      };
+
+      // If we have a zero address or null, try to map from token pair name
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        const tokenPair = pool.tokenPair.toUpperCase();
+        if (tokenAddressMap[tokenPair]) {
+          underlyingToken = tokenAddressMap[tokenPair];
+          console.log(`Mapped ${tokenPair} to correct address: ${underlyingToken}`);
+        }
+      }
+      
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        return res.status(404).json({ error: "No valid underlying token found for this pool" });
       }
 
       const dayLimit = days ? parseInt(days as string) : undefined;
@@ -2585,12 +2633,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Pool not found" });
       }
 
-      // Extract underlying token address from raw data
+      // Extract underlying token address from raw data with proper mapping
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      if (!underlyingToken) {
-        return res.status(404).json({ error: "No underlying token found for this pool" });
+      // Fix known token addresses (DeFi Llama sometimes provides zero address)
+      const tokenAddressMap: { [key: string]: string } = {
+        'STETH': '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', // stETH
+        'STEAKUSDC': '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // USDC
+        'WETH': '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' // WETH
+      };
+
+      // If we have a zero address or null, try to map from token pair name
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        const tokenPair = pool.tokenPair.toUpperCase();
+        if (tokenAddressMap[tokenPair]) {
+          underlyingToken = tokenAddressMap[tokenPair];
+          console.log(`Mapped ${tokenPair} to correct address: ${underlyingToken}`);
+        }
+      }
+      
+      if (!underlyingToken || underlyingToken === '0x0000000000000000000000000000000000000000') {
+        return res.status(404).json({ error: "No valid underlying token found for this pool" });
       }
 
       // Fetch more transfers for comprehensive analysis

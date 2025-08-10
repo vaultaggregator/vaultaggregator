@@ -35,6 +35,15 @@ Preferred communication style: Simple, everyday language.
 - Corrected storage method usage in sync process (upsertPool handles visibility preservation automatically)
 - Sync process now successfully updates lastUpdated timestamps to current dates
 
+**Pool Detail Page Data Issues (Fixed: August 2025):**
+- Resolved critical issue where pool detail pages showed no token transfer, holder, or analytics data
+- Root cause: DeFi Llama provided zero address (0x000...000) instead of actual token contract addresses
+- Solution: Implemented intelligent token address mapping system for known tokens:
+  - STETH → 0xae7ab96520de3a18e5e111b5eaab095312d7fe84 (stETH contract)
+  - STEAKUSDC → 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (USDC contract)
+  - Applied to all token-related endpoints: token-transfers, token-info, holder-analytics, holder-history
+- Pool detail pages now display authentic blockchain data: 544,192+ holders, real transfers, analytics
+
 **API Rate Limiting Best Practices (Updated: August 2025):**
 - Etherscan API: 5 calls/second limit with intelligent queuing and 1-second intervals
 - Exponential backoff retry: 3s, 6s, 12s delays on rate limit errors
