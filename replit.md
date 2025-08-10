@@ -13,6 +13,10 @@ Successfully debugged and enhanced the token flow analysis system, achieving com
 - Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`
 - Never use CryptoLogos.cc (returns 403 errors)
 
+**Logo Implementation:**
+- Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`
+- Never use CryptoLogos.cc (returns 403 errors)
+
 **Development Approach:**
 - Always test functionality after implementation to verify it works correctly
 - If something doesn't work during testing, fix it immediately before moving on

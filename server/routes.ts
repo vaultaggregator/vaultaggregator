@@ -2916,7 +2916,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const decimals = parseInt(transfers[0]?.tokenDecimal || '18');
-      const tokenSymbol = transfers[0]?.tokenSymbol || 'TOKEN';
+      
+      // Get token symbol using address-based mapping (pool doesn't have direct symbol property)
+      let tokenSymbol = 'TOKEN';
+      
+      // Use address-based token mapping for reliable symbol detection
+      const tokenMapping: Record<string, string> = {
+        '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': 'stETH',
+        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': 'USDC',
+        '0xdac17f958d2ee523a2206206994597c13d831ec7': 'USDT',
+        '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': 'WBTC',
+        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': 'WETH'
+      };
+      
+      const mappedSymbol = tokenMapping[underlyingToken.toLowerCase()];
+      if (mappedSymbol) {
+        tokenSymbol = mappedSymbol;
+      } else if (pool.tokenPair && typeof pool.tokenPair === 'string') {
+        // Extract symbol from tokenPair if available (e.g., "USDC/ETH" -> "USDC")
+        const pairParts = pool.tokenPair.split('/');
+        if (pairParts.length > 0 && pairParts[0].length > 0) {
+          tokenSymbol = pairParts[0];
+        }
+      } else {
+        // Fallback to transfer data if available
+        tokenSymbol = transfers[0]?.tokenSymbol || 'TOKEN';
+      }
       const now = Date.now();
       
       // Time boundaries for different periods

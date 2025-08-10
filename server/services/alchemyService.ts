@@ -92,6 +92,19 @@ export class AlchemyService {
         throw new Error(`Alchemy API error: ${data.error.message}`);
       }
 
+      // Token symbol mapping for common tokens
+      const getTokenSymbol = (contractAddress: string): string => {
+        const addr = contractAddress.toLowerCase();
+        const tokenMap: Record<string, string> = {
+          '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': 'stETH',
+          '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': 'USDC',
+          '0xdac17f958d2ee523a2206206994597c13d831ec7': 'USDT',
+          '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': 'WBTC',
+          '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': 'WETH'
+        };
+        return tokenMap[addr] || 'TOKEN';
+      };
+
       // Convert Alchemy format to our expected format
       const transfers = data.result.transfers.map((transfer: AlchemyTransfer) => ({
         from: transfer.from,
@@ -100,7 +113,8 @@ export class AlchemyService {
         timeStamp: Math.floor(new Date(transfer.metadata.blockTimestamp).getTime() / 1000).toString(),
         hash: transfer.metadata.transactionHash,
         blockNumber: transfer.metadata.blockNumber,
-        tokenDecimal: transfer.rawContract.decimal
+        tokenDecimal: transfer.rawContract.decimal,
+        tokenSymbol: getTokenSymbol(contractAddress)
       }));
 
       return {
