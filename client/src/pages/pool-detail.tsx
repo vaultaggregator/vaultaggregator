@@ -780,7 +780,12 @@ export default function PoolDetail() {
                           Coverage: {tokenTransfers.dataQuality.timespan}
                         </p>
                         <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                          💡 This token has extremely high transaction volume - we've fetched 3,000+ recent transfers but can only cover recent activity due to API rate limits.
+                          💡 This token has extremely high transaction volume. Data source: {tokenTransfers.dataQuality?.source || 'etherscan'}
+                          {tokenTransfers.dataQuality?.source === 'etherscan' && (
+                            <span className="block mt-1">
+                              🚀 Add ALCHEMY_API_KEY for better historical coverage (300+ req/sec vs 5 req/sec)
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>

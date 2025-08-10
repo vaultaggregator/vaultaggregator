@@ -2824,46 +2824,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No valid underlying token found for this pool" });
       }
 
-      // Fetch multiple pages of transfers for broader time coverage
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      // For high-volume tokens like stETH, we need multiple pages to get historical coverage
-      // However, Etherscan API has strict rate limits, so reduce page count and add more delays
+      // Try Alchemy first for better performance and rate limits, fallback to Etherscan
       let allTransfers: any[] = [];
-      const maxPages = 3; // Reduced to avoid rate limits
-      const transfersPerPage = 1000;
+      let dataSource = 'etherscan'; // Track which service was used
       
-      for (let page = 1; page <= maxPages; page++) {
-        const pageTransfers = await etherscan.getTokenTransfers(
+      // Check if Alchemy is available and try it first for high-volume tokens
+      const { AlchemyService } = await import('./services/alchemyService');
+      const alchemy = new AlchemyService();
+      
+      if (alchemy.isAvailable()) {
+        try {
+          console.log('🚀 Using Alchemy API for enhanced data coverage...');
+          // Alchemy can get much more historical data efficiently
+          allTransfers = await alchemy.getHistoricalTransfers(underlyingToken, 7, 5000);
+          dataSource = 'alchemy';
+          console.log(`✓ Alchemy: Successfully fetched ${allTransfers.length} transfers`);
+        } catch (error) {
+          console.warn('Alchemy API failed, falling back to Etherscan:', error.message);
+          allTransfers = []; // Reset for Etherscan fallback
+        }
+      } else {
+        console.log('⚠️ Alchemy API key not configured, using Etherscan (limited coverage for high-volume tokens)');
+      }
+      
+      // Fallback to Etherscan if Alchemy failed or unavailable
+      if (allTransfers.length === 0) {
+        console.log('Using Etherscan API...');
+        const { EtherscanService } = await import("./services/etherscanService");
+        const etherscan = new EtherscanService();
+        
+        // For high-volume tokens like stETH, we need multiple pages to get historical coverage
+        // However, Etherscan API has strict rate limits, so reduce page count and add more delays
+        const maxPages = 3; // Reduced to avoid rate limits
+        const transfersPerPage = 1000;
+      
+        for (let page = 1; page <= maxPages; page++) {
+          const pageTransfers = await etherscan.getTokenTransfers(
           underlyingToken, 
           page, 
           transfersPerPage
-        );
-        
-        if (!pageTransfers || pageTransfers.length === 0) break;
-        allTransfers = allTransfers.concat(pageTransfers);
-        
-        // Stop if we get enough historical coverage (at least 7 days)
-        if (allTransfers.length > 0) {
-          const oldestTransfer = allTransfers[allTransfers.length - 1];
-          const newestTransfer = allTransfers[0];
-          const oldestTime = parseInt(oldestTransfer.timeStamp) * 1000;
-          const newestTime = parseInt(newestTransfer.timeStamp) * 1000;
-          const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-          const daysCovered = Math.round((newestTime - oldestTime) / (24 * 60 * 60 * 1000));
+          );
           
-          console.log(`Page ${page}: Got ${pageTransfers.length} transfers. Total: ${allTransfers.length} transfers spanning ${daysCovered} days`);
-          console.log(`Time range: ${new Date(oldestTime).toISOString()} to ${new Date(newestTime).toISOString()}`);
+          if (!pageTransfers || pageTransfers.length === 0) break;
+          allTransfers = allTransfers.concat(pageTransfers);
           
-          if (oldestTime < sevenDaysAgo) {
-            console.log(`✓ Achieved 7+ days of historical coverage with ${allTransfers.length} transfers`);
-            break;
+          // Stop if we get enough historical coverage (at least 7 days)
+          if (allTransfers.length > 0) {
+            const oldestTransfer = allTransfers[allTransfers.length - 1];
+            const newestTransfer = allTransfers[0];
+            const oldestTime = parseInt(oldestTransfer.timeStamp) * 1000;
+            const newestTime = parseInt(newestTransfer.timeStamp) * 1000;
+            const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+            const daysCovered = Math.round((newestTime - oldestTime) / (24 * 60 * 60 * 1000));
+            
+            console.log(`Page ${page}: Got ${pageTransfers.length} transfers. Total: ${allTransfers.length} transfers spanning ${daysCovered} days`);
+            console.log(`Time range: ${new Date(oldestTime).toISOString()} to ${new Date(newestTime).toISOString()}`);
+            
+            if (oldestTime < sevenDaysAgo) {
+              console.log(`✓ Achieved 7+ days of historical coverage with ${allTransfers.length} transfers`);
+              break;
+            }
           }
+        
+          // Add longer delay to respect rate limits
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
         
-        // Add longer delay to respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        dataSource = 'etherscan';
       }
       
       const transfers = allTransfers;
@@ -3054,8 +3081,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dataQuality = {
         coverage: coverageHours < 24 ? 'limited' : coverageHours < 168 ? 'partial' : 'good',
         timespan: `${coverageHours} hours`,
+        source: dataSource,
         warning: coverageHours < 24 ? 
-          `High-volume token: Only ${coverageHours}h of recent data available due to API limits. 7d/30d metrics show same values as 24h.` : 
+          (dataSource === 'alchemy' ? 
+            `High-volume token: Only ${coverageHours}h of recent data available. Consider upgrading Alchemy plan for deeper history.` :
+            `High-volume token: Only ${coverageHours}h of recent data available due to API limits. 7d/30d metrics show same values as 24h. Consider adding ALCHEMY_API_KEY for better coverage.`) : 
           coverageHours < 168 ? 
           `Partial historical coverage (${coverageDays}d). Some time periods may show similar values.` : 
           null
