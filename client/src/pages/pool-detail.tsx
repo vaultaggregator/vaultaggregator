@@ -191,6 +191,11 @@ export default function PoolDetail() {
     enabled: !!poolId,
   });
 
+  // Scroll to top when page loads or pool ID changes (mobile navigation fix)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [poolId]);
+
   // Update document title and meta tags when pool data loads
   useEffect(() => {
     if (pool) {
