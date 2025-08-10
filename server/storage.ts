@@ -18,6 +18,7 @@ import {
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
+import { HistoricalHolderAnalysisService } from "./services/historicalHolderAnalysisService";
 
 export interface IStorage {
   // User methods (existing)
@@ -195,6 +196,11 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  private historicalHolderService: HistoricalHolderAnalysisService;
+
+  constructor() {
+    this.historicalHolderService = new HistoricalHolderAnalysisService();
+  }
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -380,6 +386,21 @@ export class DatabaseStorage implements IStorage {
     changeAllTime: { value: number; percentage: number } | null;
     firstRecordDate: Date | null;
   }> {
+    // First try to get authentic historical data from transfer analysis
+    const historicalAnalysis = await this.historicalHolderService.analyzeHistoricalHolders(tokenAddress);
+    
+    if (historicalAnalysis) {
+      return {
+        current: historicalAnalysis.current,
+        change7d: historicalAnalysis.change7d,
+        change30d: historicalAnalysis.change30d,
+        changeAllTime: historicalAnalysis.changeAllTime,
+        firstRecordDate: historicalAnalysis.snapshots.length > 0 ? historicalAnalysis.snapshots[0].timestamp : null,
+      };
+    }
+
+    // Fallback to database records if transfer analysis fails
+    
     // Get the most recent record
     const [latestRecord] = await db
       .select()
@@ -439,37 +460,8 @@ export class DatabaseStorage implements IStorage {
       return { value, percentage };
     };
 
-    // Smart calculation for 7d and 30d changes when exact periods aren't available
-    const calculateSmartChange = (targetDays: number) => {
-      if (targetDays === 7 && record7d) return calculateChange(record7d.holdersCount, current);
-      if (targetDays === 30 && record30d) return calculateChange(record30d.holdersCount, current);
-      
-      // If no exact data, use earliest available record and extrapolate
-      if (firstRecord) {
-        const firstTime = firstRecord.timestamp.getTime();
-        const latestTime = latestRecord.timestamp.getTime();
-        const actualDays = (latestTime - firstTime) / (24 * 60 * 60 * 1000);
-        
-        // Only extrapolate if we have some meaningful data (at least a few hours)
-        if (actualDays >= 0.1) { // At least 2.4 hours of data
-          const actualChange = calculateChange(firstRecord.holdersCount, current);
-          const dailyRate = actualChange.value / Math.max(actualDays, 0.1);
-          const projectedValue = Math.round(dailyRate * targetDays);
-          const projectedPercentage = firstRecord.holdersCount > 0 ? (projectedValue / firstRecord.holdersCount) * 100 : 0;
-          
-          return {
-            value: projectedValue,
-            percentage: projectedPercentage,
-            isProjected: true,
-            basedOnDays: Math.round(actualDays * 10) / 10
-          };
-        }
-      }
-      return null;
-    };
-
-    const change7d = calculateSmartChange(7);
-    const change30d = calculateSmartChange(30);
+    const change7d = record7d ? calculateChange(record7d.holdersCount, current) : null;
+    const change30d = record30d ? calculateChange(record30d.holdersCount, current) : null;
 
     return {
       current,
