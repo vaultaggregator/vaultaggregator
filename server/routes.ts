@@ -3055,7 +3055,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         coverage: coverageHours < 24 ? 'limited' : coverageHours < 168 ? 'partial' : 'good',
         timespan: `${coverageHours} hours`,
         warning: coverageHours < 24 ? 
-          `Limited historical data available (${coverageHours}h). Active addresses may not reflect true historical patterns.` : 
+          `High-volume token: Only ${coverageHours}h of recent data available due to API limits. 7d/30d metrics show same values as 24h.` : 
           coverageHours < 168 ? 
           `Partial historical coverage (${coverageDays}d). Some time periods may show similar values.` : 
           null
@@ -3068,9 +3068,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metrics.uniqueAddressCount = metrics.uniqueAddresses.size;
         metrics.avgSize = metrics.txCount > 0 ? (metrics.inflow + metrics.outflow) / metrics.txCount : 0;
         
-        // Add data quality indicator for limited coverage
-        if (dataQuality.coverage === 'limited' && period !== 'all') {
-          metrics.dataQuality = 'limited_coverage';
+        // Add data quality indicator for insufficient coverage
+        if (dataQuality.coverage === 'limited') {
+          if (period === '7d' || period === '30d') {
+            // For longer periods with insufficient data, mark as unavailable
+            metrics.dataQuality = 'insufficient_timespan';
+            metrics.note = `Requires ${period === '7d' ? '7 days' : '30 days'} of data, only ${coverageHours}h available`;
+          } else if (period === '24h') {
+            metrics.dataQuality = 'limited_coverage';
+            metrics.note = `Partial 24h coverage (${coverageHours}h of 24h)`;
+          }
         }
         
         delete metrics.uniqueAddresses; // Remove Set from response

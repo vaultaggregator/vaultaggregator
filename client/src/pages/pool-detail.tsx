@@ -771,13 +771,16 @@ export default function PoolDetail() {
                       <AlertCircle className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
-                          Limited Historical Data
+                          High-Volume Token Data Limitation
                         </p>
                         <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
                           {tokenTransfers.dataQuality.warning}
                         </p>
                         <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
                           Coverage: {tokenTransfers.dataQuality.timespan}
+                        </p>
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                          💡 This token has extremely high transaction volume - we've fetched 3,000+ recent transfers but can only cover recent activity due to API rate limits.
                         </p>
                       </div>
                     </div>
@@ -911,20 +914,28 @@ export default function PoolDetail() {
                               <div className="flex items-center">
                                 <Users className="w-4 h-4 text-purple-600 mr-2" />
                                 <span className="text-sm font-medium text-purple-800 dark:text-purple-300">Active Addresses</span>
-                                {metrics.dataQuality === 'limited_coverage' && (
-                                  <AlertCircle className="w-3 h-3 text-yellow-500 ml-1" title="Limited historical coverage" />
+                                {(metrics.dataQuality === 'limited_coverage' || metrics.dataQuality === 'insufficient_timespan') && (
+                                  <AlertCircle className="w-3 h-3 text-yellow-500 ml-1" title={
+                                    metrics.dataQuality === 'insufficient_timespan' ? 'Insufficient data for this time period' : 'Limited historical coverage'
+                                  } />
                                 )}
                               </div>
                               <p className="text-lg font-bold text-purple-900 dark:text-purple-100 mt-1">
-                                {metrics.uniqueAddressCount || 0}
-                                {metrics.dataQuality === 'limited_coverage' && (
+                                {metrics.dataQuality === 'insufficient_timespan' ? 'N/A' : metrics.uniqueAddressCount || 0}
+                                {(metrics.dataQuality === 'limited_coverage' || metrics.dataQuality === 'insufficient_timespan') && (
                                   <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-1">*</span>
                                 )}
                               </p>
                               <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
                                 Unique participants ({period === '24h' ? '24 hours' : period === '7d' ? '7 days' : period === '30d' ? '30 days' : 'all time'})
+                                {metrics.dataQuality === 'insufficient_timespan' && (
+                                  <span className="text-red-600 dark:text-red-400"> - Insufficient data</span>
+                                )}
                                 {metrics.dataQuality === 'limited_coverage' && (
-                                  <span className="text-yellow-600 dark:text-yellow-400"> - Limited data</span>
+                                  <span className="text-yellow-600 dark:text-yellow-400"> - Partial data</span>
+                                )}
+                                {metrics.note && (
+                                  <div className="text-xs text-gray-500 mt-1">{metrics.note}</div>
                                 )}
                               </p>
                             </div>
