@@ -281,56 +281,7 @@ export function CrossPoolAnalytics({ poolId }: CrossPoolAnalyticsProps) {
           </Card>
         )}
 
-        {/* Gas Optimization Card */}
-        {analytics.gasOptimization && (
-          <Card className="border-2 border-green-200 dark:border-green-800">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Zap className="w-5 h-5 mr-2 text-green-600" />
-                Gas Optimization Intelligence
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Optimal Interaction Time</span>
-                    <Clock className="w-4 h-4 text-green-600" />
-                  </div>
-                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                    {analytics.gasOptimization.bestHour}:00 UTC
-                  </p>
-                  <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-                    on {analytics.gasOptimization.bestDay}s
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Avg Gas Price</span>
-                    <p className="text-lg font-bold mt-1">
-                      {(typeof analytics.gasOptimization.avgGasPrice === 'number' ? analytics.gasOptimization.avgGasPrice : Number(analytics.gasOptimization.avgGasPrice) || 0).toFixed(0)} Gwei
-                    </p>
-                  </div>
-                  
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    <span className="text-xs text-blue-600 dark:text-blue-400">Savings Potential</span>
-                    <p className="text-lg font-bold text-blue-900 dark:text-blue-100 mt-1">
-                      {(typeof analytics.gasOptimization.savingsPotential === 'number' ? analytics.gasOptimization.savingsPotential : Number(analytics.gasOptimization.savingsPotential) || 0).toFixed(0)}%
-                    </p>
-                  </div>
-                </div>
-                
-                <Alert>
-                  <Sparkles className="h-4 w-4" />
-                  <AlertDescription>
-                    Save up to ${((typeof analytics.gasOptimization.savingsPotential === 'number' ? analytics.gasOptimization.savingsPotential : Number(analytics.gasOptimization.savingsPotential) || 0) * 50).toFixed(0)} per transaction by timing your interactions
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+
       </div>
 
       {/* Network Effects & Behavioral Insights */}
