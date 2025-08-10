@@ -119,8 +119,8 @@ export class AlchemyService {
    */
   async getHistoricalTransfers(
     contractAddress: string,
-    daysBack: number = 7,
-    maxTransfers: number = 5000
+    daysBack: number = 90,
+    maxTransfers: number = 15000
   ): Promise<any[]> {
     if (!this.isAvailable()) {
       throw new Error('Alchemy API key not configured');
@@ -131,7 +131,7 @@ export class AlchemyService {
     const startTime = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
     const startBlock = await this.getBlockByTimestamp(startTime);
 
-    console.log(`Fetching ${daysBack} days of transfers for ${contractAddress} using Alchemy...`);
+    console.log(`Fetching ${daysBack} days of transfers for ${contractAddress} using Alchemy (targeting historical coverage)...`);
 
     try {
       while (allTransfers.length < maxTransfers) {

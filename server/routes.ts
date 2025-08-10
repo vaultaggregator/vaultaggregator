@@ -2835,8 +2835,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (alchemy.isAvailable()) {
         try {
           console.log('🚀 Using Alchemy API for enhanced data coverage...');
-          // Alchemy can get much more historical data efficiently
-          allTransfers = await alchemy.getHistoricalTransfers(underlyingToken, 7, 5000);
+          // Alchemy can get much more historical data efficiently - fetch 90+ days for true "all time" coverage
+          allTransfers = await alchemy.getHistoricalTransfers(underlyingToken, 90, 15000);
           dataSource = 'alchemy';
           console.log(`✓ Alchemy: Successfully fetched ${allTransfers.length} transfers`);
         } catch (error) {
