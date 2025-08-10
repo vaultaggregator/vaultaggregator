@@ -93,11 +93,11 @@ Preferred communication style: Simple, everyday language.
 
 **Holder Data Consistency Issue (RESOLVED: August 10, 2025):**
 - Fixed discrepancy between deployed and production versions showing different holder counts
-- Root cause: Database associations correct, but variable name mismatch in storage.ts preventing data display
-- Solution: Fixed storage.ts line 531 from `result.token_info?.holdersCount` to `result.tokenInfo?.holdersCount` to match join alias
-- Pool token associations verified correct:
-  - STEAKUSDC pool linked to USDC token record (3,631,893 holders) ✅ 
-  - STETH pool linked to stETH token record (367,890 holders) ✅
+- Root cause: Database associations became incorrect due to sync process creating new token_info records, plus variable name mismatch in storage.ts
+- Solution: Fixed database pool associations to point to correct token_info records with holder data, and corrected storage.ts to use `result.token_info?.holdersCount` (snake_case) to match Drizzle ORM join alias
+- Pool token associations verified and working correctly:
+  - STEAKUSDC pool displaying 3,631,893 USDC holders ✅ 
+  - STETH pool displaying 367,890 stETH holders ✅
 - **STATUS: FULLY RESOLVED** - Both environments now display consistent, accurate holder data from authentic blockchain sources on homepage and all pool endpoints
 
 **API Rate Limiting Best Practices (Updated: August 2025):**

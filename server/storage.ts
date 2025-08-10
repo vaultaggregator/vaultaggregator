@@ -518,6 +518,8 @@ export class DatabaseStorage implements IStorage {
     for (const result of results) {
       const poolId = result.pools.id;
 
+
+
       if (!poolsMap.has(poolId)) {
         poolsMap.set(poolId, {
           ...result.pools,
@@ -525,7 +527,7 @@ export class DatabaseStorage implements IStorage {
           chain: result.chains!,
           notes: result.notes ? [result.notes] : [],
           categories: result.categories ? [result.categories] : [],
-          holdersCount: result.tokenInfo?.holdersCount || null,
+          holdersCount: result.token_info?.holdersCount || null,
         });
       } else {
         const existingPool = poolsMap.get(poolId)!;
