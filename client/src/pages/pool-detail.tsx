@@ -1,91 +1,115 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useParams } from 'wouter';
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  ArrowLeft, 
-  ExternalLink, 
-  BarChart3, 
-  TrendingUp, 
-  DollarSign, 
-  Activity, 
-  Calendar, 
-  Shield, 
-  Globe, 
-  AlertCircle, 
-  ArrowUp, 
-  ArrowDown, 
-  Waves, 
-  Clock, 
-  Target, 
-  TrendingDown, 
-  Copy, 
-  CheckCircle,
-  Users,
+import { useQuery } from "@tanstack/react-query";
+import { useParams, Link } from "wouter";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
+import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
+import { useEffect, useState } from "react";
+import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, Calendar, TrendingUp, TrendingDown, Minus, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe, Zap, Brain, Target, Waves, AlertCircle } from "lucide-react";
+import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
+import { CryptoLoader } from "@/components/crypto-loader";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { TokenDisplay } from "@/components/TokenDisplay";
+import { generatePlatformVisitUrl } from "@/utils/platformUrls";
+import { AIOutlook } from "@/components/ai-outlook";
+import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
+import { TokenInfo } from "@/components/token-info";
+import { formatTimeAgo } from "@/lib/utils";
+import { CrossPoolAnalytics } from "@/components/CrossPoolAnalytics";
 
-  Edit3,
-  Plus,
-  Trash2
-} from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { apiRequest } from '@/lib/queryClient';
-import { AreaChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Area, BarChart, Bar } from 'recharts';
-import { useToast } from '@/hooks/use-toast';
-import Footer from '@/components/footer';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart, Bar } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { YieldOpportunity } from "@/types";
 
-function formatTvl(tvl: number | null | undefined): string {
-  if (!tvl || tvl === 0) return 'N/A';
+// Utility function to format TVL values
+function formatTvl(value: string): string {
+  const num = parseFloat(value);
+  if (isNaN(num)) return "N/A";
   
-  if (tvl >= 1000000000) {
-    return `$${(tvl / 1000000000).toFixed(2)}B`;
-  } else if (tvl >= 1000000) {
-    return `$${(tvl / 1000000).toFixed(2)}M`;
-  } else if (tvl >= 1000) {
-    return `$${(tvl / 1000).toFixed(2)}K`;
+  if (num >= 1e9) {
+    return `$${(num / 1e9).toFixed(2)}B`;
+  } else if (num >= 1e6) {
+    return `$${(num / 1e6).toFixed(2)}M`;
+  } else if (num >= 1e3) {
+    return `$${(num / 1e3).toFixed(2)}K`;
   } else {
-    return `$${tvl.toFixed(2)}`;
+    return `$${num.toFixed(2)}`;
   }
 }
 
-function SimilarPoolsCard({ poolId, chain, platform }: { poolId: string; chain: string; platform: string }) {
-  const { data: pools = [] } = useQuery({
-    queryKey: ['/api/pools']
+interface ChartData {
+  date: string;
+  apy: number;
+  tvl: number;
+}
+
+interface ChartResponse {
+  hasData: boolean;
+  data?: ChartData[];
+  mockData?: ChartData[];
+  message?: string;
+  poolInfo?: any;
+  summary?: {
+    dataPoints: number;
+    averageApy: number;
+    minApy: number;
+    maxApy: number;
+  };
+}
+
+// Related Pools Component
+function RelatedPools({ currentPoolId, platform, chainId }: { 
+  currentPoolId: string; 
+  platform: string; 
+  chainId: string; 
+}) {
+  const { data: relatedPools = [], isLoading } = useQuery<YieldOpportunity[]>({
+    queryKey: [`/api/pools?platform=${encodeURIComponent(platform)}&chainId=${chainId}&limit=6`],
   });
 
-  // Find similar pools (same chain or platform, excluding current pool)
-  const similarPools = pools
-    .filter((pool: any) => 
-      pool.id !== poolId && 
-      (pool.chain.id === chain || pool.platform.id === platform)
-    )
-    .slice(0, 3);
+  const filteredPools = relatedPools.filter(pool => pool.id !== currentPoolId).slice(0, 3);
 
-  if (similarPools.length === 0) {
+  if (isLoading) {
+    return (
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
+            Related Pools
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-20 bg-gray-200 rounded-lg"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (filteredPools.length === 0) {
     return null;
   }
 
   return (
-    <Card>
+    <Card className="mb-8">
       <CardHeader>
-        <CardTitle>Similar Pools</CardTitle>
+        <CardTitle className="flex items-center">
+          <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
+          Related Pools
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {similarPools.map((pool: any) => (
-            <Link
-              key={pool.id}
-              href={`/pool/${pool.id}`}
-              className="block hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+        <div className="space-y-4">
+          {filteredPools.map((pool) => (
+            <Link key={pool.id} href={`/pool/${pool.id}`}>
+              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-semibold text-gray-900 dark:text-gray-100">{pool.tokenPair}</h4>
@@ -113,6 +137,32 @@ function SimilarPoolsCard({ poolId, chain, platform }: { poolId: string; chain: 
   );
 }
 
+// Additional Info Component - Read-only, editable only from admin panel
+function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Additional Information</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {notes && notes.length > 0 ? (
+          <div className="space-y-4">
+            {notes.map((note: any, index: number) => (
+              <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-gray-700 dark:text-gray-300" data-testid={`text-note-${index}`}>
+                  {note.content}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400 italic">No additional notes available for this pool.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 interface DefiLlamaResponse {
   pool: YieldOpportunity;
   defiLlamaData: any[];
@@ -122,343 +172,296 @@ interface DefiLlamaResponse {
   };
 }
 
-// Chart Component
-function PoolChart({ poolId }: { poolId: string }) {
-  const { data: chartData, isLoading } = useQuery({
-    queryKey: [`/api/pools/${poolId}/chart`]
+
+
+export default function PoolDetail() {
+  const params = useParams<{ 
+    poolId?: string;
+    network?: string;
+    protocol?: string;
+    slug?: string;
+  }>();
+  
+  // Handle both new SEO URLs and legacy URLs
+  const poolId = params.poolId;
+  const urlInfo = parseYieldUrl(params);
+  
+  const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
+    queryKey: ['/api/pools', poolId],
+    enabled: !!poolId,
   });
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-            Historical Data
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading historical data...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Scroll to top when page loads or pool ID changes (mobile navigation fix)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [poolId]);
 
-  if (!chartData?.hasData) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-            Historical Data
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
-              {chartData?.message || 'No historical data available for this pool.'}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Update document title and meta tags when pool data loads
+  useEffect(() => {
+    if (pool) {
+      document.title = generatePageTitle(pool);
+      
+      // Update meta description
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', generateMetaDescription(pool));
+      } else {
+        const meta = document.createElement('meta');
+        meta.name = 'description';
+        meta.content = generateMetaDescription(pool);
+        document.head.appendChild(meta);
+      }
+    }
+  }, [pool]);
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-          Historical APY Data
-        </CardTitle>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Tracking {chartData.data.length} data points from {chartData.timespan}
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData.data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="timestamp" 
-                stroke="#666"
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              />
-              <YAxis 
-                stroke="#666"
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <Tooltip 
-                labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-                formatter={(value: any) => [`${value}%`, 'APY']}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="apy" 
-                stroke="#2563eb" 
-                fill="#2563eb" 
-                fillOpacity={0.3}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+  const { data: chartData, isLoading: chartLoading } = useQuery<ChartResponse>({
+    queryKey: ['/api/pools', poolId, 'chart'],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-interface YieldOpportunity {
-  id: string;
-  pool: string;
-  chain: {
-    id: string;
-    name: string;
-    displayName: string;
+  const { data: defiLlamaData, isLoading: defiLlamaLoading } = useQuery<DefiLlamaResponse>({
+    queryKey: ['/api/pools', poolId, 'defillama'],
+    enabled: !!poolId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const { data: tokenInfo } = useQuery({
+    queryKey: ['/api/pools', poolId, 'token-info'],
+    enabled: !!poolId,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  const { data: holderAnalytics, isLoading: holderAnalyticsLoading } = useQuery({
+    queryKey: ['/api/pools', poolId, 'holder-analytics'],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: holderHistory, isLoading: holderHistoryLoading } = useQuery({
+    queryKey: ['/api/pools', poolId, 'holder-history'],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const { data: tokenTransfers, isLoading: tokenTransfersLoading } = useQuery({
+    queryKey: ['/api/pools', poolId, 'token-transfers'],
+    enabled: !!poolId,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  }) as { data: any; isLoading: boolean };
+
+
+
+  const formatTvl = (tvl: string): string => {
+    if (!tvl || tvl === '') return 'N/A';
+    const num = parseFloat(tvl);
+    if (isNaN(num)) return 'N/A';
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
+    return `$${num.toFixed(2)}`;
   };
-  project: string;
-  symbol: string;
-  tokenPair: string;
-  apy: number | null;
-  apy7d: number | null;
-  apy30d: number | null;
-  tvlUsd: number | null;
-  apyBase: number | null;
-  apyReward: number | null;
-  count: number | null;
-  outlookScore: number | null;
-  stablecoin: boolean | null;
-  ilRisk: string | null;
-  exposure: string | null;
-  predictions: string | null;
-  platform: {
-    id: string;
-    name: string;
-    displayName: string;
+
+  const formatApy = (apy: string): string => {
+    if (!apy || apy === '') return 'N/A';
+    const num = parseFloat(apy);
+    if (isNaN(num)) return 'N/A';
+    return `${num.toFixed(2)}%`;
   };
-  tvl: number | null;
-  riskLevel: string | null;
-  lastUpdated: string;
-  showUsdInFlow?: boolean;
-}
 
-interface Params {
-  id?: string;
-  poolId?: string;
-}
+  const formatHolders = (holders: number): string => {
+    if (isNaN(holders)) return "N/A";
+    return holders.toLocaleString();
+  };
 
-function CopyableText({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  const { toast } = useToast();
-
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      toast({
-        title: "Copied!",
-        description: `${label} copied to clipboard`,
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast({
-        title: "Failed to copy",
-        description: "Could not copy to clipboard",
-        variant: "destructive",
-      });
+  const getRiskColor = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'low': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-200 dark:border-green-700';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-700';
+      case 'high': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-200 dark:border-red-700';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800/30 dark:text-gray-200 dark:border-gray-600';
     }
   };
 
-  return (
-    <div className="flex items-center space-x-2">
-      <span className="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-        {text}
-      </span>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={copyToClipboard}
-        className="h-8 w-8 p-0"
-        data-testid={`button-copy-${label.toLowerCase().replace(' ', '-')}`}
-      >
-        {copied ? (
-          <CheckCircle className="h-4 w-4 text-green-600" />
-        ) : (
-          <Copy className="h-4 w-4" />
-        )}
-      </Button>
-    </div>
-  );
-}
+  const getPlatformInitials = (name: string): string => {
+    if (!name || typeof name !== 'string') return 'UN';
+    return name
+      .split(' ')
+      .map(word => word && word[0] ? word[0] : '')
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'UN';
+  };
 
-export default function PoolDetail() {
-  const params = useParams<Params>();
-  const id = params.id || params.poolId;
-  const { toast } = useToast();
-
-  // Pool data query
-  const { data: pool, isLoading: poolLoading, error: poolError } = useQuery<YieldOpportunity>({
-    queryKey: [`/api/pools/${id}`],
-    enabled: !!id
-  });
-
-  // DeFi Llama data query
-  const { data: defiLlamaData, isLoading: defiLlamaLoading } = useQuery<DefiLlamaResponse>({
-    queryKey: [`/api/pools/${id}/defillama`],
-    enabled: !!id
-  });
-
-  // Cross-pool analysis data
-  const { data: crossAnalysis, isLoading: crossAnalysisLoading } = useQuery({
-    queryKey: [`/api/pools/${id}/cross-analysis`],
-    enabled: !!id
-  });
-
-
-
-  // Token transfers query
-  const { data: tokenTransfers, isLoading: tokenTransfersLoading } = useQuery({
-    queryKey: [`/api/pools/${id}/token-transfers`],
-    enabled: !!id
-  });
-
-  // Token info query
-  const { data: tokenInfo, isLoading: tokenInfoLoading } = useQuery({
-    queryKey: [`/api/pools/${id}/token-info`],
-    enabled: !!id
-  });
-
-  if (poolLoading) {
+  if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-lg text-gray-600 dark:text-gray-400">Loading pool details...</span>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header onAdminClick={() => {}} />
+        <div className="py-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <CryptoLoader message="Loading pool details and market data..." />
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
-  if (poolError || !pool) {
+  if (error || !pool) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="text-center py-12">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Pool Not Found
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            The pool you're looking for doesn't exist or has been removed.
-          </p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header onAdminClick={() => {}} />
+        <div className="py-8">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
-            <Button>
+            <Button variant="ghost" className="mb-6">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Pools
+            </Button>
+          </Link>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Pool Not Found</h2>
+              <p className="text-gray-600">The requested pool could not be found.</p>
+            </CardContent>
+          </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header onAdminClick={() => {}} />
+      <div className="py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header with back button */}
+        <div className="mb-8">
+          <Link href="/">
+            <Button variant="ghost" className="mb-4" data-testid="button-back-to-pools">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Pools
             </Button>
           </Link>
         </div>
-      </div>
-    );
-  }
 
-  const getApyColor = (apy: number | null): string => {
-    if (!apy || apy === 0) return 'text-gray-500';
-    if (apy >= 20) return 'text-green-600';
-    if (apy >= 10) return 'text-blue-600';
-    if (apy >= 5) return 'text-orange-600';
-    return 'text-red-600';
-  };
+        {/* Pool Header */}
+        <Card className="mb-6">
+          <CardContent className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                {/* Platform Logo */}
+                <div 
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0"
+                  data-testid={`logo-${pool.platform.name}`}
+                >
+                  {pool.platform.logoUrl ? (
+                    <img 
+                      src={pool.platform.logoUrl} 
+                      alt={pool.platform.displayName}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <div 
+                      className="w-full h-full rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl"
+                      style={{
+                        background: `linear-gradient(135deg, ${pool.chain.color}80, ${pool.chain.color})`
+                      }}
+                    >
+                      {getPlatformInitials(pool.platform.displayName)}
+                    </div>
+                  )}
+                </div>
 
-  const getApy = () => {
-    return pool.apy ?? pool.apyBase ?? null;
-  };
+                {/* Pool Info */}
+                <div className="text-center sm:text-left">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2" data-testid="text-pool-title">
+                    {pool.tokenPair}
+                  </h1>
+                  <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
+                    {pool.platform.displayName}
+                  </p>
+                  <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
+                    <Badge 
+                      variant="outline"
+                      className="text-xs sm:text-sm px-2 sm:px-3 py-1"
+                      style={{ 
+                        backgroundColor: `${pool.chain.color}20`, 
+                        color: pool.chain.color,
+                        borderColor: `${pool.chain.color}40`
+                      }}
+                      data-testid="badge-network"
+                    >
+                      {pool.chain.displayName}
+                    </Badge>
+                    <MetricTooltip metric="risk-level" variant="icon" side="bottom">
+                      <Badge 
+                        className={`text-xs sm:text-sm px-2 sm:px-3 py-1 ${getRiskColor(pool.riskLevel)}`}
+                        data-testid="badge-risk"
+                      >
+                        <Shield className="w-3 h-3 mr-1" />
+                        {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
+                      </Badge>
+                    </MetricTooltip>
+                  </div>
+                  {/* Last Synced Info */}
+                  <div className="flex items-center justify-center sm:justify-start mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span>Data synced {formatTimeAgo(pool.lastUpdated)}</span>
+                  </div>
+                </div>
+              </div>
 
-  const getRiskColor = (risk: string | null): string => {
-    if (!risk) return 'text-gray-500';
-    switch (risk.toLowerCase()) {
-      case 'low': return 'text-green-600';
-      case 'medium': return 'text-orange-600';
-      case 'high': return 'text-red-600';
-      default: return 'text-gray-500';
-    }
-  };
+              {/* Action Buttons */}
+              <div className="flex justify-center sm:justify-end mt-4 sm:mt-0">
+                {(() => {
+                  const linkData = generatePlatformVisitUrl(pool);
+                  return linkData ? (
+                    <Button 
+                      variant="outline" 
+                      size="default" 
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6"
+                      data-testid="button-external-link"
+                      onClick={() => window.open(linkData.url, '_blank', 'noopener,noreferrer')}
+                    >
+                      <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      Visit Platform
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      data-testid="button-external-link"
+                      disabled
+                    >
+                      <ExternalLink className="w-5 h-5 mr-2" />
+                      Visit Platform
+                    </Button>
+                  );
+                })()}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-  const platformUrl = (() => {
-    if (!pool.platform || !pool.platform.name) return '#';
-    
-    const { name: platformName } = pool.platform;
-    
-    console.log('Generating URL with template:', 'https://app.morpho.org/{chainName}/vault/{underlyingToken}', 'for pool:', pool.id);
-    
-    switch (platformName) {
-      case 'morpho-blue':
-        const chainName = pool.chain.name === 'Ethereum' ? 'ethereum' : pool.chain.name.toLowerCase();
-        const underlyingToken = tokenInfo?.tokenInfo?.contractAddress || '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-        const url = `https://app.morpho.org/${chainName}/vault/${underlyingToken}`;
-        console.log('Generated URL:', url);
-        return url;
-      case 'lido':
-        return 'https://stake.lido.fi/';
-      default:
-        return '#';
-    }
-  })();
-
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div className="mb-4 sm:mb-0">
-            <Link href="/" className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Pools
-            </Link>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100" data-testid="text-pool-title">
-              {pool.tokenPair}
-            </h1>
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
-              {pool.platform.displayName} on {pool.chain.displayName}
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              asChild
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              data-testid="button-visit-platform"
-            >
-              <a href={platformUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Visit Platform
-              </a>
-            </Button>
-          </div>
-        </div>
-
-        {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+        {/* Metrics Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4 lg:gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
-                <span className="hidden sm:inline">Current APY</span>
-                <span className="sm:hidden">APY</span>
+                <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-600" />
+                  <span className="hidden sm:inline">Current APY (24h)</span>
+                  <span className="sm:hidden">24h APY</span>
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${getApyColor(getApy())}`} data-testid="text-apy">
-                {getApy() ? `${getApy()}%` : 'N/A'}
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600" data-testid="text-apy-current">
+                {formatApy(pool.apy)}
               </p>
             </CardContent>
           </Card>
@@ -466,14 +469,16 @@ export default function PoolDetail() {
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
-                <span className="hidden sm:inline">Total Value Locked</span>
-                <span className="sm:hidden">TVL</span>
+                <MetricTooltip metric="30d-apy" variant="icon" side="bottom">
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
+                  <span className="hidden sm:inline">30-Day Average APY</span>
+                  <span className="sm:hidden">30d APY</span>
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600" data-testid="text-tvl">
-                {pool.tvl ? formatTvl(pool.tvl) : 'N/A'}
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-500" data-testid="text-apy-30d">
+                {pool.rawData?.apyMean30d ? formatApy(pool.rawData.apyMean30d.toString()) : 'N/A'}
               </p>
             </CardContent>
           </Card>
@@ -481,15 +486,35 @@ export default function PoolDetail() {
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-500" />
-                <span className="hidden sm:inline">Operating Days</span>
-                <span className="sm:hidden">Days</span>
+                <MetricTooltip metric="tvl" variant="icon" side="bottom">
+                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-600" />
+                  <span className="hidden sm:inline">Total Value Locked</span>
+                  <span className="sm:hidden">TVL</span>
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600" data-testid="text-operating-days">
-                {pool.count || 'N/A'}
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600" data-testid="text-tvl">
+                {formatTvl(pool.tvl)}
               </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                <MetricTooltip metric="operating-days" variant="icon" side="bottom">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-600 dark:text-gray-200" />
+                  <span className="hidden sm:inline">Operating Since</span>
+                  <span className="sm:hidden">Since</span>
+                </MetricTooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-200" data-testid="text-operating-days">
+                {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mt-1">days</p>
             </CardContent>
           </Card>
 
@@ -502,8 +527,23 @@ export default function PoolDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-600" data-testid="text-holders">
-                {tokenInfo?.tokenInfo?.holdersCount?.toLocaleString() || 'N/A'}
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
+                {holderAnalytics?.analytics?.current ? formatHolders(holderAnalytics.analytics.current) : 'N/A'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                <Layers className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-orange-600" />
+                <span className="hidden sm:inline">Protocol</span>
+                <span className="sm:hidden">Protocol</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600" data-testid="text-protocol">
+                {pool.platform.displayName}
               </p>
             </CardContent>
           </Card>
@@ -538,6 +578,203 @@ export default function PoolDetail() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Holder Analytics Section */}
+        {holderAnalytics && holderAnalytics.analytics && (
+          <div className="mb-8">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center mb-2">
+                <Users className="w-5 h-5 mr-2 text-purple-600" />
+                Holder Analytics
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Track holder growth and changes over time
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Current Holders */}
+              <Card className="border-2 border-purple-200 dark:border-purple-800">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-purple-600" />
+                    Current Holders
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-2xl font-bold text-purple-600">
+                    {holderAnalytics.analytics.current?.toLocaleString() || 'N/A'}
+                  </p>
+                  <p className="text-sm text-gray-500">Total token holders</p>
+                </CardContent>
+              </Card>
+
+              {/* 7-Day Change */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                    <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                    7-Day Change
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {holderAnalytics.analytics.change7d ? (
+                    <div>
+                      <p className={`text-2xl font-bold ${
+                        holderAnalytics.analytics.change7d.value >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {holderAnalytics.analytics.change7d.value >= 0 ? '+' : ''}
+                        {holderAnalytics.analytics.change7d.value.toLocaleString()}
+                      </p>
+                      <p className={`text-sm ${
+                        holderAnalytics.analytics.change7d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
+                      }`}>
+                        {holderAnalytics.analytics.change7d.percentage >= 0 ? '+' : ''}
+                        {(holderAnalytics.analytics.change7d.percentage || 0).toFixed(2)}%
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-lg text-gray-500">N/A</p>
+                      <p className="text-xs text-gray-400">No recent data</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* 30-Day Change */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 text-green-600" />
+                    30-Day Change
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {holderAnalytics.analytics.change30d ? (
+                    <div>
+                      <p className={`text-2xl font-bold ${
+                        holderAnalytics.analytics.change30d.value >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {holderAnalytics.analytics.change30d.value >= 0 ? '+' : ''}
+                        {holderAnalytics.analytics.change30d.value.toLocaleString()}
+                      </p>
+                      <p className={`text-sm ${
+                        holderAnalytics.analytics.change30d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
+                      }`}>
+                        {holderAnalytics.analytics.change30d.percentage >= 0 ? '+' : ''}
+                        {(holderAnalytics.analytics.change30d.percentage || 0).toFixed(2)}%
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-lg text-gray-500">N/A</p>
+                      <p className="text-xs text-gray-400">No recent data</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* All-Time Change */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                    <TrendingUp className="w-4 h-4 mr-2 text-purple-600" />
+                    All-Time Change
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {holderAnalytics.analytics.changeAllTime ? (
+                    <div>
+                      <p className={`text-2xl font-bold ${
+                        holderAnalytics.analytics.changeAllTime.value >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {holderAnalytics.analytics.changeAllTime.value >= 0 ? '+' : ''}
+                        {holderAnalytics.analytics.changeAllTime.value.toLocaleString()}
+                      </p>
+                      <p className={`text-sm ${
+                        holderAnalytics.analytics.changeAllTime.percentage >= 0 ? 'text-green-500' : 'text-red-500'
+                      }`}>
+                        {holderAnalytics.analytics.changeAllTime.percentage >= 0 ? '+' : ''}
+                        {(holderAnalytics.analytics.changeAllTime.percentage || 0).toFixed(2)}%
+                      </p>
+                      {holderAnalytics.analytics.firstRecordDate && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Since {new Date(holderAnalytics.analytics.firstRecordDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-lg text-gray-500">N/A</p>
+                      <p className="text-xs text-gray-400">No historical data</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Holder History Chart */}
+            {holderHistory && holderHistory.history && holderHistory.history.length > 0 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <BarChart3 className="w-5 h-5 mr-2 text-purple-600" />
+                    Holder Count History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={holderHistory.history.map(record => ({
+                        date: record.timestamp,
+                        holders: record.holdersCount
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis 
+                          dataKey="date" 
+                          stroke="#666"
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        />
+                        <YAxis 
+                          stroke="#666"
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => value.toLocaleString()}
+                        />
+                        <Tooltip 
+                          labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                          formatter={(value: any) => [value.toLocaleString(), 'Holders']}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="holders" 
+                          stroke="#8B5CF6" 
+                          fill="url(#holderGradient)" 
+                          strokeWidth={2}
+                        />
+                        <defs>
+                          <linearGradient id="holderGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.3} />
+                            <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.1} />
+                          </linearGradient>
+                        </defs>
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Showing {holderHistory.history.length} data points
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
 
         {/* Advanced Multi-Period Flow Analysis Section */}
         {tokenTransfers && tokenTransfers.flowAnalysis && (
@@ -621,6 +858,9 @@ export default function PoolDetail() {
                                   })} USD
                                 </p>
                               )}
+                              <p className="text-xs text-green-700 dark:text-green-400 mt-1">
+                                {metrics.txCount} txns
+                              </p>
                             </div>
                             
                             <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
@@ -644,24 +884,30 @@ export default function PoolDetail() {
                                   })} USD
                                 </p>
                               )}
+                              <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+                                Avg: {(metrics.avgSize || 0) >= 1000 
+                                  ? `${((metrics.avgSize || 0) / 1000).toFixed(1)}K`
+                                  : (metrics.avgSize || 0).toFixed(1)
+                                }
+                              </p>
                             </div>
                             
                             <div className={`p-4 rounded-lg border ${
-                              (metrics.netFlow || 0) > 0 
+                              metrics.netFlow > 0 
                                 ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
-                                : (metrics.netFlow || 0) < 0
+                                : metrics.netFlow < 0
                                 ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
                                 : 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800'
                             }`}>
                               <div className="flex items-center">
-                                <Waves className="w-4 h-4 text-blue-600 mr-2" />
-                                <span className={`text-sm font-medium ${
-                                  (metrics.netFlow || 0) > 0 
-                                    ? 'text-blue-800 dark:text-blue-300'
-                                    : (metrics.netFlow || 0) < 0
-                                    ? 'text-orange-800 dark:text-orange-300'
-                                    : 'text-gray-800 dark:text-gray-300'
-                                }`}>Net Flow</span>
+                                {metrics.netFlow > 0 ? (
+                                  <TrendingUp className="w-4 h-4 text-blue-600 mr-2" />
+                                ) : metrics.netFlow < 0 ? (
+                                  <TrendingDown className="w-4 h-4 text-orange-600 mr-2" />
+                                ) : (
+                                  <Minus className="w-4 h-4 text-gray-600 mr-2" />
+                                )}
+                                <span className="text-sm font-medium">Net Flow</span>
                               </div>
                               <p className={`text-lg font-bold mt-1 ${
                                 (metrics.netFlow || 0) > 0 
@@ -692,17 +938,260 @@ export default function PoolDetail() {
                                 </p>
                               )}
                             </div>
+                            
+                            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                              <div className="flex items-center">
+                                <Users className="w-4 h-4 text-purple-600 mr-2" />
+                                <span className="text-sm font-medium text-purple-800 dark:text-purple-300">Active Addresses</span>
+                                {(metrics.dataQuality === 'limited_coverage' || metrics.dataQuality === 'insufficient_timespan') && (
+                                  <AlertCircle className="w-3 h-3 text-yellow-500 ml-1" title={
+                                    metrics.dataQuality === 'insufficient_timespan' ? 'Insufficient data for this time period' : 'Limited historical coverage'
+                                  } />
+                                )}
+                              </div>
+                              <p className="text-lg font-bold text-purple-900 dark:text-purple-100 mt-1">
+                                {metrics.dataQuality === 'insufficient_timespan' ? 'N/A' : metrics.uniqueAddressCount || 0}
+                                {(metrics.dataQuality === 'limited_coverage' || metrics.dataQuality === 'insufficient_timespan') && (
+                                  <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-1">*</span>
+                                )}
+                              </p>
+                              <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
+                                Unique participants ({period === '24h' ? '24 hours' : period === '7d' ? '7 days' : period === '30d' ? '30 days' : 'all time'})
+                                {metrics.dataQuality === 'insufficient_timespan' && (
+                                  <span className="text-red-600 dark:text-red-400"> - Insufficient data</span>
+                                )}
+                                {metrics.dataQuality === 'limited_coverage' && (
+                                  <span className="text-yellow-600 dark:text-yellow-400"> - Partial data</span>
+                                )}
+                                {metrics.note && (
+                                  <div className="text-xs text-gray-500 mt-1">{metrics.note}</div>
+                                )}
+                              </p>
+                            </div>
                           </div>
                         </TabsContent>
                       ))}
                     </Tabs>
+
+                    {/* Advanced Analytics Cards */}
+                    {tokenTransfers.flowAnalysis.advanced && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Enhanced Whale Activity Card */}
+                        <Card className="border-2 border-indigo-200 dark:border-indigo-800">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center">
+                              <Target className="w-4 h-4 mr-2 text-indigo-600" />
+                              Whale Activity
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Badge variant={tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? "destructive" : "secondary"}>
+                                  {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? 'DETECTED' : 'NOT DETECTED'}
+                                </Badge>
+                                {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected && (
+                                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+                                    {tokenTransfers.flowAnalysis.advanced.whaleActivity.count} whales
+                                  </span>
+                                )}
+                              </div>
+                              {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected && (
+                                <>
+                                  <div className="text-xs text-gray-500 space-y-1">
+                                    <p>Total Volume: {tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume >= 1000000 
+                                      ? `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000000).toFixed(2)}M`
+                                      : `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000).toFixed(2)}K`
+                                    } {tokenTransfers.tokenSymbol}</p>
+                                  </div>
+
+                                </>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        {/* Enhanced Smart Money Signal Card */}
+                        {tokenTransfers.flowAnalysis.advanced.smartMoney && (
+                        <Card className="border-2 border-green-200 dark:border-green-800">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center">
+                              <Brain className="w-4 h-4 mr-2 text-green-600" />
+                              Smart Money
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Badge variant={tokenTransfers.flowAnalysis.advanced.smartMoney.signal === 'strong' ? "default" : "outline"}>
+                                  {tokenTransfers.flowAnalysis.advanced.smartMoney.signal ? tokenTransfers.flowAnalysis.advanced.smartMoney.signal.toUpperCase() : 'UNKNOWN'} SIGNAL
+                                </Badge>
+                                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                  {tokenTransfers.flowAnalysis.advanced.smartMoney.movements ? tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length : 0} addresses
+                                </span>
+                              </div>
+
+                            </div>
+                          </CardContent>
+                        </Card>
+                        )}
+
+                        {/* Flow Velocity Card */}
+                        {tokenTransfers.flowAnalysis.advanced.flowVelocity && (
+                        <Card className="border-2 border-yellow-200 dark:border-yellow-800">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center">
+                              <Zap className="w-4 h-4 mr-2 text-yellow-600" />
+                              Flow Velocity
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <Badge variant={
+                                tokenTransfers.flowAnalysis.advanced.flowVelocity.trend === 'accelerating' ? "default" :
+                                tokenTransfers.flowAnalysis.advanced.flowVelocity.trend === 'decelerating' ? "destructive" :
+                                "secondary"
+                              }>
+                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.trend ? tokenTransfers.flowAnalysis.advanced.flowVelocity.trend.toUpperCase() : 'UNKNOWN'}
+                              </Badge>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {(tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent || 0) > 0 ? '+' : ''}
+                                {(tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent || 0).toFixed(1)}% change
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                        )}
+
+                        {/* Market Phase Card */}
+                        {tokenTransfers.flowAnalysis.advanced.marketPhase && (
+                          <Card className="border-2 border-blue-200 dark:border-blue-800">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm flex items-center">
+                                <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                                Market Phase
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2">
+                                <Badge variant={
+                                  tokenTransfers.flowAnalysis.advanced.marketPhase.current === 'accumulation' ? "default" :
+                                  tokenTransfers.flowAnalysis.advanced.marketPhase.current === 'distribution' ? "destructive" :
+                                  "secondary"
+                                }>
+                                  {tokenTransfers.flowAnalysis.advanced.marketPhase.current ? tokenTransfers.flowAnalysis.advanced.marketPhase.current.toUpperCase() : 'UNKNOWN'}
+                                </Badge>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Confidence: {((tokenTransfers.flowAnalysis.advanced.marketPhase.confidence || 0) * 100).toFixed(0)}%
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+
+
+
+                    {/* Flow Charts */}
+                    {tokenTransfers.flowAnalysis.chartData && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm flex items-center">
+                            <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                            Flow Visualization
+                          </CardTitle>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Hourly: {tokenTransfers.flowAnalysis.chartData.hourly?.length || 0} points | 
+                            Daily: {tokenTransfers.flowAnalysis.chartData.daily?.length || 0} points
+                          </p>
+                        </CardHeader>
+                        <CardContent>
+                          <Tabs defaultValue="hourly" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2">
+                              <TabsTrigger value="hourly">24H Hourly</TabsTrigger>
+                              <TabsTrigger value="daily">30D Daily</TabsTrigger>
+                            </TabsList>
+                            
+                            <TabsContent value="hourly">
+                              {tokenTransfers.flowAnalysis.chartData.hourly && tokenTransfers.flowAnalysis.chartData.hourly.length > 0 ? (
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <ComposedChart data={tokenTransfers.flowAnalysis.chartData.hourly}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis 
+                                        dataKey="timestamp" 
+                                        tickFormatter={(timestamp) => new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                      />
+                                      <YAxis tickFormatter={(value) => 
+                                        value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` :
+                                        value >= 1000 ? `${(value / 1000).toFixed(1)}K` :
+                                        value.toFixed(0)
+                                      } />
+                                      <Tooltip
+                                        labelFormatter={(timestamp) => new Date(timestamp).toLocaleString()}
+                                        formatter={(value: number) => [
+                                          value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
+                                          value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
+                                          value.toFixed(2)
+                                        ]}
+                                      />
+                                      <Legend />
+                                      <Bar dataKey="inflow" fill="#10b981" name="Inflow" />
+                                      <Bar dataKey="outflow" fill="#ef4444" name="Outflow" />
+                                      <Line type="monotone" dataKey="netFlow" stroke="#3b82f6" strokeWidth={2} name="Net Flow" />
+                                    </ComposedChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              ) : (
+                                <p className="text-center text-gray-500 py-8">No hourly data available</p>
+                              )}
+                            </TabsContent>
+                            
+                            <TabsContent value="daily">
+                              {tokenTransfers.flowAnalysis.chartData.daily && tokenTransfers.flowAnalysis.chartData.daily.length > 0 ? (
+                                <div className="h-64 w-full">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={tokenTransfers.flowAnalysis.chartData.daily}>
+                                      <CartesianGrid strokeDasharray="3 3" />
+                                      <XAxis 
+                                        dataKey="timestamp" 
+                                        tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
+                                      />
+                                      <YAxis tickFormatter={(value) => 
+                                        value >= 1000000 ? `${(value / 1000000).toFixed(1)}M` :
+                                        value >= 1000 ? `${(value / 1000).toFixed(1)}K` :
+                                        value.toFixed(0)
+                                      } />
+                                      <Tooltip
+                                        labelFormatter={(timestamp) => new Date(timestamp).toLocaleDateString()}
+                                        formatter={(value: number) => [
+                                          value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
+                                          value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
+                                          value.toFixed(2)
+                                        ]}
+                                      />
+                                      <Legend />
+                                      <Area type="monotone" dataKey="inflow" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} name="Inflow" />
+                                      <Area type="monotone" dataKey="outflow" stackId="2" stroke="#ef4444" fill="#ef4444" fillOpacity={0.6} name="Outflow" />
+                                    </AreaChart>
+                                  </ResponsiveContainer>
+                                </div>
+                              ) : (
+                                <p className="text-center text-gray-500 py-8">No daily data available</p>
+                              )}
+                            </TabsContent>
+                          </Tabs>
+                        </CardContent>
+                      </Card>
+                    )}
+
+
                   </div>
                 ) : (
-                  <div className="text-center py-8">
-                    <Waves className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400">
-                      No flow analysis available for this token.
-                    </p>
+                  // Fallback for old format
+                  <div className="text-center text-gray-500 py-8">
+                    No flow analysis data available
                   </div>
                 )}
               </CardContent>
@@ -712,146 +1201,115 @@ export default function PoolDetail() {
 
 
 
-        {/* Historical Chart */}
-        <div className="mb-8">
-          <PoolChart poolId={id!} />
-        </div>
+        {/* Advanced Cross-Pool Analytics */}
+        {pool.isVisible && <CrossPoolAnalytics poolId={pool.id} />}
 
-        {/* Cross-Pool Analysis Section */}
-        {crossAnalysis && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Target className="w-5 h-5 mr-2 text-orange-600" />
-                Cross-Pool Analytics
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                How this pool compares across the DeFi ecosystem
-              </p>
-            </CardHeader>
-            <CardContent>
-              {crossAnalysisLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-                  <span className="ml-3 text-gray-600 dark:text-gray-400">Analyzing cross-pool data...</span>
-                </div>
-              ) : crossAnalysis.insights ? (
-                <div className="space-y-6">
-                  {/* Key Insights */}
-                  <div className="prose prose-gray dark:prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-                      {crossAnalysis.insights}
-                    </div>
-                  </div>
-                  
-                  {/* Risk Score */}
-                  {crossAnalysis.riskScore && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center">
-                          <Shield className="w-5 h-5 text-blue-600 mr-2" />
-                          <span className="text-sm font-medium text-blue-800 dark:text-blue-300">Risk Assessment</span>
-                        </div>
-                        <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-2">
-                          {crossAnalysis.riskScore.toFixed(1)}/10
-                        </p>
-                        <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
-                          Based on volatility and market position
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-                    <p className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                      📊 Cross-Pool Analysis • Updated {new Date(crossAnalysis.lastUpdated).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <Target className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Cross-pool analysis is being generated. Check back soon.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+        {/* AI Market Outlook - Only show on visible pools */}
+        {pool.isVisible && <AIOutlook poolId={pool.id} />}
 
-        {/* Similar Pools */}
-        <div className="mb-8">
-          <SimilarPoolsCard 
-            poolId={pool.id} 
-            chain={pool.chain.id} 
-            platform={pool.platform.id} 
-          />
-        </div>
-
-        {/* Token Contract Information */}
-        {tokenInfo && tokenInfo.tokenInfo && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Globe className="w-5 h-5 mr-2 text-gray-600" />
-                Token Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Contract Address</h4>
-                    <CopyableText text={tokenInfo.tokenInfo.contractAddress} label="Contract Address" />
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Token Name</h4>
-                    <p className="text-gray-900 dark:text-gray-100 font-medium">
-                      {tokenInfo.tokenInfo.name || 'N/A'}
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Symbol</h4>
-                    <p className="text-gray-900 dark:text-gray-100 font-medium">
-                      {tokenInfo.tokenInfo.symbol || 'N/A'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Total Supply</h4>
-                    <p className="text-gray-900 dark:text-gray-100 font-medium">
-                      {tokenInfo.tokenInfo.totalSupply ? 
-                        parseFloat(tokenInfo.tokenInfo.totalSupply).toLocaleString() : 
-                        'N/A'
-                      }
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Decimals</h4>
-                    <p className="text-gray-900 dark:text-gray-100 font-medium">
-                      {tokenInfo.tokenInfo.decimals || 'N/A'}
-                    </p>
-                  </div>
-                  
-                  {tokenInfo.tokenInfo.priceUsd && (
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Price (USD)</h4>
-                      <p className="text-gray-900 dark:text-gray-100 font-medium">
-                        ${parseFloat(tokenInfo.tokenInfo.priceUsd).toFixed(6)}
-                      </p>
-                    </div>
-                  )}
-                </div>
+        {/* APY Historical Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
+              APY Performance History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {chartLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-3 text-gray-600 dark:text-gray-400">Loading chart data...</span>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            ) : chartData && (chartData.hasData || chartData.mockData) ? (
+              <div>
+                <div className="h-64 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData.data || chartData.mockData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="#666"
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis 
+                        stroke="#666"
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => `${value.toFixed(1)}%`}
+                      />
+                      <Tooltip 
+                        labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
+                        formatter={(value: any, name: string) => [
+                          `${Number(value).toFixed(2)}%`,
+                          'APY'
+                        ]}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Legend />
+                      <Area 
+                        type="monotone" 
+                        dataKey="apy" 
+                        stroke="#3b82f6" 
+                        fill="#3b82f6" 
+                        fillOpacity={0.1}
+                        strokeWidth={2}
+                        name="APY"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                {chartData.summary && (
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Average APY</p>
+                      <p className="text-lg font-semibold text-blue-600">{chartData.summary.averageApy.toFixed(2)}%</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Min APY</p>
+                      <p className="text-lg font-semibold text-red-600">{chartData.summary.minApy.toFixed(2)}%</p>
+                    </div>
+                  </div>
+                )}
+                {!chartData.hasData && chartData.mockData && (
+                  <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      📊 This chart shows simulated data for demonstration purposes. Real historical data from DeFi Llama is not available for this pool.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="h-64 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+                <Activity className="w-12 h-12 mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Historical Data Available</p>
+                <p className="text-sm text-center max-w-md">
+                  Historical performance data is not available for this pool. This may be because it's a new pool or not tracked in our data sources.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Related Pools from Website */}
+        <RelatedPools currentPoolId={pool.id} platform={pool.platform.displayName} chainId={pool.chain.id} />
+
+
+
+        {/* Notes Section */}
+        <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
+
+
+      </div>
       </div>
       <Footer />
     </div>
