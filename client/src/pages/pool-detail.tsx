@@ -276,10 +276,10 @@ export default function PoolDetail() {
 
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-200 dark:border-green-700';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-200 dark:border-yellow-700';
+      case 'high': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-200 dark:border-red-700';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800/30 dark:text-gray-200 dark:border-gray-600';
     }
   };
 
@@ -451,7 +451,7 @@ export default function PoolDetail() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4 lg:gap-6 mb-6">
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
                   <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-600" />
                   <span className="hidden sm:inline">Current APY (24h)</span>
@@ -468,7 +468,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <MetricTooltip metric="30d-apy" variant="icon" side="bottom">
                   <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
                   <span className="hidden sm:inline">30-Day Average APY</span>
@@ -485,7 +485,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <MetricTooltip metric="tvl" variant="icon" side="bottom">
                   <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-600" />
                   <span className="hidden sm:inline">Total Value Locked</span>
@@ -502,25 +502,25 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <MetricTooltip metric="operating-days" variant="icon" side="bottom">
-                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-600 dark:text-gray-400" />
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-600 dark:text-gray-200" />
                   <span className="hidden sm:inline">Operating Since</span>
                   <span className="sm:hidden">Since</span>
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-300" data-testid="text-operating-days">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-200" data-testid="text-operating-days">
                 {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
               </p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">days</p>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mt-1">days</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-purple-600" />
                 <span className="hidden sm:inline">Token Holders</span>
                 <span className="sm:hidden">Holders</span>
@@ -536,7 +536,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <Layers className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-orange-600" />
                 <span className="hidden sm:inline">Protocol</span>
                 <span className="sm:hidden">Protocol</span>
@@ -551,7 +551,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-500" />
                 <span className="hidden sm:inline">Network</span>
                 <span className="sm:hidden">Network</span>
@@ -566,7 +566,7 @@ export default function PoolDetail() {
 
           <Card>
             <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-red-500" />
                 <span className="hidden sm:inline">Risk Level</span>
                 <span className="sm:hidden">Risk</span>
@@ -588,7 +588,7 @@ export default function PoolDetail() {
                 <Users className="w-5 h-5 mr-2 text-purple-600" />
                 Holder Analytics
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Track holder growth and changes over time
               </p>
             </div>
@@ -597,7 +597,7 @@ export default function PoolDetail() {
               {/* 7-Day Change */}
               <Card>
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                     <Activity className="w-4 h-4 mr-2 text-blue-600" />
                     7-Day Change
                   </CardTitle>
