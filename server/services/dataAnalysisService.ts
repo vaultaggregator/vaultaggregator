@@ -126,9 +126,9 @@ export class DataAnalysisService {
     const rawData: any = pool.rawData || {};
     let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
     
-    // Handle special cases
+    // Handle special cases - use actual USDC token address for holder data
     if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-      underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      underlyingToken = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'; // USDC
     }
 
     if (!underlyingToken) {

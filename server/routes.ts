@@ -1427,6 +1427,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Manual holder data sync endpoint
+  app.post("/api/admin/sync/holder-data", requireAuth, async (req, res) => {
+    try {
+      const { HolderDataSyncService } = await import("./services/holderDataSyncService");
+      const holderSyncService = new HolderDataSyncService();
+      
+      // Sync specific tokens for our pools
+      await holderSyncService.syncTokenHolderData('0xae7ab96520de3a18e5e111b5eaab095312d7fe84'); // stETH
+      await holderSyncService.syncTokenHolderData('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'); // USDC
+      
+      res.json({ success: true, message: "Holder data sync completed" });
+    } catch (error) {
+      console.error("Error during manual holder sync:", error);
+      res.status(500).json({ message: "Failed to sync holder data" });
+    }
+  });
+
   // Pool consolidation endpoint
   app.post("/api/admin/pools/consolidate", requireAuth, async (req, res) => {
     try {
