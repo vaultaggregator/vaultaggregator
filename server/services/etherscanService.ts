@@ -96,6 +96,31 @@ class EtherscanService {
     }
   }
 
+  private async logError(title: string, description: string, error: string, url: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
+    try {
+      const { errorLogger } = await import('./errorLogger.js');
+      await errorLogger.logError({
+        title,
+        description,
+        errorType: 'API',
+        severity,
+        source: 'EtherscanService',
+        stackTrace: error,
+        fixPrompt: `The Etherscan API is having issues. Check if the ETHERSCAN_API_KEY is properly configured and has sufficient request limits. Consider implementing better request queuing or getting a higher tier API key. URL that failed: ${url}`,
+        metadata: {
+          url,
+          error,
+          apiKey: this.apiKey ? 'Present' : 'Missing',
+          timestamp: new Date().toISOString(),
+          failedAttempts: this.failedAttempts
+        }
+      });
+    } catch (logError) {
+      // Prevent infinite loops - just log to console if error logging fails
+      console.error('Failed to log Etherscan error:', logError);
+    }
+  }
+
   private getCacheKey(url: string): string {
     return url.split('&apikey=')[0]; // Remove API key from cache key
   }
@@ -204,6 +229,15 @@ class EtherscanService {
             errorMessage.toLowerCase().includes('too many') ||
             errorMessage === 'NOTOK') {
           
+          // Log rate limit error
+          await this.logError(
+            'Etherscan API Rate Limit Hit',
+            `The Etherscan API returned a rate limit error (${errorMessage}). This is affecting token data, holder information, and transfer history. The system is retrying but users may see stale data.`,
+            `Rate limit error: ${errorMessage}`,
+            url.split('&apikey=')[0],
+            retryAttempt >= maxRetries - 1 ? 'high' : 'medium'
+          );
+          
           if (retryAttempt < maxRetries) {
             const backoffDelay = Math.pow(2, retryAttempt) * 3000; // Longer exponential backoff: 3s, 6s, 12s
             console.log(`Rate limit detected, retrying in ${backoffDelay}ms (attempt ${retryAttempt + 1}/${maxRetries + 1})`);
@@ -211,6 +245,15 @@ class EtherscanService {
             await new Promise(resolve => setTimeout(resolve, backoffDelay));
             return this.makeRequest(url, retryAttempt + 1);
           }
+        } else {
+          // Log other API errors
+          await this.logError(
+            'Etherscan API Error',
+            `The Etherscan API returned an error: "${errorMessage}". This affects blockchain data retrieval and may impact user experience.`,
+            `API error: ${errorMessage}`,
+            url.split('&apikey=')[0],
+            'medium'
+          );
         }
         
         throw new Error(`Etherscan API error: ${errorMessage}`);
@@ -218,8 +261,17 @@ class EtherscanService {
 
       return data.result;
     } catch (error) {
-      // Retry on network errors
+      // Log network errors
       const errorMessage = error instanceof Error ? error.message : String(error);
+      await this.logError(
+        'Etherscan Network Error',
+        `Failed to connect to Etherscan API. This may be due to network issues, server downtime, or connectivity problems. Users will see cached data or error messages.`,
+        errorMessage,
+        url.split('&apikey=')[0],
+        retryAttempt >= maxRetries - 1 ? 'high' : 'medium'
+      );
+      
+      // Retry on network errors
       if (retryAttempt < maxRetries && (
           errorMessage.includes('fetch') || 
           errorMessage.includes('network') ||
