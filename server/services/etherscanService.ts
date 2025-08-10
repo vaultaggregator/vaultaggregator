@@ -88,7 +88,7 @@ class EtherscanService {
   private async rateLimitedFetch(url: string): Promise<any> {
     const now = Date.now();
     const timeSinceLastCall = now - this.lastCallTime;
-    const minInterval = 1000 / this.rateLimit; // milliseconds between calls
+    const minInterval = 250; // 4 calls per second to be more conservative
 
     if (timeSinceLastCall < minInterval) {
       const waitTime = minInterval - timeSinceLastCall;
@@ -97,17 +97,25 @@ class EtherscanService {
 
     this.lastCallTime = Date.now();
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Etherscan API error: ${response.status} ${response.statusText}`);
-    }
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+      }
 
-    const data = await response.json();
-    if (data.status === '0') {
-      throw new Error(`Etherscan API error: ${data.message || data.result}`);
-    }
+      const data = await response.json();
+      
+      // Log the API response for debugging
+      if (data.status === '0') {
+        console.error(`Etherscan API response error: ${data.message || data.result} for URL: ${url.split('&apikey=')[0]}`);
+        throw new Error(`Etherscan API error: ${data.message || data.result}`);
+      }
 
-    return data.result;
+      return data.result;
+    } catch (error) {
+      console.error(`Etherscan API fetch error for URL: ${url.split('&apikey=')[0]}:`, error.message);
+      throw error;
+    }
   }
 
   /**
@@ -259,10 +267,12 @@ class EtherscanService {
   /**
    * Get token transfers for a specific contract address
    */
-  async getTokenTransfers(contractAddress: string, page: number = 1, offset: number = 25): Promise<EtherscanTokenTransfer[]> {
+  async getTokenTransfers(contractAddress: string, page: number = 1, offset: number = 10): Promise<EtherscanTokenTransfer[]> {
     try {
+      // Use a smaller offset to avoid timeout issues
       const url = `${this.baseUrl}?module=account&action=tokentx&contractaddress=${contractAddress}&page=${page}&offset=${offset}&sort=desc&apikey=${this.apiKey}`;
       
+      console.log(`Fetching token transfers for ${contractAddress}...`);
       const transfers = await this.rateLimitedFetch(url);
       
       if (!Array.isArray(transfers)) {
@@ -270,6 +280,7 @@ class EtherscanService {
         return [];
       }
       
+      console.log(`Successfully retrieved ${transfers.length} token transfers`);
       return transfers;
     } catch (error) {
       console.error('Error fetching token transfers:', error);
