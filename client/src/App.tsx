@@ -66,6 +66,7 @@ function Router() {
       <Route path="/jobs" component={Jobs} />
       <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
       <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
+      <Route path="/pools/:poolId" component={PoolDetail} /> {/* Pools (plural) support */}
       <Route path="/companion" component={CompanionPage} />
       <Route path="/investment-advisor" component={InvestmentAdvisor} />
       <Route path="/risk-dashboard" component={RiskDashboard} />
