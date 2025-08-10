@@ -1,4 +1,3 @@
-import { syncData } from "./defi-llama";
 import { AIOutlookService } from "./aiOutlookService";
 import { HolderDataSyncService } from "./holderDataSyncService";
 import { storage } from "../storage";
@@ -26,45 +25,12 @@ async function logError(title: string, description: string, error: string, servi
   }
 }
 
-let defiLlamaInterval: NodeJS.Timeout | null = null;
 let aiOutlookInterval: NodeJS.Timeout | null = null;
 let holderDataInterval: NodeJS.Timeout | null = null;
 let cleanupInterval: NodeJS.Timeout | null = null;
 
 export function startScheduler(): void {
-  console.log("Starting data sync scheduler for DeFi Llama and AI Outlooks...");
-  
-  // Initial DeFi Llama sync
-  syncData().catch(async (error: any) => {
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    console.error("DeFi Llama initial sync failed:", errorMsg);
-    await logError(
-      'DeFi Llama Initial Sync Failed',
-      'Initial DeFi Llama data synchronization failed during application startup. This affects pool data, APY rates, and TVL information availability.',
-      errorMsg,
-      'DefiLlamaSync',
-      'critical'
-    );
-  });
-
-  // Schedule DeFi Llama sync every 10 minutes
-  defiLlamaInterval = setInterval(async () => {
-    try {
-      console.log("Running scheduled DeFi Llama sync...");
-      await syncData();
-      console.log("Scheduled DeFi Llama sync completed");
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error("Error in scheduled DeFi Llama sync:", errorMsg);
-      await logError(
-        'Scheduled DeFi Llama Sync Failed',
-        'Scheduled DeFi Llama data synchronization failed. Pool data, APY rates, and TVL information may become stale.',
-        errorMsg,
-        'DefiLlamaSync',
-        'high'
-      );
-    }
-  }, 10 * 60 * 1000); // 10 minutes
+  console.log("Starting data sync scheduler for AI Outlooks and holder data...");
 
   // Generate AI outlooks every 2 hours
   aiOutlookInterval = setInterval(async () => {
@@ -133,7 +99,7 @@ export function startScheduler(): void {
     }
   }, 60 * 60 * 1000); // 1 hour
 
-  // Generate initial AI outlooks after 2 minutes (after DeFi Llama sync)
+  // Generate initial AI outlooks after 2 minutes
   setTimeout(async () => {
     try {
       console.log("Running initial AI outlook generation...");
@@ -144,9 +110,9 @@ export function startScheduler(): void {
     }
   }, 2 * 60 * 1000); // 2 minutes
 
-  console.log("Scheduler started - DeFi Llama: 10min, AI outlooks: 2h, Holder data: 6h, Cleanup: 1h");
+  console.log("Scheduler started - AI outlooks: 2h, Holder data: 6h, Cleanup: 1h");
 
-  // Initial holder data sync after 5 minutes (after DeFi Llama sync)
+  // Initial holder data sync after 5 minutes
   setTimeout(async () => {
     try {
       console.log("Running initial holder data sync...");
@@ -189,14 +155,14 @@ async function generateOutlooksForActivePools() {
 export function stopScheduler(): void {
   console.log("Stopping scheduler...");
   
-  if (defiLlamaInterval) {
-    clearInterval(defiLlamaInterval);
-    defiLlamaInterval = null;
-  }
-  
   if (aiOutlookInterval) {
     clearInterval(aiOutlookInterval);
     aiOutlookInterval = null;
+  }
+  
+  if (holderDataInterval) {
+    clearInterval(holderDataInterval);
+    holderDataInterval = null;
   }
   
   if (cleanupInterval) {

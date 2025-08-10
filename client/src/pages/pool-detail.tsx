@@ -163,14 +163,7 @@ function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }
   );
 }
 
-interface DefiLlamaResponse {
-  pool: YieldOpportunity;
-  defiLlamaData: any[];
-  additionalInfo: {
-    hasHistoricalData: boolean;
-    matchCount: number;
-  };
-}
+// DeFi Llama integration removed - using Morpho API instead
 
 
 
@@ -214,17 +207,7 @@ export default function PoolDetail() {
     }
   }, [pool]);
 
-  const { data: chartData, isLoading: chartLoading } = useQuery<ChartResponse>({
-    queryKey: ['/api/pools', poolId, 'chart'],
-    enabled: !!poolId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
-  const { data: defiLlamaData, isLoading: defiLlamaLoading } = useQuery<DefiLlamaResponse>({
-    queryKey: ['/api/pools', poolId, 'defillama'],
-    enabled: !!poolId,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
+  // Chart data and DeFi Llama queries removed - historical data now via Morpho API
 
   const { data: tokenInfo } = useQuery({
     queryKey: ['/api/pools', poolId, 'token-info'],
