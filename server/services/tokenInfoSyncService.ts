@@ -38,8 +38,8 @@ export class TokenInfoSyncService {
       
       // Special handling for known pools with correct token addresses
       if (poolId === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-        // STEAKUSDC pool - map to USDC contract
-        const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+        // STEAKUSDC pool - map to steakUSDC vault contract
+        const tokenAddress = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
         await this.fetchAndStoreTokenInfo(poolId, tokenAddress);
         return;
       }
@@ -60,7 +60,7 @@ export class TokenInfoSyncService {
       }
       
       if (symbol === 'STEAKUSDC' || symbol === 'steakUSDC') {
-        const tokenAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+        const tokenAddress = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
         await this.fetchAndStoreTokenInfo(poolId, tokenAddress);
         return;
       }

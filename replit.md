@@ -9,6 +9,9 @@ Preferred communication style: Simple, everyday language.
 **Recent Major Achievement (August 2025):**
 Successfully debugged and enhanced the token flow analysis system, achieving comprehensive DeFi analytics with 15,000+ transfer analysis, 90-day historical coverage, whale activity tracking, and smart money movement detection. Resolved critical Alchemy/Etherscan data format compatibility issues.
 
+**Latest Fix (August 10, 2025):**
+Fixed steakUSDC holder count issue - was incorrectly showing 3.6M USDC token holders instead of actual vault holders. Updated all service mappings to use correct steakUSDC vault contract address (0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB) instead of underlying USDC token address. System now fetches authentic vault holder data (~392 holders expected).
+
 **Logo Implementation:**
 - Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`
 - Never use CryptoLogos.cc (returns 403 errors)
