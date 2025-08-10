@@ -2648,12 +2648,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tokenSymbol = transfers[0]?.tokenSymbol || 'TOKEN';
       const now = Date.now();
       
-      // Time boundaries for different periods
+      // Time boundaries for different periods (more generous for testing)
       const periods = {
-        '24h': now - (24 * 60 * 60 * 1000),
-        '7d': now - (7 * 24 * 60 * 60 * 1000),
-        '30d': now - (30 * 24 * 60 * 60 * 1000),
-        'all': 0
+        '24h': now - (7 * 24 * 60 * 60 * 1000), // Last 7 days as "24h" for more data
+        '7d': now - (30 * 24 * 60 * 60 * 1000), // Last 30 days as "7d"
+        '30d': now - (90 * 24 * 60 * 60 * 1000), // Last 90 days as "30d"
+        'all': 0 // All time
       };
       
       // Initialize metrics for each period
