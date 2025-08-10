@@ -2326,11 +2326,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      // For testing with Steakhouse pool, use the known token address
-      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-      }
-      
       if (!underlyingToken) {
         return res.status(404).json({ error: "No underlying token found for this pool" });
       }
@@ -2461,11 +2456,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      // For testing with Steakhouse pool, use the known token address
-      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-      }
-      
       if (!underlyingToken) {
         return res.status(404).json({ error: "No underlying token found for this pool" });
       }
@@ -2493,11 +2483,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract underlying token address from raw data
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
-      
-      // For testing with Steakhouse pool, use the known token address
-      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-      }
       
       if (!underlyingToken) {
         return res.status(404).json({ error: "No underlying token found for this pool" });
@@ -2604,11 +2589,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rawData: any = pool.rawData || {};
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      // For testing with Steakhouse pool, use the known token address
-      if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-      }
-      
       if (!underlyingToken) {
         return res.status(404).json({ error: "No underlying token found for this pool" });
       }
@@ -2691,6 +2671,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           '0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f', // Lido: Execution Layer Rewards Vault
           '0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e', // Lido: stETH/ETH Curve Pool
           '0x21e27a5e5513d6e65c4f830167390997aa84843a' // Additional Lido-related address
+        ],
+        morpho: [
+          '0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b', // Morpho steakUSDC vault contract
+          '0xa44febf3-34f6-4cd5-8ab1-f246ebe49f9e', // Morpho vault address from pool data
+          '0xcfbf12bc2d27e6964fe977b489b617a7bec1660f', // Morpho protocol address
+          '0x79720266dec914247424aeb0f06b8fa5b3ec073e', // Morpho protocol address
+          '0xdcee3ae4f82bd085ff147b87a754517d8caaff3b'  // Morpho swap contract
         ]
       };
       
@@ -2713,7 +2700,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Determine flow direction with protocol awareness
         const isZeroAddress = (addr: string) => addr === '0x0000000000000000000000000000000000000000';
-        const isProtocolAddress = (addr: string) => protocolAddresses.lido.includes(addr);
+        const isProtocolAddress = (addr: string) => 
+          protocolAddresses.lido.includes(addr) || 
+          protocolAddresses.morpho.includes(addr);
         
         let isInflow = false;
         let isOutflow = false;
