@@ -797,8 +797,16 @@ export default function PoolDetail() {
                                   : (metrics.inflow || 0) >= 1000 
                                   ? `${((metrics.inflow || 0) / 1000).toFixed(2)}K`
                                   : (metrics.inflow || 0).toFixed(2)
-                                }
+                                } {tokenTransfers.tokenSymbol}
                               </p>
+                              {tokenInfo?.tokenInfo?.priceUsd && (
+                                <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                                  ${((metrics.inflow || 0) * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                  })} USD
+                                </p>
+                              )}
                               <p className="text-xs text-green-700 dark:text-green-400 mt-1">
                                 {metrics.txCount} txns
                               </p>
@@ -815,8 +823,16 @@ export default function PoolDetail() {
                                   : (metrics.outflow || 0) >= 1000 
                                   ? `${((metrics.outflow || 0) / 1000).toFixed(2)}K`
                                   : (metrics.outflow || 0).toFixed(2)
-                                }
+                                } {tokenTransfers.tokenSymbol}
                               </p>
+                              {tokenInfo?.tokenInfo?.priceUsd && (
+                                <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                                  ${((metrics.outflow || 0) * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                  })} USD
+                                </p>
+                              )}
                               <p className="text-xs text-red-700 dark:text-red-400 mt-1">
                                 Avg: {(metrics.avgSize || 0) >= 1000 
                                   ? `${((metrics.avgSize || 0) / 1000).toFixed(1)}K`
@@ -1150,6 +1166,14 @@ export default function PoolDetail() {
                                value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
                                value.toFixed(4)} {transfer.tokenSymbol}
                             </p>
+                            {tokenInfo?.tokenInfo?.priceUsd && (
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                ${(value * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })} USD
+                              </p>
+                            )}
                             <p className="text-sm text-gray-500 dark:text-gray-400">
                               Gas: {(parseInt(transfer.gasUsed) / 1000).toFixed(1)}K
                             </p>

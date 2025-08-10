@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, tokenInfo } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
 import { db } from "./db";
@@ -3135,6 +3135,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching token transfers:", error);
       res.status(500).json({ error: "Failed to fetch token transfers" });
+    }
+  });
+
+  // Admin endpoint to refresh token prices
+  app.post("/api/admin/refresh-token-prices", async (req, res) => {
+    try {
+      // Import price service
+      const { PriceService } = await import("./services/aiOutlookService");
+      
+      // Get all token info records
+      const tokens = await db.select().from(tokenInfo);
+      let updated = 0;
+      
+      for (const token of tokens) {
+        try {
+          const price = await PriceService.getTokenPrice(token.symbol);
+          if (price) {
+            await storage.updateTokenInfo(token.address, { priceUsd: price.toString() });
+            updated++;
+            console.log(`Updated ${token.symbol} price to $${price}`);
+          }
+        } catch (error) {
+          console.log(`Failed to update price for ${token.symbol}:`, error);
+        }
+      }
+      
+      res.json({ success: true, updated, total: tokens.length });
+    } catch (error) {
+      console.error("Error refreshing token prices:", error);
+      res.status(500).json({ error: "Failed to refresh token prices" });
     }
   });
 

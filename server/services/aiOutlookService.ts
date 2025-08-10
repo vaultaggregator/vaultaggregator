@@ -7,13 +7,28 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Price service disabled - external APIs removed per user request
 class PriceService {
   static async getTokenPrice(tokenSymbol: string): Promise<number | null> {
-    // External price APIs removed per user request
-    return null;
+    try {
+      // Simple price estimation based on known token relationships
+      // For demonstration - can be enhanced with actual price APIs if needed
+      const priceEstimates: { [key: string]: number } = {
+        'STETH': 3200, // Approximate stETH price (close to ETH price)
+        'ETH': 3200,
+        'WETH': 3200,
+        'USDC': 1,
+        'USDT': 1,
+        'DAI': 1
+      };
+      
+      return priceEstimates[tokenSymbol.toUpperCase()] || null;
+    } catch (error) {
+      console.error("Error fetching token price:", error);
+      return null;
+    }
   }
 
   static async getMarketData(tokenSymbol: string): Promise<{price: number | null, change24h: number | null} | null> {
-    // External market data APIs removed per user request
-    return null;
+    const price = await this.getTokenPrice(tokenSymbol);
+    return price ? { price, change24h: null } : null;
   }
 }
 

@@ -176,13 +176,23 @@ export class TokenInfoSyncService {
         return null;
       }
 
+      // Fetch price data
+      let priceUsd = null;
+      try {
+        const { PriceService } = await import("./aiOutlookService");
+        priceUsd = await PriceService.getTokenPrice(result.symbol || "UNKNOWN");
+      } catch (error) {
+        console.log(`Could not fetch price for ${result.symbol}:`, error);
+      }
+
       return {
         address,
         name: result.tokenName || "Unknown Token",
-        symbol: result.symbol || "UNKNOWN",
+        symbol: result.symbol || "UNKNOWN", 
         decimals: result.divisor || "18",
         totalSupply: result.totalSupply || "0",
         holdersCount: parseInt(result.holdersCount || "0"),
+        priceUsd: priceUsd?.toString() || null,
       };
     } catch (error) {
       console.error(`Etherscan API error for ${address}:`, error);
@@ -237,7 +247,16 @@ export class TokenInfoSyncService {
       const decimalsMatch = html.match(/(\d+)\s+Decimals/);
       const decimals = decimalsMatch ? decimalsMatch[1] : "18";
       
-      console.log(`Scraped data: name=${name}, symbol=${symbol}, holders=${holdersCount}, decimals=${decimals}`);
+      // Fetch price data
+      let priceUsd = null;
+      try {
+        const { PriceService } = await import("./aiOutlookService");
+        priceUsd = await PriceService.getTokenPrice(symbol);
+      } catch (error) {
+        console.log(`Could not fetch price for ${symbol}:`, error);
+      }
+
+      console.log(`Scraped data: name=${name}, symbol=${symbol}, holders=${holdersCount}, decimals=${decimals}, price=${priceUsd}`);
       
       return {
         address,
@@ -246,6 +265,7 @@ export class TokenInfoSyncService {
         decimals,
         totalSupply,
         holdersCount,
+        priceUsd: priceUsd?.toString() || null,
       };
     } catch (error) {
       console.log('Web scraping failed:', error);
