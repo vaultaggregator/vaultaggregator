@@ -20,6 +20,13 @@ Preferred communication style: Simple, everyday language.
 - If something doesn't work during testing, fix it immediately before moving on
 - No task is complete until it's been tested and confirmed working
 
+**API Rate Limiting Best Practices (Updated: August 2025):**
+- Etherscan API: 5 calls/second limit with intelligent queuing and 1-second intervals
+- Exponential backoff retry: 3s, 6s, 12s delays on rate limit errors
+- Smart caching: 5-minute cache for transfers, 1-minute for token info
+- Graceful degradation: Returns cached data when API consistently fails
+- Request queuing prevents concurrent API abuse and ensures proper rate limiting
+
 **UI/UX Preferences:**
 - Category navigation: Horizontal layout with dropdown menus (established design - do not change without explicit request)
 - Subcategories appear in dropdown menus when clicking parent categories with down arrows
@@ -63,6 +70,7 @@ The backend now implements a comprehensive multi-source data collection and anal
 - **Token Info Sync**: Comprehensive token data with 24-hour caching
 - **AI Outlook Generation**: Market predictions every 2 hours
 - **Token Transfer Analysis**: Protocol-aware flow analysis with accurate inflow/outflow calculations for complex DeFi protocols like Lido
+- **Enhanced API Resilience**: Intelligent rate limiting (5 calls/sec), exponential backoff retry logic (3-6-12s), smart caching (5min for transfers), and graceful degradation with stale data fallbacks
 
 #### Analytics Services
 - **Data Analysis Service**: Comprehensive pool analytics combining all data sources
