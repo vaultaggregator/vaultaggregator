@@ -799,7 +799,7 @@ export default function PoolDetail() {
                                   : (metrics.inflow || 0).toFixed(2)
                                 } {tokenTransfers.tokenSymbol}
                               </p>
-                              {tokenInfo?.tokenInfo?.priceUsd && (
+                              {pool.showUsdInFlow && tokenInfo?.tokenInfo?.priceUsd && (
                                 <p className="text-sm text-green-700 dark:text-green-400 mt-1">
                                   ${((metrics.inflow || 0) * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
                                     minimumFractionDigits: 0,
@@ -825,7 +825,7 @@ export default function PoolDetail() {
                                   : (metrics.outflow || 0).toFixed(2)
                                 } {tokenTransfers.tokenSymbol}
                               </p>
-                              {tokenInfo?.tokenInfo?.priceUsd && (
+                              {pool.showUsdInFlow && tokenInfo?.tokenInfo?.priceUsd && (
                                 <p className="text-sm text-red-700 dark:text-red-400 mt-1">
                                   ${((metrics.outflow || 0) * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
                                     minimumFractionDigits: 0,
@@ -872,7 +872,7 @@ export default function PoolDetail() {
                                   : `${(metrics.netFlow || 0) >= 0 ? '+' : ''}${(metrics.netFlow || 0).toFixed(2)}`
                                 } {tokenTransfers.tokenSymbol}
                               </p>
-                              {tokenInfo?.tokenInfo?.priceUsd && (
+                              {pool.showUsdInFlow && tokenInfo?.tokenInfo?.priceUsd && (
                                 <p className={`text-sm mt-1 ${
                                   (metrics.netFlow || 0) > 0 
                                     ? 'text-blue-700 dark:text-blue-400'
@@ -1180,7 +1180,7 @@ export default function PoolDetail() {
                                value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
                                value.toFixed(4)} {transfer.tokenSymbol}
                             </p>
-                            {tokenInfo?.tokenInfo?.priceUsd && (
+                            {pool.showUsdInFlow && tokenInfo?.tokenInfo?.priceUsd && (
                               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                                 ${(value * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
                                   minimumFractionDigits: 2,

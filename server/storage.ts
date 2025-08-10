@@ -188,6 +188,10 @@ export interface IStorage {
   createDeveloperApplication(application: InsertDeveloperApplication): Promise<DeveloperApplication>;
   getDeveloperApplications(status?: string): Promise<DeveloperApplication[]>;
   updateDeveloperApplication(id: string, status: string): Promise<DeveloperApplication | undefined>;
+
+  // Admin methods
+  getAllPoolsForAdmin(): Promise<any[]>;
+  updatePool(id: string, updates: Partial<Pool>): Promise<Pool | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -680,6 +684,34 @@ export class DatabaseStorage implements IStorage {
   async createPool(pool: InsertPool): Promise<Pool> {
     const [newPool] = await db.insert(pools).values(pool).returning();
     return newPool;
+  }
+
+  async updatePool(id: string, updates: Partial<Pool>): Promise<Pool | undefined> {
+    const [updatedPool] = await db.update(pools).set({
+      ...updates,
+      lastUpdated: new Date()
+    }).where(eq(pools.id, id)).returning();
+    return updatedPool || undefined;
+  }
+
+  async getAllPoolsForAdmin(): Promise<any[]> {
+    return await db
+      .select({
+        id: pools.id,
+        tokenPair: pools.tokenPair,
+        showUsdInFlow: pools.showUsdInFlow,
+        isVisible: pools.isVisible,
+        platform: {
+          displayName: platforms.displayName,
+        },
+        chain: {
+          displayName: chains.displayName,
+        }
+      })
+      .from(pools)
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .orderBy(pools.isVisible ? asc(sql`0`) : asc(sql`1`), platforms.displayName);
   }
 
   async updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined> {
