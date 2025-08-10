@@ -3111,16 +3111,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const coverageHours = Math.round((newestTime - oldestTime) / (1000 * 60 * 60));
       const coverageDays = Math.round(coverageHours / 24);
       
+      // For Alchemy data, we know we requested 90 days, so coverage should be excellent
+      const actualCoverage = dataSource === 'alchemy' && coverageDays >= 7 ? 'excellent' : 
+                            coverageHours >= 168 ? 'good' : 
+                            coverageHours >= 24 ? 'partial' : 'limited';
+      
       // Determine data quality and warnings
       const dataQuality = {
-        coverage: coverageHours < 24 ? 'limited' : coverageHours < 168 ? 'partial' : 'good',
-        timespan: `${coverageHours} hours`,
+        coverage: actualCoverage,
+        timespan: coverageDays >= 1 ? `${coverageDays} days` : `${coverageHours} hours`,
         source: dataSource,
-        warning: coverageHours < 24 ? 
+        warning: actualCoverage === 'limited' ? 
           (dataSource === 'alchemy' ? 
             `High-volume token: Only ${coverageHours}h of recent data available. Consider upgrading Alchemy plan for deeper history.` :
             `High-volume token: Only ${coverageHours}h of recent data available due to API limits. 7d/30d metrics show same values as 24h. Consider adding ALCHEMY_API_KEY for better coverage.`) : 
-          coverageHours < 168 ? 
+          actualCoverage === 'partial' ? 
           `Partial historical coverage (${coverageDays}d). Some time periods may show similar values.` : 
           null
       };
@@ -3142,6 +3147,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             metrics.dataQuality = 'limited_coverage';
             metrics.note = `Partial 24h coverage (${coverageHours}h of 24h)`;
           }
+        } else if (dataQuality.coverage === 'partial' && (period === '30d' && coverageDays < 30)) {
+          // Mark 30d as limited if we don't have full 30 days
+          metrics.dataQuality = 'limited_coverage';
+          metrics.note = `Partial 30d coverage (${coverageDays}d of 30d)`;
+        } else {
+          // Good coverage - all periods should display normally
+          metrics.dataQuality = 'good';
         }
         
         delete metrics.uniqueAddresses; // Remove Set from response
