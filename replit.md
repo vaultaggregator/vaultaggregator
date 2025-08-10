@@ -20,6 +20,12 @@ Preferred communication style: Simple, everyday language.
 - If something doesn't work during testing, fix it immediately before moving on
 - No task is complete until it's been tested and confirmed working
 
+**Token Flow Analysis (Updated: August 2025):**
+- Fixed protocol-aware flow detection for multiple DeFi protocols
+- Added Morpho protocol addresses for accurate steakUSDC flow analysis
+- Lido protocol addresses already functioning correctly for stETH analysis
+- Flow analysis now provides authentic data showing real inflow/outflow metrics across all time periods
+
 **API Rate Limiting Best Practices (Updated: August 2025):**
 - Etherscan API: 5 calls/second limit with intelligent queuing and 1-second intervals
 - Exponential backoff retry: 3s, 6s, 12s delays on rate limit errors
