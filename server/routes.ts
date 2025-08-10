@@ -2824,16 +2824,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "No valid underlying token found for this pool" });
       }
 
-      // Fetch more transfers for comprehensive analysis
+      // Fetch multiple pages of transfers for broader time coverage
       const { EtherscanService } = await import("./services/etherscanService");
       const etherscan = new EtherscanService();
       
-      // Fetch up to 1000 transfers for proper time coverage
-      const transfers = await etherscan.getTokenTransfers(
-        underlyingToken, 
-        1, 
-        1000 // Get much more data for accurate multi-period analysis
-      );
+      // For high-volume tokens like stETH, we need multiple pages to get historical coverage
+      let allTransfers: any[] = [];
+      const maxPages = 5; // Fetch 5 pages to get broader time range
+      const transfersPerPage = 1000;
+      
+      for (let page = 1; page <= maxPages; page++) {
+        const pageTransfers = await etherscan.getTokenTransfers(
+          underlyingToken, 
+          page, 
+          transfersPerPage
+        );
+        
+        if (!pageTransfers || pageTransfers.length === 0) break;
+        allTransfers = allTransfers.concat(pageTransfers);
+        
+        // Stop if we get enough historical coverage (at least 7 days)
+        if (allTransfers.length > 0) {
+          const oldestTransfer = allTransfers[allTransfers.length - 1];
+          const oldestTime = parseInt(oldestTransfer.timeStamp) * 1000;
+          const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+          
+          if (oldestTime < sevenDaysAgo) {
+            console.log(`Got ${allTransfers.length} transfers spanning ${Math.round((Date.now() - oldestTime) / (24 * 60 * 60 * 1000))} days`);
+            break;
+          }
+        }
+        
+        // Add delay to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      const transfers = allTransfers;
 
       if (!transfers || transfers.length === 0) {
         return res.json({
