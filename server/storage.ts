@@ -525,7 +525,7 @@ export class DatabaseStorage implements IStorage {
           chain: result.chains!,
           notes: result.notes ? [result.notes] : [],
           categories: result.categories ? [result.categories] : [],
-          holdersCount: result.token_info?.holdersCount || null,
+          holdersCount: result.tokenInfo?.holdersCount || null,
         });
       } else {
         const existingPool = poolsMap.get(poolId)!;
