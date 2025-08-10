@@ -626,6 +626,9 @@ export default function PoolDetail() {
                       }`}>
                         {holderAnalytics.analytics.change7d.value >= 0 ? '+' : ''}
                         {holderAnalytics.analytics.change7d.value.toLocaleString()}
+                        {holderAnalytics.analytics.change7d.isProjected && (
+                          <span className="text-xs text-blue-600 ml-1">*</span>
+                        )}
                       </p>
                       <p className={`text-sm ${
                         holderAnalytics.analytics.change7d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
@@ -633,6 +636,11 @@ export default function PoolDetail() {
                         {holderAnalytics.analytics.change7d.percentage >= 0 ? '+' : ''}
                         {(holderAnalytics.analytics.change7d.percentage || 0).toFixed(2)}%
                       </p>
+                      {holderAnalytics.analytics.change7d.isProjected && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Projected ({holderAnalytics.analytics.change7d.basedOnDays}d data)
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div>
@@ -659,6 +667,9 @@ export default function PoolDetail() {
                       }`}>
                         {holderAnalytics.analytics.change30d.value >= 0 ? '+' : ''}
                         {holderAnalytics.analytics.change30d.value.toLocaleString()}
+                        {holderAnalytics.analytics.change30d.isProjected && (
+                          <span className="text-xs text-blue-600 ml-1">*</span>
+                        )}
                       </p>
                       <p className={`text-sm ${
                         holderAnalytics.analytics.change30d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
@@ -666,6 +677,11 @@ export default function PoolDetail() {
                         {holderAnalytics.analytics.change30d.percentage >= 0 ? '+' : ''}
                         {(holderAnalytics.analytics.change30d.percentage || 0).toFixed(2)}%
                       </p>
+                      {holderAnalytics.analytics.change30d.isProjected && (
+                        <p className="text-xs text-blue-600 mt-1">
+                          Projected ({holderAnalytics.analytics.change30d.basedOnDays}d data)
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div>
