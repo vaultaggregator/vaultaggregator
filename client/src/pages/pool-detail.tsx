@@ -936,7 +936,7 @@ export default function PoolDetail() {
                     {/* Advanced Analytics Cards */}
                     {tokenTransfers.flowAnalysis.advanced && (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* Whale Activity Card */}
+                        {/* Enhanced Whale Activity Card */}
                         <Card className="border-2 border-indigo-200 dark:border-indigo-800">
                           <CardHeader className="pb-3">
                             <CardTitle className="text-sm flex items-center">
@@ -945,28 +945,52 @@ export default function PoolDetail() {
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-2">
-                              <Badge variant={tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? "destructive" : "secondary"}>
-                                {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? 'DETECTED' : 'NOT DETECTED'}
-                              </Badge>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Badge variant={tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? "destructive" : "secondary"}>
+                                  {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected ? 'DETECTED' : 'NOT DETECTED'}
+                                </Badge>
+                                {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected && (
+                                  <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+                                    {tokenTransfers.flowAnalysis.advanced.whaleActivity.count} whales
+                                  </span>
+                                )}
+                              </div>
                               {tokenTransfers.flowAnalysis.advanced.whaleActivity.detected && (
                                 <>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                                    {tokenTransfers.flowAnalysis.advanced.whaleActivity.count} whale addresses
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    Volume: {tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume >= 1000000 
+                                  <div className="text-xs text-gray-500 space-y-1">
+                                    <p>Total Volume: {tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume >= 1000000 
                                       ? `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000000).toFixed(2)}M`
                                       : `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000).toFixed(2)}K`
-                                    }
-                                  </p>
+                                    } {tokenTransfers.tokenSymbol}</p>
+                                  </div>
+                                  {/* Top Whales List */}
+                                  {tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales && tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.length > 0 && (
+                                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                                      <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Top Whales:</p>
+                                      {tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.slice(0, 3).map((whale: any, index: number) => (
+                                        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-xs">
+                                          <div className="flex items-center justify-between">
+                                            <span className="font-mono text-gray-600 dark:text-gray-400">{whale.address}</span>
+                                            <Badge variant="outline" className="text-xs">
+                                              {whale.type}
+                                            </Badge>
+                                          </div>
+                                          <div className="flex justify-between mt-1 text-gray-500">
+                                            <span>Vol: {whale.totalVolume >= 1000 ? `${(whale.totalVolume / 1000).toFixed(1)}K` : whale.totalVolume.toFixed(1)}</span>
+                                            <span>Txns: {whale.txCount}</span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </>
                               )}
                             </div>
                           </CardContent>
                         </Card>
 
-                        {/* Smart Money Signal Card */}
+                        {/* Enhanced Smart Money Signal Card */}
                         {tokenTransfers.flowAnalysis.advanced.smartMoney && (
                         <Card className="border-2 border-green-200 dark:border-green-800">
                           <CardHeader className="pb-3">
@@ -976,13 +1000,35 @@ export default function PoolDetail() {
                             </CardTitle>
                           </CardHeader>
                           <CardContent>
-                            <div className="space-y-2">
-                              <Badge variant={tokenTransfers.flowAnalysis.advanced.smartMoney.signal === 'strong' ? "default" : "outline"}>
-                                {tokenTransfers.flowAnalysis.advanced.smartMoney.signal ? tokenTransfers.flowAnalysis.advanced.smartMoney.signal.toUpperCase() : 'UNKNOWN'} SIGNAL
-                              </Badge>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {tokenTransfers.flowAnalysis.advanced.smartMoney.movements ? tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length : 0} smart addresses
-                              </p>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Badge variant={tokenTransfers.flowAnalysis.advanced.smartMoney.signal === 'strong' ? "default" : "outline"}>
+                                  {tokenTransfers.flowAnalysis.advanced.smartMoney.signal ? tokenTransfers.flowAnalysis.advanced.smartMoney.signal.toUpperCase() : 'UNKNOWN'} SIGNAL
+                                </Badge>
+                                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                                  {tokenTransfers.flowAnalysis.advanced.smartMoney.movements ? tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length : 0} addresses
+                                </span>
+                              </div>
+                              {/* Smart Money Movements */}
+                              {tokenTransfers.flowAnalysis.advanced.smartMoney.movements && tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length > 0 && (
+                                <div className="space-y-2 max-h-32 overflow-y-auto">
+                                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Top Smart Money:</p>
+                                  {tokenTransfers.flowAnalysis.advanced.smartMoney.movements.slice(0, 3).map((smart: any, index: number) => (
+                                    <div key={index} className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-xs">
+                                      <div className="flex items-center justify-between">
+                                        <span className="font-mono text-gray-600 dark:text-gray-400">{smart.address}</span>
+                                        <span className="text-green-600 dark:text-green-400">
+                                          +{smart.profitability >= 1000 ? `${(smart.profitability / 1000).toFixed(1)}K` : smart.profitability.toFixed(1)}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between mt-1 text-gray-500">
+                                        <span>Avg: {smart.avgTxSize >= 1000 ? `${(smart.avgTxSize / 1000).toFixed(1)}K` : smart.avgTxSize.toFixed(1)}</span>
+                                        <span>Txns: {smart.txCount}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </CardContent>
                         </Card>
@@ -1043,11 +1089,81 @@ export default function PoolDetail() {
                       </div>
                     )}
 
+                    {/* Enhanced Transfer Statistics */}
+                    {tokenTransfers.flowAnalysis.statistics && (
+                      <Card className="border-2 border-purple-200 dark:border-purple-800">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center">
+                            <BarChart3 className="w-4 h-4 mr-2 text-purple-600" />
+                            Transfer Statistics
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                            <div className="space-y-1">
+                              <p className="text-gray-500">Total Addresses</p>
+                              <p className="font-bold text-purple-900 dark:text-purple-100">
+                                {tokenTransfers.flowAnalysis.statistics.totalAddresses?.toLocaleString() || 'N/A'}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-gray-500">24h Active</p>
+                              <p className="font-bold text-purple-900 dark:text-purple-100">
+                                {tokenTransfers.flowAnalysis.statistics.activeAddresses24h?.toLocaleString() || 'N/A'}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-gray-500">Median Size</p>
+                              <p className="font-bold text-purple-900 dark:text-purple-100">
+                                {tokenTransfers.flowAnalysis.statistics.medianTransferSize >= 1000 
+                                  ? `${(tokenTransfers.flowAnalysis.statistics.medianTransferSize / 1000).toFixed(2)}K`
+                                  : tokenTransfers.flowAnalysis.statistics.medianTransferSize?.toFixed(2) || 'N/A'
+                                } {tokenTransfers.tokenSymbol}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-gray-500">Coverage</p>
+                              <p className="font-bold text-purple-900 dark:text-purple-100">
+                                {tokenTransfers.dataQuality?.timespan || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+                          {/* Volume Distribution */}
+                          {tokenTransfers.flowAnalysis.statistics.volumeDistribution && (
+                            <div className="mt-4 space-y-2">
+                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Volume Distribution:</p>
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded text-center">
+                                  <p className="text-green-600 dark:text-green-400 font-medium">Small</p>
+                                  <p className="font-bold">{tokenTransfers.flowAnalysis.statistics.volumeDistribution.small}</p>
+                                </div>
+                                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded text-center">
+                                  <p className="text-yellow-600 dark:text-yellow-400 font-medium">Medium</p>
+                                  <p className="font-bold">{tokenTransfers.flowAnalysis.statistics.volumeDistribution.medium}</p>
+                                </div>
+                                <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded text-center">
+                                  <p className="text-red-600 dark:text-red-400 font-medium">Large</p>
+                                  <p className="font-bold">{tokenTransfers.flowAnalysis.statistics.volumeDistribution.large}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+
                     {/* Flow Charts */}
                     {tokenTransfers.flowAnalysis.chartData && (
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-sm">Flow Visualization</CardTitle>
+                          <CardTitle className="text-sm flex items-center">
+                            <Activity className="w-4 h-4 mr-2 text-blue-600" />
+                            Flow Visualization
+                          </CardTitle>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Hourly: {tokenTransfers.flowAnalysis.chartData.hourly?.length || 0} points | 
+                            Daily: {tokenTransfers.flowAnalysis.chartData.daily?.length || 0} points
+                          </p>
                         </CardHeader>
                         <CardContent>
                           <Tabs defaultValue="hourly" className="w-full">
