@@ -2829,8 +2829,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const etherscan = new EtherscanService();
       
       // For high-volume tokens like stETH, we need multiple pages to get historical coverage
+      // However, Etherscan API has strict rate limits, so reduce page count and add more delays
       let allTransfers: any[] = [];
-      const maxPages = 5; // Fetch 5 pages to get broader time range
+      const maxPages = 3; // Reduced to avoid rate limits
       const transfersPerPage = 1000;
       
       for (let page = 1; page <= maxPages; page++) {
@@ -2846,17 +2847,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Stop if we get enough historical coverage (at least 7 days)
         if (allTransfers.length > 0) {
           const oldestTransfer = allTransfers[allTransfers.length - 1];
+          const newestTransfer = allTransfers[0];
           const oldestTime = parseInt(oldestTransfer.timeStamp) * 1000;
+          const newestTime = parseInt(newestTransfer.timeStamp) * 1000;
           const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+          const daysCovered = Math.round((newestTime - oldestTime) / (24 * 60 * 60 * 1000));
+          
+          console.log(`Page ${page}: Got ${pageTransfers.length} transfers. Total: ${allTransfers.length} transfers spanning ${daysCovered} days`);
+          console.log(`Time range: ${new Date(oldestTime).toISOString()} to ${new Date(newestTime).toISOString()}`);
           
           if (oldestTime < sevenDaysAgo) {
-            console.log(`Got ${allTransfers.length} transfers spanning ${Math.round((Date.now() - oldestTime) / (24 * 60 * 60 * 1000))} days`);
+            console.log(`✓ Achieved 7+ days of historical coverage with ${allTransfers.length} transfers`);
             break;
           }
         }
         
-        // Add delay to respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Add longer delay to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
       
       const transfers = allTransfers;
@@ -3037,12 +3044,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         addressActivity.get(toAddr)!.txCount++;
       }
       
+      // Calculate time coverage and data quality
+      const oldestTime = transfers.length > 0 ? parseInt(transfers[transfers.length - 1].timeStamp) * 1000 : Date.now();
+      const newestTime = transfers.length > 0 ? parseInt(transfers[0].timeStamp) * 1000 : Date.now();
+      const coverageHours = Math.round((newestTime - oldestTime) / (1000 * 60 * 60));
+      const coverageDays = Math.round(coverageHours / 24);
+      
+      // Determine data quality and warnings
+      const dataQuality = {
+        coverage: coverageHours < 24 ? 'limited' : coverageHours < 168 ? 'partial' : 'good',
+        timespan: `${coverageHours} hours`,
+        warning: coverageHours < 24 ? 
+          `Limited historical data available (${coverageHours}h). Active addresses may not reflect true historical patterns.` : 
+          coverageHours < 168 ? 
+          `Partial historical coverage (${coverageDays}d). Some time periods may show similar values.` : 
+          null
+      };
+
       // Calculate metrics and finalize periods
       Object.keys(flowMetrics).forEach(period => {
         const metrics = flowMetrics[period];
         metrics.netFlow = metrics.inflow - metrics.outflow;
         metrics.uniqueAddressCount = metrics.uniqueAddresses.size;
         metrics.avgSize = metrics.txCount > 0 ? (metrics.inflow + metrics.outflow) / metrics.txCount : 0;
+        
+        // Add data quality indicator for limited coverage
+        if (dataQuality.coverage === 'limited' && period !== 'all') {
+          metrics.dataQuality = 'limited_coverage';
+        }
+        
         delete metrics.uniqueAddresses; // Remove Set from response
       });
       
@@ -3137,6 +3167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tokenAddress: underlyingToken,
         tokenSymbol,
         transfers: transfers.slice(0, Math.min(Number(limit), 50)), // Limited for display
+        dataQuality, // Include data quality information
         flowAnalysis: {
           periods: flowMetrics,
           advanced: {

@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { parseYieldUrl, generatePageTitle, generateMetaDescription, generateBreadcrumbs } from "@/lib/seo-urls";
 import { useEffect, useState } from "react";
-import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, Calendar, TrendingUp, TrendingDown, Minus, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe, Zap, Brain, Target, Waves } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, ExternalLink, Calendar, TrendingUp, TrendingDown, Minus, Shield, DollarSign, BarChart3, Activity, Clock, Users, Layers, Globe, Zap, Brain, Target, Waves, AlertCircle } from "lucide-react";
 import { PoolDataLoading, MetricLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { Button } from "@/components/ui/button";
@@ -764,6 +764,25 @@ export default function PoolDetail() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Comprehensive flow metrics and intelligent insights
                 </p>
+                {/* Data Quality Warning */}
+                {tokenTransfers.dataQuality?.warning && (
+                  <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <div className="flex items-start">
+                      <AlertCircle className="w-4 h-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-yellow-800 dark:text-yellow-200 font-medium">
+                          Limited Historical Data
+                        </p>
+                        <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                          {tokenTransfers.dataQuality.warning}
+                        </p>
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                          Coverage: {tokenTransfers.dataQuality.timespan}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 {tokenTransfersLoading ? (
@@ -892,12 +911,21 @@ export default function PoolDetail() {
                               <div className="flex items-center">
                                 <Users className="w-4 h-4 text-purple-600 mr-2" />
                                 <span className="text-sm font-medium text-purple-800 dark:text-purple-300">Active Addresses</span>
+                                {metrics.dataQuality === 'limited_coverage' && (
+                                  <AlertCircle className="w-3 h-3 text-yellow-500 ml-1" title="Limited historical coverage" />
+                                )}
                               </div>
                               <p className="text-lg font-bold text-purple-900 dark:text-purple-100 mt-1">
                                 {metrics.uniqueAddressCount || 0}
+                                {metrics.dataQuality === 'limited_coverage' && (
+                                  <span className="text-xs text-yellow-600 dark:text-yellow-400 ml-1">*</span>
+                                )}
                               </p>
                               <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
                                 Unique participants ({period === '24h' ? '24 hours' : period === '7d' ? '7 days' : period === '30d' ? '30 days' : 'all time'})
+                                {metrics.dataQuality === 'limited_coverage' && (
+                                  <span className="text-yellow-600 dark:text-yellow-400"> - Limited data</span>
+                                )}
                               </p>
                             </div>
                           </div>
