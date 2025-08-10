@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
-import { AIOutlook } from "@/components/ai-outlook";
+
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
 import { formatTimeAgo } from "@/lib/utils";
@@ -232,17 +232,7 @@ export default function PoolDetail() {
     staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  const { data: holderAnalytics, isLoading: holderAnalyticsLoading } = useQuery({
-    queryKey: ['/api/pools', poolId, 'holder-analytics'],
-    enabled: !!poolId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
 
-  const { data: holderHistory, isLoading: holderHistoryLoading } = useQuery({
-    queryKey: ['/api/pools', poolId, 'holder-history'],
-    enabled: !!poolId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
 
 
 
@@ -524,7 +514,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
-                {holderAnalytics?.analytics?.current ? formatHolders(holderAnalytics.analytics.current) : 'N/A'}
+                N/A
               </p>
             </CardContent>
           </Card>
@@ -575,201 +565,6 @@ export default function PoolDetail() {
           </Card>
         </div>
 
-        {/* Holder Analytics Section */}
-        {holderAnalytics && holderAnalytics.analytics && (
-          <div className="mb-8">
-            <div className="mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center mb-2">
-                <Users className="w-5 h-5 mr-2 text-purple-600" />
-                Holder Analytics
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Track holder growth and changes over time
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* Current Holders */}
-              <Card className="border-2 border-purple-200 dark:border-purple-800">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                    <Users className="w-4 h-4 mr-2 text-purple-600" />
-                    Current Holders
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <p className="text-2xl font-bold text-purple-600">
-                    {holderAnalytics.analytics.current?.toLocaleString() || 'N/A'}
-                  </p>
-                  <p className="text-sm text-gray-500">Total token holders</p>
-                </CardContent>
-              </Card>
-
-              {/* 7-Day Change */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                    <Activity className="w-4 h-4 mr-2 text-blue-600" />
-                    7-Day Change
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {holderAnalytics.analytics.change7d ? (
-                    <div>
-                      <p className={`text-2xl font-bold ${
-                        holderAnalytics.analytics.change7d.value >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {holderAnalytics.analytics.change7d.value >= 0 ? '+' : ''}
-                        {holderAnalytics.analytics.change7d.value.toLocaleString()}
-                      </p>
-                      <p className={`text-sm ${
-                        holderAnalytics.analytics.change7d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {holderAnalytics.analytics.change7d.percentage >= 0 ? '+' : ''}
-                        {(holderAnalytics.analytics.change7d.percentage || 0).toFixed(2)}%
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-lg text-gray-500">N/A</p>
-                      <p className="text-xs text-gray-400">No recent data</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* 30-Day Change */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-green-600" />
-                    30-Day Change
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {holderAnalytics.analytics.change30d ? (
-                    <div>
-                      <p className={`text-2xl font-bold ${
-                        holderAnalytics.analytics.change30d.value >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {holderAnalytics.analytics.change30d.value >= 0 ? '+' : ''}
-                        {holderAnalytics.analytics.change30d.value.toLocaleString()}
-                      </p>
-                      <p className={`text-sm ${
-                        holderAnalytics.analytics.change30d.percentage >= 0 ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {holderAnalytics.analytics.change30d.percentage >= 0 ? '+' : ''}
-                        {(holderAnalytics.analytics.change30d.percentage || 0).toFixed(2)}%
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-lg text-gray-500">N/A</p>
-                      <p className="text-xs text-gray-400">No recent data</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* All-Time Change */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-                    <TrendingUp className="w-4 h-4 mr-2 text-purple-600" />
-                    All-Time Change
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {holderAnalytics.analytics.changeAllTime ? (
-                    <div>
-                      <p className={`text-2xl font-bold ${
-                        holderAnalytics.analytics.changeAllTime.value >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {holderAnalytics.analytics.changeAllTime.value >= 0 ? '+' : ''}
-                        {holderAnalytics.analytics.changeAllTime.value.toLocaleString()}
-                      </p>
-                      <p className={`text-sm ${
-                        holderAnalytics.analytics.changeAllTime.percentage >= 0 ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {holderAnalytics.analytics.changeAllTime.percentage >= 0 ? '+' : ''}
-                        {(holderAnalytics.analytics.changeAllTime.percentage || 0).toFixed(2)}%
-                      </p>
-                      {holderAnalytics.analytics.firstRecordDate && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Since {new Date(holderAnalytics.analytics.firstRecordDate).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-lg text-gray-500">N/A</p>
-                      <p className="text-xs text-gray-400">No historical data</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Holder History Chart */}
-            {holderHistory && holderHistory.history && holderHistory.history.length > 0 && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="w-5 h-5 mr-2 text-purple-600" />
-                    Holder Count History
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={holderHistory.history.map(record => ({
-                        date: record.timestamp,
-                        holders: record.holdersCount
-                      }))}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                        <XAxis 
-                          dataKey="date" 
-                          stroke="#666"
-                          tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        />
-                        <YAxis 
-                          stroke="#666"
-                          tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => value.toLocaleString()}
-                        />
-                        <Tooltip 
-                          labelFormatter={(value) => new Date(value).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
-                          formatter={(value: any) => [value.toLocaleString(), 'Holders']}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="holders" 
-                          stroke="#8B5CF6" 
-                          fill="url(#holderGradient)" 
-                          strokeWidth={2}
-                        />
-                        <defs>
-                          <linearGradient id="holderGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#8B5CF6" stopOpacity={0.3} />
-                            <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.1} />
-                          </linearGradient>
-                        </defs>
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Showing {holderHistory.history.length} data points
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
 
 
 
@@ -777,8 +572,7 @@ export default function PoolDetail() {
 
 
 
-        {/* AI Market Outlook - Only show on visible pools */}
-        {pool.isVisible && <AIOutlook poolId={pool.id} />}
+
 
         {/* APY Historical Chart */}
         <Card className="mb-8">
