@@ -397,7 +397,7 @@ export default function PoolDetail() {
                         data-testid="badge-risk"
                       >
                         <Shield className="w-3 h-3 mr-1" />
-                        {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
+                        {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
                       </Badge>
                     </MetricTooltip>
                   </div>
@@ -569,7 +569,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-500" data-testid="text-risk-level">
-                {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)}
+                {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'}
               </p>
             </CardContent>
           </Card>
@@ -903,6 +903,7 @@ export default function PoolDetail() {
                         </Card>
 
                         {/* Smart Money Signal Card */}
+                        {tokenTransfers.flowAnalysis.advanced.smartMoney && (
                         <Card className="border-2 border-green-200 dark:border-green-800">
                           <CardHeader className="pb-3">
                             <CardTitle className="text-sm flex items-center">
@@ -913,16 +914,18 @@ export default function PoolDetail() {
                           <CardContent>
                             <div className="space-y-2">
                               <Badge variant={tokenTransfers.flowAnalysis.advanced.smartMoney.signal === 'strong' ? "default" : "outline"}>
-                                {tokenTransfers.flowAnalysis.advanced.smartMoney.signal.toUpperCase()} SIGNAL
+                                {tokenTransfers.flowAnalysis.advanced.smartMoney.signal ? tokenTransfers.flowAnalysis.advanced.smartMoney.signal.toUpperCase() : 'UNKNOWN'} SIGNAL
                               </Badge>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length} smart addresses
+                                {tokenTransfers.flowAnalysis.advanced.smartMoney.movements ? tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length : 0} smart addresses
                               </p>
                             </div>
                           </CardContent>
                         </Card>
+                        )}
 
                         {/* Flow Velocity Card */}
+                        {tokenTransfers.flowAnalysis.advanced.flowVelocity && (
                         <Card className="border-2 border-yellow-200 dark:border-yellow-800">
                           <CardHeader className="pb-3">
                             <CardTitle className="text-sm flex items-center">
@@ -937,15 +940,16 @@ export default function PoolDetail() {
                                 tokenTransfers.flowAnalysis.advanced.flowVelocity.trend === 'decelerating' ? "destructive" :
                                 "secondary"
                               }>
-                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.trend.toUpperCase()}
+                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.trend ? tokenTransfers.flowAnalysis.advanced.flowVelocity.trend.toUpperCase() : 'UNKNOWN'}
                               </Badge>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent > 0 ? '+' : ''}
-                                {tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent.toFixed(1)}% change
+                                {(tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent || 0) > 0 ? '+' : ''}
+                                {(tokenTransfers.flowAnalysis.advanced.flowVelocity.changePercent || 0).toFixed(1)}% change
                               </p>
                             </div>
                           </CardContent>
                         </Card>
+                        )}
 
                         {/* Market Phase Card */}
                         {tokenTransfers.flowAnalysis.advanced.marketPhase && (
@@ -963,10 +967,10 @@ export default function PoolDetail() {
                                   tokenTransfers.flowAnalysis.advanced.marketPhase.current === 'distribution' ? "destructive" :
                                   "secondary"
                                 }>
-                                  {tokenTransfers.flowAnalysis.advanced.marketPhase.current.toUpperCase()}
+                                  {tokenTransfers.flowAnalysis.advanced.marketPhase.current ? tokenTransfers.flowAnalysis.advanced.marketPhase.current.toUpperCase() : 'UNKNOWN'}
                                 </Badge>
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  Confidence: {(tokenTransfers.flowAnalysis.advanced.marketPhase.confidence * 100).toFixed(0)}%
+                                  Confidence: {((tokenTransfers.flowAnalysis.advanced.marketPhase.confidence || 0) * 100).toFixed(0)}%
                                 </p>
                               </div>
                             </CardContent>
@@ -1289,7 +1293,7 @@ export default function PoolDetail() {
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Risk Assessment</h4>
                 <Badge className={`${getRiskColor(pool.riskLevel)}`}>
-                  {pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)} Risk
+                  {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
                 </Badge>
               </div>
 
