@@ -57,17 +57,21 @@ export class AlchemyService {
     }
 
     try {
-      const params = new URLSearchParams({
-        category: JSON.stringify(['token']),
-        contractAddresses: JSON.stringify([contractAddress]),
-        maxCount: maxCount.toString(),
-        order: 'desc', // Get most recent first
-        withMetadata: 'true'
-      });
-
-      if (fromBlock) params.append('fromBlock', fromBlock);
-      if (toBlock) params.append('toBlock', toBlock);
-      if (pageKey) params.append('pageKey', pageKey);
+      const requestBody = {
+        id: 1,
+        jsonrpc: '2.0',
+        method: 'alchemy_getAssetTransfers',
+        params: [{
+          category: ['erc20'],
+          contractAddresses: [contractAddress],
+          fromBlock: fromBlock || '0x0',
+          toBlock: toBlock || 'latest',
+          maxCount: `0x${maxCount.toString(16)}`,
+          order: 'desc',
+          withMetadata: true,
+          ...(pageKey && { pageKey })
+        }]
+      };
 
       const url = `${this.baseUrl}/${this.apiKey}`;
       const response = await fetch(url, {
@@ -75,12 +79,7 @@ export class AlchemyService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          id: 1,
-          jsonrpc: '2.0',
-          method: 'alchemy_getAssetTransfers',
-          params: [Object.fromEntries(params)]
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {
