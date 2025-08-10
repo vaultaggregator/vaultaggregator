@@ -593,7 +593,23 @@ export default function PoolDetail() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Current Holders */}
+              <Card className="border-2 border-purple-200 dark:border-purple-800">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-purple-600" />
+                    Current Holders
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <p className="text-2xl font-bold text-purple-600">
+                    {holderAnalytics.analytics.current?.toLocaleString() || 'N/A'}
+                  </p>
+                  <p className="text-sm text-gray-500">Total token holders</p>
+                </CardContent>
+              </Card>
+
               {/* 7-Day Change */}
               <Card>
                 <CardHeader className="pb-3">
@@ -619,7 +635,10 @@ export default function PoolDetail() {
                       </p>
                     </div>
                   ) : (
-                    <p className="text-lg text-gray-500">N/A</p>
+                    <div>
+                      <p className="text-lg text-gray-500">N/A</p>
+                      <p className="text-xs text-gray-400">No recent data</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -649,7 +668,10 @@ export default function PoolDetail() {
                       </p>
                     </div>
                   ) : (
-                    <p className="text-lg text-gray-500">N/A</p>
+                    <div>
+                      <p className="text-lg text-gray-500">N/A</p>
+                      <p className="text-xs text-gray-400">No recent data</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -684,7 +706,10 @@ export default function PoolDetail() {
                       )}
                     </div>
                   ) : (
-                    <p className="text-lg text-gray-500">N/A</p>
+                    <div>
+                      <p className="text-lg text-gray-500">N/A</p>
+                      <p className="text-xs text-gray-400">No historical data</p>
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -980,26 +1005,7 @@ export default function PoolDetail() {
                                       : `${(tokenTransfers.flowAnalysis.advanced.whaleActivity.totalWhaleVolume / 1000).toFixed(2)}K`
                                     } {tokenTransfers.tokenSymbol}</p>
                                   </div>
-                                  {/* Top Whales List */}
-                                  {tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales && tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.length > 0 && (
-                                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                                      <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Top Whales:</p>
-                                      {tokenTransfers.flowAnalysis.advanced.whaleActivity.topWhales.slice(0, 3).map((whale: any, index: number) => (
-                                        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-xs">
-                                          <div className="flex items-center justify-between">
-                                            <span className="font-mono text-gray-600 dark:text-gray-400">{whale.address}</span>
-                                            <Badge variant="outline" className="text-xs">
-                                              {whale.type}
-                                            </Badge>
-                                          </div>
-                                          <div className="flex justify-between mt-1 text-gray-500">
-                                            <span>Vol: {whale.totalVolume >= 1000 ? `${(whale.totalVolume / 1000).toFixed(1)}K` : whale.totalVolume.toFixed(1)}</span>
-                                            <span>Txns: {whale.txCount}</span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
+
                                 </>
                               )}
                             </div>
@@ -1025,26 +1031,7 @@ export default function PoolDetail() {
                                   {tokenTransfers.flowAnalysis.advanced.smartMoney.movements ? tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length : 0} addresses
                                 </span>
                               </div>
-                              {/* Smart Money Movements */}
-                              {tokenTransfers.flowAnalysis.advanced.smartMoney.movements && tokenTransfers.flowAnalysis.advanced.smartMoney.movements.length > 0 && (
-                                <div className="space-y-2 max-h-32 overflow-y-auto">
-                                  <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Top Smart Money:</p>
-                                  {tokenTransfers.flowAnalysis.advanced.smartMoney.movements.slice(0, 3).map((smart: any, index: number) => (
-                                    <div key={index} className="bg-gray-50 dark:bg-gray-800 p-2 rounded text-xs">
-                                      <div className="flex items-center justify-between">
-                                        <span className="font-mono text-gray-600 dark:text-gray-400">{smart.address}</span>
-                                        <span className="text-green-600 dark:text-green-400">
-                                          +{smart.profitability >= 1000 ? `${(smart.profitability / 1000).toFixed(1)}K` : smart.profitability.toFixed(1)}
-                                        </span>
-                                      </div>
-                                      <div className="flex justify-between mt-1 text-gray-500">
-                                        <span>Avg: {smart.avgTxSize >= 1000 ? `${(smart.avgTxSize / 1000).toFixed(1)}K` : smart.avgTxSize.toFixed(1)}</span>
-                                        <span>Txns: {smart.txCount}</span>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
+
                             </div>
                           </CardContent>
                         </Card>
@@ -1105,68 +1092,7 @@ export default function PoolDetail() {
                       </div>
                     )}
 
-                    {/* Enhanced Transfer Statistics */}
-                    {tokenTransfers.flowAnalysis.statistics && (
-                      <Card className="border-2 border-purple-200 dark:border-purple-800">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm flex items-center">
-                            <BarChart3 className="w-4 h-4 mr-2 text-purple-600" />
-                            Transfer Statistics
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                            <div className="space-y-1">
-                              <p className="text-gray-500">Total Addresses</p>
-                              <p className="font-bold text-purple-900 dark:text-purple-100">
-                                {tokenTransfers.flowAnalysis.statistics.totalAddresses?.toLocaleString() || 'N/A'}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-gray-500">24h Active</p>
-                              <p className="font-bold text-purple-900 dark:text-purple-100">
-                                {tokenTransfers.flowAnalysis.statistics.activeAddresses24h?.toLocaleString() || 'N/A'}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-gray-500">Median Size</p>
-                              <p className="font-bold text-purple-900 dark:text-purple-100">
-                                {tokenTransfers.flowAnalysis.statistics.medianTransferSize >= 1000 
-                                  ? `${(tokenTransfers.flowAnalysis.statistics.medianTransferSize / 1000).toFixed(2)}K`
-                                  : tokenTransfers.flowAnalysis.statistics.medianTransferSize?.toFixed(2) || 'N/A'
-                                } {tokenTransfers.tokenSymbol}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-gray-500">Coverage</p>
-                              <p className="font-bold text-purple-900 dark:text-purple-100">
-                                {tokenTransfers.dataQuality?.timespan || 'N/A'}
-                              </p>
-                            </div>
-                          </div>
-                          {/* Volume Distribution */}
-                          {tokenTransfers.flowAnalysis.statistics.volumeDistribution && (
-                            <div className="mt-4 space-y-2">
-                              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Volume Distribution:</p>
-                              <div className="grid grid-cols-3 gap-2 text-xs">
-                                <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded text-center">
-                                  <p className="text-green-600 dark:text-green-400 font-medium">Small</p>
-                                  <p className="font-bold">{tokenTransfers.flowAnalysis.statistics.volumeDistribution.small}</p>
-                                </div>
-                                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded text-center">
-                                  <p className="text-yellow-600 dark:text-yellow-400 font-medium">Medium</p>
-                                  <p className="font-bold">{tokenTransfers.flowAnalysis.statistics.volumeDistribution.medium}</p>
-                                </div>
-                                <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded text-center">
-                                  <p className="text-red-600 dark:text-red-400 font-medium">Large</p>
-                                  <p className="font-bold">{tokenTransfers.flowAnalysis.statistics.volumeDistribution.large}</p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )}
+
 
                     {/* Flow Charts */}
                     {tokenTransfers.flowAnalysis.chartData && (
@@ -1274,98 +1200,7 @@ export default function PoolDetail() {
           </div>
         )}
 
-        {/* Token Transfers Section */}
-        {tokenTransfers && tokenTransfers.transfers && tokenTransfers.transfers.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ExternalLink className="w-5 h-5 mr-2 text-blue-600" />
-                Recent Token Transfers
-              </CardTitle>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Latest transfers for {tokenTransfers.tokenAddress}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {tokenTransfersLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-3 text-gray-600 dark:text-gray-400">Loading transfers...</span>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {tokenTransfers.transfers.slice(0, 10).map((transfer: any, index: number) => {
-                    const value = parseFloat(transfer.value) / Math.pow(10, parseInt(transfer.tokenDecimal || '18'));
-                    const timestamp = new Date(parseInt(transfer.timestamp) * 1000);
-                    const isLargeTransfer = value > 1000; // Mark transfers over 1000 tokens as "large"
-                    
-                    return (
-                      <div 
-                        key={`${transfer.hash}-${index}`}
-                        className={`p-4 border rounded-lg ${isLargeTransfer ? 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20' : 'border-gray-200 dark:border-gray-700'} hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
-                                From: {transfer.from.slice(0, 6)}...{transfer.from.slice(-4)}
-                              </span>
-                              <span className="text-gray-400">→</span>
-                              <span className="text-sm font-mono text-gray-600 dark:text-gray-400">
-                                To: {transfer.to.slice(0, 6)}...{transfer.to.slice(-4)}
-                              </span>
-                              {isLargeTransfer && (
-                                <Badge variant="outline" className="text-xs bg-orange-100 text-orange-800 border-orange-200">
-                                  Large Transfer
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                              <span>{formatTimeAgo(timestamp)}</span>
-                              <span>Block #{transfer.blockNumber}</span>
-                              <a 
-                                href={`https://etherscan.io/tx/${transfer.hash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
-                              >
-                                View on Etherscan
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className={`text-lg font-bold ${isLargeTransfer ? 'text-orange-600' : 'text-gray-900 dark:text-gray-100'}`}>
-                              {value >= 1000000 ? `${(value / 1000000).toFixed(2)}M` :
-                               value >= 1000 ? `${(value / 1000).toFixed(2)}K` :
-                               value.toFixed(4)} {transfer.tokenSymbol}
-                            </p>
-                            {pool.showUsdInFlow && tokenInfo?.tokenInfo?.priceUsd && (
-                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                ${(value * parseFloat(tokenInfo.tokenInfo.priceUsd)).toLocaleString('en-US', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2
-                                })} USD
-                              </p>
-                            )}
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Gas: {(parseInt(transfer.gasUsed) / 1000).toFixed(1)}K
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="text-center pt-4">
-                    <p className="text-sm text-gray-500">
-                      Showing latest {Math.min(10, tokenTransfers.transfers.length)} transfers
-                    </p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Advanced Cross-Pool Analytics */}
         {pool.isVisible && <CrossPoolAnalytics poolId={pool.id} />}
