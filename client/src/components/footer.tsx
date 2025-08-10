@@ -101,23 +101,23 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">More</h4>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link href="/list-your-project" className="hover:text-white transition-colors duration-200" data-testid="link-list-project">
-                  List Your Project
+                <Link href="/chains" className="hover:text-white transition-colors duration-200" data-testid="link-chains">
+                  Chains
                 </Link>
               </li>
               <li>
-                <Link href="/press-media" className="hover:text-white transition-colors duration-200" data-testid="link-press">
-                  Press / Media
+                <Link href="/companion" className="hover:text-white transition-colors duration-200" data-testid="link-companion">
+                  AI Companion
                 </Link>
               </li>
               <li>
-                <Link href="/watchlist" className="hover:text-white transition-colors duration-200" data-testid="link-watchlist">
-                  Watchlist
+                <Link href="/market-intelligence" className="hover:text-white transition-colors duration-200" data-testid="link-market-intelligence">
+                  Market Intelligence
                 </Link>
               </li>
               <li>
-                <Link href="/jobs" className="hover:text-white transition-colors duration-200" data-testid="link-jobs">
-                  Jobs
+                <Link href="/investment-advisor" className="hover:text-white transition-colors duration-200" data-testid="link-investment-advisor">
+                  Investment Advisor
                 </Link>
               </li>
             </ul>
