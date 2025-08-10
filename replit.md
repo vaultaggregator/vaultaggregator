@@ -91,6 +91,14 @@ Preferred communication style: Simple, everyday language.
   - Applied to all token-related endpoints: token-transfers, token-info, holder-analytics, holder-history
 - Pool detail pages now display authentic blockchain data: 544,192+ holders, real transfers, analytics
 
+**Holder Data Consistency Issue (Resolved: August 10, 2025):**
+- Fixed discrepancy between deployed and production versions showing different holder counts
+- Root cause: Incorrect token_info record associations in database
+- Solution: Updated pool token associations to link to correct token records:
+  - STEAKUSDC pool now linked to USDC token record (3,631,893 holders)
+  - STETH pool now linked to stETH token record (367,890 holders)
+- Both environments now display consistent, accurate holder data from authentic blockchain sources
+
 **API Rate Limiting Best Practices (Updated: August 2025):**
 - Etherscan API: 5 calls/second limit with intelligent queuing and 1-second intervals
 - Exponential backoff retry: 3s, 6s, 12s delays on rate limit errors
