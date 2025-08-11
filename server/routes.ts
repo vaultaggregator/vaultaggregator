@@ -609,7 +609,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         historicalData: {
           last7Days: apyData.historical7d,
           last30Days: apyData.historical30d,
-          last90Days: apyData.historical90d
+          last90Days: apyData.historical90d,
+          allTime: apyData.historicalAllTime
         }
       });
     } catch (error) {

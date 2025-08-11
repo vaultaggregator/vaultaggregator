@@ -463,6 +463,7 @@ export class MorphoService {
     historical7d?: Array<{x: number, y: number}>;
     historical30d?: Array<{x: number, y: number}>;
     historical90d?: Array<{x: number, y: number}>;
+    historicalAllTime?: Array<{x: number, y: number}>;
   } | null> {
     const cacheKey = `vault_apy_${vaultAddress}_${chainId}`;
     const cachedData = this.cache.get(cacheKey);
@@ -473,7 +474,7 @@ export class MorphoService {
     }
 
     const query = `
-      query GetVaultApyData($vaultAddress: String!, $chainId: Int!, $options7d: TimeseriesOptions, $options30d: TimeseriesOptions, $options90d: TimeseriesOptions) {
+      query GetVaultApyData($vaultAddress: String!, $chainId: Int!, $options7d: TimeseriesOptions, $options30d: TimeseriesOptions, $options90d: TimeseriesOptions, $optionsAllTime: TimeseriesOptions) {
         vaultByAddress(address: $vaultAddress, chainId: $chainId) {
           address
           state {
@@ -499,6 +500,10 @@ export class MorphoService {
               x
               y
             }
+            apyAllTime: apy(options: $optionsAllTime) {
+              x
+              y
+            }
           }
         }
       }
@@ -508,6 +513,7 @@ export class MorphoService {
     const sevenDaysAgo = now - (7 * 24 * 60 * 60);
     const thirtyDaysAgo = now - (30 * 24 * 60 * 60);
     const ninetyDaysAgo = now - (90 * 24 * 60 * 60);
+    const allTimeAgo = now - (500 * 24 * 60 * 60); // 500 days for all-time data
 
     const variables = {
       vaultAddress,
@@ -526,6 +532,11 @@ export class MorphoService {
         startTimestamp: ninetyDaysAgo,
         endTimestamp: now,
         interval: "DAY"
+      },
+      optionsAllTime: {
+        startTimestamp: allTimeAgo,
+        endTimestamp: now,
+        interval: "WEEK" // Use weekly intervals for all-time to reduce data points
       }
     };
 
@@ -545,7 +556,8 @@ export class MorphoService {
         monthly: vault.state.monthlyApy || vault.state.apy || 0,
         historical7d: vault.historicalState?.apy7d || [],
         historical30d: vault.historicalState?.apy30d || [],
-        historical90d: vault.historicalState?.apy90d || []
+        historical90d: vault.historicalState?.apy90d || [],
+        historicalAllTime: vault.historicalState?.apyAllTime || []
       };
 
       // Cache for 10 minutes
