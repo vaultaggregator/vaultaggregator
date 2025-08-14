@@ -25,10 +25,10 @@ import PoolDetail from "@/pages/pool-detail";
 import RiskDashboard from "@/pages/risk-dashboard";
 import SmartAlerts from "@/pages/smart-alerts";
 import PoolReviews from "@/pages/pool-reviews";
-import CommunityInsights from "@/pages/community-insights";
+
 import Watchlists from "@/pages/watchlists";
 import ApiMarketplace from "@/pages/api-marketplace";
-import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
+
 import AdminLogoManagement from "@/pages/admin-logo-management";
 import AdminErrors from "@/pages/admin-errors";
 import AdminCache from "@/pages/admin-cache";
@@ -62,7 +62,7 @@ function Router() {
       <Route path="/risk-dashboard" component={RiskDashboard} />
       <Route path="/smart-alerts" component={SmartAlerts} />
       <Route path="/pool-reviews" component={PoolReviews} />
-      <Route path="/community-insights" component={CommunityInsights} />
+
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/api-marketplace" component={ApiMarketplace} />
       <Route path="/advanced-search" component={AdvancedSearch} />

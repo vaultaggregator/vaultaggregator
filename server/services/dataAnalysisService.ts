@@ -429,14 +429,8 @@ export class DataAnalysisService {
   }
 
   private async getPoolSentiment(poolId: string) {
-    try {
-      // Get AI outlook if available
-      const aiService = await import('./aiOutlookService');
-      const service = new aiService.AIOutlookService(storage);
-      return await service.getValidOutlook(poolId);
-    } catch (error) {
-      return null;
-    }
+    // Sentiment analysis temporarily disabled
+    return null;
   }
 
   private analyzeMarketTrend(rawData: any): string {

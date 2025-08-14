@@ -3015,35 +3015,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin endpoint to refresh token prices
-  app.post("/api/admin/refresh-token-prices", async (req, res) => {
-    try {
-      // Import price service
-      const { PriceService } = await import("./services/aiOutlookService");
-      
-      // Get all token info records
-      const tokens = await db.select().from(tokenInfo);
-      let updated = 0;
-      
-      for (const token of tokens) {
-        try {
-          const price = await PriceService.getTokenPrice(token.symbol);
-          if (price) {
-            await storage.updateTokenInfo(token.address, { priceUsd: price.toString() });
-            updated++;
-            console.log(`Updated ${token.symbol} price to $${price}`);
-          }
-        } catch (error) {
-          console.log(`Failed to update price for ${token.symbol}:`, error);
-        }
-      }
-      
-      res.json({ success: true, updated, total: tokens.length });
-    } catch (error) {
-      console.error("Error refreshing token prices:", error);
-      res.status(500).json({ error: "Failed to refresh token prices" });
-    }
-  });
+
 
   const httpServer = createServer(app);
   return httpServer;
