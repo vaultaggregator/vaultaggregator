@@ -4,7 +4,10 @@ export interface YieldOpportunity {
     id: string;
     name: string;
     displayName: string;
+    slug: string;
     logoUrl?: string;
+    website?: string;
+    visitUrlTemplate?: string;
     showUnderlyingTokens?: boolean;
   };
   chain: {
