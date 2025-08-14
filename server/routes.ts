@@ -16,10 +16,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { registerAdminCacheRoutes } = await import("./routes/admin-cache");
   const { registerAdminSystemRoutes } = await import("./routes/admin-system");
   const healingRoutes = (await import("./routes/healingRoutes")).default;
+  const searchRoutes = (await import("./routes/searchRoutes")).default;
+  const { setupPerformanceMiddleware } = await import("./middleware/performance");
+  
+  // Setup performance optimizations
+  setupPerformanceMiddleware(app);
   
   registerAdminCacheRoutes(app);
   registerAdminSystemRoutes(app);
   app.use(healingRoutes);
+  app.use(searchRoutes);
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here',

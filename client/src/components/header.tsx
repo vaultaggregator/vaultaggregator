@@ -37,6 +37,13 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               Dashboard
             </Link>
             <Link 
+              href="/portfolio" 
+              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
+              data-testid="link-portfolio"
+            >
+              Portfolio
+            </Link>
+            <Link 
               href="/analytics" 
               className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
               data-testid="link-analytics"

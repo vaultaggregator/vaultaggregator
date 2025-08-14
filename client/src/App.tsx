@@ -47,6 +47,7 @@ import YieldForecasting from "@/pages/yield-forecasting";
 import RiskCalculator from "@/pages/risk-calculator";
 import EtherscanDashboard from "@/pages/etherscan-dashboard";
 import HealingDashboard from "@/pages/healing-dashboard";
+import Portfolio from "@/pages/portfolio";
 
 
 function Router() {
@@ -54,6 +55,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/portfolio" component={Portfolio} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/chains" component={Chains} />
       <Route path="/api" component={API} />

@@ -10,9 +10,13 @@ import type { YieldOpportunity, FilterOptions } from "@/types";
 import { DeFiTooltip } from "@/components/metric-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, ChevronUp, ChevronDown, Search, TrendingUp, Shield, Users } from "lucide-react";
 import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
+import { EnhancedSearch } from "@/components/enhanced-search";
+import { usePortfolio } from "@/hooks/usePortfolio";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
@@ -20,7 +24,10 @@ export default function Home() {
   const [page, setPage] = useState(0);
   const [sortBy, setSortBy] = useState<'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showSearch, setShowSearch] = useState(false);
   const limit = 12;
+  
+  const { portfolio, metrics, isInPortfolio } = usePortfolio();
 
   const { data: pools = [], isLoading, error, refetch } = useQuery<YieldOpportunity[]>({
     queryKey: ['/api/pools', filters, page],
