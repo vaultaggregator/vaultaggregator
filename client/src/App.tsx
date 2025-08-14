@@ -11,7 +11,6 @@ import Analytics from "@/pages/analytics";
 import Chains from "@/pages/chains";
 import API from "@/pages/api";
 import Documentation from "@/pages/documentation";
-import HelpCenter from "@/pages/help-center";
 import Contact from "@/pages/contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Terms from "@/pages/terms";
@@ -53,7 +52,6 @@ function Router() {
       <Route path="/chains" component={Chains} />
       <Route path="/api" component={API} />
       <Route path="/documentation" component={Documentation} />
-      <Route path="/help-center" component={HelpCenter} />
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />

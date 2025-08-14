@@ -1,4 +1,3 @@
-import { AIOutlookService } from "./aiOutlookService";
 import { HolderDataSyncService } from "./holderDataSyncService";
 import { storage } from "../storage";
 
@@ -25,31 +24,11 @@ async function logError(title: string, description: string, error: string, servi
   }
 }
 
-let aiOutlookInterval: NodeJS.Timeout | null = null;
 let holderDataInterval: NodeJS.Timeout | null = null;
 let cleanupInterval: NodeJS.Timeout | null = null;
 
 export function startScheduler(): void {
-  console.log("Starting data sync scheduler for AI Outlooks and holder data...");
-
-  // Generate AI outlooks every 2 hours
-  aiOutlookInterval = setInterval(async () => {
-    try {
-      console.log("Running scheduled AI outlook generation...");
-      await generateOutlooksForActivePools();
-      console.log("Scheduled AI outlook generation completed");
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error("Error in scheduled AI outlook generation:", errorMsg);
-      await logError(
-        'Scheduled AI Outlook Generation Failed',
-        'Scheduled AI outlook generation failed. Users will not receive updated market insights and predictions.',
-        errorMsg,
-        'AIOutlookGeneration',
-        'medium'
-      );
-    }
-  }, 2 * 60 * 60 * 1000); // 2 hours
+  console.log("Starting data sync scheduler for holder data...");
 
   // Sync holder data every 6 hours
   holderDataInterval = setInterval(async () => {
@@ -76,9 +55,7 @@ export function startScheduler(): void {
     try {
       console.log("Running data cleanup tasks...");
       
-      // Clean expired AI outlooks
-      const deletedOutlooks = await storage.deleteExpiredOutlooks();
-      console.log(`Deleted ${deletedOutlooks} expired AI outlooks`);
+
       
       // Clean old holder data (keep last 90 days)
       const holderSyncService = new HolderDataSyncService();
@@ -99,18 +76,7 @@ export function startScheduler(): void {
     }
   }, 60 * 60 * 1000); // 1 hour
 
-  // Generate initial AI outlooks after 2 minutes
-  setTimeout(async () => {
-    try {
-      console.log("Running initial AI outlook generation...");
-      await generateOutlooksForActivePools();
-      console.log("Initial AI outlook generation completed");
-    } catch (error) {
-      console.error("Error in initial AI outlook generation:", error);
-    }
-  }, 2 * 60 * 1000); // 2 minutes
-
-  console.log("Scheduler started - AI outlooks: 2h, Holder data: 6h, Cleanup: 1h");
+  console.log("Scheduler started - Holder data: 6h, Cleanup: 1h");
 
   // Initial holder data sync after 5 minutes
   setTimeout(async () => {
@@ -125,40 +91,10 @@ export function startScheduler(): void {
   }, 5 * 60 * 1000); // 5 minutes
 }
 
-async function generateOutlooksForActivePools() {
-  const aiOutlookService = new AIOutlookService(storage);
-  
-  // Get all visible pools
-  const pools = await storage.getPools({ onlyVisible: true, limit: 50 });
-  
-  console.log(`Generating AI outlooks for ${pools.length} pools...`);
-  
-  for (const pool of pools) {
-    try {
-      // Check if this pool already has a valid outlook
-      const existingOutlook = await aiOutlookService.getValidOutlook(pool.id);
-      
-      if (!existingOutlook) {
-        console.log(`Generating outlook for pool: ${pool.tokenPair} on ${pool.platform.displayName}`);
-        await aiOutlookService.generateAndSaveOutlook(pool.id);
-        
-        // Add a small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-    } catch (error) {
-      console.error(`Error generating outlook for pool ${pool.id}:`, error);
-      // Continue with other pools
-    }
-  }
-}
+
 
 export function stopScheduler(): void {
   console.log("Stopping scheduler...");
-  
-  if (aiOutlookInterval) {
-    clearInterval(aiOutlookInterval);
-    aiOutlookInterval = null;
-  }
   
   if (holderDataInterval) {
     clearInterval(holderDataInterval);
