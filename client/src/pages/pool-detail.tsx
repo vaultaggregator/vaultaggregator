@@ -520,7 +520,15 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-200" data-testid="text-operating-days">
-                {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
+                {(() => {
+                  if (pool.rawData?.createdAt) {
+                    const createdDate = new Date(pool.rawData.createdAt);
+                    const now = new Date();
+                    const days = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                    return days;
+                  }
+                  return 'N/A';
+                })()}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mt-1">days</p>
             </CardContent>
@@ -536,7 +544,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
-                N/A
+                {tokenInfo?.holdersCount || 'N/A'}
               </p>
             </CardContent>
           </Card>
@@ -798,11 +806,6 @@ export default function PoolDetail() {
 
         {/* Related Pools from Website */}
         <RelatedPools currentPoolId={pool.id} platform={pool.platform.displayName} chainId={pool.chain.id} />
-        
-        {/* Updated indicator - Additional Information section removed */}
-        <div className="mt-4 p-2 bg-green-100 dark:bg-green-900/20 rounded text-center text-sm text-green-800 dark:text-green-400">
-          ✓ Page Updated - Additional Information section has been removed
-        </div>
 
 
 
