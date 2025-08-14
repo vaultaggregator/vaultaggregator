@@ -57,21 +57,6 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
               Chains
             </Link>
 
-            <Link 
-              href="/market-intelligence" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-market-intelligence"
-            >
-              Intelligence
-            </Link>
-            <Link 
-              href="/investment-advisor" 
-              className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
-              data-testid="link-investment-advisor"
-            >
-              AI Advisor
-            </Link>
-
             {/* Advanced Features Dropdown */}
             <div className="relative group">
               <button className="text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200 flex items-center gap-1">
@@ -188,6 +173,14 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
                 Dashboard
               </Link>
               <Link 
+                href="/portfolio" 
+                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                data-testid="link-mobile-portfolio"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Portfolio
+              </Link>
+              <Link 
                 href="/analytics" 
                 className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                 data-testid="link-mobile-analytics"
@@ -202,15 +195,6 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Chains
-              </Link>
-
-              <Link 
-                href="/investment-advisor" 
-                className="block px-4 py-2 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-investment-advisor"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                AI Investment Advisor
               </Link>
               
               <div className="px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400">
