@@ -586,8 +586,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Extract vault address from the migrated Morpho data
-      const vaultAddress = pool.rawData?.address || pool.poolAddress;
-      const chainId = pool.rawData?.chain?.id || 1;
+      const rawData = pool.rawData as any || {};
+      const vaultAddress = rawData.address || pool.poolAddress;
+      const chainId = rawData.chain?.id || 1;
       
       if (!vaultAddress) {
         return res.status(400).json({ error: "No vault address found for this pool" });
@@ -638,60 +639,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use pool's existing TVL data
-      const tvlValue = pool.rawData?.state?.totalAssetsUsd || pool.tvl || 0;
+      const rawData = pool.rawData as any || {};
+      const tvlValue = rawData.state?.totalAssetsUsd || pool.tvl || 0;
       
-      // Get real holder data from token analysis
+      // ALWAYS do direct transfer analysis for accurate real-time data
       let holders = 0;
       let operatingDays = 0;
+      let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
       
-      try {
-        // Extract underlying token address
-        const rawData: any = pool.rawData || {};
-        let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+      // Special handling for steakUSDC vault
+      if (pool.tokenPair.toUpperCase() === 'STEAKUSDC') {
+        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+      }
+      
+      if (underlyingToken) {
+        console.log(`🔍 DIRECT ANALYSIS: Processing transfers for ${underlyingToken}`);
         
-        // Special handling for steakUSDC vault
-        if (pool.tokenPair.toUpperCase() === 'STEAKUSDC') {
-          underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-        }
-        
-        if (underlyingToken) {
-          // Get stored token info with real holder data
-          const storedTokenInfo = await storage.getTokenInfoByAddress(underlyingToken);
-          if (storedTokenInfo && storedTokenInfo.holdersCount) {
-            holders = storedTokenInfo.holdersCount;
-          }
+        try {
+          // Import and use Alchemy service to get fresh transfer data
+          const { alchemyService } = await import("./services/alchemyService");
           
-          // Calculate operating days from earliest transfer
-          const holderHistory = await storage.getHolderHistory(underlyingToken, 1000);
-          if (holderHistory.length > 0) {
-            // Get the earliest timestamp from holder history
-            const earliestRecord = holderHistory[holderHistory.length - 1];
-            const earliestDate = new Date(earliestRecord.timestamp);
-            const now = new Date();
-            operatingDays = Math.floor((now.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (alchemyService.isAvailable()) {
+            // Get all transfers to analyze directly (bypass any caching)
+            const transfers = await alchemyService.getHistoricalTransfers(underlyingToken, 365, 15000);
+            
+            if (transfers && transfers.length > 0) {
+              // Calculate unique holders from transfers
+              const uniqueAddresses = new Set<string>();
+              let earliestTimestamp = Number.MAX_SAFE_INTEGER;
+              
+              transfers.forEach(transfer => {
+                // Add unique addresses (excluding zero address and common burn addresses)
+                if (transfer.from && 
+                    transfer.from !== '0x0000000000000000000000000000000000000000' &&
+                    !transfer.from.toLowerCase().includes('dead')) {
+                  uniqueAddresses.add(transfer.from.toLowerCase());
+                }
+                if (transfer.to && 
+                    transfer.to !== '0x0000000000000000000000000000000000000000' &&
+                    !transfer.to.toLowerCase().includes('dead')) {
+                  uniqueAddresses.add(transfer.to.toLowerCase());
+                }
+                
+                // Track earliest timestamp
+                const timestamp = parseInt(transfer.timeStamp);
+                if (!isNaN(timestamp) && timestamp > 0 && timestamp < earliestTimestamp) {
+                  earliestTimestamp = timestamp;
+                }
+              });
+              
+              holders = uniqueAddresses.size;
+              
+              // Calculate operating days from earliest transfer
+              if (earliestTimestamp !== Number.MAX_SAFE_INTEGER) {
+                const earliestDate = new Date(earliestTimestamp * 1000);
+                const now = new Date();
+                operatingDays = Math.floor((now.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                console.log(`📊 AUTHENTIC METRICS: ${transfers.length} transfers analyzed`);
+                console.log(`📊 Found ${holders} unique holders since ${earliestDate.toDateString()}`);
+                console.log(`📊 Vault operating for ${operatingDays} days`);
+              }
+            } else {
+              console.log(`⚠️ No transfer data available for analysis`);
+            }
           }
+        } catch (error) {
+          console.error('❌ Error in direct transfer analysis:', error);
         }
+      }
         
-        // Fallback to Morpho creation date if no transfer data available
-        if (operatingDays <= 0) {
-          const createdAt = new Date(pool.rawData?.createdAt || pool.createdAt);
-          const now = new Date();
-          operatingDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-        }
-      } catch (error) {
-        console.error('Error getting real holder data:', error);
-        // Fallback to existing calculation
-        const createdAt = new Date(pool.rawData?.createdAt || pool.createdAt);
+      // Fallback to Morpho creation date if no transfer data available
+      if (operatingDays <= 0) {
+        const createdAt = new Date(rawData.createdAt || pool.createdAt);
         const now = new Date();
         operatingDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       }
 
-      console.log(`📊 Real metrics for pool ${poolId}: TVL $${tvlValue.toLocaleString()}, Holders ${holders}, Days ${operatingDays}`);
+      console.log(`📊 Final metrics for pool ${poolId}: TVL $${tvlValue.toLocaleString()}, Holders ${holders}, Days ${operatingDays}`);
 
       res.json({
         poolId,
-        vaultAddress: pool.rawData?.address || pool.poolAddress,
-        chainId: pool.rawData?.chain?.id || 1,
+        vaultAddress: rawData.address || pool.poolAddress,
+        chainId: rawData.chain?.id || 1,
         metrics: {
           tvl: tvlValue,
           tvlFormatted: `$${tvlValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
