@@ -627,191 +627,67 @@ export default function PoolDetail() {
 
 
 
-        {/* Historical Performance Charts */}
+        {/* All-Time APY Performance Chart */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
               <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-              Historical Performance Data
+              All-Time APY Performance
             </CardTitle>
           </CardHeader>
           <CardContent>
             {morphoApyData?.historicalData ? (
-              <div className="space-y-6">
-                {/* 7-Day Chart */}
-                {morphoApyData.historicalData.last7Days && morphoApyData.historicalData.last7Days.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">7-Day APY Performance</h4>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={morphoApyData.historicalData.last7Days.map(point => ({
-                          date: new Date(point.x * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                          apy: (point.y * 100).toFixed(2)
-                        }))}>
-                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                          <XAxis 
-                            dataKey="date" 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                            label={{ value: 'APY (%)', angle: -90, position: 'insideLeft' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'hsl(var(--background))', 
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px'
-                            }}
-                            formatter={(value: any) => [`${value}%`, 'APY']}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="apy" 
-                            stroke="#3b82f6" 
-                            strokeWidth={2}
-                            dot={{ fill: '#3b82f6', r: 3 }}
-                            activeDot={{ r: 5 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-
-                {/* 30-Day Chart */}
-                {morphoApyData.historicalData.last30Days && morphoApyData.historicalData.last30Days.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">30-Day APY Performance</h4>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={morphoApyData.historicalData.last30Days.map(point => ({
-                          date: new Date(point.x * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                          apy: (point.y * 100).toFixed(2)
-                        }))}>
-                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                          <XAxis 
-                            dataKey="date" 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                            label={{ value: 'APY (%)', angle: -90, position: 'insideLeft' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'hsl(var(--background))', 
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px'
-                            }}
-                            formatter={(value: any) => [`${value}%`, 'APY']}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="apy" 
-                            stroke="#10b981" 
-                            strokeWidth={2}
-                            dot={{ fill: '#10b981', r: 3 }}
-                            activeDot={{ r: 5 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-
-                {/* 90-Day Chart */}
-                {morphoApyData.historicalData.last90Days && morphoApyData.historicalData.last90Days.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">90-Day APY Performance</h4>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={morphoApyData.historicalData.last90Days.map(point => ({
-                          date: new Date(point.x * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                          apy: (point.y * 100).toFixed(2)
-                        }))}>
-                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                          <XAxis 
-                            dataKey="date" 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                            label={{ value: 'APY (%)', angle: -90, position: 'insideLeft' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'hsl(var(--background))', 
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px'
-                            }}
-                            formatter={(value: any) => [`${value}%`, 'APY']}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="apy" 
-                            stroke="#8b5cf6" 
-                            strokeWidth={2}
-                            dot={{ fill: '#8b5cf6', r: 3 }}
-                            activeDot={{ r: 5 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                )}
-
+              <div>
                 {/* All-Time Chart */}
-                {morphoApyData.historicalData.allTime && morphoApyData.historicalData.allTime.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-3">All-Time APY Performance</h4>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={morphoApyData.historicalData.allTime.map(point => ({
-                          date: new Date(point.x * 1000).toLocaleDateString('en-US', { 
-                            month: 'short', 
-                            day: 'numeric',
-                            year: point.x * 1000 < Date.now() - 365 * 24 * 60 * 60 * 1000 ? 'numeric' : undefined
-                          }),
-                          apy: (point.y * 100).toFixed(2)
-                        }))}>
-                          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                          <XAxis 
-                            dataKey="date" 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                            interval="preserveStartEnd"
-                          />
-                          <YAxis 
-                            className="text-xs"
-                            tick={{ fill: 'currentColor' }}
-                            label={{ value: 'APY (%)', angle: -90, position: 'insideLeft' }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: 'hsl(var(--background))', 
-                              border: '1px solid hsl(var(--border))',
-                              borderRadius: '8px'
-                            }}
-                            formatter={(value: any) => [`${value}%`, 'APY']}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="apy" 
-                            stroke="#f59e0b" 
-                            strokeWidth={2}
-                            dot={{ fill: '#f59e0b', r: 2 }}
-                            activeDot={{ r: 5 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
+                {morphoApyData.historicalData.allTime && morphoApyData.historicalData.allTime.length > 0 ? (
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={morphoApyData.historicalData.allTime.map(point => ({
+                        date: new Date(point.x * 1000).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: point.x * 1000 < Date.now() - 365 * 24 * 60 * 60 * 1000 ? 'numeric' : undefined
+                        }),
+                        apy: (point.y * 100).toFixed(2)
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                        <XAxis 
+                          dataKey="date" 
+                          className="text-xs"
+                          tick={{ fill: 'currentColor' }}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis 
+                          className="text-xs"
+                          tick={{ fill: 'currentColor' }}
+                          label={{ value: 'APY (%)', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                          formatter={(value: any) => [`${value}%`, 'APY']}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="apy" 
+                          stroke="#f59e0b" 
+                          strokeWidth={2}
+                          dot={{ fill: '#f59e0b', r: 2 }}
+                          activeDot={{ r: 5 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-32 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+                    <Activity className="w-8 h-8 mb-2 opacity-50" />
+                    <p className="text-lg font-medium mb-1">No Historical Data Available</p>
+                    <p className="text-sm text-center max-w-md">
+                      All-time APY performance data is not available for this vault.
+                    </p>
                   </div>
                 )}
               </div>
