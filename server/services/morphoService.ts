@@ -1,3 +1,5 @@
+import { getSelfHealingService } from './selfHealingService';
+
 // Simple in-memory cache for Morpho data
 class SimpleCache {
   private cache = new Map<string, { data: any; expiry: number }>();
@@ -91,43 +93,50 @@ export class MorphoService {
   }
 
   /**
-   * Execute a GraphQL query against the Morpho API
+   * Execute a GraphQL query against the Morpho API with self-healing
    */
   private async executeQuery(query: string, variables: any = {}): Promise<any> {
-    try {
-      console.log('🔵 Morpho API: Executing GraphQL query');
-      
-      const response = await fetch(MorphoService.MORPHO_API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'User-Agent': 'VaultAggregator/1.0'
-        },
-        body: JSON.stringify({
-          query: query.trim(),
-          variables
-        }),
-        signal: AbortSignal.timeout(MorphoService.REQUEST_TIMEOUT)
-      });
+    const selfHealing = getSelfHealingService();
+    
+    return selfHealing.executeWithHealing(
+      'morpho',
+      async () => {
+        console.log('🔵 Morpho API: Executing GraphQL query');
+        
+        const response = await fetch(MorphoService.MORPHO_API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': 'VaultAggregator/1.0'
+          },
+          body: JSON.stringify({
+            query: query.trim(),
+            variables
+          }),
+          signal: AbortSignal.timeout(MorphoService.REQUEST_TIMEOUT)
+        });
 
-      if (!response.ok) {
-        throw new Error(`Morpho API responded with ${response.status}: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Morpho API responded with ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.errors) {
+          console.error('🔴 Morpho API GraphQL errors:', data.errors);
+          throw new Error(`GraphQL errors: ${data.errors.map((e: any) => e.message).join(', ')}`);
+        }
+
+        console.log('✅ Morpho API: Query executed successfully');
+        return data.data;
+      },
+      {
+        maxRetries: 3,
+        retryDelay: 2000,
+        exponentialBackoff: true
       }
-
-      const data = await response.json();
-      
-      if (data.errors) {
-        console.error('🔴 Morpho API GraphQL errors:', data.errors);
-        throw new Error(`GraphQL errors: ${data.errors.map((e: any) => e.message).join(', ')}`);
-      }
-
-      console.log('✅ Morpho API: Query executed successfully');
-      return data.data;
-    } catch (error) {
-      console.error('🔴 Morpho API error:', error);
-      throw error;
-    }
+    );
   }
 
   /**

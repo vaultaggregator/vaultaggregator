@@ -15,9 +15,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register admin routes
   const { registerAdminCacheRoutes } = await import("./routes/admin-cache");
   const { registerAdminSystemRoutes } = await import("./routes/admin-system");
+  const healingRoutes = (await import("./routes/healingRoutes")).default;
   
   registerAdminCacheRoutes(app);
   registerAdminSystemRoutes(app);
+  app.use(healingRoutes);
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here',
