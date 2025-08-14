@@ -638,9 +638,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pool not found' });
       }
 
-      // Use pool's existing TVL data
+      // Get pool raw data
       const rawData = pool.rawData as any || {};
-      const tvlValue = rawData.state?.totalAssetsUsd || pool.tvl || 0;
+      
+      // Try to get fresh TVL data from Morpho API first
+      let tvlValue = 0;
+      let tvlLastUpdated = pool.lastUpdated;
+      
+      try {
+        // Try to fetch current vault data from Morpho
+        const { morphoService } = await import("./services/morphoService");
+        const vaultData = await morphoService.getVaultByAddress(rawData.address || pool.poolAddress);
+        if (vaultData && vaultData.state?.totalAssetsUsd) {
+          tvlValue = vaultData.state.totalAssetsUsd;
+          tvlLastUpdated = new Date();
+          console.log(`📊 Updated TVL from Morpho API: $${tvlValue.toLocaleString()}`);
+        } else {
+          throw new Error('No fresh data available');
+        }
+      } catch (error) {
+        console.log(`⚠️ Using cached TVL data (Morpho API unavailable): ${error.message}`);
+        tvlValue = rawData.state?.totalAssetsUsd || pool.tvl || 0;
+      }
       
       // ALWAYS do direct transfer analysis for accurate real-time data
       let holders = 0;
@@ -727,8 +746,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tvlFormatted: `$${tvlValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
           holders: holders,
           operatingDays: Math.max(operatingDays, 0),
-          totalAssets: pool.rawData?.state?.totalAssets || 0,
-          createdAt: pool.rawData?.createdAt || pool.createdAt
+          totalAssets: tvlValue,
+          createdAt: pool.rawData?.createdAt || pool.createdAt,
+          lastUpdated: tvlLastUpdated,
+          dataSource: tvlLastUpdated && tvlLastUpdated !== pool.lastUpdated ? 'live' : 'cached',
+          warning: tvlLastUpdated === pool.lastUpdated ? 'TVL data may be outdated due to Morpho API issues' : null
         }
       });
     } catch (error) {
