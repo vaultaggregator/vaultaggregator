@@ -637,13 +637,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pool not found' });
       }
 
-      // Use pool's existing TVL data and calculate operating days from creation
+      // Use pool's existing TVL data
       const tvlValue = pool.rawData?.state?.totalAssetsUsd || pool.tvl || 0;
-      const createdAt = new Date(pool.rawData?.createdAt || pool.createdAt);
-      const now = new Date();
-      const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Get real holder data from token analysis
+      let holders = 0;
+      let operatingDays = 0;
+      
+      try {
+        // Extract underlying token address
+        const rawData: any = pool.rawData || {};
+        let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
+        
+        // Special handling for steakUSDC vault
+        if (pool.tokenPair.toUpperCase() === 'STEAKUSDC') {
+          underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+        }
+        
+        if (underlyingToken) {
+          // Get stored token info with real holder data
+          const storedTokenInfo = await storage.getTokenInfoByAddress(underlyingToken);
+          if (storedTokenInfo && storedTokenInfo.holdersCount) {
+            holders = storedTokenInfo.holdersCount;
+          }
+          
+          // Calculate operating days from earliest transfer
+          const holderHistory = await storage.getHolderHistory(underlyingToken, 1000);
+          if (holderHistory.length > 0) {
+            // Get the earliest timestamp from holder history
+            const earliestRecord = holderHistory[holderHistory.length - 1];
+            const earliestDate = new Date(earliestRecord.timestamp);
+            const now = new Date();
+            operatingDays = Math.floor((now.getTime() - earliestDate.getTime()) / (1000 * 60 * 60 * 24));
+          }
+        }
+        
+        // Fallback to Morpho creation date if no transfer data available
+        if (operatingDays <= 0) {
+          const createdAt = new Date(pool.rawData?.createdAt || pool.createdAt);
+          const now = new Date();
+          operatingDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        }
+      } catch (error) {
+        console.error('Error getting real holder data:', error);
+        // Fallback to existing calculation
+        const createdAt = new Date(pool.rawData?.createdAt || pool.createdAt);
+        const now = new Date();
+        operatingDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      }
 
-      console.log(`📊 Using cached metrics for pool ${poolId}: TVL $${tvlValue.toLocaleString()}, Days ${daysSinceCreation}`);
+      console.log(`📊 Real metrics for pool ${poolId}: TVL $${tvlValue.toLocaleString()}, Holders ${holders}, Days ${operatingDays}`);
 
       res.json({
         poolId,
@@ -652,8 +695,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metrics: {
           tvl: tvlValue,
           tvlFormatted: `$${tvlValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
-          holders: 2, // Placeholder for vault holders
-          operatingDays: Math.max(daysSinceCreation, 0),
+          holders: holders,
+          operatingDays: Math.max(operatingDays, 0),
           totalAssets: pool.rawData?.state?.totalAssets || 0,
           createdAt: pool.rawData?.createdAt || pool.createdAt
         }
