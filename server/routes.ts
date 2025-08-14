@@ -638,6 +638,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pool not found' });
       }
 
+      // Check cache first to avoid expensive recalculation
+      const { IntelligentCacheService } = await import("./services/cacheService");
+      const cache = new IntelligentCacheService();
+      const cacheKey = `metrics:${poolId}`;
+      const cachedMetrics = cache.get(cacheKey);
+      
+      if (cachedMetrics) {
+        console.log(`📈 Serving cached metrics for ${poolId} (fast response)`);
+        // Add cache headers to prevent browser caching of stale data
+        res.set('Cache-Control', 'no-cache, must-revalidate');
+        res.set('Expires', '0');
+        return res.json(cachedMetrics);
+      }
+
       // Get pool raw data
       const rawData = pool.rawData as any || {};
       
@@ -684,7 +698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // ALWAYS do direct transfer analysis for accurate real-time data
+      // Cached transfer analysis for accurate but fast data
       let holders = 0;
       let operatingDays = 0;
       let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
@@ -695,14 +709,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (underlyingToken) {
-        console.log(`🔍 DIRECT ANALYSIS: Processing transfers for ${underlyingToken}`);
+        console.log(`🔍 FAST ANALYSIS: Processing cached transfers for ${underlyingToken}`);
         
         try {
           // Import and use Alchemy service to get fresh transfer data
           const { alchemyService } = await import("./services/alchemyService");
           
           if (alchemyService.isAvailable()) {
-            // Get all transfers to analyze directly (bypass any caching)
+            // Get cached transfers to avoid expensive recalculation
             const transfers = await alchemyService.getHistoricalTransfers(underlyingToken, 365, 15000);
             
             if (transfers && transfers.length > 0) {
@@ -762,7 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📊 Final metrics for pool ${poolId}: TVL $${tvlValue.toLocaleString()}, Holders ${holders}, Days ${operatingDays}`);
 
-      res.json({
+      const metricsResponse = {
         poolId,
         vaultAddress: rawData.address || pool.poolAddress,
         chainId: rawData.chain?.id || 1,
@@ -777,7 +791,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dataSource: tvlLastUpdated && tvlLastUpdated !== pool.lastUpdated ? 'live' : 'cached',
           warning: tvlLastUpdated === pool.lastUpdated ? 'TVL data may be outdated due to Morpho API issues' : null
         }
-      });
+      };
+
+      // Cache the expensive computation for 5 minutes
+      cache.set(cacheKey, metricsResponse, 'morpho-metrics', 5 * 60 * 1000);
+      
+      // Add cache headers to prevent browser caching
+      res.set('Cache-Control', 'no-cache, must-revalidate');
+      res.set('Expires', '0');
+      
+      res.json(metricsResponse);
     } catch (error) {
       console.error('Error fetching Morpho metrics data:', error);
       res.status(500).json({ error: 'Failed to fetch metrics data' });
