@@ -148,13 +148,13 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 </div>
                 <div className="text-center sm:w-14">
                   <div className="h-4 mb-0.5 sm:hidden flex items-center justify-center">
-                    <p className="text-xs text-muted-foreground font-medium">30d APY</p>
+                    <p className="text-xs text-muted-foreground font-medium">Days</p>
                   </div>
                   {showHeaders && (
-                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">30d APY</p>
+                    <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Days</p>
                   )}
-                  <p className="text-xs font-bold text-green-500" data-testid={`text-apy-30d-${opportunity.id}`}>
-                    {opportunity.rawData?.apyMean30d ? formatApy(opportunity.rawData.apyMean30d.toString()) : 'N/A'}
+                  <p className="text-xs font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
+                    {opportunity.rawData?.count ? `${opportunity.rawData.count}` : 'N/A'}
                   </p>
                 </div>
                 <div className="text-center sm:w-16">

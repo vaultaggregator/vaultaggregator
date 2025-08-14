@@ -22,7 +22,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showAdmin, setShowAdmin] = useState(false);
   const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'operatingDays' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>(null);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showSearch, setShowSearch] = useState(false);
   const limit = 12;
@@ -56,7 +56,7 @@ export default function Home() {
     setPage(prev => prev + 1);
   };
 
-  const handleSort = (field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders') => {
+  const handleSort = (field: 'name' | 'apy' | 'operatingDays' | 'tvl' | 'operatingSince' | 'risk' | 'holders') => {
     if (sortBy === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -79,9 +79,9 @@ export default function Home() {
         aValue = parseFloat(a.apy);
         bValue = parseFloat(b.apy);
         break;
-      case 'apy30d':
-        aValue = a.rawData?.apyMean30d || 0;
-        bValue = b.rawData?.apyMean30d || 0;
+      case 'operatingDays':
+        aValue = a.rawData?.count || 0;
+        bValue = b.rawData?.count || 0;
         break;
       case 'tvl':
         aValue = parseFloat(a.tvl);
@@ -119,7 +119,7 @@ export default function Home() {
     }
   });
 
-  const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'apy30d' | 'tvl' | 'operatingSince' | 'risk' | 'holders', children: React.ReactNode }) => (
+  const SortHeader = ({ field, children }: { field: 'name' | 'apy' | 'operatingDays' | 'tvl' | 'operatingSince' | 'risk' | 'holders', children: React.ReactNode }) => (
     <button
       onClick={() => handleSort(field)}
       className="flex items-center justify-center space-x-1 text-sm font-semibold text-foreground hover:text-blue-600 transition-colors w-full"
@@ -168,7 +168,7 @@ export default function Home() {
                 <SortHeader field="apy"><span className="text-sm font-medium">24h APY</span></SortHeader>
               </div>
               <div className="w-14 text-center">
-                <SortHeader field="apy30d"><span className="text-sm font-medium">30d APY</span></SortHeader>
+                <SortHeader field="operatingDays"><span className="text-sm font-medium">Days</span></SortHeader>
               </div>
               <div className="w-16 text-center">
                 <SortHeader field="tvl"><span className="text-sm font-medium">TVL</span></SortHeader>
