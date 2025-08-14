@@ -19,6 +19,19 @@ interface UrlData {
 }
 
 export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
+  // For Morpho pools, use the pool address (which is the vault address)
+  const isMorpho = pool.platform?.displayName?.toLowerCase().includes('morpho') || 
+                 pool.platform?.name?.toLowerCase().includes('morpho');
+  
+  if (isMorpho && pool.poolAddress) {
+    const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
+    // Direct link to the vault using the pool address (which is the vault address for Morpho)
+    return {
+      url: `https://app.morpho.org/${chainName}/vault/${pool.poolAddress}`,
+      label: 'View on Morpho'
+    };
+  }
+  
   // Check if platform has a custom URL template
   if (pool.platform?.visitUrlTemplate) {
     const template = pool.platform.visitUrlTemplate;
@@ -30,17 +43,13 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
     const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
     url = url.replace(/\{chainName\}/g, chainName);
     
-    if (pool.rawData && typeof pool.rawData === 'object') {
+    // Try to use pool address first for underlyingToken replacement (for Morpho vaults)
+    if (pool.poolAddress) {
+      url = url.replace(/\{underlyingToken\}/g, pool.poolAddress);
+    } else if (pool.rawData && typeof pool.rawData === 'object') {
       const rawData = pool.rawData as any;
       if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
-        let underlyingToken = rawData.underlyingTokens[0];
-        
-        // Special handling for steakUSDC - use vault contract instead of USDC
-        if (pool.tokenPair?.toUpperCase() === 'STEAKUSDC') {
-          underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'; // steakUSDC vault contract
-        }
-        
-        url = url.replace(/\{underlyingToken\}/g, underlyingToken);
+        url = url.replace(/\{underlyingToken\}/g, rawData.underlyingTokens[0]);
       }
     }
     
@@ -63,28 +72,6 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
       };
     } else {
       console.warn('URL template has unreplaced variables:', url);
-    }
-  }
-  
-  // Legacy logic for Morpho pools without custom templates
-  const isMorpho = pool.platform?.displayName?.toLowerCase().includes('morpho') || 
-                 pool.platform?.name?.toLowerCase().includes('morpho');
-  
-  if (isMorpho && pool.rawData && typeof pool.rawData === 'object') {
-    const rawData = pool.rawData as any;
-    if (rawData.underlyingTokens && Array.isArray(rawData.underlyingTokens) && rawData.underlyingTokens.length > 0) {
-      let underlyingToken = rawData.underlyingTokens[0];
-      
-      // Special handling for steakUSDC - use vault contract instead of USDC
-      if (pool.tokenPair?.toUpperCase() === 'STEAKUSDC') {
-        underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'; // steakUSDC vault contract
-      }
-      
-      const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
-      return {
-        url: `https://app.morpho.org/${chainName}/vault/${underlyingToken}`,
-        label: 'Visit Morpho Platform'
-      };
     }
   }
   
