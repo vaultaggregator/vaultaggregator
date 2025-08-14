@@ -4,7 +4,16 @@ Vault Aggregator is a DeFi yield aggregation platform designed to help users dis
 
 # User Preferences
 
-Preferred communication style: Simple, everyday language.
+**Communication & Development Style (Updated August 14, 2025):**
+- Act as a senior software engineer with rigorous verification standards
+- Always restate requests first to confirm understanding
+- Think through solutions step-by-step before coding
+- Write clean, efficient, working code only
+- Mentally simulate code execution to catch errors
+- Never send unverified or incomplete code
+- Fix all bugs before presenting solutions
+- Return only final working code with verification confirmation
+- Previous preference: Simple, everyday language (still applies for explanations)
 
 **Recent Major Achievement (August 10, 2025):**
 Successfully replaced unreliable DeFi Llama data source with Morpho's reliable data format and implemented comprehensive historical APY data (7d, 30d, 90d) directly from Morpho's GraphQL API. Achieved authentic real-time connection to Morpho protocol with live vault data (Steakhouse USDC $184M TVL) providing time-series APY analysis for investment decisions. Previously simplified the interface by removing complex analytical sections and cleaned up TypeScript errors for better user experience.
