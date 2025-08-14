@@ -137,31 +137,7 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
   );
 }
 
-// Additional Info Component - Read-only, editable only from admin panel
-function AdditionalInfoCard({ poolId, notes }: { poolId: string; notes?: any[] }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Additional Information</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {notes && notes.length > 0 ? (
-          <div className="space-y-4">
-            {notes.map((note: any, index: number) => (
-              <div key={index} className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <p className="text-gray-700 dark:text-gray-300" data-testid={`text-note-${index}`}>
-                  {note.content}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 dark:text-gray-400 italic">No additional notes available for this pool.</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+
 
 // DeFi Llama integration removed - using Morpho API instead
 
@@ -821,8 +797,7 @@ export default function PoolDetail() {
 
 
 
-        {/* Notes Section */}
-        <AdditionalInfoCard poolId={pool.id} notes={pool.notes} />
+
 
 
       </div>
