@@ -1,6 +1,6 @@
 # Overview
 
-Vault Aggregator is a DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities across various blockchain networks and protocols. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments. The platform features a modern React frontend and a Node.js/Express backend, integrating with DeFi Llama's API for automated data synchronization. Its ambition is to provide comprehensive coverage of DeFi lending and yield opportunities.
+Vault Aggregator is a streamlined DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities across various blockchain networks and protocols. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments. The platform features a modern React frontend and a Node.js/Express backend, integrating with Morpho's API for authenticated data synchronization. The focus is on core yield tracking and portfolio management without unnecessary AI features.
 
 # User Preferences
 
@@ -17,6 +17,15 @@ Vault Aggregator is a DeFi yield aggregation platform designed to help users dis
 
 **Recent Major Achievement (August 10, 2025):**
 Successfully replaced unreliable DeFi Llama data source with Morpho's reliable data format and implemented comprehensive historical APY data (7d, 30d, 90d) directly from Morpho's GraphQL API. Achieved authentic real-time connection to Morpho protocol with live vault data (Steakhouse USDC $184M TVL) providing time-series APY analysis for investment decisions. Previously simplified the interface by removing complex analytical sections and cleaned up TypeScript errors for better user experience.
+
+**Navigation Cleanup (August 14, 2025):**
+REMOVED AI FEATURES FROM NAVIGATION FOR CLEANER INTERFACE:
+- ✅ **Removed AI Tools Dropdown**: Eliminated AI navigation menu component completely
+- ✅ **Removed AI Companion Link**: Removed conversational AI companion from navigation
+- ✅ **Removed Market Intelligence Link**: Removed complex market analysis feature
+- ✅ **Removed Investment Advisor Link**: Removed AI investment recommendations
+- ✅ **Navigation Focus**: Streamlined to Dashboard, Portfolio, Analytics, Chains, and Advanced features
+- ✅ **Mobile Menu Updated**: Synchronized mobile navigation with desktop changes
 
 **Major UI Simplification (August 10, 2025):**
 SUCCESSFULLY STREAMLINED INTERFACE BY REMOVING COMPLEX ANALYTICAL SECTIONS. Simplified user experience by focusing on core functionality:

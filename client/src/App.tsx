@@ -23,25 +23,18 @@ import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
 import AdminApiKeys from "@/pages/admin-api-keys";
 import PoolDetail from "@/pages/pool-detail";
-import { CompanionPage } from "@/pages/companion";
-import InvestmentAdvisor from "@/pages/investment-advisor";
 import RiskDashboard from "@/pages/risk-dashboard";
 import SmartAlerts from "@/pages/smart-alerts";
 import PoolReviews from "@/pages/pool-reviews";
 import CommunityInsights from "@/pages/community-insights";
 import Watchlists from "@/pages/watchlists";
 import ApiMarketplace from "@/pages/api-marketplace";
-import FloatingChat from "@/components/floating-chat";
-import AIPortfolioOptimizer from "@/pages/ai-portfolio-optimizer";
-import AIYieldPredictor from "@/pages/ai-yield-predictor";
-import AIRiskAnalyzer from "@/pages/ai-risk-analyzer";
 import { KnowledgeCenterPage } from "@/pages/admin/knowledge-center";
 import AdminLogoManagement from "@/pages/admin-logo-management";
 import AdminErrors from "@/pages/admin-errors";
 import AdminCache from "@/pages/admin-cache";
 import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
-import MarketIntelligence from "@/pages/market-intelligence";
 import AdvancedSearch from "@/pages/advanced-search";
 import YieldForecasting from "@/pages/yield-forecasting";
 import RiskCalculator from "@/pages/risk-calculator";
@@ -68,18 +61,12 @@ function Router() {
       <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
       <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
       <Route path="/pools/:poolId" component={PoolDetail} /> {/* Pools (plural) support */}
-      <Route path="/companion" component={CompanionPage} />
-      <Route path="/investment-advisor" component={InvestmentAdvisor} />
       <Route path="/risk-dashboard" component={RiskDashboard} />
       <Route path="/smart-alerts" component={SmartAlerts} />
       <Route path="/pool-reviews" component={PoolReviews} />
       <Route path="/community-insights" component={CommunityInsights} />
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/api-marketplace" component={ApiMarketplace} />
-      <Route path="/ai/portfolio-optimizer" component={AIPortfolioOptimizer} />
-      <Route path="/ai/yield-predictor" component={AIYieldPredictor} />
-      <Route path="/ai/risk-analyzer" component={AIRiskAnalyzer} />
-      <Route path="/market-intelligence" component={MarketIntelligence} />
       <Route path="/advanced-search" component={AdvancedSearch} />
       <Route path="/yield-forecasting" component={YieldForecasting} />
       <Route path="/risk-calculator" component={RiskCalculator} />
@@ -111,7 +98,6 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
-          <FloatingChat />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>
