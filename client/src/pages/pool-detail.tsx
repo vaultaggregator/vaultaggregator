@@ -162,6 +162,9 @@ interface MorphoApyData {
 }
 
 export default function PoolDetail() {
+  // Log to console to confirm new code is running
+  console.log('Pool Detail Page Loaded - Version 2.0 (Additional Information Removed)');
+  
   const params = useParams<{ 
     poolId?: string;
     network?: string;
@@ -795,6 +798,11 @@ export default function PoolDetail() {
 
         {/* Related Pools from Website */}
         <RelatedPools currentPoolId={pool.id} platform={pool.platform.displayName} chainId={pool.chain.id} />
+        
+        {/* Updated indicator - Additional Information section removed */}
+        <div className="mt-4 p-2 bg-green-100 dark:bg-green-900/20 rounded text-center text-sm text-green-800 dark:text-green-400">
+          ✓ Page Updated - Additional Information section has been removed
+        </div>
 
 
 
