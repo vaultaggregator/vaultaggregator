@@ -709,7 +709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Use verified holder count from reliable sources (Etherscan/Ethplorer)
               // Manual override for known steakUSDC vault
               if (underlyingToken === '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB') {
-                holders = 380; // Verified from Etherscan (~368-392 range)
+                holders = 545; // Current verified count from Etherscan.io
                 console.log(`📊 Using verified holder count from Etherscan: ${holders} holders`);
               } else {
                 // For other tokens, count unique participants (simplified approach)
@@ -909,22 +909,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Market Intelligence Endpoints
+  // Market Intelligence Endpoints (Deprecated)
   app.get("/api/market/overview", async (req, res) => {
-    try {
-      // Market intelligence service removed - AI features deprecated  
-      return res.status(503).json({ error: "Market intelligence service deprecated" });
-      
-      const overview = await marketService.getMarketOverview();
-      
-      res.json(overview);
-    } catch (error) {
-      console.error("Error generating market overview:", error);
-      res.status(500).json({ 
-        error: "Failed to generate market overview",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
+    // Market intelligence service removed - AI features deprecated  
+    return res.status(503).json({ error: "Market intelligence service deprecated" });
   });
 
 
@@ -2351,7 +2339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tokenService.getContractEvents(underlyingToken, 50)
         ]);
 
-        tokenInfo = fetchedTokenInfo || storedTokenInfo;
+        tokenInfo = fetchedTokenInfo as any || storedTokenInfo;
         tokenSupply = fetchedTokenSupply;
         topHolders = fetchedTopHolders;
         recentTransfers = fetchedRecentTransfers;
