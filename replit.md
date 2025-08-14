@@ -60,6 +60,7 @@ SUCCESSFULLY REPLACED DEFI LLAMA DATA WITH RELIABLE MORPHO FORMAT:
 - ✅ **New API Endpoint**: `/api/pools/:id/morpho/apy` provides detailed APY metrics and historical data
 - ✅ **Fixed APY Display Issue**: Corrected vault address mapping to show authentic 6.08% current APY instead of incorrect 1.81%
 - ✅ **Frontend Integration Complete**: Pool detail page now displays real historical APY values (7d: 5.03%, 30d: 5.06%, 90d: 3.68%)
+- ✅ **APY Data Accuracy Fix (August 14, 2025)**: Updated to display Net APY (4.96%) which includes MORPHO rewards, matching Morpho website display instead of raw APY (3.88%)
 
 **Self-Healing System Implementation (August 14, 2025):**
 SUCCESSFULLY IMPLEMENTED COMPREHENSIVE SELF-HEALING MECHANISM:

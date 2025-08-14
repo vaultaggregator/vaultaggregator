@@ -558,18 +558,19 @@ export class MorphoService {
         return null;
       }
 
+      // Use netApy (includes MORPHO rewards) to match what Morpho website displays
       const result = {
-        current: vault.state.apy || 0,
-        daily: vault.state.dailyApy || vault.state.apy || 0,
-        weekly: vault.state.weeklyApy || vault.state.apy || 0,
-        monthly: vault.state.monthlyApy || vault.state.apy || 0,
+        current: vault.state.netApy || vault.state.apy || 0,
+        daily: vault.state.dailyNetApy || vault.state.dailyApy || vault.state.netApy || vault.state.apy || 0,
+        weekly: vault.state.weeklyNetApy || vault.state.weeklyApy || vault.state.netApy || vault.state.apy || 0,
+        monthly: vault.state.monthlyNetApy || vault.state.monthlyApy || vault.state.netApy || vault.state.apy || 0,
         historical7d: vault.historicalState?.apy7d || [],
         historical30d: vault.historicalState?.apy30d || [],
         historical90d: vault.historicalState?.apy90d || [],
         historicalAllTime: vault.historicalState?.apyAllTime || []
       };
 
-      // Cache for 10 minutes
+      // Cache for 10 minutes  
       this.cache.set(cacheKey, result, 10 * 60 * 1000);
       console.log(`📊 Fetched APY data for vault ${vaultAddress}: Current ${(result.current * 100).toFixed(2)}%, Weekly ${(result.weekly * 100).toFixed(2)}%`);
       
