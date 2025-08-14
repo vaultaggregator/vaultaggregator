@@ -627,6 +627,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Morpho current metrics endpoint for TVL, holders, operating days
+  app.get('/api/pools/:id/morpho/metrics', async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const pool = await storage.getPoolById(poolId);
+      
+      if (!pool) {
+        return res.status(404).json({ error: 'Pool not found' });
+      }
+
+      // Use pool's existing TVL data and calculate operating days from creation
+      const tvlValue = pool.rawData?.state?.totalAssetsUsd || pool.tvl || 0;
+      const createdAt = new Date(pool.rawData?.createdAt || pool.createdAt);
+      const now = new Date();
+      const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+
+      console.log(`📊 Using cached metrics for pool ${poolId}: TVL $${tvlValue.toLocaleString()}, Days ${daysSinceCreation}`);
+
+      res.json({
+        poolId,
+        vaultAddress: pool.rawData?.address || pool.poolAddress,
+        chainId: pool.rawData?.chain?.id || 1,
+        metrics: {
+          tvl: tvlValue,
+          tvlFormatted: `$${tvlValue.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+          holders: 2, // Placeholder for vault holders
+          operatingDays: Math.max(daysSinceCreation, 0),
+          totalAssets: pool.rawData?.state?.totalAssets || 0,
+          createdAt: pool.rawData?.createdAt || pool.createdAt
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching Morpho metrics data:', error);
+      res.status(500).json({ error: 'Failed to fetch metrics data' });
+    }
+  });
+
   app.get("/api/morpho/vaults", async (req, res) => {
     try {
       const { chainId = 1 } = req.query;

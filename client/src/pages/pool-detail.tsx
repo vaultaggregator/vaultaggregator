@@ -161,6 +161,21 @@ interface MorphoApyData {
   };
 }
 
+// Morpho Metrics Data Type
+interface MorphoMetricsData {
+  poolId: string;
+  vaultAddress: string;
+  chainId: number;
+  metrics: {
+    tvl: number;
+    tvlFormatted: string;
+    holders: number;
+    operatingDays: number;
+    totalAssets: number;
+    createdAt: string;
+  };
+}
+
 export default function PoolDetail() {
   // Log to console to confirm new code is running
   console.log('Pool Detail Page Loaded - Version 2.0 (Additional Information Removed)');
@@ -186,6 +201,14 @@ export default function PoolDetail() {
     queryKey: ['/api/pools', poolId, 'morpho/apy'],
     enabled: !!poolId && !!pool && pool.platform.name === 'Morpho',
     staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
+  });
+
+  // Fetch Morpho current metrics for TVL, holders, operating days
+  const { data: morphoMetrics, isLoading: morphoMetricsLoading } = useQuery<MorphoMetricsData>({
+    queryKey: ['/api/pools', poolId, 'morpho/metrics'],
+    enabled: !!poolId && !!pool && pool.platform.name === 'Morpho',
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
 
@@ -503,7 +526,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600" data-testid="text-tvl">
-                {formatTvl(pool.tvl)}
+                {morphoMetrics?.metrics?.tvlFormatted || formatTvl(pool.tvl)}
               </p>
             </CardContent>
           </Card>
@@ -520,7 +543,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-200" data-testid="text-operating-days">
-                {(() => {
+                {morphoMetrics?.metrics?.operatingDays ?? (() => {
                   if (pool.rawData?.createdAt) {
                     const createdDate = new Date(pool.rawData.createdAt);
                     const now = new Date();
@@ -538,13 +561,13 @@ export default function PoolDetail() {
             <CardHeader className="pb-2 sm:pb-3">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-purple-600" />
-                <span className="hidden sm:inline">Token Holders</span>
+                <span className="hidden sm:inline">Vault Holders</span>
                 <span className="sm:hidden">Holders</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
-                {tokenInfo?.holdersCount || 'N/A'}
+                {morphoMetrics?.metrics?.holders ?? (tokenInfo?.holdersCount || 'N/A')}
               </p>
             </CardContent>
           </Card>

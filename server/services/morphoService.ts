@@ -462,6 +462,75 @@ export class MorphoService {
   }
 
   /**
+   * Get current vault metrics (TVL, holders, creation date)
+   */
+  async getCurrentVaultMetrics(vaultAddress: string, chainId: number = 1): Promise<{
+    tvl: number;
+    holders: number;
+    createdAt: string;
+    totalAssets: number;
+  } | null> {
+    const cacheKey = `vault_metrics_${vaultAddress}_${chainId}`;
+    const cachedData = this.cache.get<{
+      tvl: number;
+      holders: number;
+      createdAt: string;
+      totalAssets: number;
+    }>(cacheKey);
+    
+    if (cachedData) {
+      console.log(`📦 Using cached vault metrics for ${vaultAddress}`);
+      return cachedData;
+    }
+
+    const query = `
+      query GetVaultMetrics($vaultAddress: String!, $chainId: Int!) {
+        vaultByAddress(address: $vaultAddress, chainId: $chainId) {
+          address
+          name
+          symbol
+          createdAt
+          state {
+            totalAssetsUsd
+            totalSupplyUsd
+            totalAssets
+          }
+          whitelisted
+          publicAllocatorConfig {
+            admin
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(query, { vaultAddress, chainId });
+      const vault = data.vaultByAddress;
+      
+      if (!vault) {
+        console.log(`⚠️ No vault found for metrics ${vaultAddress}`);
+        return null;
+      }
+
+      const result = {
+        tvl: vault.state.totalAssetsUsd || vault.state.totalSupplyUsd || 0,
+        holders: 0, // Placeholder - will implement proper holder count later
+        createdAt: vault.createdAt || '',
+        totalAssets: vault.state.totalAssets || 0
+      };
+
+      // Cache for 5 minutes
+      this.cache.set(cacheKey, result, 5 * 60 * 1000);
+      console.log(`📊 Fetched vault metrics for ${vaultAddress}: TVL $${result.tvl.toLocaleString()}, Holders ${result.holders}`);
+      
+      return result;
+    } catch (error) {
+      console.error(`🔴 Failed to fetch vault metrics for ${vaultAddress}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Get historical APY data for a vault (7d, 30d, 90d)
    */
   async getVaultHistoricalApy(vaultAddress: string, chainId: number = 1): Promise<{
@@ -475,7 +544,16 @@ export class MorphoService {
     historicalAllTime?: Array<{x: number, y: number}>;
   } | null> {
     const cacheKey = `vault_apy_${vaultAddress}_${chainId}`;
-    const cachedData = this.cache.get(cacheKey);
+    const cachedData = this.cache.get<{
+      current: number;
+      daily: number;
+      weekly: number;
+      monthly: number;
+      historical7d?: Array<{x: number, y: number}>;
+      historical30d?: Array<{x: number, y: number}>;
+      historical90d?: Array<{x: number, y: number}>;
+      historicalAllTime?: Array<{x: number, y: number}>;
+    }>(cacheKey);
     
     if (cachedData) {
       console.log(`📦 Using cached APY data for vault ${vaultAddress}`);
