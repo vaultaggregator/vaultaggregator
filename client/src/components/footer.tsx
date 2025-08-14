@@ -74,11 +74,7 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link href="/help-center" className="hover:text-white transition-colors duration-200" data-testid="link-help">
-                  Help Center
-                </Link>
-              </li>
+
               <li>
                 <Link href="/contact" className="hover:text-white transition-colors duration-200" data-testid="link-contact">
                   Contact Us
@@ -103,21 +99,6 @@ export default function Footer() {
               <li>
                 <Link href="/chains" className="hover:text-white transition-colors duration-200" data-testid="link-chains">
                   Chains
-                </Link>
-              </li>
-              <li>
-                <Link href="/companion" className="hover:text-white transition-colors duration-200" data-testid="link-companion">
-                  AI Companion
-                </Link>
-              </li>
-              <li>
-                <Link href="/market-intelligence" className="hover:text-white transition-colors duration-200" data-testid="link-market-intelligence">
-                  Market Intelligence
-                </Link>
-              </li>
-              <li>
-                <Link href="/investment-advisor" className="hover:text-white transition-colors duration-200" data-testid="link-investment-advisor">
-                  Investment Advisor
                 </Link>
               </li>
             </ul>
