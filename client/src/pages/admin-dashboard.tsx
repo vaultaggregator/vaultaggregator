@@ -560,21 +560,7 @@ export default function AdminDashboard() {
               </Button>
 
 
-              <Button 
-                onClick={() => {
-                  toast({
-                    title: "Token Normalization",
-                    description: "All token addresses are now using intelligent display formatting with one-click normalization available on each pool",
-                  });
-                }}
-                variant="outline" 
-                size="sm"
-                data-testid="button-normalize-tokens"
-                className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900"
-              >
-                <Sparkles className="h-4 w-4 mr-2 text-blue-600 dark:text-blue-400" />
-                Smart Tokens
-              </Button>
+
 
 
 
