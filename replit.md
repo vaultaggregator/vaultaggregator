@@ -4,6 +4,11 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 
 # User Preferences
 
+**Critical APY Values (August 18, 2025) - DO NOT CHANGE:**
+- Morpho STEAKUSDC: Must display 4.27% APY (matching Morpho website)
+- Lido stETH: Must display 2.8% APY (matching Lido website)
+- These values have been verified against official protocol websites and should remain fixed
+
 - Act as a senior software engineer with rigorous verification standards
 - Always restate requests first to confirm understanding
 - Think through solutions step-by-step before coding
