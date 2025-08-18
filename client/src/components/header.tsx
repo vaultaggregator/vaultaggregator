@@ -28,14 +28,6 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/dashboard" 
-              className="text-gray-700 dark:text-gray-200 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition-colors duration-200"
-              data-testid="link-dashboard"
-            >
-              Dashboard
-            </Link>
-
 
 
 
@@ -60,15 +52,6 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4" data-testid="mobile-menu">
             <nav className="space-y-2">
-              <Link 
-                href="/dashboard" 
-                className="block px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
-                data-testid="link-mobile-dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-
 
 
             </nav>
