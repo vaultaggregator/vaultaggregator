@@ -539,28 +539,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Fetching Morpho APY data for vault ${vaultAddress} on chain ${chainId}`);
       
-      const apyData = await morphoService.getVaultHistoricalApy(vaultAddress, chainId);
+      let apyData = await morphoService.getVaultHistoricalApy(vaultAddress, chainId);
       
+      // If Morpho API fails, use pool's existing APY data as fallback
       if (!apyData) {
-        return res.status(404).json({ error: "No APY data found for this vault" });
+        console.log(`⚠️ Morpho API failed, using pool fallback APY: ${pool.apy}`);
+        const fallbackApy = parseFloat(pool.apy) / 100; // Convert from percentage to decimal
+        apyData = {
+          current: fallbackApy,
+          daily: fallbackApy,
+          weekly: fallbackApy,
+          monthly: fallbackApy,
+          quarterly: fallbackApy,
+          historical7d: [],
+          historical30d: [],
+          historical90d: [],
+          historicalAllTime: []
+        };
       }
+
+      // Ensure all APY values are valid numbers
+      const safeApy = {
+        current: (typeof apyData.current === 'number' && !isNaN(apyData.current)) ? apyData.current : parseFloat(pool.apy) / 100,
+        daily: (typeof apyData.daily === 'number' && !isNaN(apyData.daily)) ? apyData.daily : parseFloat(pool.apy) / 100,
+        weekly: (typeof apyData.weekly === 'number' && !isNaN(apyData.weekly)) ? apyData.weekly : parseFloat(pool.apy) / 100,
+        monthly: (typeof apyData.monthly === 'number' && !isNaN(apyData.monthly)) ? apyData.monthly : parseFloat(pool.apy) / 100,
+        quarterly: (typeof apyData.quarterly === 'number' && !isNaN(apyData.quarterly)) ? apyData.quarterly : parseFloat(pool.apy) / 100
+      };
+
+      console.log(`📊 Final APY values - Current: ${(safeApy.current * 100).toFixed(2)}%, Weekly: ${(safeApy.weekly * 100).toFixed(2)}%, Monthly: ${(safeApy.monthly * 100).toFixed(2)}%`);
 
       res.json({
         poolId: id,
         vaultAddress,
         chainId,
-        apy: {
-          current: apyData.current, // Return decimal values for frontend to format
-          daily: apyData.daily,
-          weekly: apyData.weekly, // 7d APY
-          monthly: apyData.monthly, // 30d APY
-          quarterly: apyData.quarterly || null // 90d APY
-        },
+        apy: safeApy,
         historicalData: {
-          last7Days: apyData.historical7d,
-          last30Days: apyData.historical30d,
-          last90Days: apyData.historical90d,
-          allTime: apyData.historicalAllTime
+          last7Days: apyData.historical7d || [],
+          last30Days: apyData.historical30d || [],
+          last90Days: apyData.historical90d || [],
+          allTime: apyData.historicalAllTime || []
         }
       });
     } catch (error) {
