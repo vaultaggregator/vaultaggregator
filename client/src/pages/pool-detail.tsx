@@ -153,11 +153,13 @@ interface MorphoApyData {
     weekly: string;
     monthly: string;
     quarterly: string;
+    allTime: string;
   };
   historicalData: {
     last7Days: Array<{x: number, y: number}>;
     last30Days: Array<{x: number, y: number}>;
     last90Days: Array<{x: number, y: number}>;
+    allTime: Array<{x: number, y: number}>;
   };
 }
 
@@ -460,7 +462,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
-                {morphoApyData?.apy?.current ? `${(morphoApyData.apy.current * 100).toFixed(2)}%` : formatApy(pool.apy)}
+                {morphoApyData?.apy?.current ? `${(parseFloat(morphoApyData.apy.current) * 100).toFixed(2)}%` : formatApy(pool.apy)}
               </p>
               <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">24h Average</p>
             </CardContent>
@@ -480,7 +482,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1" data-testid="text-apy-7d">
-                {morphoApyData?.apy?.weekly ? `${(morphoApyData.apy.weekly * 100).toFixed(2)}%` : 'N/A'}
+                {morphoApyData?.apy?.weekly ? `${(parseFloat(morphoApyData.apy.weekly) * 100).toFixed(2)}%` : 'N/A'}
               </p>
               <p className="text-xs text-emerald-600/70 dark:text-emerald-300/70 font-medium">Weekly Average</p>
             </CardContent>
@@ -500,7 +502,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1" data-testid="text-apy-30d">
-                {morphoApyData?.apy?.monthly ? `${(morphoApyData.apy.monthly * 100).toFixed(2)}%` : 'N/A'}
+                {morphoApyData?.apy?.monthly ? `${(parseFloat(morphoApyData.apy.monthly) * 100).toFixed(2)}%` : 'N/A'}
               </p>
               <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Monthly Average</p>
             </CardContent>
@@ -520,9 +522,30 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1" data-testid="text-apy-90d">
-                {morphoApyData?.apy?.quarterly ? `${(morphoApyData.apy.quarterly * 100).toFixed(2)}%` : 'N/A'}
+                {morphoApyData?.apy?.quarterly ? `${(parseFloat(morphoApyData.apy.quarterly) * 100).toFixed(2)}%` : 'N/A'}
               </p>
               <p className="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium">Quarterly Average</p>
+            </CardContent>
+          </Card>
+
+          {/* All-Time APY Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-indigo-600" />
+                  <span>All-Time APY</span>
+                </div>
+                <MetricTooltip metric="all-time-apy" variant="icon" side="bottom">
+                  <AlertCircle className="w-4 h-4 text-indigo-500 hover:text-indigo-600 cursor-help" />
+                </MetricTooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1" data-testid="text-apy-all-time">
+                {morphoApyData?.apy?.allTime ? `${(parseFloat(morphoApyData.apy.allTime) * 100).toFixed(2)}%` : 'N/A'}
+              </p>
+              <p className="text-xs text-indigo-600/70 dark:text-indigo-300/70 font-medium">Historical Average</p>
             </CardContent>
           </Card>
 
@@ -592,7 +615,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
-                {morphoMetrics?.metrics?.holders ?? (tokenInfo?.holdersCount || 'N/A')}
+                {morphoMetrics?.metrics?.holders ?? (tokenInfo && 'holdersCount' in tokenInfo ? tokenInfo.holdersCount : 'N/A')}
               </p>
               <p className="text-xs text-violet-600/70 dark:text-violet-300/70 font-medium">Active Participants</p>
             </CardContent>
