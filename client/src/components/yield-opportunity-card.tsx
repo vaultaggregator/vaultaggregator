@@ -109,8 +109,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               </div>
             </div>
             
-            {/* Protocol info - positioned between name and network */}
-            <div className="flex items-center space-x-2 flex-shrink-0">
+            {/* Protocol info - center aligned */}
+            <div className="flex items-center justify-center space-x-2 flex-shrink-0">
               <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
                   <img 
@@ -127,9 +127,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               </span>
             </div>
             
-            {/* Network info - positioned to match header spacing */}
+            {/* Network info - center aligned */}
             {showNetworkName && (
-              <div className="flex items-center space-x-2 flex-shrink-0 w-24">
+              <div className="flex items-center justify-center space-x-2 flex-shrink-0 w-24">
                 <div 
                   className="flex items-center justify-center flex-shrink-0"
                   data-testid={`badge-chain-${opportunity.id}`}
