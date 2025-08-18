@@ -20,12 +20,7 @@ import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
 import AdminApiKeys from "@/pages/admin-api-keys";
 import PoolDetail from "@/pages/pool-detail";
-import RiskDashboard from "@/pages/risk-dashboard";
-import SmartAlerts from "@/pages/smart-alerts";
-import PoolReviews from "@/pages/pool-reviews";
 
-import Watchlists from "@/pages/watchlists";
-import ApiMarketplace from "@/pages/api-marketplace";
 
 import AdminLogoManagement from "@/pages/admin-logo-management";
 import AdminErrors from "@/pages/admin-errors";
@@ -33,9 +28,7 @@ import AdminCache from "@/pages/admin-cache";
 import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
 
-import YieldForecasting from "@/pages/yield-forecasting";
-import RiskCalculator from "@/pages/risk-calculator";
-import EtherscanDashboard from "@/pages/etherscan-dashboard";
+
 import HealingDashboard from "@/pages/healing-dashboard";
 
 
@@ -54,16 +47,7 @@ function Router() {
       <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
       <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
       <Route path="/pools/:poolId" component={PoolDetail} /> {/* Pools (plural) support */}
-      <Route path="/risk-dashboard" component={RiskDashboard} />
-      <Route path="/smart-alerts" component={SmartAlerts} />
-      <Route path="/pool-reviews" component={PoolReviews} />
 
-      <Route path="/watchlists" component={Watchlists} />
-      <Route path="/api-marketplace" component={ApiMarketplace} />
-
-      <Route path="/yield-forecasting" component={YieldForecasting} />
-      <Route path="/risk-calculator" component={RiskCalculator} />
-      <Route path="/etherscan" component={EtherscanDashboard} />
       <Route path="/admin/healing" component={HealingDashboard} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />

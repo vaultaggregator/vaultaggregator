@@ -432,64 +432,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Yield forecasting endpoints
-  app.get("/api/yield-forecasts", async (req, res) => {
-    try {
-      const { period = '7d', model = 'ml' } = req.query;
-      
-      // For now, return empty array - this would integrate with ML models
-      res.json([]);
-    } catch (error) {
-      console.error("Error fetching yield forecasts:", error);
-      res.status(500).json({ error: "Failed to fetch yield forecasts" });
-    }
-  });
 
-  app.get("/api/yield-forecasts/:poolId", async (req, res) => {
-    try {
-      const { poolId } = req.params;
-      const { period = '7d', model = 'ml' } = req.query;
-      
-      const pool = await storage.getPoolById(poolId);
-      if (!pool) {
-        return res.status(404).json({ error: "Pool not found" });
-      }
-
-      // For now, return empty - this would integrate with ML models
-      res.json(null);
-    } catch (error) {
-      console.error("Error fetching pool forecast:", error);
-      res.status(500).json({ error: "Failed to fetch pool forecast" });
-    }
-  });
-
-  // Risk assessment endpoints
-  app.get("/api/risk-assessments", async (req, res) => {
-    try {
-      // For now, return empty array - this would integrate with risk analysis models
-      res.json([]);
-    } catch (error) {
-      console.error("Error fetching risk assessments:", error);
-      res.status(500).json({ error: "Failed to fetch risk assessments" });
-    }
-  });
-
-  app.get("/api/risk-assessments/:poolId", async (req, res) => {
-    try {
-      const { poolId } = req.params;
-      
-      const pool = await storage.getPoolById(poolId);
-      if (!pool) {
-        return res.status(404).json({ error: "Pool not found" });
-      }
-
-      // For now, return null - this would integrate with risk analysis models
-      res.json(null);
-    } catch (error) {
-      console.error("Error fetching pool risk assessment:", error);
-      res.status(500).json({ error: "Failed to fetch pool risk assessment" });
-    }
-  });
 
   // Pool routes
   app.get("/api/pools", async (req, res) => {
@@ -1947,8 +1890,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Register advanced features routes
-  const { registerAdvancedRoutes } = await import('./routes/advanced-features');
-  registerAdvancedRoutes(app);
+
 
   // Register AI routes
 
@@ -2036,197 +1978,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Etherscan API routes - blockchain data endpoints
-  app.get("/api/etherscan/account/:address", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const address = req.params.address;
-      if (!EtherscanService.isValidAddress(address)) {
-        return res.status(400).json({ error: "Invalid Ethereum address format" });
-      }
-      
-      const accountInfo = await etherscan.getAccountInfo(address);
-      res.json({
-        ...accountInfo,
-        balanceEth: EtherscanService.weiToEth(accountInfo.balance)
-      });
-    } catch (error) {
-      console.error("Error fetching account info:", error);
-      res.status(500).json({ error: "Failed to fetch account information" });
-    }
-  });
-
-  app.get("/api/etherscan/transactions/:address", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const address = req.params.address;
-      const { page = "1", limit = "25", startBlock = "0" } = req.query;
-      
-      if (!EtherscanService.isValidAddress(address)) {
-        return res.status(400).json({ error: "Invalid Ethereum address format" });
-      }
-      
-      const transactions = await etherscan.getTransactionHistory(
-        address,
-        parseInt(startBlock as string),
-        999999999,
-        parseInt(page as string),
-        Math.min(parseInt(limit as string), 100) // Max 100 per request
-      );
-      
-      res.json({
-        address,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        transactions: transactions.map(tx => ({
-          ...tx,
-          valueEth: EtherscanService.weiToEth(tx.value),
-          gasPriceGwei: (parseInt(tx.gasPrice) / 1e9).toFixed(2),
-          timestamp: new Date(parseInt(tx.timeStamp) * 1000).toISOString()
-        }))
-      });
-    } catch (error) {
-      console.error("Error fetching transactions:", error);
-      res.status(500).json({ error: "Failed to fetch transaction history" });
-    }
-  });
-
-  app.get("/api/etherscan/tokens/:address", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const address = req.params.address;
-      if (!EtherscanService.isValidAddress(address)) {
-        return res.status(400).json({ error: "Invalid Ethereum address format" });
-      }
-      
-      const tokens = await etherscan.getTokenBalances(address);
-      res.json({ address, tokens });
-    } catch (error) {
-      console.error("Error fetching token balances:", error);
-      res.status(500).json({ error: "Failed to fetch token balances" });
-    }
-  });
-
-  app.get("/api/etherscan/contract/:address", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const address = req.params.address;
-      if (!EtherscanService.isValidAddress(address)) {
-        return res.status(400).json({ error: "Invalid Ethereum address format" });
-      }
-      
-      const contractInfo = await etherscan.getContractInfo(address);
-      if (!contractInfo) {
-        return res.status(404).json({ error: "Contract not found or not verified" });
-      }
-      
-      res.json(contractInfo);
-    } catch (error) {
-      console.error("Error fetching contract info:", error);
-      res.status(500).json({ error: "Failed to fetch contract information" });
-    }
-  });
-
-  app.get("/api/etherscan/gas", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const gasData = await etherscan.getGasTracker();
-      res.json({
-        timestamp: new Date().toISOString(),
-        ...gasData
-      });
-    } catch (error) {
-      console.error("Error fetching gas prices:", error);
-      res.status(500).json({ error: "Failed to fetch gas prices" });
-    }
-  });
-
-  app.get("/api/etherscan/transaction/:hash", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const txHash = req.params.hash;
-      if (!/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
-        return res.status(400).json({ error: "Invalid transaction hash format" });
-      }
-      
-      const transaction = await etherscan.getTransactionByHash(txHash);
-      if (!transaction) {
-        return res.status(404).json({ error: "Transaction not found" });
-      }
-      
-      res.json({
-        ...transaction,
-        valueEth: EtherscanService.weiToEth(transaction.value || "0"),
-        gasPriceGwei: transaction.gasPrice ? (parseInt(transaction.gasPrice) / 1e9).toFixed(2) : "0"
-      });
-    } catch (error) {
-      console.error("Error fetching transaction:", error);
-      res.status(500).json({ error: "Failed to fetch transaction details" });
-    }
-  });
-
-  app.get("/api/etherscan/blocks/latest", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const latestBlockNumber = await etherscan.getLatestBlockNumber();
-      res.json({ 
-        latestBlock: latestBlockNumber,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error fetching latest block:", error);
-      res.status(500).json({ error: "Failed to fetch latest block number" });
-    }
-  });
-
-  app.get("/api/etherscan/blocks/:number", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const blockNumber = req.params.number;
-      const blockData = await etherscan.getBlockByNumber(blockNumber);
-      
-      res.json({
-        blockNumber,
-        ...blockData,
-        timestamp: blockData.timestamp ? new Date(parseInt(blockData.timestamp) * 1000).toISOString() : null
-      });
-    } catch (error) {
-      console.error("Error fetching block:", error);
-      res.status(500).json({ error: "Failed to fetch block information" });
-    }
-  });
-
-  app.get("/api/etherscan/eth-price", requireApiKey, async (req, res) => {
-    try {
-      const { EtherscanService } = await import("./services/etherscanService");
-      const etherscan = new EtherscanService();
-      
-      const priceData = await etherscan.getEthPrice();
-      res.json({
-        timestamp: new Date().toISOString(),
-        ...priceData
-      });
-    } catch (error) {
-      console.error("Error fetching ETH price:", error);
-      res.status(500).json({ error: "Failed to fetch ETH price" });
-    }
-  });
+  // Removed Etherscan API routes since etherscan feature was deleted
 
 
 
@@ -2338,42 +2090,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (shouldFetchFromEtherscan) {
-        console.log(`Fetching fresh token info from Etherscan for ${underlyingToken}`);
+        console.log(`Etherscan integration removed - using stored token info for ${underlyingToken}`);
         
-        const { EtherscanTokenService } = await import("./services/etherscanTokenService");
-        const tokenService = new EtherscanTokenService();
-
-        // Fetch all token data in parallel
-        const [
-          fetchedTokenInfo,
-          fetchedTokenSupply,
-          fetchedTopHolders,
-          fetchedRecentTransfers,
-          fetchedAnalytics,
-          fetchedGasStats,
-          fetchedEvents
-        ] = await Promise.all([
-          tokenService.getTokenInfo(underlyingToken),
-          tokenService.getTokenSupply(underlyingToken),
-          tokenService.getTopHolders(underlyingToken, 10),
-          tokenService.getRecentTransfers(underlyingToken, 20),
-          tokenService.getTokenAnalytics(underlyingToken),
-          tokenService.getGasUsageStats(underlyingToken),
-          tokenService.getContractEvents(underlyingToken, 50)
-        ]);
-
-        tokenInfo = fetchedTokenInfo as any || storedTokenInfo;
-        tokenSupply = fetchedTokenSupply;
-        topHolders = fetchedTopHolders;
-        recentTransfers = fetchedRecentTransfers;
-        analytics = fetchedAnalytics;
-        gasStats = fetchedGasStats;
-        events = fetchedEvents;
-
-        // Get contract info
-        const { EtherscanService } = await import("./services/etherscanService");
-        const etherscan = new EtherscanService();
-        contractInfo = await etherscan.getContractInfo(underlyingToken);
+        // Use stored data only - Etherscan functionality removed
+        tokenInfo = storedTokenInfo;
+        tokenSupply = { totalSupply: storedTokenInfo?.totalSupply || "0" };
+        topHolders = [];
+        recentTransfers = [];
+        analytics = null;
+        gasStats = null;
+        events = [];
+        contractInfo = null;
 
         // Store holder history data for analytics when we have fresh data
         if (tokenInfo && tokenInfo.holdersCount && tokenInfo.holdersCount > 0) {
@@ -2686,50 +2413,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('⚠️ Alchemy API key not configured, using Etherscan (limited coverage for high-volume tokens)');
       }
       
-      // Fallback to Etherscan if Alchemy failed or unavailable
+      // Etherscan fallback removed - only Alchemy is supported for transfer data
       if (allTransfers.length === 0) {
-        console.log('Using Etherscan API...');
-        const { EtherscanService } = await import("./services/etherscanService");
-        const etherscan = new EtherscanService();
-        
-        // For high-volume tokens like stETH, we need multiple pages to get historical coverage
-        // However, Etherscan API has strict rate limits, so reduce page count and add more delays
-        const maxPages = 3; // Reduced to avoid rate limits
-        const transfersPerPage = 1000;
-      
-        for (let page = 1; page <= maxPages; page++) {
-          const pageTransfers = await etherscan.getTokenTransfers(
-          underlyingToken, 
-          page, 
-          transfersPerPage
-          );
-          
-          if (!pageTransfers || pageTransfers.length === 0) break;
-          allTransfers = allTransfers.concat(pageTransfers);
-          
-          // Stop if we get enough historical coverage (at least 7 days)
-          if (allTransfers.length > 0) {
-            const oldestTransfer = allTransfers[allTransfers.length - 1];
-            const newestTransfer = allTransfers[0];
-            const oldestTime = parseInt(oldestTransfer.timeStamp) * 1000;
-            const newestTime = parseInt(newestTransfer.timeStamp) * 1000;
-            const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-            const daysCovered = Math.round((newestTime - oldestTime) / (24 * 60 * 60 * 1000));
-            
-            console.log(`Page ${page}: Got ${pageTransfers.length} transfers. Total: ${allTransfers.length} transfers spanning ${daysCovered} days`);
-            console.log(`Time range: ${new Date(oldestTime).toISOString()} to ${new Date(newestTime).toISOString()}`);
-            
-            if (oldestTime < sevenDaysAgo) {
-              console.log(`✓ Achieved 7+ days of historical coverage with ${allTransfers.length} transfers`);
-              break;
-            }
-          }
-        
-          // Add longer delay to respect rate limits
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-        
-        dataSource = 'etherscan';
+        console.log('No transfer data available - Etherscan integration removed, only Alchemy supported');
+        return res.json({
+          error: 'Transfer data unavailable',
+          message: 'No transfer data source available. Transfer analysis requires Alchemy API configuration.',
+          tokenAddress: underlyingToken
+        });
       }
       
       const transfers = allTransfers;

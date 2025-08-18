@@ -1,12 +1,9 @@
 import { storage } from "../storage";
-import { EtherscanTokenService } from "./etherscanTokenService";
 import type { InsertHolderHistory } from "@shared/schema";
 
 export class HolderDataSyncService {
-  private etherscanService: EtherscanTokenService;
-
   constructor() {
-    this.etherscanService = new EtherscanTokenService();
+    // Etherscan functionality removed - keeping service structure for holder data sync
   }
 
   private async logError(title: string, description: string, error: string, tokenAddress?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
@@ -115,13 +112,9 @@ export class HolderDataSyncService {
         }
       }
 
-      // Fetch comprehensive token data from Etherscan
-      const [tokenInfo, tokenSupply, topHolders, analytics] = await Promise.all([
-        this.etherscanService.getTokenInfo(tokenAddress),
-        this.etherscanService.getTokenSupply(tokenAddress),
-        this.etherscanService.getTopHolders(tokenAddress, 100),
-        this.etherscanService.getTokenAnalytics(tokenAddress)
-      ]);
+      // Etherscan functionality removed - simplified holder sync
+      console.log(`Holder data sync for ${tokenAddress} skipped - Etherscan integration removed`);
+      return;
 
       if (!tokenInfo) {
         console.warn(`Could not fetch token info for ${tokenAddress}`);

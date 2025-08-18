@@ -1,5 +1,4 @@
 import { storage } from "../storage";
-import { EtherscanTokenService } from "./etherscanTokenService";
 import type { Pool, HolderHistory } from "@shared/schema";
 
 /**
@@ -7,10 +6,8 @@ import type { Pool, HolderHistory } from "@shared/schema";
  * Provides comprehensive analytics across all data sources
  */
 export class DataAnalysisService {
-  private etherscanService: EtherscanTokenService;
-
   constructor() {
-    this.etherscanService = new EtherscanTokenService();
+    // Etherscan functionality removed - keeping service structure for core analytics
   }
 
   /**
@@ -364,25 +361,8 @@ export class DataAnalysisService {
   }
 
   private async analyzeHolderDistribution(tokenAddress: string) {
-    try {
-      const topHolders = await this.etherscanService.getTopHolders(tokenAddress, 50);
-      
-      if (!topHolders || topHolders.length === 0) {
-        return { available: false, reason: 'No holder data available' };
-      }
-
-      const totalSupply = topHolders.reduce((sum, holder) => sum + parseFloat(holder.balance), 0);
-      
-      return {
-        available: true,
-        top10Share: this.calculateTopHoldersShare(topHolders.slice(0, 10), totalSupply),
-        top50Share: this.calculateTopHoldersShare(topHolders, totalSupply),
-        whaleCount: topHolders.filter(h => parseFloat(h.share) > 1).length,
-        totalHolders: topHolders.length
-      };
-    } catch (error) {
-      return { available: false, reason: 'Error fetching holder distribution' };
-    }
+    // Etherscan functionality removed - return not available
+    return { available: false, reason: 'Holder distribution analysis disabled' };
   }
 
   private calculateTopHoldersShare(holders: any[], totalSupply: number): number {
