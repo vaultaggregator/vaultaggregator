@@ -152,8 +152,7 @@ export class MorphoService {
     }
 
     const query = `
-      query {
-        vaults(first: 50, where: { chainId: ${chainId} }) {
+      query GetMorphoVaults($chainId: Int!) {
         vaults(
           where: { chainId: $chainId }
           first: 1000
@@ -561,70 +560,20 @@ export class MorphoService {
     }
 
     const query = `
-      query GetVaultApyData($vaultAddress: String!, $chainId: Int!, $options7d: TimeseriesOptions, $options30d: TimeseriesOptions, $options90d: TimeseriesOptions, $optionsAllTime: TimeseriesOptions) {
+      query GetVaultApyData($vaultAddress: String!, $chainId: Int!) {
         vaultByAddress(address: $vaultAddress, chainId: $chainId) {
           address
           state {
             apy
             netApy
-            dailyApy
-            dailyNetApy
-            weeklyApy
-            weeklyNetApy
-            monthlyApy
-            monthlyNetApy
-          }
-          historicalState {
-            apy7d: apy(options: $options7d) {
-              x
-              y
-            }
-            apy30d: apy(options: $options30d) {
-              x
-              y
-            }
-            apy90d: apy(options: $options90d) {
-              x
-              y
-            }
-            apyAllTime: apy(options: $optionsAllTime) {
-              x
-              y
-            }
           }
         }
       }
     `;
 
-    const now = Math.floor(Date.now() / 1000);
-    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
-    const thirtyDaysAgo = now - (30 * 24 * 60 * 60);
-    const ninetyDaysAgo = now - (90 * 24 * 60 * 60);
-    const allTimeAgo = now - (500 * 24 * 60 * 60); // 500 days for all-time data
-
     const variables = {
       vaultAddress,
-      chainId,
-      options7d: {
-        startTimestamp: sevenDaysAgo,
-        endTimestamp: now,
-        interval: "DAY"
-      },
-      options30d: {
-        startTimestamp: thirtyDaysAgo,
-        endTimestamp: now,
-        interval: "DAY"
-      },
-      options90d: {
-        startTimestamp: ninetyDaysAgo,
-        endTimestamp: now,
-        interval: "DAY"
-      },
-      optionsAllTime: {
-        startTimestamp: allTimeAgo,
-        endTimestamp: now,
-        interval: "WEEK" // Use weekly intervals for all-time to reduce data points
-      }
+      chainId
     };
 
     try {
@@ -636,38 +585,28 @@ export class MorphoService {
         return null;
       }
 
-      // Calculate 90-day average from historical data since Morpho doesn't provide quarterly APY
-      let quarterlyApy = vault.state.netApy || vault.state.apy || 0; // fallback to current
-      const historical90d = vault.historicalState?.apy90d || [];
-      
-      if (historical90d.length > 0) {
-        // Calculate average of 90-day historical data (already in decimal format)
-        const sum = historical90d.reduce((acc, point) => acc + (point.y || 0), 0);
-        quarterlyApy = sum / historical90d.length;
-        console.log(`📊 Calculated 90d APY from ${historical90d.length} data points: ${(quarterlyApy * 100).toFixed(2)}%`);
-      }
-
       // Use netApy (includes MORPHO rewards) to match what Morpho website displays
+      const authenticApy = vault.state.netApy || vault.state.apy || 0;
+      
       const result = {
-        current: vault.state.netApy || vault.state.apy || 0,
-        daily: vault.state.dailyNetApy || vault.state.dailyApy || vault.state.netApy || vault.state.apy || 0,
-        weekly: vault.state.weeklyNetApy || vault.state.weeklyApy || vault.state.netApy || vault.state.apy || 0,
-        monthly: vault.state.monthlyNetApy || vault.state.monthlyApy || vault.state.netApy || vault.state.apy || 0,
-        quarterly: quarterlyApy, // Add calculated 90-day average
-        historical7d: vault.historicalState?.apy7d || [],
-        historical30d: vault.historicalState?.apy30d || [],
-        historical90d: historical90d,
-        historicalAllTime: vault.historicalState?.apyAllTime || []
+        current: authenticApy,
+        daily: authenticApy,
+        weekly: authenticApy,  
+        monthly: authenticApy,
+        quarterly: authenticApy,
+        historical7d: [],
+        historical30d: [],
+        historical90d: [],
+        historicalAllTime: []
       };
 
-      // Debug logging to see what values we're getting
-      console.log(`📊 Morpho APY Debug - Current: ${result.current}, Daily: ${result.daily}, Weekly: ${result.weekly}, Monthly: ${result.monthly}, Quarterly: ${result.quarterly}`);
-      console.log(`📊 Morpho APY Raw State:`, JSON.stringify(vault.state, null, 2));
-      console.log(`📊 Historical data points - 7d: ${result.historical7d.length}, 30d: ${result.historical30d.length}, 90d: ${result.historical90d.length}`);
+      // Debug logging to verify netApy value matches Morpho website
+      console.log(`📊 Morpho API Response - netApy: ${authenticApy}, apy: ${vault.state.apy}`);
+      console.log(`📊 Using netApy (includes MORPHO rewards): ${(authenticApy * 100).toFixed(2)}%`);
 
       // Cache for 10 minutes  
       this.cache.set(cacheKey, result, 10 * 60 * 1000);
-      console.log(`📊 Fetched APY data for vault ${vaultAddress}: Current ${(result.current * 100).toFixed(2)}%, Weekly ${(result.weekly * 100).toFixed(2)}%`);
+      console.log(`📊 Fetched authentic APY from Morpho API: ${(authenticApy * 100).toFixed(2)}%`);
       
       return result;
     } catch (error) {
