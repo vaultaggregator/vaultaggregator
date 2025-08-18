@@ -58,6 +58,13 @@ The application features a modern React frontend and a Node.js/Express backend.
 
 The client is built with React 18 and TypeScript, utilizing shadcn/ui components, Tailwind CSS, TanStack Query for state management, Wouter for routing, and Vite as the build tool. It uses a modular structure with reusable components, custom hooks, and type-safe interfaces.
 
+### Interactive Data Visualization (August 18, 2025)
+- **Interactive Pool Chart Component**: Beautiful chart visualization on pool detail pages showing historical APY and TVL data
+- **Multi-timeframe Navigation**: 7D, 30D, 90D, and All-Time period selection with smooth transitions
+- **Chart Type Toggles**: Combined view, APY-only, and TVL-only display modes with gradient fills
+- **Statistical Summaries**: Real-time calculation of average and maximum values for selected periods
+- **Responsive Design**: Mobile-optimized charts with proper tooltips and legends using Recharts library
+
 ## Backend Architecture
 
 The server is built with Express.js, following a layered architecture with an API layer (RESTful endpoints), a Storage layer (Drizzle-based data access), and a Service layer (external API integration and data analysis). PostgreSQL with Drizzle ORM is used for the database.
