@@ -8,7 +8,9 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - Morpho STEAKUSDC APY: Use netApy from rawData.state (includes MORPHO rewards) - currently displays 4.27% APY matching Morpho website
 - Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
 - Operating Since/Days: Use Etherscan-based contract creation date calculation instead of DeFi Llama count - displays ~592 days matching Etherscan "1 yr 227 days ago" (user confirmed correct)
+- Holders Count: Use verified Etherscan data - displays 546 holders matching Etherscan exactly (user confirmed correct)
 - Lido stETH: Use current methodology - currently displays 2.8% APY matching Lido website
+- Single pool page data accuracy: All metrics verified as working correctly - user confirmed satisfaction (Aug 18, 2025)
 - Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
 
 **Historical APY Calculation (August 18, 2025) - IMPLEMENTED:**
