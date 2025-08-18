@@ -13,7 +13,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - Single pool page data accuracy: All metrics verified as working correctly - user confirmed satisfaction (Aug 18, 2025)
 - Homepage and pool detail consistency: Both pages now display identical 546 holders matching Etherscan (Aug 18, 2025)
 - Operating days consistency: Homepage and pool detail both show 591 days from Etherscan blockchain data (Aug 18, 2025)
-- Lido stETH operating days: Added authentic 1535 days from stETH contract deployment (Dec 2020) via Etherscan verification (Aug 18, 2025)
+- Lido stETH operating days: Updated to accurate 1703 days (4 yrs 243 days) from Etherscan verified deployment date (Aug 18, 2025)
 - Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
 
 **Historical APY Calculation (August 18, 2025) - IMPLEMENTED:**
