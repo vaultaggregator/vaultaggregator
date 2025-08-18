@@ -155,22 +155,23 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Table Header - Hidden on mobile */}
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
-          <div className="px-6 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">
-            <div className="flex items-center">
-              {/* Protocol section - matches card layout */}
+          <div className="px-3 sm:px-4 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
+              {/* Left section - Protocol info - matches card exactly */}
               <div className="flex items-center space-x-4 min-w-0 flex-1">
-                <div className="w-6"></div> {/* Space for token icon */}
-                <div className="min-w-0 flex-1">
-                  <SortHeader field="name">
-                    <span className="text-sm font-semibold text-foreground">Protocol</span>
-                  </SortHeader>
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="w-6"></div> {/* Space for token icon */}
+                  <div className="min-w-0 flex-1 flex items-center">
+                    <SortHeader field="name">
+                      <span className="text-sm font-semibold text-foreground">Protocol</span>
+                    </SortHeader>
+                  </div>
                 </div>
-                {/* Space for network name */}
-                <div className="w-24"></div>
+                <div className="w-24"></div> {/* Space for network */}
               </div>
-              
-              {/* Metrics section - matches card grid layout */}
-              <div className="grid grid-cols-8 gap-4 items-center flex-1 max-w-2xl">
+
+              {/* Metrics section - exactly matches card grid */}
+              <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
                 <div className="text-center">
                   <SortHeader field="apy">
                     <span className="text-sm font-semibold text-foreground">APY</span>

@@ -109,7 +109,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               </div>
             </div>
             
-            {/* Network info - now positioned after pool name */}
+            {/* Network info - positioned to match header spacing */}
             {showNetworkName && (
               <div className="flex items-center space-x-2 flex-shrink-0 w-24">
                 <div 
