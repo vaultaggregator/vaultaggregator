@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Merge, Trash2, Sparkles } from "lucide-react";
+import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Sparkles } from "lucide-react";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { UnderlyingTokensEditor } from "@/components/underlying-tokens-editor";
 import AdminHeader from "@/components/admin-header";
@@ -19,7 +19,7 @@ import { YieldSyncLoader } from "@/components/crypto-loader";
 import { PoolScanner, GlowingButton } from "@/components/enhanced-loading";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
-import PoolConsolidationModal from "@/components/pool-consolidation-modal";
+
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
@@ -110,9 +110,7 @@ export default function AdminDashboard() {
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState<any>(null);
-  const [selectedPoolsForConsolidation, setSelectedPoolsForConsolidation] = useState<string[]>([]);
-  const [isConsolidationModalOpen, setIsConsolidationModalOpen] = useState(false);
-  const [showConsolidatedPools, setShowConsolidatedPools] = useState(false);
+
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
@@ -167,11 +165,7 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/categories"],
   });
 
-  // Fetch consolidated pools
-  const { data: consolidatedPools = [], isLoading: consolidatedPoolsLoading } = useQuery<PoolWithRelations[]>({
-    queryKey: ["/api/admin/pools/consolidated"],
-    enabled: showConsolidatedPools,
-  });
+
 
   // No longer need data sources query since we only have DeFi Llama
   
@@ -409,134 +403,17 @@ export default function AdminDashboard() {
     }
   };
 
-  // Pool consolidation handlers
-  const handlePoolSelectionToggle = (poolId: string) => {
-    setSelectedPoolsForConsolidation(prev => 
-      prev.includes(poolId) 
-        ? prev.filter(id => id !== poolId)
-        : [...prev, poolId]
-    );
-  };
 
-  const handleOpenConsolidationModal = () => {
-    if (selectedPoolsForConsolidation.length < 2) {
-      toast({
-        title: "Error",
-        description: "Please select at least 2 pools to consolidate",
-        variant: "destructive",
-      });
-      return;
-    }
-    setIsConsolidationModalOpen(true);
-  };
 
-  const handleCloseConsolidationModal = () => {
-    setIsConsolidationModalOpen(false);
-    setSelectedPoolsForConsolidation([]);
-  };
 
-  const selectedPoolsData = pools.filter(pool => selectedPoolsForConsolidation.includes(pool.id));
 
-  // Consolidate pools mutation
-  const consolidatePoolsMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch("/api/admin/pools/consolidate", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create consolidated pool");
-      }
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Consolidated pool created successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
-      setIsConsolidationModalOpen(false);
-      setSelectedPoolsForConsolidation([]);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create consolidated pool",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Reset consolidated pools mutation
-  const resetConsolidatedPoolsMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/admin/pools/consolidated", {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to reset consolidated pools");
-      return await response.json();
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Success",
-        description: `Reset ${data.deletedCount} consolidated pools successfully`,
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reset consolidated pools",
-        variant: "destructive",
-      });
-    },
-  });
 
-  // Delete individual consolidated pool mutation
-  const deleteConsolidatedPoolMutation = useMutation({
-    mutationFn: async (poolId: string) => {
-      const response = await fetch(`/api/admin/pools/consolidated/${poolId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to delete consolidated pool");
-      return await response.json();
-    },
-    onSuccess: (data: any) => {
-      toast({
-        title: "Success",
-        description: "Consolidated pool deleted successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/consolidated"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete consolidated pool",
-        variant: "destructive",
-      });
-    },
-  });
 
-  const handleResetConsolidatedPools = () => {
-    if (confirm("Are you sure you want to delete all consolidated pools? This action cannot be undone.")) {
-      resetConsolidatedPoolsMutation.mutate();
-    }
-  };
 
-  const handleDeleteConsolidatedPool = (poolId: string, tokenPair: string) => {
-    if (confirm(`Are you sure you want to delete the consolidated pool "${tokenPair}"? This action cannot be undone.`)) {
-      deleteConsolidatedPoolMutation.mutate(poolId);
-    }
-  };
+
+
+
 
   // Sorting handlers
   const handleSort = (field: SortField) => {
@@ -740,39 +617,7 @@ export default function AdminDashboard() {
                 Smart Tokens
               </Button>
 
-              {selectedPoolsForConsolidation.length > 0 && (
-                <Button 
-                  onClick={handleOpenConsolidationModal}
-                  variant="default" 
-                  size="sm"
-                  data-testid="button-consolidate-pools"
-                >
-                  <Merge className="h-4 w-4 mr-2" />
-                  Consolidate ({selectedPoolsForConsolidation.length})
-                </Button>
-              )}
 
-              <Button 
-                onClick={() => setShowConsolidatedPools(!showConsolidatedPools)}
-                variant="outline" 
-                size="sm"
-                data-testid="button-view-consolidated"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                {showConsolidatedPools ? "Hide Consolidated" : "View Consolidated"}
-              </Button>
-
-              <Button 
-                onClick={handleResetConsolidatedPools}
-                disabled={resetConsolidatedPoolsMutation.isPending}
-                variant="destructive" 
-                size="sm"
-                data-testid="button-reset-consolidated"
-                className={resetConsolidatedPoolsMutation.isPending ? "animate-pulse" : ""}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {resetConsolidatedPoolsMutation.isPending ? "Resetting..." : "Reset All"}
-              </Button>
 
               <Button 
                 onClick={handleLogout} 
@@ -983,101 +828,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Consolidated Pools Section */}
-        {showConsolidatedPools && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Merge className="h-5 w-5" />
-                Consolidated Pools Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {consolidatedPoolsLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-                </div>
-              ) : consolidatedPools.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  No consolidated pools found
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {consolidatedPools.map((pool) => (
-                    <div key={pool.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-4">
-                            <h3 className="font-semibold text-lg">{pool.tokenPair}</h3>
-                            <Badge variant="outline" className="text-xs">
-                              {pool.platform.displayName}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {pool.chain.displayName}
-                            </Badge>
-                          </div>
-                          <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">APY:</span> {pool.apy}%
-                            </div>
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">TVL:</span> ${parseFloat(pool.tvl || "0").toLocaleString()}
-                            </div>
-                            <div>
-                              <span className="text-gray-600 dark:text-gray-400">Risk:</span> {pool.riskLevel}
-                            </div>
-                          </div>
-                          {(pool.rawData as any)?.underlyingTokens && Array.isArray((pool.rawData as any).underlyingTokens) && (pool.rawData as any).underlyingTokens.length > 0 && (
-                            <div className="mt-2">
-                              <span className="text-gray-600 dark:text-gray-400 text-sm">Underlying Tokens:</span>
-                              <div className="mt-1">
-                                <TokenDisplay 
-                                  addresses={(pool.rawData as any).underlyingTokens}
-                                  maxDisplay={2}
-                                  showNormalizeButton={true}
-                                  size="sm"
-                                />
-                              </div>
-                            </div>
-                          )}
-                          {(pool as any).notes && (pool as any).notes.length > 0 && (
-                            <div className="mt-2">
-                              <span className="text-gray-600 dark:text-gray-400 text-sm">Notes:</span>
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                {(pool as any).notes.map((note: any) => (
-                                  <div key={note.id} className="mb-1">
-                                    {note.content}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => navigate(`/pool/${pool.id}`)}
-                            variant="outline"
-                            size="sm"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteConsolidatedPool(pool.id, pool.tokenPair)}
-                            disabled={deleteConsolidatedPoolMutation.isPending}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+
 
         {/* Pools Table */}
         <Card>
@@ -1188,15 +939,7 @@ export default function AdminDashboard() {
                         className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                         data-testid={`row-pool-${pool.id}`}
                       >
-                        <td className="py-3 px-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={selectedPoolsForConsolidation.includes(pool.id)}
-                            onChange={() => handlePoolSelectionToggle(pool.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            data-testid={`checkbox-select-${pool.id}`}
-                          />
-                        </td>
+
                         <td className="py-3 px-2">
                           <div className="flex items-center gap-2">
                             <EditableField
@@ -1382,23 +1125,7 @@ export default function AdminDashboard() {
         poolData={selectedPoolForModal}
       />
 
-      {/* Pool Consolidation Modal */}
-      <PoolConsolidationModal
-        isOpen={isConsolidationModalOpen}
-        onClose={handleCloseConsolidationModal}
-        pools={selectedPoolsData}
-      />
 
-      {/* Floating Action Loaders */}
-      <FloatingActionLoading 
-        message="Consolidating pools..."
-        className={consolidatePoolsMutation.isPending ? "block" : "hidden"}
-      />
-      
-      <FloatingActionLoading 
-        message="Resetting consolidated pools..."
-        className={resetConsolidatedPoolsMutation.isPending ? "block" : "hidden"}
-      />
     </div>
   );
 }
