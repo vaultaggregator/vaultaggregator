@@ -165,14 +165,14 @@ export default function Home() {
                     <span className="text-sm font-semibold text-foreground">Pool Name</span>
                   </div>
                 </div>
-                {/* Protocol header - exact spacing to match data */}
-                <div className="flex items-center space-x-2 flex-shrink-0">
+                {/* Protocol header - center aligned */}
+                <div className="flex items-center justify-center space-x-2 flex-shrink-0">
                   <SortHeader field="name">
                     <span className="text-sm font-semibold text-foreground">Protocol</span>
                   </SortHeader>
                 </div>
-                {/* Network header - exact spacing to match data */}
-                <div className="flex items-center space-x-2 flex-shrink-0 w-24">
+                {/* Network header - center aligned */}
+                <div className="flex items-center justify-center space-x-2 flex-shrink-0 w-24">
                   <span className="text-sm font-semibold text-foreground">Network</span>
                 </div>
               </div>
