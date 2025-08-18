@@ -13,7 +13,6 @@ import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register admin routes
-  const { registerAdminCacheRoutes } = await import("./routes/admin-cache");
   const { registerAdminSystemRoutes } = await import("./routes/admin-system");
   const healingRoutes = (await import("./routes/healingRoutes")).default;
   const searchRoutes = (await import("./routes/searchRoutes")).default;
@@ -22,7 +21,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup performance optimizations
   setupPerformanceMiddleware(app);
   
-  registerAdminCacheRoutes(app);
   registerAdminSystemRoutes(app);
   app.use(healingRoutes);
   app.use(searchRoutes);

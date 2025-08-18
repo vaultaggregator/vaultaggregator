@@ -24,7 +24,6 @@ import PoolDetail from "@/pages/pool-detail";
 
 import AdminLogoManagement from "@/pages/admin-logo-management";
 import AdminErrors from "@/pages/admin-errors";
-import AdminCache from "@/pages/admin-cache";
 import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
 
@@ -54,7 +53,6 @@ function Router() {
       <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/cache" component={AdminCache} />
       <Route path="/admin/system" component={AdminSystem} />
       <Route path="/admin/panel" component={AdminPanel} />
       <Route path="/admin-networks" component={AdminNetworks} />
