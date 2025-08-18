@@ -445,104 +445,125 @@ export default function PoolDetail() {
         </Card>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4 lg:gap-6 mb-6">
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
+                  <span>Current APY</span>
+                </div>
                 <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-600" />
-                  <span className="hidden sm:inline">Current APY</span>
-                  <span className="sm:hidden">Current</span>
+                  <AlertCircle className="w-4 h-4 text-green-500 hover:text-green-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600" data-testid="text-apy-current">
+              <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
                 {morphoApyData?.apy?.current || formatApy(pool.apy)}
               </p>
+              <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">24h Average</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-emerald-600" />
+                  <span>7-Day APY</span>
+                </div>
                 <MetricTooltip metric="7d-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" />
-                  <span className="hidden sm:inline">7-Day APY</span>
-                  <span className="sm:hidden">7d APY</span>
+                  <AlertCircle className="w-4 h-4 text-emerald-500 hover:text-emerald-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-500" data-testid="text-apy-7d">
+              <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1" data-testid="text-apy-7d">
                 {morphoApyData?.apy?.weekly || 'N/A'}
               </p>
+              <p className="text-xs text-emerald-600/70 dark:text-emerald-300/70 font-medium">Weekly Average</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
+                  <span>30-Day APY</span>
+                </div>
                 <MetricTooltip metric="30d-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-500" />
-                  <span className="hidden sm:inline">30-Day APY</span>
-                  <span className="sm:hidden">30d APY</span>
+                  <AlertCircle className="w-4 h-4 text-blue-500 hover:text-blue-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-500" data-testid="text-apy-30d">
+              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1" data-testid="text-apy-30d">
                 {morphoApyData?.apy?.monthly || 'N/A'}
               </p>
+              <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Monthly Average</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Activity className="w-5 h-5 mr-2 text-purple-600" />
+                  <span>90-Day APY</span>
+                </div>
                 <MetricTooltip metric="90d-apy" variant="icon" side="bottom">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-purple-500" />
-                  <span className="hidden sm:inline">90-Day APY</span>
-                  <span className="sm:hidden">90d APY</span>
+                  <AlertCircle className="w-4 h-4 text-purple-500 hover:text-purple-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-500" data-testid="text-apy-90d">
+              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1" data-testid="text-apy-90d">
                 {morphoApyData?.apy?.quarterly || 'N/A'}
               </p>
+              <p className="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium">Quarterly Average</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+        </div>
+
+        {/* Secondary Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-cyan-700 dark:text-cyan-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <DollarSign className="w-5 h-5 mr-2 text-cyan-600" />
+                  <span>Total Value Locked</span>
+                </div>
                 <MetricTooltip metric="tvl" variant="icon" side="bottom">
-                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-600" />
-                  <span className="hidden sm:inline">Total Value Locked</span>
-                  <span className="sm:hidden">TVL</span>
+                  <AlertCircle className="w-4 h-4 text-cyan-500 hover:text-cyan-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600" data-testid="text-tvl">
+              <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1" data-testid="text-tvl">
                 {morphoMetrics?.metrics?.tvlFormatted || formatTvl(pool.tvl)}
               </p>
+              <p className="text-xs text-cyan-600/70 dark:text-cyan-300/70 font-medium">Assets Under Management</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-amber-200 dark:border-amber-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-amber-700 dark:text-amber-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Calendar className="w-5 h-5 mr-2 text-amber-600" />
+                  <span>Operating Since</span>
+                </div>
                 <MetricTooltip metric="operating-days" variant="icon" side="bottom">
-                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-gray-600 dark:text-gray-200" />
-                  <span className="hidden sm:inline">Operating Since</span>
-                  <span className="sm:hidden">Since</span>
+                  <AlertCircle className="w-4 h-4 text-amber-500 hover:text-amber-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-700 dark:text-gray-200" data-testid="text-operating-days">
+              <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1" data-testid="text-operating-days">
                 {morphoMetrics?.metrics?.operatingDays ?? (() => {
                   if (pool.rawData?.createdAt) {
                     const createdDate = new Date(pool.rawData.createdAt);
@@ -553,67 +574,81 @@ export default function PoolDetail() {
                   return 'N/A';
                 })()}
               </p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-300 mt-1">days</p>
+              <p className="text-xs text-amber-600/70 dark:text-amber-300/70 font-medium">Days Active</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-purple-600" />
-                <span className="hidden sm:inline">Vault Holders</span>
-                <span className="sm:hidden">Holders</span>
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 border-violet-200 dark:border-violet-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-violet-700 dark:text-violet-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-violet-600" />
+                  <span>Vault Holders</span>
+                </div>
+                <MetricTooltip metric="holders" variant="icon" side="bottom">
+                  <AlertCircle className="w-4 h-4 text-violet-500 hover:text-violet-600 cursor-help" />
+                </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600" data-testid="text-holders-count">
+              <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
                 {morphoMetrics?.metrics?.holders ?? (tokenInfo?.holdersCount || 'N/A')}
               </p>
+              <p className="text-xs text-violet-600/70 dark:text-violet-300/70 font-medium">Active Participants</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <Layers className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-orange-600" />
-                <span className="hidden sm:inline">Protocol</span>
-                <span className="sm:hidden">Protocol</span>
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-orange-700 dark:text-orange-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Layers className="w-5 h-5 mr-2 text-orange-600" />
+                  <span>Protocol</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-600" data-testid="text-protocol">
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1" data-testid="text-protocol">
                 {pool.platform.displayName}
               </p>
+              <p className="text-xs text-orange-600/70 dark:text-orange-300/70 font-medium">DeFi Platform</p>
             </CardContent>
           </Card>
+        </div>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-blue-500" />
-                <span className="hidden sm:inline">Network</span>
-                <span className="sm:hidden">Network</span>
+        {/* Platform Info Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/20 border-sky-200 dark:border-sky-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-sky-700 dark:text-sky-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Globe className="w-5 h-5 mr-2 text-sky-600" />
+                  <span>Network</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-500" data-testid="text-network">
+              <p className="text-2xl font-bold text-sky-600 dark:text-sky-400 mb-1" data-testid="text-network">
                 {pool.chain.displayName}
               </p>
+              <p className="text-xs text-sky-600/70 dark:text-sky-300/70 font-medium">Blockchain Network</p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-2 sm:pb-3">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-200 flex items-center">
-                <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-red-500" />
-                <span className="hidden sm:inline">Risk Level</span>
-                <span className="sm:hidden">Risk</span>
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold text-rose-700 dark:text-rose-300 flex items-center justify-between">
+                <div className="flex items-center">
+                  <Shield className="w-5 h-5 mr-2 text-rose-600" />
+                  <span>Risk Assessment</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-500" data-testid="text-risk-level">
-                {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'}
+              <p className="text-2xl font-bold text-rose-600 dark:text-rose-400 mb-1" data-testid="text-risk-level">
+                {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
               </p>
+              <p className="text-xs text-rose-600/70 dark:text-rose-300/70 font-medium">Security Rating</p>
             </CardContent>
           </Card>
         </div>
