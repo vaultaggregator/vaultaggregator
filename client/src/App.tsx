@@ -9,8 +9,7 @@ import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import Analytics from "@/pages/analytics";
 import Chains from "@/pages/chains";
-import API from "@/pages/api";
-import Documentation from "@/pages/documentation";
+
 import Contact from "@/pages/contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Terms from "@/pages/terms";
@@ -50,8 +49,7 @@ function Router() {
       <Route path="/portfolio" component={Portfolio} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/chains" component={Chains} />
-      <Route path="/api" component={API} />
-      <Route path="/documentation" component={Documentation} />
+
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />

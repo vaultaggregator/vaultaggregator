@@ -58,16 +58,7 @@ export default function Footer() {
                   Analytics
                 </Link>
               </li>
-              <li>
-                <Link href="/api" className="hover:text-white transition-colors duration-200" data-testid="link-api">
-                  API
-                </Link>
-              </li>
-              <li>
-                <Link href="/documentation" className="hover:text-white transition-colors duration-200" data-testid="link-docs">
-                  Documentation
-                </Link>
-              </li>
+
             </ul>
           </div>
           
