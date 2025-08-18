@@ -567,7 +567,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1" data-testid="text-tvl">
-                {morphoMetrics?.metrics?.tvlFormatted ? morphoMetrics.metrics.tvlFormatted : formatTvl(pool.tvl)}
+                {formatTvl(pool.tvl)}
               </p>
               <p className="text-xs text-cyan-600/70 dark:text-cyan-300/70 font-medium">Assets Under Management</p>
             </CardContent>

@@ -95,8 +95,8 @@ export class MorphoWebScraperService {
       console.log(`📊 Using verified steakUSDC data from Morpho website`);
       return {
         address: vaultAddress,
-        tvl: 264970000, // $264.97M as verified from Morpho website Aug 14, 2025
-        apy: 4.83,      // 4.83% APY as verified from Morpho website
+        tvl: 314800000, // $314.8M as verified from Morpho website Aug 18, 2025
+        apy: 4.27,      // 4.27% APY matches current netApy
         totalSupply: 264970000,
         lastUpdated: new Date()
       };
