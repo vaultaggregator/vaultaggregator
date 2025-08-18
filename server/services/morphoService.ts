@@ -566,6 +566,12 @@ export class MorphoService {
           state {
             apy
             netApy
+            dailyApy
+            dailyNetApy
+            weeklyApy
+            weeklyNetApy
+            monthlyApy
+            monthlyNetApy
           }
         }
       }
@@ -586,23 +592,21 @@ export class MorphoService {
       }
 
       // Use netApy (includes MORPHO rewards) to match what Morpho website displays
-      const authenticApy = vault.state.netApy || vault.state.apy || 0;
-      
       const result = {
-        current: authenticApy,
-        daily: authenticApy,
-        weekly: authenticApy,  
-        monthly: authenticApy,
-        quarterly: authenticApy,
+        current: vault.state.netApy || vault.state.apy || 0,
+        daily: vault.state.dailyNetApy || vault.state.netApy || vault.state.apy || 0,
+        weekly: vault.state.weeklyNetApy || vault.state.netApy || vault.state.apy || 0,
+        monthly: vault.state.monthlyNetApy || vault.state.netApy || vault.state.apy || 0,
+        quarterly: vault.state.netApy || vault.state.apy || 0, // Quarterly not available, use current
         historical7d: [],
         historical30d: [],
         historical90d: [],
         historicalAllTime: []
       };
 
-      // Debug logging to verify netApy value matches Morpho website
-      console.log(`📊 Morpho API Response - netApy: ${authenticApy}, apy: ${vault.state.apy}`);
-      console.log(`📊 Using netApy (includes MORPHO rewards): ${(authenticApy * 100).toFixed(2)}%`);
+      // Debug logging to verify values and show what's available
+      console.log(`📊 Morpho API Raw State:`, JSON.stringify(vault.state, null, 2));
+      console.log(`📊 Final APY Values - Current: ${(result.current * 100).toFixed(2)}%, Weekly: ${(result.weekly * 100).toFixed(2)}%, Monthly: ${(result.monthly * 100).toFixed(2)}%`);
 
       // Cache for 10 minutes  
       this.cache.set(cacheKey, result, 10 * 60 * 1000);
