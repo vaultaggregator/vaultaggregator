@@ -2,6 +2,12 @@
 
 Vault Aggregator is a streamlined DeFi yield aggregation platform that helps users discover, track, and compare yield farming opportunities across various blockchain networks and protocols. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project aims to provide accurate, reliable DeFi data to empower user investment decisions.
 
+**Major Platform Simplification (August 18, 2025):**
+- **Database cleanup completed**: Removed 8,597 hidden pools, keeping only 2 visible pools (STETH and STEAKUSDC)
+- **Focused scope**: Platform now exclusively tracks the core yield opportunities users actually see
+- **Removed features**: "Scan Pools", "View Consolidated", and "Smart Tokens" functionality completely eliminated
+- **Clean architecture**: All associated data properly cleaned up with no orphaned records
+
 # User Preferences
 
 **Critical Data Methodology (August 18, 2025) - DO NOT CHANGE:**
