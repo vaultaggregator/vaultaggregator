@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { FilterOptions, Chain, Platform } from "@/types";
 
+interface PlatformWithVisibility extends Platform {
+  hasVisiblePools?: boolean;
+}
+
 interface FilterControlsProps {
   filters: FilterOptions;
   onFilterChange: (filters: FilterOptions) => void;
@@ -20,10 +24,13 @@ export default function FilterControls({ filters, onFilterChange }: FilterContro
     queryKey: ['/api/chains'],
   });
 
-  // Fetch platforms
-  const { data: platforms = [] } = useQuery<Platform[]>({
+  // Fetch platforms - only show visible ones
+  const { data: allPlatforms = [] } = useQuery<PlatformWithVisibility[]>({
     queryKey: ['/api/platforms'],
   });
+  
+  // Filter to only show platforms with visible pools
+  const platforms = allPlatforms.filter(platform => platform.hasVisiblePools);
 
   // Update last updated time every minute
   useEffect(() => {
