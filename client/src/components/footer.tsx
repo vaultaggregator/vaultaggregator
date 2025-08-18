@@ -84,12 +84,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="font-semibold mb-4">More</h4>
-            <ul className="space-y-2 text-gray-400">
-              {/* Chains link removed */}
-            </ul>
-          </div>
+
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
