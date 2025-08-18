@@ -550,13 +550,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vaultAddress,
         chainId,
         apy: {
-          current: (apyData.current * 100).toFixed(4) + '%',
-          daily: (apyData.daily * 100).toFixed(4) + '%',
-          weekly: (apyData.weekly * 100).toFixed(4) + '%', // 7d APY
-          monthly: (apyData.monthly * 100).toFixed(4) + '%', // 30d APY
-          quarterly: apyData.historical90d && apyData.historical90d.length > 0 
-            ? (apyData.historical90d[apyData.historical90d.length - 1].y * 100).toFixed(4) + '%'
-            : 'N/A' // 90d APY
+          current: apyData.current, // Return decimal values for frontend to format
+          daily: apyData.daily,
+          weekly: apyData.weekly, // 7d APY
+          monthly: apyData.monthly, // 30d APY
+          quarterly: apyData.quarterly || null // 90d APY
         },
         historicalData: {
           last7Days: apyData.historical7d,
