@@ -171,15 +171,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 </div>
               </div>
               
-              {/* Desktop only: Since metric */}
-              <div className="text-center sm:w-16 hidden sm:block">
-                {showHeaders && (
-                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">Since</p>
-                )}
-                <p className="text-xs font-semibold text-foreground" data-testid={`text-operating-since-${opportunity.id}`}>
-                  {opportunity.rawData?.count ? `${opportunity.rawData.count} days` : 'N/A'}
-                </p>
-              </div>
+
               
               {/* Mobile: Second row with Platform, Holders and Risk */}
               <div className="grid grid-cols-3 gap-2 sm:contents">

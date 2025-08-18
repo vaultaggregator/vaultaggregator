@@ -173,9 +173,6 @@ export default function Home() {
               <div className="w-16 text-center">
                 <SortHeader field="tvl"><span className="text-sm font-medium">TVL</span></SortHeader>
               </div>
-              <div className="w-16 text-center">
-                <SortHeader field="operatingSince"><span className="text-sm font-medium"></span></SortHeader>
-              </div>
               <div className="w-20 text-center">
                 <SortHeader field="holders"><span className="text-sm font-medium">Holders</span></SortHeader>
               </div>
