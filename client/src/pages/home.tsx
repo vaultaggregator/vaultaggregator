@@ -160,14 +160,17 @@ export default function Home() {
               {/* Left section - Protocol info - matches card exactly */}
               <div className="flex items-center space-x-4 min-w-0 flex-1">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
-                  <div className="w-6"></div> {/* Space for token icon */}
+                  <div className="w-6 h-6"></div> {/* Space for token icon */}
                   <div className="min-w-0 flex-1 flex items-center">
                     <SortHeader field="name">
                       <span className="text-sm font-semibold text-foreground">Protocol</span>
                     </SortHeader>
                   </div>
                 </div>
-                <div className="w-24"></div> {/* Space for network */}
+                {/* Space for network - matches card layout */}
+                <div className="w-24 flex items-center justify-start">
+                  <span className="text-sm font-semibold text-foreground opacity-50">Network</span>
+                </div>
               </div>
 
               {/* Metrics section - exactly matches card grid */}
