@@ -17,6 +17,7 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
+import { InteractivePoolChart } from "@/components/interactive-pool-chart";
 import { formatTimeAgo } from "@/lib/utils";
 
 
@@ -615,7 +616,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
-                {morphoMetrics?.metrics?.holders ?? (tokenInfo && 'holdersCount' in tokenInfo ? tokenInfo.holdersCount : 'N/A')}
+                {morphoMetrics?.metrics?.holders ?? (tokenInfo && typeof tokenInfo === 'object' && tokenInfo !== null && 'holdersCount' in tokenInfo ? (tokenInfo as any).holdersCount : 'N/A')}
               </p>
               <p className="text-xs text-violet-600/70 dark:text-violet-300/70 font-medium">Active Participants</p>
             </CardContent>
@@ -686,6 +687,16 @@ export default function PoolDetail() {
 
 
         
+
+        {/* Interactive Historical Chart */}
+        <div className="mb-8">
+          <InteractivePoolChart 
+            poolId={pool.id}
+            poolName={pool.tokenPair}
+            currentApy={parseFloat(pool.apy)}
+            currentTvl={parseFloat(pool.tvl)}
+          />
+        </div>
 
         {/* Related Pools from Website */}
         <RelatedPools currentPoolId={pool.id} platform={pool.platform.displayName} chainId={pool.chain.id} />
