@@ -19,6 +19,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 
 **Historical APY Calculation (August 18, 2025) - IMPLEMENTED:**
 - Current APY: 4.46% (authentic from Morpho netApy - updated Aug 18, 2025)
+- APY calculation methodology: User confirmed correct approach - do not change data source or calculation method unless specifically requested (Aug 18, 2025)
 - 7-Day Average: 4.37% (current × 0.98) - slightly lower historical average
 - 30-Day Average: 6.02% (current × 1.35) - higher historical average
 - 90-Day Average: 5.53% (current × 1.24) - moderate historical average  
