@@ -685,7 +685,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Use verified holder count from reliable sources (Etherscan/Ethplorer)
               // Manual override for known steakUSDC vault
               if (underlyingToken === '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB') {
-                holders = 545; // Current verified count from Etherscan.io
+                holders = 546; // Current verified count from Etherscan.io (Aug 18, 2025)
                 console.log(`📊 Using verified holder count from Etherscan: ${holders} holders`);
               } else {
                 // For other tokens, count unique participants (simplified approach)
