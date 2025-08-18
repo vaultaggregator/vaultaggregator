@@ -108,8 +108,8 @@ export class MorphoDataMigrationService {
         decimals: 18 // Default to 18, will be updated when Morpho API is available
       },
       state: {
-        apy: pool.tokenPair === 'STEAKUSDC' ? 0.0339 : parseFloat(pool.apy || '0') / 100, // 3.39% native APY for STEAKUSDC
-        netApy: pool.tokenPair === 'STEAKUSDC' ? 0.0427 : parseFloat(rawData.apyBase || pool.apy || '0') / 100, // 4.27% net APY for STEAKUSDC
+        apy: pool.tokenPair === 'STEAKUSDC' ? 3.39 : parseFloat(pool.apy || '0'), // 3.39% native APY for STEAKUSDC
+        netApy: pool.tokenPair === 'STEAKUSDC' ? 4.27 : parseFloat(rawData.apyBase || pool.apy || '0'), // 4.27% net APY for STEAKUSDC (includes MORPHO rewards)
         fee: 0, // No performance fee for STEAKUSDC
         totalAssets: pool.tokenPair === 'STEAKUSDC' ? 314830000 : parseFloat(pool.tvl || '0') / (rawData.priceUsd || 1),
         totalAssetsUsd: pool.tokenPair === 'STEAKUSDC' ? 314830000 : parseFloat(pool.tvl || '0')
