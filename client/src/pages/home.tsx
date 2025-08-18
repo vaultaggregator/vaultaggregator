@@ -155,29 +155,45 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Table Header - Hidden on mobile */}
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
-          <div className="px-4 sm:px-6 py-2 flex items-center bg-muted rounded-t-xl">
-            <div className="flex items-center space-x-4 min-w-0 flex-1">
-              <div className="w-12"></div> {/* Space for logo */}
-              <div className="min-w-0 flex-1">
-                <SortHeader field="name"><span className="text-sm font-medium">Name</span></SortHeader>
+          <div className="px-6 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">
+            <div className="grid grid-cols-12 gap-4 items-center">
+              {/* Token/Name - Takes up more space */}
+              <div className="col-span-4 flex items-center space-x-3">
+                <div className="w-8"></div> {/* Space for token icon */}
+                <SortHeader field="name">
+                  <span className="text-sm font-semibold text-foreground">Protocol</span>
+                </SortHeader>
               </div>
-            </div>
-            
-            <div className="flex items-center justify-between flex-1 max-w-4xl mx-2 sm:mx-8">
-              <div className="w-14 text-center">
-                <SortHeader field="apy"><span className="text-sm font-medium">24h APY</span></SortHeader>
+              
+              {/* Metrics - Evenly distributed */}
+              <div className="col-span-1.5 text-center">
+                <SortHeader field="apy">
+                  <span className="text-sm font-semibold text-foreground">APY</span>
+                </SortHeader>
               </div>
-              <div className="w-14 text-center">
-                <SortHeader field="operatingDays"><span className="text-sm font-medium">Days</span></SortHeader>
+              
+              <div className="col-span-1.5 text-center">
+                <SortHeader field="operatingDays">
+                  <span className="text-sm font-semibold text-foreground">Days</span>
+                </SortHeader>
               </div>
-              <div className="w-16 text-center">
-                <SortHeader field="tvl"><span className="text-sm font-medium">TVL</span></SortHeader>
+              
+              <div className="col-span-2 text-center">
+                <SortHeader field="tvl">
+                  <span className="text-sm font-semibold text-foreground">TVL</span>
+                </SortHeader>
               </div>
-              <div className="w-20 text-center">
-                <SortHeader field="holders"><span className="text-sm font-medium">Holders</span></SortHeader>
+              
+              <div className="col-span-2 text-center">
+                <SortHeader field="holders">
+                  <span className="text-sm font-semibold text-foreground">Holders</span>
+                </SortHeader>
               </div>
-              <div className="w-16 text-center">
-                <SortHeader field="risk"><span className="text-sm font-medium">Risk</span></SortHeader>
+              
+              <div className="col-span-1 text-center">
+                <SortHeader field="risk">
+                  <span className="text-sm font-semibold text-foreground">Risk</span>
+                </SortHeader>
               </div>
             </div>
           </div>
