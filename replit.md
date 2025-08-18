@@ -5,6 +5,8 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 **Major Platform Simplification (August 18, 2025):**
 - **Database cleanup completed**: Removed 8,597 hidden pools, keeping only 2 visible pools (STETH and STEAKUSDC)
 - **Platform cleanup completed**: Removed 322 unused platforms, keeping only 2 active platforms (Lido and Morpho)
+- **Network cleanup completed**: Removed 18 unused chains, keeping only Ethereum (used by both pools)
+- **Ultra-simplified architecture**: 2 pools, 2 platforms, 1 chain - maximum efficiency and focus
 - **Focused scope**: Platform now exclusively tracks the core yield opportunities users actually see
 - **Removed features**: "Scan Pools", "View Consolidated", and "Smart Tokens" functionality completely eliminated
 - **Clean architecture**: All associated data properly cleaned up with no orphaned records
