@@ -14,7 +14,7 @@ import { Plus, ChevronUp, ChevronDown, Search, TrendingUp, Shield, Users } from 
 import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { EnhancedSearch } from "@/components/enhanced-search";
-import { usePortfolio } from "@/hooks/usePortfolio";
+
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -27,7 +27,7 @@ export default function Home() {
   const [showSearch, setShowSearch] = useState(false);
   const limit = 12;
   
-  const { portfolio, metrics, isInPortfolio } = usePortfolio();
+
 
   const { data: pools = [], isLoading, error, refetch } = useQuery<YieldOpportunity[]>({
     queryKey: ['/api/pools', filters, page],

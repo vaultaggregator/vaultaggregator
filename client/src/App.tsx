@@ -7,8 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
-import Analytics from "@/pages/analytics";
-import Chains from "@/pages/chains";
+
 
 import Contact from "@/pages/contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
@@ -33,12 +32,12 @@ import AdminErrors from "@/pages/admin-errors";
 import AdminCache from "@/pages/admin-cache";
 import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
-import AdvancedSearch from "@/pages/advanced-search";
+
 import YieldForecasting from "@/pages/yield-forecasting";
 import RiskCalculator from "@/pages/risk-calculator";
 import EtherscanDashboard from "@/pages/etherscan-dashboard";
 import HealingDashboard from "@/pages/healing-dashboard";
-import Portfolio from "@/pages/portfolio";
+
 
 
 function Router() {
@@ -46,9 +45,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
-      <Route path="/portfolio" component={Portfolio} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/chains" component={Chains} />
+
 
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
@@ -63,7 +60,7 @@ function Router() {
 
       <Route path="/watchlists" component={Watchlists} />
       <Route path="/api-marketplace" component={ApiMarketplace} />
-      <Route path="/advanced-search" component={AdvancedSearch} />
+
       <Route path="/yield-forecasting" component={YieldForecasting} />
       <Route path="/risk-calculator" component={RiskCalculator} />
       <Route path="/etherscan" component={EtherscanDashboard} />
