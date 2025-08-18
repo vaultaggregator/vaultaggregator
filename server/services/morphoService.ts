@@ -560,26 +560,54 @@ export class MorphoService {
     }
 
     const query = `
-      query GetVaultApyData($vaultAddress: String!, $chainId: Int!) {
+      query GetVaultApyData($vaultAddress: String!, $chainId: Int!, $options7d: TimeseriesOptions!, $options30d: TimeseriesOptions!, $options90d: TimeseriesOptions!) {
         vaultByAddress(address: $vaultAddress, chainId: $chainId) {
           address
           state {
             apy
             netApy
-            dailyApy
-            dailyNetApy
-            weeklyApy
-            weeklyNetApy
-            monthlyApy
-            monthlyNetApy
+          }
+          historicalState {
+            netApy7d: netApy(options: $options7d) {
+              x
+              y
+            }
+            netApy30d: netApy(options: $options30d) {
+              x
+              y
+            }
+            netApy90d: netApy(options: $options90d) {
+              x
+              y
+            }
           }
         }
       }
     `;
 
+    const now = Math.floor(Date.now() / 1000);
+    const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+    const thirtyDaysAgo = now - (30 * 24 * 60 * 60);
+    const ninetyDaysAgo = now - (90 * 24 * 60 * 60);
+
     const variables = {
       vaultAddress,
-      chainId
+      chainId,
+      options7d: {
+        startTimestamp: sevenDaysAgo,
+        endTimestamp: now,
+        interval: "DAY"
+      },
+      options30d: {
+        startTimestamp: thirtyDaysAgo,
+        endTimestamp: now,
+        interval: "DAY"
+      },
+      options90d: {
+        startTimestamp: ninetyDaysAgo,
+        endTimestamp: now,
+        interval: "DAY"
+      }
     };
 
     try {
@@ -591,26 +619,46 @@ export class MorphoService {
         return null;
       }
 
-      // Use netApy (includes MORPHO rewards) to match what Morpho website displays
+      // Calculate averages from historical netApy data (includes MORPHO rewards)
+      const current = vault.state.netApy || vault.state.apy || 0;
+      
+      // Calculate 7-day average
+      const netApy7dData = vault.historicalState?.netApy7d || [];
+      const weekly = netApy7dData.length > 0 
+        ? netApy7dData.reduce((sum: number, point: any) => sum + (point.y || 0), 0) / netApy7dData.length
+        : current;
+      
+      // Calculate 30-day average
+      const netApy30dData = vault.historicalState?.netApy30d || [];
+      const monthly = netApy30dData.length > 0 
+        ? netApy30dData.reduce((sum: number, point: any) => sum + (point.y || 0), 0) / netApy30dData.length
+        : current;
+      
+      // Calculate 90-day average
+      const netApy90dData = vault.historicalState?.netApy90d || [];
+      const quarterly = netApy90dData.length > 0 
+        ? netApy90dData.reduce((sum: number, point: any) => sum + (point.y || 0), 0) / netApy90dData.length
+        : current;
+
       const result = {
-        current: vault.state.netApy || vault.state.apy || 0,
-        daily: vault.state.dailyNetApy || vault.state.netApy || vault.state.apy || 0,
-        weekly: vault.state.weeklyNetApy || vault.state.netApy || vault.state.apy || 0,
-        monthly: vault.state.monthlyNetApy || vault.state.netApy || vault.state.apy || 0,
-        quarterly: vault.state.netApy || vault.state.apy || 0, // Quarterly not available, use current
-        historical7d: [],
-        historical30d: [],
-        historical90d: [],
+        current,
+        daily: current, // Use current for daily
+        weekly,
+        monthly,
+        quarterly,
+        historical7d: netApy7dData,
+        historical30d: netApy30dData,
+        historical90d: netApy90dData,
         historicalAllTime: []
       };
 
-      // Debug logging to verify values and show what's available
-      console.log(`📊 Morpho API Raw State:`, JSON.stringify(vault.state, null, 2));
-      console.log(`📊 Final APY Values - Current: ${(result.current * 100).toFixed(2)}%, Weekly: ${(result.weekly * 100).toFixed(2)}%, Monthly: ${(result.monthly * 100).toFixed(2)}%`);
+      // Debug logging to verify calculated averages
+      console.log(`📊 Morpho Historical Data Points - 7d: ${netApy7dData.length}, 30d: ${netApy30dData.length}, 90d: ${netApy90dData.length}`);
+      console.log(`📊 Calculated APY Averages - Current: ${(current * 100).toFixed(2)}%, 7d: ${(weekly * 100).toFixed(2)}%, 30d: ${(monthly * 100).toFixed(2)}%, 90d: ${(quarterly * 100).toFixed(2)}%`);
 
       // Cache for 10 minutes  
       this.cache.set(cacheKey, result, 10 * 60 * 1000);
-      console.log(`📊 Fetched authentic APY from Morpho API: ${(authenticApy * 100).toFixed(2)}%`);
+      console.log(`📊 Fetched authentic APY data from Morpho API with calculated averages`);
       
       return result;
     } catch (error) {
