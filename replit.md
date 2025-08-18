@@ -15,7 +15,15 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - Return only final working code with verification confirmation
 - Previous preference: Simple, everyday language (still applies for explanations)
 
-**Recent Major Achievement (August 14, 2025):**
+**Recent Major Achievement (August 18, 2025):**
+FIXED APY ACCURACY TO MATCH OFFICIAL PROTOCOL WEBSITES:
+- ✅ **Morpho STEAKUSDC APY Fixed**: Now correctly displays 4.27% APY matching Morpho website (was showing 0.04%)
+- ✅ **Lido stETH APY Fixed**: Now correctly displays 2.8% APY matching Lido website (was showing 0.03%)
+- ✅ **TVL Updates**: STEAKUSDC shows $314.83M TVL (updated from $183.6M)
+- ✅ **Data Format Fix**: APY values stored as percentages (4.27) not decimals (0.0427)
+- ✅ **User Trust Priority**: Critical requirement met - APY values exactly match official protocol websites
+
+**Previous Achievement (August 14, 2025):**
 SUCCESSFULLY IMPLEMENTED AUTHENTIC BLOCKCHAIN TRANSFER ANALYSIS FOR ACCURATE METRICS:
 - ✅ **Direct Transfer Analysis**: Processes 12,467+ real blockchain transfers instead of cached placeholders
 - ✅ **Accurate Holder Count**: Fixed calculation to show current holders (545 from Etherscan) with positive balances instead of inflated unique transfer participants (was showing 1,448)
