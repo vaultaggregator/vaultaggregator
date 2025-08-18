@@ -636,17 +636,34 @@ export class MorphoService {
         return null;
       }
 
+      // Calculate 90-day average from historical data since Morpho doesn't provide quarterly APY
+      let quarterlyApy = vault.state.netApy || vault.state.apy || 0; // fallback to current
+      const historical90d = vault.historicalState?.apy90d || [];
+      
+      if (historical90d.length > 0) {
+        // Calculate average of 90-day historical data (already in decimal format)
+        const sum = historical90d.reduce((acc, point) => acc + (point.y || 0), 0);
+        quarterlyApy = sum / historical90d.length;
+        console.log(`📊 Calculated 90d APY from ${historical90d.length} data points: ${(quarterlyApy * 100).toFixed(2)}%`);
+      }
+
       // Use netApy (includes MORPHO rewards) to match what Morpho website displays
       const result = {
         current: vault.state.netApy || vault.state.apy || 0,
         daily: vault.state.dailyNetApy || vault.state.dailyApy || vault.state.netApy || vault.state.apy || 0,
         weekly: vault.state.weeklyNetApy || vault.state.weeklyApy || vault.state.netApy || vault.state.apy || 0,
         monthly: vault.state.monthlyNetApy || vault.state.monthlyApy || vault.state.netApy || vault.state.apy || 0,
+        quarterly: quarterlyApy, // Add calculated 90-day average
         historical7d: vault.historicalState?.apy7d || [],
         historical30d: vault.historicalState?.apy30d || [],
-        historical90d: vault.historicalState?.apy90d || [],
+        historical90d: historical90d,
         historicalAllTime: vault.historicalState?.apyAllTime || []
       };
+
+      // Debug logging to see what values we're getting
+      console.log(`📊 Morpho APY Debug - Current: ${result.current}, Daily: ${result.daily}, Weekly: ${result.weekly}, Monthly: ${result.monthly}, Quarterly: ${result.quarterly}`);
+      console.log(`📊 Morpho APY Raw State:`, JSON.stringify(vault.state, null, 2));
+      console.log(`📊 Historical data points - 7d: ${result.historical7d.length}, 30d: ${result.historical30d.length}, 90d: ${result.historical90d.length}`);
 
       // Cache for 10 minutes  
       this.cache.set(cacheKey, result, 10 * 60 * 1000);

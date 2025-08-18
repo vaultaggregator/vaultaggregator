@@ -460,7 +460,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
-                {morphoApyData?.apy?.current || formatApy(pool.apy)}
+                {morphoApyData?.apy?.current ? `${(morphoApyData.apy.current * 100).toFixed(2)}%` : formatApy(pool.apy)}
               </p>
               <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">24h Average</p>
             </CardContent>
@@ -480,7 +480,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1" data-testid="text-apy-7d">
-                {morphoApyData?.apy?.weekly || 'N/A'}
+                {morphoApyData?.apy?.weekly ? `${(morphoApyData.apy.weekly * 100).toFixed(2)}%` : 'N/A'}
               </p>
               <p className="text-xs text-emerald-600/70 dark:text-emerald-300/70 font-medium">Weekly Average</p>
             </CardContent>
@@ -500,7 +500,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1" data-testid="text-apy-30d">
-                {morphoApyData?.apy?.monthly || 'N/A'}
+                {morphoApyData?.apy?.monthly ? `${(morphoApyData.apy.monthly * 100).toFixed(2)}%` : 'N/A'}
               </p>
               <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Monthly Average</p>
             </CardContent>
@@ -520,7 +520,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1" data-testid="text-apy-90d">
-                {morphoApyData?.apy?.quarterly || 'N/A'}
+                {morphoApyData?.apy?.quarterly ? `${(morphoApyData.apy.quarterly * 100).toFixed(2)}%` : 'N/A'}
               </p>
               <p className="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium">Quarterly Average</p>
             </CardContent>
