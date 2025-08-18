@@ -122,7 +122,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="w-4 h-4 bg-muted rounded-full"></div>
                 )}
               </div>
-              <span className="text-sm font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-muted-foreground text-center">
                 {opportunity.platform.displayName || opportunity.platform.name}
               </span>
             </div>
