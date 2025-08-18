@@ -87,18 +87,14 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4">More</h4>
             <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link href="/chains" className="hover:text-white transition-colors duration-200" data-testid="link-chains">
-                  Chains
-                </Link>
-              </li>
+              {/* Chains link removed */}
             </ul>
           </div>
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
           <p data-testid="text-copyright">
-            &copy; 2024 Vault Aggregator. All rights reserved. Data provided by DeFi Llama.
+            &copy; 2025 Vault Aggregator. All rights reserved. Data provided by DeFi Llama.
           </p>
         </div>
       </div>
