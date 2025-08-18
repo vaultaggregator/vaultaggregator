@@ -157,7 +157,7 @@ export default function Home() {
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
           <div className="px-3 sm:px-4 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
-              {/* Left section - Protocol info - aligned with data */}
+              {/* Left section - perfectly aligned with data rows */}
               <div className="flex items-center space-x-4 min-w-0 flex-1">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
                   <div className="w-6 h-6"></div> {/* Space for token icon */}
@@ -165,15 +165,15 @@ export default function Home() {
                     <span className="text-sm font-semibold text-foreground">Pool Name</span>
                   </div>
                 </div>
-                {/* Protocol header - positioned to align with protocol data */}
-                <div className="flex items-center justify-start flex-shrink-0">
+                {/* Protocol header - exact spacing to match data */}
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <SortHeader field="name">
                     <span className="text-sm font-semibold text-foreground">Protocol</span>
                   </SortHeader>
                 </div>
-                {/* Network header - matches card layout */}
-                <div className="w-24 flex items-center justify-start">
-                  <span className="text-sm font-semibold text-foreground opacity-50">Network</span>
+                {/* Network header - exact spacing to match data */}
+                <div className="flex items-center space-x-2 flex-shrink-0 w-24">
+                  <span className="text-sm font-semibold text-foreground">Network</span>
                 </div>
               </div>
 
