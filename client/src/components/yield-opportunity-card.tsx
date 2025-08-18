@@ -111,7 +111,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Network info - now positioned after pool name */}
             {showNetworkName && (
-              <div className="flex items-center space-x-2 flex-shrink-0">
+              <div className="flex items-center space-x-2 flex-shrink-0 w-24">
                 <div 
                   className="flex items-center justify-center flex-shrink-0"
                   data-testid={`badge-chain-${opportunity.id}`}
@@ -129,7 +129,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           </div>
 
           {/* Desktop grid layout - matches header structure */}
-          <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1">
+          <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
             <div className="text-center">
               <p className="text-sm font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>

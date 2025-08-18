@@ -156,44 +156,50 @@ export default function Home() {
         {/* Table Header - Hidden on mobile */}
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
           <div className="px-6 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">
-            <div className="grid grid-cols-12 gap-4 items-center">
-              {/* Token/Name - Takes up more space */}
-              <div className="col-span-4 flex items-center space-x-3">
-                <div className="w-8"></div> {/* Space for token icon */}
-                <SortHeader field="name">
-                  <span className="text-sm font-semibold text-foreground">Protocol</span>
-                </SortHeader>
+            <div className="flex items-center">
+              {/* Protocol section - matches card layout */}
+              <div className="flex items-center space-x-4 min-w-0 flex-1">
+                <div className="w-6"></div> {/* Space for token icon */}
+                <div className="min-w-0 flex-1">
+                  <SortHeader field="name">
+                    <span className="text-sm font-semibold text-foreground">Protocol</span>
+                  </SortHeader>
+                </div>
+                {/* Space for network name */}
+                <div className="w-24"></div>
               </div>
               
-              {/* Metrics - Evenly distributed */}
-              <div className="col-span-1.5 text-center">
-                <SortHeader field="apy">
-                  <span className="text-sm font-semibold text-foreground">APY</span>
-                </SortHeader>
-              </div>
-              
-              <div className="col-span-1.5 text-center">
-                <SortHeader field="operatingDays">
-                  <span className="text-sm font-semibold text-foreground">Days</span>
-                </SortHeader>
-              </div>
-              
-              <div className="col-span-2 text-center">
-                <SortHeader field="tvl">
-                  <span className="text-sm font-semibold text-foreground">TVL</span>
-                </SortHeader>
-              </div>
-              
-              <div className="col-span-2 text-center">
-                <SortHeader field="holders">
-                  <span className="text-sm font-semibold text-foreground">Holders</span>
-                </SortHeader>
-              </div>
-              
-              <div className="col-span-1 text-center">
-                <SortHeader field="risk">
-                  <span className="text-sm font-semibold text-foreground">Risk</span>
-                </SortHeader>
+              {/* Metrics section - matches card grid layout */}
+              <div className="grid grid-cols-8 gap-4 items-center flex-1 max-w-2xl">
+                <div className="text-center">
+                  <SortHeader field="apy">
+                    <span className="text-sm font-semibold text-foreground">APY</span>
+                  </SortHeader>
+                </div>
+                
+                <div className="text-center">
+                  <SortHeader field="operatingDays">
+                    <span className="text-sm font-semibold text-foreground">Days</span>
+                  </SortHeader>
+                </div>
+                
+                <div className="col-span-2 text-center">
+                  <SortHeader field="tvl">
+                    <span className="text-sm font-semibold text-foreground">TVL</span>
+                  </SortHeader>
+                </div>
+                
+                <div className="col-span-2 text-center">
+                  <SortHeader field="holders">
+                    <span className="text-sm font-semibold text-foreground">Holders</span>
+                  </SortHeader>
+                </div>
+                
+                <div className="text-center">
+                  <SortHeader field="risk">
+                    <span className="text-sm font-semibold text-foreground">Risk</span>
+                  </SortHeader>
+                </div>
               </div>
             </div>
           </div>
