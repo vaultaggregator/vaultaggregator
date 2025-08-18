@@ -197,8 +197,8 @@ export default function PoolDetail() {
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: ['/api/pools', poolId],
     enabled: !!poolId,
-    staleTime: 5 * 60 * 1000, // 5 minutes - refresh sync timestamp more frequently
-    refetchInterval: 10 * 60 * 1000, // Refetch every 10 minutes to match sync schedule
+    staleTime: 0, // No caching - always fresh
+    cacheTime: 0, // Remove from cache immediately
   });
 
   // Fetch Morpho APY data for historical metrics (7d, 30d, 90d) - FAST with timeout

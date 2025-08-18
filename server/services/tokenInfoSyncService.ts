@@ -94,17 +94,9 @@ export class TokenInfoSyncService {
 
   private async fetchAndStoreTokenInfo(poolId: string, tokenAddress: string): Promise<void> {
     try {
-      // Check if token info already exists and is recent (updated within 24 hours)
+      // CACHING DISABLED: Always fetch fresh token info instead of using cached data
       const existingTokenInfo = await storage.getTokenInfoByAddress(tokenAddress);
-      if (existingTokenInfo && existingTokenInfo.lastUpdated) {
-        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        if (existingTokenInfo.lastUpdated > dayAgo) {
-          console.log(`Token info for ${tokenAddress} is up to date`);
-          // Update pool to link to existing token info
-          await this.linkPoolToTokenInfo(poolId, existingTokenInfo.id);
-          return;
-        }
-      }
+      console.log(`Token info caching disabled - fetching fresh data for ${tokenAddress}`);
 
       // Fetch token information from Etherscan
       const tokenInfo = await this.fetchTokenInfoFromEtherscan(tokenAddress);

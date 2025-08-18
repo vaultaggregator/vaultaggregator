@@ -43,66 +43,20 @@ export class IntelligentCacheService {
   }
 
   /**
-   * Store data in cache with intelligent categorization
+   * Store data in cache - DISABLED: No longer caching data
    */
   set<T>(key: string, data: T, source: string, customTtl?: number): void {
-    const now = Date.now();
-    const ttl = customTtl || this.DEFAULT_TTL;
-    const size = this.estimateSize(data);
-
-    // Remove old entry if exists
-    if (this.cache.has(key)) {
-      this.cache.delete(key);
-    }
-
-    // Check cache size limit
-    if (this.cache.size >= this.MAX_CACHE_SIZE) {
-      this.evictOldest();
-    }
-
-    const entry: CacheEntry<T> = {
-      data,
-      timestamp: now,
-      ttl,
-      key,
-      source,
-      size,
-      hits: 0,
-      lastAccessed: now
-    };
-
-    this.cache.set(key, entry);
-    this.stats.sets++;
-
-    console.log(`Cached: ${key} (${source}) - Size: ${this.formatBytes(size)} - TTL: ${Math.round(ttl/1000/60)}min`);
+    // Caching disabled - do nothing
+    console.log(`Caching disabled: ${key} (${source}) - Not cached`);
   }
 
   /**
-   * Retrieve data from cache
+   * Retrieve data from cache - DISABLED: Always return null to disable caching
    */
   get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
-    const now = Date.now();
-
-    if (!entry) {
-      this.stats.misses++;
-      return null;
-    }
-
-    // Check if expired
-    if (now - entry.timestamp > entry.ttl) {
-      this.cache.delete(key);
-      this.stats.misses++;
-      this.stats.deletes++;
-      return null;
-    }
-
-    // Update access stats
-    entry.hits++;
-    entry.lastAccessed = now;
-    this.stats.hits++;
-
-    return entry.data as T;
+    // Caching disabled - always return null to force fresh data
+    this.stats.misses++;
+    return null;
   }
 
   /**

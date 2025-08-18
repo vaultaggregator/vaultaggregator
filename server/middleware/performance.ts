@@ -27,18 +27,10 @@ export const responseTimeMiddleware = (req: Request, res: Response, next: NextFu
 
 // Cache control middleware for static assets
 export const cacheControlMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // API responses - short cache for real-time data
-  if (req.path.startsWith('/api/pools') || req.path.startsWith('/api/morpho')) {
-    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
-  }
-  // Static data - longer cache
-  else if (req.path.startsWith('/api/chains') || req.path.startsWith('/api/platforms')) {
-    res.set('Cache-Control', 'public, max-age=3600, stale-while-revalidate=7200');
-  }
-  // Public stats - moderate cache
-  else if (req.path.startsWith('/api/stats')) {
-    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-  }
+  // CACHING DISABLED: Force no-cache for all API responses
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   
   next();
 };

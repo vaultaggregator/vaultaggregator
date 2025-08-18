@@ -1802,49 +1802,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const storedTokenInfo = await storage.getTokenInfoByAddress(underlyingToken);
       let tokenInfo = storedTokenInfo;
       
-      // Always try to serve cached data immediately if available
+      // CACHING DISABLED: Always fetch fresh data instead of using cached token info
       if (storedTokenInfo) {
-        console.log(`Using cached token info for ${underlyingToken}`);
-        
-        // Check if we also have cached holder data
-        const cachedHolderHistory = await storage.getLatestHolderHistory(underlyingToken);
-        const cachedHolderAnalytics = await storage.getHolderAnalytics(underlyingToken);
-        
-        // If we have recent cached data (less than 1 hour old), return it immediately
-        if (cachedHolderHistory && cachedHolderAnalytics) {
-          const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
-          if (cachedHolderHistory.timestamp && cachedHolderHistory.timestamp > hourAgo) {
-            console.log(`Returning cached data for fast response: ${underlyingToken}`);
-            
-            return res.json({
-              tokenAddress: underlyingToken,
-              tokenInfo: {
-                name: storedTokenInfo.name,
-                symbol: storedTokenInfo.symbol,
-                decimals: storedTokenInfo.decimals,
-                totalSupply: storedTokenInfo.totalSupply,
-              },
-              supplyData: {
-                totalSupply: storedTokenInfo.totalSupply,
-                circulatingSupply: storedTokenInfo.totalSupply,
-              },
-              holders: {
-                count: cachedHolderHistory.holdersCount,
-                cached: true
-              },
-              transfers: {
-                analytics: cachedHolderAnalytics,
-                recent: []
-              },
-              contractInfo: {
-                isVerified: false
-              },
-              technical: {
-                gasUsage: null
-              }
-            });
-          }
-        }
+        console.log(`Token info caching disabled - will fetch fresh data for ${underlyingToken}`);
       }
 
       let tokenSupply: any;

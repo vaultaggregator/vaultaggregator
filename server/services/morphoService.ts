@@ -5,22 +5,12 @@ class SimpleCache {
   private cache = new Map<string, { data: any; expiry: number }>();
 
   set(key: string, data: any, ttl: number = 5 * 60 * 1000): void {
-    this.cache.set(key, {
-      data,
-      expiry: Date.now() + ttl
-    });
+    // CACHING DISABLED: Do nothing
   }
 
   get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
-    if (!entry) return null;
-    
-    if (Date.now() > entry.expiry) {
-      this.cache.delete(key);
-      return null;
-    }
-    
-    return entry.data as T;
+    // CACHING DISABLED: Always return null to force fresh data
+    return null;
   }
 
   clear(): void {
