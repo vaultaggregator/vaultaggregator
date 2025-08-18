@@ -4,10 +4,11 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 
 # User Preferences
 
-**Critical APY Data Methodology (August 18, 2025) - DO NOT CHANGE:**
-- Morpho STEAKUSDC: Use netApy from rawData.state (includes MORPHO rewards) - currently displays 4.27% APY matching Morpho website
+**Critical Data Methodology (August 18, 2025) - DO NOT CHANGE:**
+- Morpho STEAKUSDC APY: Use netApy from rawData.state (includes MORPHO rewards) - currently displays 4.27% APY matching Morpho website
+- Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
 - Lido stETH: Use current methodology - currently displays 2.8% APY matching Lido website
-- APY values can change naturally over time, but preserve the current calculation method that ensures accuracy with official protocol websites
+- Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
 
 **Historical APY Calculation (August 18, 2025) - IMPLEMENTED:**
 - Current APY: 4.27% (authentic from Morpho netApy)
