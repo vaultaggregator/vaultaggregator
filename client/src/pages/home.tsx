@@ -157,46 +157,14 @@ export default function Home() {
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
           <div className="px-3 sm:px-4 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
-              {/* Left section - Protocol info - shows actual platforms */}
+              {/* Left section - Protocol info - clean header */}
               <div className="flex items-center space-x-4 min-w-0 flex-1">
                 <div className="flex items-center space-x-3 min-w-0 flex-1">
                   <div className="w-6 h-6"></div> {/* Space for token icon */}
-                  <div className="min-w-0 flex-1 flex items-center space-x-4">
+                  <div className="min-w-0 flex-1 flex items-center">
                     <SortHeader field="name">
                       <span className="text-sm font-semibold text-foreground">Protocol</span>
                     </SortHeader>
-                    {/* Show actual platform info if pools exist */}
-                    {pools.length > 0 && (
-                      <div className="flex items-center space-x-3">
-                        {/* Get unique platforms from current pools */}
-                        {Array.from(new Set(pools.map(pool => pool.platform.name))).slice(0, 3).map((platformName, index) => {
-                          const platform = pools.find(pool => pool.platform.name === platformName)?.platform;
-                          if (!platform) return null;
-                          
-                          return (
-                            <div key={platformName} className="flex items-center space-x-1 opacity-70">
-                              <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
-                                {platform.logoUrl ? (
-                                  <img 
-                                    src={platform.logoUrl} 
-                                    alt={platform.displayName}
-                                    className="w-full h-full object-cover rounded-full"
-                                  />
-                                ) : (
-                                  <div className="w-4 h-4 bg-muted rounded-full"></div>
-                                )}
-                              </div>
-                              <span className="text-xs text-muted-foreground font-medium">
-                                {platform.displayName || platform.name}
-                              </span>
-                            </div>
-                          );
-                        })}
-                        {Array.from(new Set(pools.map(pool => pool.platform.name))).length > 3 && (
-                          <span className="text-xs text-muted-foreground">+{Array.from(new Set(pools.map(pool => pool.platform.name))).length - 3}</span>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
                 {/* Space for network - matches card layout */}

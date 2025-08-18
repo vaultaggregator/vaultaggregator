@@ -103,9 +103,27 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               </div>
               
               <div className="min-w-0 flex-1 flex items-center">
-                <h3 className="font-bold text-lg text-foreground truncate m-0 leading-6" data-testid={`text-token-pair-${opportunity.id}`}>
-                  {opportunity.tokenPair}
-                </h3>
+                <div className="flex flex-col">
+                  <h3 className="font-bold text-lg text-foreground truncate m-0 leading-6" data-testid={`text-token-pair-${opportunity.id}`}>
+                    {opportunity.tokenPair}
+                  </h3>
+                  <div className="flex items-center space-x-1 mt-0.5">
+                    <div className="w-3 h-3 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {opportunity.platform.logoUrl ? (
+                        <img 
+                          src={opportunity.platform.logoUrl} 
+                          alt={opportunity.platform.displayName}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="w-3 h-3 bg-muted rounded-full"></div>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground font-medium">
+                      {opportunity.platform.displayName || opportunity.platform.name}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             
