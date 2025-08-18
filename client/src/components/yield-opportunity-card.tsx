@@ -109,8 +109,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
               </div>
             </div>
             
-            {/* Protocol info - perfectly center aligned */}
-            <div className="flex flex-col items-center justify-center space-y-1 flex-shrink-0 text-center">
+            {/* Protocol info - center aligned */}
+            <div className="flex items-center justify-center space-x-2 flex-shrink-0">
               <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
                   <img 
@@ -122,7 +122,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="w-4 h-4 bg-muted rounded-full"></div>
                 )}
               </div>
-              <span className="text-xs font-medium text-muted-foreground text-center whitespace-nowrap">
+              <span className="text-sm font-medium text-muted-foreground text-center">
                 {opportunity.platform.displayName || opportunity.platform.name}
               </span>
             </div>
