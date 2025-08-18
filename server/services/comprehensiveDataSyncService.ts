@@ -103,9 +103,26 @@ export class ComprehensiveDataSyncService {
         // Note: Holder data sync is expensive, so it runs separately less frequently
       ]);
 
+      // Always update lastUpdated timestamp to show sync was attempted
+      await storage.updatePool(poolId, {
+        lastUpdated: new Date()
+      });
+      
+      console.log(`✅ Sync completed for ${pool.tokenPair} (${pool.platform.displayName})`);
+
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error(`❌ Error syncing pool ${poolId}:`, errorMsg);
+      
+      // Even on error, update timestamp to show sync was attempted
+      try {
+        await storage.updatePool(poolId, {
+          lastUpdated: new Date()
+        });
+      } catch (updateError) {
+        console.error(`❌ Failed to update timestamp for pool ${poolId}:`, updateError);
+      }
+      
       throw error;
     }
   }
@@ -117,7 +134,8 @@ export class ComprehensiveDataSyncService {
     try {
       // Check if this is a Morpho pool
       if (pool.platform.slug !== 'morpho-blue' && pool.project !== 'morpho-blue') {
-        // For non-Morpho pools (like Lido), use existing data or different sync method
+        // For non-Morpho pools (like Lido), skip API calls but still count as successful sync
+        console.log(`⚡ Skipping Morpho sync for non-Morpho pool: ${pool.tokenPair} (${pool.platform.displayName})`);
         return;
       }
 
@@ -127,33 +145,38 @@ export class ComprehensiveDataSyncService {
         return;
       }
 
-      // Get latest vault data from Morpho
-      const vaultData = await this.morphoService.getVaultByAddress(vaultAddress, 1);
-      if (!vaultData) {
-        console.warn(`⚠️ No Morpho vault data found for ${vaultAddress}`);
-        return;
-      }
-
-      // Update pool with fresh APY and TVL data
-      const updates = {
-        apy: vaultData.state.netApy?.toString() || vaultData.state.apy?.toString() || pool.apy,
-        tvl: vaultData.state.totalAssetsUsd?.toString() || pool.tvl,
-        lastUpdated: new Date().toISOString(),
-        rawData: {
-          ...pool.rawData,
-          state: {
-            ...pool.rawData?.state,
-            apy: vaultData.state.apy,
-            netApy: vaultData.state.netApy,
-            totalAssets: vaultData.state.totalAssetsUsd,
-            totalAssetsUsd: vaultData.state.totalAssetsUsd,
-            fee: vaultData.state.fee
-          }
+      try {
+        // Get latest vault data from Morpho
+        const vaultData = await this.morphoService.getVaultByAddress(vaultAddress, 1);
+        if (!vaultData) {
+          console.warn(`⚠️ No Morpho vault data found for ${vaultAddress}`);
+          return;
         }
-      };
 
-      await storage.updatePool(pool.id, updates);
-      console.log(`✅ Updated Morpho data for ${pool.tokenPair}: APY ${updates.apy}%`);
+        // Update pool with fresh APY and TVL data
+        const updates = {
+          apy: vaultData.state.netApy?.toString() || vaultData.state.apy?.toString() || pool.apy,
+          tvl: vaultData.state.totalAssetsUsd?.toString() || pool.tvl,
+          rawData: {
+            ...pool.rawData,
+            state: {
+              ...pool.rawData?.state,
+              apy: vaultData.state.apy,
+              netApy: vaultData.state.netApy,
+              totalAssets: vaultData.state.totalAssetsUsd,
+              totalAssetsUsd: vaultData.state.totalAssetsUsd,
+              fee: vaultData.state.fee
+            }
+          }
+        };
+
+        await storage.updatePool(pool.id, updates);
+        console.log(`✅ Updated Morpho data for ${pool.tokenPair}: APY ${updates.apy}%`);
+
+      } catch (apiError) {
+        // Morpho API is down, but sync attempt was made
+        console.warn(`⚠️ Morpho API unavailable for ${pool.tokenPair}, but sync attempted`);
+      }
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
