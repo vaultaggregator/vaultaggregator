@@ -1,4 +1,5 @@
 import { HolderDataSyncService } from "./holderDataSyncService";
+import { ComprehensiveDataSyncService } from "./comprehensiveDataSyncService";
 import { storage } from "../storage";
 
 async function logError(title: string, description: string, error: string, service: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
@@ -24,22 +25,42 @@ async function logError(title: string, description: string, error: string, servi
   }
 }
 
+let comprehensiveDataInterval: NodeJS.Timeout | null = null;
 let holderDataInterval: NodeJS.Timeout | null = null;
 let cleanupInterval: NodeJS.Timeout | null = null;
 
 export function startScheduler(): void {
-  console.log("Starting data sync scheduler for holder data...");
+  console.log("Starting comprehensive data sync scheduler...");
 
-  // Sync holder data every 6 hours
-  holderDataInterval = setInterval(async () => {
+  // Comprehensive data sync every 10 minutes (APY, TVL, token info)
+  const comprehensiveDataService = new ComprehensiveDataSyncService();
+  comprehensiveDataInterval = setInterval(async () => {
     try {
-      console.log("Running scheduled holder data sync...");
-      const holderSyncService = new HolderDataSyncService();
-      await holderSyncService.syncAllHolderData();
-      console.log("Scheduled holder data sync completed");
+      console.log("🔄 Running scheduled comprehensive data sync...");
+      await comprehensiveDataService.syncAllPoolData();
+      console.log("✅ Scheduled comprehensive data sync completed");
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error("Error in scheduled holder data sync:", errorMsg);
+      console.error("❌ Error in scheduled comprehensive data sync:", errorMsg);
+      await logError(
+        'Scheduled Comprehensive Data Sync Failed',
+        'Scheduled comprehensive data synchronization failed. APY, TVL, and other pool metrics will not be updated.',
+        errorMsg,
+        'ComprehensiveDataSync',
+        'high'
+      );
+    }
+  }, 10 * 60 * 1000); // 10 minutes
+
+  // Sync holder data every 30 minutes (less frequent as it's more expensive)
+  holderDataInterval = setInterval(async () => {
+    try {
+      console.log("👥 Running scheduled holder data sync...");
+      await comprehensiveDataService.syncHolderDataLightweight();
+      console.log("✅ Scheduled holder data sync completed");
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("❌ Error in scheduled holder data sync:", errorMsg);
       await logError(
         'Scheduled Holder Data Sync Failed',
         'Scheduled holder data synchronization failed. Holder analytics and growth statistics will not be updated.',
@@ -48,7 +69,7 @@ export function startScheduler(): void {
         'medium'
       );
     }
-  }, 6 * 60 * 60 * 1000); // 6 hours
+  }, 30 * 60 * 1000); // 30 minutes
 
   // Clean expired outlooks and old data every hour
   cleanupInterval = setInterval(async () => {
@@ -76,17 +97,27 @@ export function startScheduler(): void {
     }
   }, 60 * 60 * 1000); // 1 hour
 
-  console.log("Scheduler started - Holder data: 6h, Cleanup: 1h");
+  console.log("🚀 Scheduler started - Comprehensive data: 10min, Holder data: 30min, Cleanup: 1h");
 
-  // Initial holder data sync after 5 minutes
+  // Initial comprehensive data sync after 2 minutes
   setTimeout(async () => {
     try {
-      console.log("Running initial holder data sync...");
-      const holderSyncService = new HolderDataSyncService();
-      await holderSyncService.syncAllHolderData();
-      console.log("Initial holder data sync completed");
+      console.log("🔄 Running initial comprehensive data sync...");
+      await comprehensiveDataService.syncAllPoolData();
+      console.log("✅ Initial comprehensive data sync completed");
     } catch (error) {
-      console.error("Error in initial holder data sync:", error);
+      console.error("❌ Error in initial comprehensive data sync:", error);
+    }
+  }, 2 * 60 * 1000); // 2 minutes
+
+  // Initial holder data sync after 5 minutes  
+  setTimeout(async () => {
+    try {
+      console.log("👥 Running initial holder data sync...");
+      await comprehensiveDataService.syncHolderDataLightweight();
+      console.log("✅ Initial holder data sync completed");
+    } catch (error) {
+      console.error("❌ Error in initial holder data sync:", error);
     }
   }, 5 * 60 * 1000); // 5 minutes
 }
@@ -94,7 +125,12 @@ export function startScheduler(): void {
 
 
 export function stopScheduler(): void {
-  console.log("Stopping scheduler...");
+  console.log("⏹️ Stopping scheduler...");
+  
+  if (comprehensiveDataInterval) {
+    clearInterval(comprehensiveDataInterval);
+    comprehensiveDataInterval = null;
+  }
   
   if (holderDataInterval) {
     clearInterval(holderDataInterval);
@@ -106,7 +142,7 @@ export function stopScheduler(): void {
     cleanupInterval = null;
   }
   
-  console.log("Scheduler stopped");
+  console.log("✅ Scheduler stopped");
 }
 
 // Start scheduler automatically when module is imported
