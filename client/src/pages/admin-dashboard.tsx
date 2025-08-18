@@ -16,7 +16,7 @@ import { UnderlyingTokensEditor } from "@/components/underlying-tokens-editor";
 import AdminHeader from "@/components/admin-header";
 import { PoolDataLoading, SyncAnimation, FloatingActionLoading } from "@/components/loading-animations";
 import { YieldSyncLoader } from "@/components/crypto-loader";
-import { PoolScanner, GlowingButton } from "@/components/enhanced-loading";
+
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import PoolDataModal from "@/components/pool-data-modal";
 
@@ -108,8 +108,7 @@ export default function AdminDashboard() {
   const [pageSize, setPageSize] = useState(50);
   const [selectedPoolForModal, setSelectedPoolForModal] = useState<any>(null);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResults, setScanResults] = useState<any>(null);
+
 
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
@@ -496,39 +495,7 @@ export default function AdminDashboard() {
     setSelectedPoolForModal(null);
   };
 
-  // Manual scan mutation
-  const scanMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/admin/scan-pools", { 
-        method: "POST", 
-        credentials: "include" 
-      });
-      if (!response.ok) throw new Error("Failed to scan pools");
-      return await response.json();
-    },
-    onSuccess: (data: any) => {
-      setIsScanning(false);
-      setScanResults(data);
-      toast({
-        title: "Scan Complete",
-        description: `Found ${data.newPools} new pools, ${data.missingPools} missing pools, ${data.duplicatesRemoved} duplicates removed`,
-      });
-    },
-    onError: (error: any) => {
-      setIsScanning(false);
-      toast({
-        title: "Scan Failed",
-        description: error.message || "Failed to scan for pools",
-        variant: "destructive",
-      });
-    },
-  });
 
-  const handleScanPools = () => {
-    setIsScanning(true);
-    setScanResults(null);
-    scanMutation.mutate();
-  };
 
   // Redirect if not authenticated
   if (!userLoading && !user) {
@@ -591,15 +558,7 @@ export default function AdminDashboard() {
               >
                 API Keys
               </Button>
-              <GlowingButton 
-                onClick={handleScanPools}
-                disabled={isScanning}
-                variant="primary"
-                isActive={isScanning}
-                className="h-8 px-4 text-sm"
-              >
-                {isScanning ? "Scanning..." : "Scan Pools"}
-              </GlowingButton>
+
 
               <Button 
                 onClick={() => {
@@ -701,14 +660,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Enhanced Scan Animation */}
-        <PoolScanner 
-          isActive={isScanning}
-          poolsFound={scanResults?.newPools || 0}
-          totalScanned={scanResults?.totalScanned || 0}
-          currentProtocol="DeFi Llama API"
-          className="mb-6"
-        />
+
 
         {/* Filters */}
         <Card className="mb-6">
