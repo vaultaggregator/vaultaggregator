@@ -23,7 +23,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showAdmin, setShowAdmin] = useState(false);
   const [page, setPage] = useState(0);
-  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'operatingDays' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'apy' | 'operatingDays' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>('tvl');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showSearch, setShowSearch] = useState(false);
   const limit = 12;
