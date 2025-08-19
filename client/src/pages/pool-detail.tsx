@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { TokenDisplay } from "@/components/TokenDisplay";
+import { RiskBadge } from "@/components/risk-badge";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
@@ -397,13 +398,14 @@ export default function PoolDetail() {
                       {pool.chain.displayName}
                     </Badge>
                     <MetricTooltip metric="risk-level" variant="icon" side="bottom">
-                      <Badge 
-                        className={`text-xs sm:text-sm px-2 sm:px-3 py-1 ${getRiskColor(pool.riskLevel)}`}
-                        data-testid="badge-risk"
-                      >
-                        <Shield className="w-3 h-3 mr-1" />
-                        {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Shield className="w-3 h-3" />
+                        <RiskBadge 
+                          riskLevel={pool.riskLevel || 'medium'}
+                          size="md"
+                          data-testid="badge-risk"
+                        />
+                      </div>
                     </MetricTooltip>
                   </div>
                   {/* Last Synced Info */}
@@ -599,7 +601,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1" data-testid="text-operating-days">
-                {pool.operatingDays || 'N/A'}
+                {pool.rawData?.count || 'N/A'}
               </p>
               <p className="text-xs text-amber-600/70 dark:text-amber-300/70 font-medium">Days Active</p>
             </CardContent>
@@ -672,9 +674,13 @@ export default function PoolDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-bold text-rose-600 dark:text-rose-400 mb-1" data-testid="text-risk-level">
-                {pool.riskLevel ? (pool.riskLevel.charAt(0).toUpperCase() + pool.riskLevel.slice(1)) : 'Unknown'} Risk
-              </p>
+              <div className="mb-1">
+                <RiskBadge 
+                  riskLevel={pool.riskLevel || 'medium'}
+                  size="lg"
+                  data-testid="text-risk-level"
+                />
+              </div>
               <p className="text-xs text-rose-600/70 dark:text-rose-300/70 font-medium">Security Rating</p>
             </CardContent>
           </Card>

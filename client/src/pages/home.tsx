@@ -84,16 +84,16 @@ export default function Home() {
         bValue = parseFloat(b.apy);
         break;
       case 'operatingDays':
-        aValue = a.operatingDays || 0;
-        bValue = b.operatingDays || 0;
+        aValue = a.rawData?.count || 0;
+        bValue = b.rawData?.count || 0;
         break;
       case 'tvl':
         aValue = parseFloat(a.tvl);
         bValue = parseFloat(b.tvl);
         break;
       case 'operatingSince':
-        aValue = a.operatingDays || 0;
-        bValue = b.operatingDays || 0;
+        aValue = a.rawData?.count || 0;
+        bValue = b.rawData?.count || 0;
         break;
       case 'risk':
         const riskOrder = { low: 3, medium: 2, high: 1 };

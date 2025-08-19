@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
+import { RiskBadge } from "@/components/risk-badge";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
@@ -39,14 +40,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
     return holders.toString();
   };
 
-  const getRiskColor = (riskLevel: string) => {
-    switch (riskLevel) {
-      case 'low': return 'bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-100 border border-green-200 dark:border-green-800';
-      case 'medium': return 'bg-yellow-100 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100 border border-yellow-200 dark:border-yellow-800';
-      case 'high': return 'bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-100 border border-red-200 dark:border-red-800';
-      default: return 'bg-muted text-muted-foreground border border-border';
-    }
-  };
+
 
   const getChainColor = (color: string) => {
     return { backgroundColor: `${color}20`, color: color };
@@ -171,7 +165,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* Days */}
             <div className="text-center">
               <p className="text-base font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                {opportunity.operatingDays || 'N/A'}
+                {opportunity.rawData?.count || 'N/A'}
               </p>
             </div>
             
@@ -191,9 +185,11 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Risk */}
             <div className="text-center">
-              <Badge className={`text-xs px-1 py-0.5 ${getRiskColor(opportunity.riskLevel)}`} data-testid={`badge-risk-${opportunity.id}`}>
-                {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
-              </Badge>
+              <RiskBadge 
+                riskLevel={opportunity.riskLevel}
+                size="sm"
+                data-testid={`badge-risk-${opportunity.id}`}
+              />
             </div>
           </div>
 
@@ -215,7 +211,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">Days</p>
                   </div>
                   <p className="text-base font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                    {opportunity.operatingDays || 'N/A'}
+                    {opportunity.rawData?.count || 'N/A'}
                   </p>
                 </div>
                 <div className="text-center">
@@ -271,13 +267,11 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground mb-0.5 font-medium hidden sm:block">Risk</p>
                   )}
                   <div className="flex justify-center">
-                    <Badge 
-                      variant="secondary"
-                      className={`text-xs font-medium px-2 py-0.5 ${getRiskColor(opportunity.riskLevel)}`}
+                    <RiskBadge 
+                      riskLevel={opportunity.riskLevel}
+                      size="sm"
                       data-testid={`badge-risk-${opportunity.id}`}
-                    >
-                      {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
-                    </Badge>
+                    />
                   </div>
                 </div>
               </div>

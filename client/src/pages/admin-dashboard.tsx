@@ -13,6 +13,7 @@ import { useLocation } from "wouter";
 import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Sparkles } from "lucide-react";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { UnderlyingTokensEditor } from "@/components/underlying-tokens-editor";
+import { RiskBadge } from "@/components/risk-badge";
 import AdminHeader from "@/components/admin-header";
 import { PoolDataLoading, SyncAnimation, FloatingActionLoading } from "@/components/loading-animations";
 import { YieldSyncLoader } from "@/components/crypto-loader";
@@ -925,14 +926,10 @@ export default function AdminDashboard() {
                           </span>
                         </td>
                         <td className="py-3 px-2 text-center">
-                          <Badge 
-                            variant={
-                              pool.riskLevel === 'low' ? 'secondary' :
-                              pool.riskLevel === 'medium' ? 'default' : 'destructive'
-                            }
-                          >
-                            {pool.riskLevel}
-                          </Badge>
+                          <RiskBadge 
+                            riskLevel={pool.riskLevel}
+                            size="sm"
+                          />
                         </td>
 
                         <td className="py-3 px-2">
