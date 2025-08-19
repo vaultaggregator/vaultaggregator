@@ -459,7 +459,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pool routes - properly joined with platforms and metrics
   app.get("/api/pools", async (req, res) => {
     try {
+      const { chainId, platformId, categoryId } = req.query;
       console.log("📊 Fetching pools with complete data via proper joins...");
+      console.log("🔍 Applied filters:", { chainId, platformId, categoryId });
+      
+      // Build where conditions based on filters
+      const whereConditions = [
+        eq(pools.isActive, true),
+        eq(pools.isVisible, true),
+        isNull(pools.deletedAt)
+      ];
+
+      // Add chain filter
+      if (chainId) {
+        whereConditions.push(eq(pools.chainId, chainId as string));
+      }
+
+      // Add platform filter
+      if (platformId) {
+        whereConditions.push(eq(pools.platformId, platformId as string));
+      }
+
+      // Add category filter
+      if (categoryId) {
+        whereConditions.push(eq(pools.categoryId, categoryId as string));
+      }
       
       const poolsResults = await db
         .select()
@@ -467,13 +491,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .leftJoin(platforms, eq(pools.platformId, platforms.id))
         .leftJoin(chains, eq(pools.chainId, chains.id))
         .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
-        .where(
-          and(
-            eq(pools.isActive, true),
-            eq(pools.isVisible, true),
-            isNull(pools.deletedAt)
-          )
-        )
+        .where(and(...whereConditions))
         .orderBy(desc(pools.apy))
         .limit(50);
 
