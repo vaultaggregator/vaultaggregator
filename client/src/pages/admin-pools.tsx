@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { 
@@ -91,6 +92,7 @@ export default function AdminPools() {
   const { toast } = useToast();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingPool, setEditingPool] = useState<string | null>(null);
+  const [editingPoolCategories, setEditingPoolCategories] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<"active" | "deactivated" | "trash">("active");
   const [formData, setFormData] = useState<CreatePoolForm>({
     platformId: "",
@@ -133,6 +135,21 @@ export default function AdminPools() {
   const { data: tokenInfos = [] } = useQuery<TokenInfo[]>({
     queryKey: ["/api/admin/token-info"],
   });
+
+  // Fetch existing categories for editing pool
+  const { data: existingPoolCategories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/pools", editingPool, "categories"],
+    enabled: !!editingPool,
+  });
+
+  // Update editing pool categories when data loads
+  React.useEffect(() => {
+    if (editingPool && existingPoolCategories) {
+      setEditingPoolCategories(existingPoolCategories.map(cat => cat.id));
+    } else {
+      setEditingPoolCategories([]);
+    }
+  }, [editingPool, existingPoolCategories]);
 
   const createPoolMutation = useMutation({
     mutationFn: async (data: CreatePoolForm) => {
@@ -420,6 +437,7 @@ export default function AdminPools() {
                       showUsdInFlow: formData.get('showUsdInFlow') === 'on',
                       isVisible: formData.get('isVisible') === 'on',
                       isActive: formData.get('isActive') === 'on',
+                      categories: editingPoolCategories,
                     };
                     updatePoolMutation.mutate({ id: editingPool, data });
                   }} className="space-y-6">
@@ -495,6 +513,120 @@ export default function AdminPools() {
                             data-testid="edit-input-defillama-id"
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Categories */}
+                    <div className="space-y-4 border-t pt-6">
+                      <h3 className="text-lg font-semibold">Categories & Subcategories</h3>
+                      
+                      <div className="space-y-4">
+                        {/* Main Categories */}
+                        <div>
+                          <Label className="text-sm font-medium">Main Categories</Label>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                            {categories.filter(cat => !cat.parentId && cat.isActive).map((category) => (
+                              <div key={category.id} className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id={`edit-category-${category.id}`}
+                                  checked={editingPoolCategories.includes(category.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setEditingPoolCategories(prev => [...prev, category.id]);
+                                    } else {
+                                      setEditingPoolCategories(prev => prev.filter(id => id !== category.id));
+                                    }
+                                  }}
+                                  className="rounded"
+                                  data-testid={`edit-checkbox-category-${category.name}`}
+                                />
+                                <Label htmlFor={`edit-category-${category.id}`} className="text-sm">
+                                  {category.displayName}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Subcategories */}
+                        {editingPoolCategories.some(catId => categories.filter(cat => cat.parentId === catId && cat.isActive).length > 0) && (
+                          <div>
+                            <Label className="text-sm font-medium">Subcategories</Label>
+                            <div className="space-y-3 mt-2">
+                              {editingPoolCategories.map(selectedCategoryId => {
+                                const subcategories = categories.filter(cat => cat.parentId === selectedCategoryId && cat.isActive);
+                                const parentCategory = categories.find(cat => cat.id === selectedCategoryId);
+                                
+                                if (subcategories.length === 0) return null;
+                                
+                                return (
+                                  <div key={selectedCategoryId} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                      {parentCategory?.displayName} Subcategories
+                                    </Label>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                      {subcategories.map((subcategory) => (
+                                        <div key={subcategory.id} className="flex items-center space-x-2">
+                                          <input
+                                            type="checkbox"
+                                            id={`edit-subcategory-${subcategory.id}`}
+                                            checked={editingPoolCategories.includes(subcategory.id)}
+                                            onChange={(e) => {
+                                              if (e.target.checked) {
+                                                setEditingPoolCategories(prev => [...prev, subcategory.id]);
+                                              } else {
+                                                setEditingPoolCategories(prev => prev.filter(id => id !== subcategory.id));
+                                              }
+                                            }}
+                                            className="rounded"
+                                            data-testid={`edit-checkbox-subcategory-${subcategory.name}`}
+                                          />
+                                          <Label htmlFor={`edit-subcategory-${subcategory.id}`} className="text-sm">
+                                            {subcategory.displayName}
+                                          </Label>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Selected Categories Summary */}
+                        {editingPoolCategories.length > 0 && (
+                          <div>
+                            <Label className="text-sm font-medium">Selected Categories ({editingPoolCategories.length})</Label>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {editingPoolCategories.map(categoryId => {
+                                const category = categories.find(cat => cat.id === categoryId);
+                                if (!category) return null;
+                                
+                                return (
+                                  <Badge 
+                                    key={categoryId} 
+                                    variant="secondary" 
+                                    className="flex items-center gap-1"
+                                  >
+                                    {category.displayName}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingPoolCategories(prev => prev.filter(id => id !== categoryId));
+                                      }}
+                                      className="ml-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-0.5"
+                                      data-testid={`edit-remove-category-${category.name}`}
+                                    >
+                                      ×
+                                    </button>
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -685,6 +817,135 @@ export default function AdminPools() {
                     </div>
 
 
+                  </div>
+                </div>
+
+                {/* Categories */}
+                <div className="space-y-4 border-t pt-6">
+                  <h3 className="text-lg font-semibold">Categories & Subcategories</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Main Categories */}
+                    <div>
+                      <Label className="text-sm font-medium">Main Categories</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                        {categories.filter(cat => !cat.parentId && cat.isActive).map((category) => (
+                          <div key={category.id} className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id={`category-${category.id}`}
+                              checked={formData.categories.includes(category.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    categories: [...prev.categories, category.id]
+                                  }));
+                                } else {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    categories: prev.categories.filter(id => id !== category.id)
+                                  }));
+                                }
+                              }}
+                              className="rounded"
+                              data-testid={`checkbox-category-${category.name}`}
+                            />
+                            <Label htmlFor={`category-${category.id}`} className="text-sm">
+                              {category.displayName}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Subcategories */}
+                    {formData.categories.some(catId => categories.filter(cat => cat.parentId === catId && cat.isActive).length > 0) && (
+                      <div>
+                        <Label className="text-sm font-medium">Subcategories</Label>
+                        <div className="space-y-3 mt-2">
+                          {formData.categories.map(selectedCategoryId => {
+                            const subcategories = categories.filter(cat => cat.parentId === selectedCategoryId && cat.isActive);
+                            const parentCategory = categories.find(cat => cat.id === selectedCategoryId);
+                            
+                            if (subcategories.length === 0) return null;
+                            
+                            return (
+                              <div key={selectedCategoryId} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                                <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+                                  {parentCategory?.displayName} Subcategories
+                                </Label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                  {subcategories.map((subcategory) => (
+                                    <div key={subcategory.id} className="flex items-center space-x-2">
+                                      <input
+                                        type="checkbox"
+                                        id={`subcategory-${subcategory.id}`}
+                                        checked={formData.categories.includes(subcategory.id)}
+                                        onChange={(e) => {
+                                          if (e.target.checked) {
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              categories: [...prev.categories, subcategory.id]
+                                            }));
+                                          } else {
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              categories: prev.categories.filter(id => id !== subcategory.id)
+                                            }));
+                                          }
+                                        }}
+                                        className="rounded"
+                                        data-testid={`checkbox-subcategory-${subcategory.name}`}
+                                      />
+                                      <Label htmlFor={`subcategory-${subcategory.id}`} className="text-sm">
+                                        {subcategory.displayName}
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Selected Categories Summary */}
+                    {formData.categories.length > 0 && (
+                      <div>
+                        <Label className="text-sm font-medium">Selected Categories ({formData.categories.length})</Label>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {formData.categories.map(categoryId => {
+                            const category = categories.find(cat => cat.id === categoryId);
+                            if (!category) return null;
+                            
+                            return (
+                              <Badge 
+                                key={categoryId} 
+                                variant="secondary" 
+                                className="flex items-center gap-1"
+                              >
+                                {category.displayName}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData(prev => ({
+                                      ...prev,
+                                      categories: prev.categories.filter(id => id !== categoryId)
+                                    }));
+                                  }}
+                                  className="ml-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-0.5"
+                                  data-testid={`remove-category-${category.name}`}
+                                >
+                                  ×
+                                </button>
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
