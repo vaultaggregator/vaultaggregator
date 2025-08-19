@@ -158,7 +158,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* Days */}
             <div className="text-center">
               <p className="text-sm font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                {opportunity.rawData?.count || 'N/A'}
+                {opportunity.operatingDays || 'N/A'}
               </p>
             </div>
             
@@ -202,7 +202,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">Days</p>
                   </div>
                   <p className="text-xs font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                    {opportunity.rawData?.count || 'N/A'}
+                    {opportunity.operatingDays || 'N/A'}
                   </p>
                 </div>
                 <div className="text-center">
