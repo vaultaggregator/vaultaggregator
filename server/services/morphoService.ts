@@ -256,47 +256,33 @@ export class MorphoService {
    */
   async getVaultByAddress(address: string, chainId: number = 1): Promise<MorphoVault | null> {
     const query = `
-      query GetVault($address: Address!, $chainId: Int!) {
-        vaultByAddress(address: $address, chainId: $chainId) {
-          address
-          symbol
-          name
-          asset {
+      query GetVaultByAddress($address: [String!]!, $chainId: [Int!]!) {
+        vaults(
+          where: { 
+            address_in: $address
+            chainId_in: $chainId 
+          }
+          first: 1
+        ) {
+          items {
             address
             symbol
             name
-            decimals
-          }
-          state {
-            apy
-            netApy
-            totalAssetsUsd
-            totalSupplyUsd
-            fee
-          }
-          chain {
-            id
-            network
-          }
-          curator {
-            name
-            image
-          }
-          allocations {
-            supplyAssetsUsd
-            market {
-              uniqueKey
-              collateralAsset {
-                symbol
-              }
-              borrowAsset {
-                symbol
-              }
-              state {
-                borrowApy
-                supplyApy
-                utilization
-              }
+            asset {
+              address
+              symbol
+              name
+              decimals
+            }
+            state {
+              apy
+              netApy
+              totalAssetsUsd
+              fee
+            }
+            chain {
+              id
+              network
             }
           }
         }
@@ -304,14 +290,17 @@ export class MorphoService {
     `;
 
     try {
-      const data = await this.executeQuery(query, { address, chainId });
-      const vault = data.vaultByAddress;
+      const data = await this.executeQuery(query, { 
+        address: [address], 
+        chainId: [chainId] 
+      });
+      const vault = data.vaults?.items?.[0] || null;
       
       if (vault) {
         console.log(`📊 Fetched Morpho vault details for ${address}`);
       }
       
-      return vault || null;
+      return vault;
     } catch (error) {
       console.error('🔴 Failed to fetch Morpho vault details:', error);
       return null;
