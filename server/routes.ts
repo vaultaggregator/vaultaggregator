@@ -1025,7 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const vaults = await morphoService.getAllVaults(1); // Ethereum mainnet
             vault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
           } catch (apiError) {
-            console.log("⚠️ Morpho API unavailable, using fallback data");
+            console.log("⚠️ Morpho API unavailable, will try Etherscan API");
           }
           
           if (vault) {
@@ -1036,65 +1036,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
               address: vault.address,
               platform: 'Morpho'
             };
+            console.log(`✅ Found Morpho contract via API: ${contractInfo.tokenPair}`);
           } else {
-            // Fallback: Check known Morpho contracts
-            const knownMorphoContracts: Record<string, any> = {
-              '0xbeef01735c132ada46aa9aa4c54623caa92a64cb': {
-                tokenPair: 'STEAKUSDC',
-                symbol: 'STEAKUSDC',
-                name: 'Steakhouse USDC Vault',
-                address: '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
-              },
-              '0xd63070114470f685b75b74d60eec7c1113d33a3d': {
-                tokenPair: 'MEV Capital USDC',
-                symbol: 'MEV',
-                name: 'MEV Capital USDC',
-                address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
-              },
-              '0xbeefff209270748ddd194831b3fa287a5386f5bc': {
-                tokenPair: 'Smokehouse USDC',
-                symbol: 'SMOKEHOUSE',
-                name: 'Smokehouse USDC',
-                address: '0xBEeFFF209270748ddd194831b3fa287a5386f5bC'
-              }
-            };
-            
-            const knownContract = knownMorphoContracts[address.toLowerCase()];
-            if (knownContract) {
-              contractInfo = {
-                ...knownContract,
-                platform: 'Morpho'
-              };
-              console.log(`✅ Found known Morpho contract: ${contractInfo.tokenPair}`);
-            } else {
-              // Final fallback: Use Etherscan to get basic contract info
-              try {
-                const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
-                const etherscanResponse = await fetch(
-                  `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
-                );
-                
-                if (etherscanResponse.ok) {
-                  const etherscanData = await etherscanResponse.json();
-                  if (etherscanData.result && etherscanData.result[0] && etherscanData.result[0].ContractName) {
-                    contractInfo = {
-                      tokenPair: etherscanData.result[0].ContractName,
-                      symbol: etherscanData.result[0].ContractName,
-                      name: etherscanData.result[0].ContractName,
-                      address: address,
-                      platform: 'Morpho'
-                    };
-                    console.log(`✅ Found contract via Etherscan: ${contractInfo.tokenPair}`);
-                  } else {
-                    return res.status(404).json({ error: "Contract not found on Morpho or Etherscan" });
-                  }
+            // No hardcoded fallbacks - only use authentic API sources
+            // Try Etherscan as secondary authentic data source
+            try {
+              const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
+              const etherscanResponse = await fetch(
+                `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
+              );
+              
+              if (etherscanResponse.ok) {
+                const etherscanData = await etherscanResponse.json();
+                if (etherscanData.result && etherscanData.result[0] && etherscanData.result[0].ContractName) {
+                  contractInfo = {
+                    tokenPair: etherscanData.result[0].ContractName,
+                    symbol: etherscanData.result[0].ContractName,
+                    name: etherscanData.result[0].ContractName,
+                    address: address,
+                    platform: 'Morpho'
+                  };
+                  console.log(`✅ Found contract via Etherscan API: ${contractInfo.tokenPair}`);
                 } else {
-                  return res.status(404).json({ error: "Contract not found on Morpho" });
+                  return res.status(404).json({ error: "Contract not found on Morpho API or Etherscan API" });
                 }
-              } catch (etherscanError) {
-                console.error("Etherscan lookup failed:", etherscanError);
-                return res.status(404).json({ error: "Contract not found" });
+              } else {
+                return res.status(404).json({ error: "Contract not found on Morpho API, Etherscan API unavailable" });
               }
+            } catch (etherscanError) {
+              console.error("Etherscan API lookup failed:", etherscanError);
+              return res.status(404).json({ error: "Contract not found - all API sources failed" });
             }
           }
         } catch (error) {
@@ -1102,17 +1073,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(500).json({ error: "Failed to lookup Morpho contract" });
         }
       } else if (platform.name.toLowerCase() === 'lido') {
-        // Lido contract lookup
-        if (address.toLowerCase() === '0xae7ab96520de3a18e5e111b5eaab095312d7fe84') {
-          contractInfo = {
-            tokenPair: 'stETH',
-            symbol: 'stETH',
-            name: 'Liquid staked Ether 2.0',
-            address: address,
-            platform: 'Lido'
-          };
-        } else {
-          return res.status(404).json({ error: "Contract not found on Lido" });
+        // Lido contract lookup - use authentic APIs only
+        try {
+          const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
+          const etherscanResponse = await fetch(
+            `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
+          );
+          
+          if (etherscanResponse.ok) {
+            const etherscanData = await etherscanResponse.json();
+            if (etherscanData.result && etherscanData.result[0] && etherscanData.result[0].ContractName) {
+              contractInfo = {
+                tokenPair: etherscanData.result[0].ContractName,
+                symbol: etherscanData.result[0].ContractName,
+                name: etherscanData.result[0].ContractName,
+                address: address,
+                platform: 'Lido'
+              };
+              console.log(`✅ Found Lido contract via Etherscan API: ${contractInfo.tokenPair}`);
+            } else {
+              return res.status(404).json({ error: "Contract not found on Etherscan API" });
+            }
+          } else {
+            return res.status(404).json({ error: "Etherscan API unavailable" });
+          }
+        } catch (etherscanError) {
+          console.error("Etherscan API lookup failed:", etherscanError);
+          return res.status(404).json({ error: "Contract lookup failed - API unavailable" });
         }
       } else {
         // Generic Ethereum contract lookup using external service
