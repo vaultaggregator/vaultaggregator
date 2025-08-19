@@ -69,9 +69,11 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     
     console.log(`📊 Chart Debug [${poolId}] - Data conversion check:`, {
       rawAPY: historicalData[0]?.apy,
+      rawType: typeof historicalData[0]?.apy,
       convertedAPY: (historicalData[0]?.apy as number) * 100,
       shouldMultiply: (historicalData[0]?.apy as number) < 1,
-      totalPoints: historicalData.length
+      totalPoints: historicalData.length,
+      firstThreeRaw: historicalData.slice(0, 3).map(p => p.apy)
     });
     
     // Only use authentic historical data - convert APY from decimal to percentage  
@@ -99,8 +101,11 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
         fullDate: point.fullDate
       }));
     
-    console.log('PoolChart Debug - Processed data sample:', processedData.slice(0, 2));
-    console.log('PoolChart Debug - Total processed points:', processedData.length);
+    console.log(`📊 Chart Debug [${poolId}] - Processed data:`, {
+      sample: processedData.slice(0, 2),
+      totalPoints: processedData.length,
+      firstThreeProcessed: processedData.slice(0, 3).map(p => ({ apy: p.apy, tvl: p.tvl }))
+    });
     return processedData;
   }, [historicalData]);
 
