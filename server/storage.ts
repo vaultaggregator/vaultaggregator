@@ -789,6 +789,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(chains, eq(pools.chainId, chains.id))
       .leftJoin(notes, eq(pools.id, notes.poolId))
       .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id))
+      .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
       .where(eq(pools.id, id));
 
     if (results.length === 0) return undefined;
@@ -802,6 +803,7 @@ export class DatabaseStorage implements IStorage {
       chain: results[0].chains!,
       notes: poolNotes,
       holdersCount: results[0].token_info?.holdersCount || null,
+      operatingDays: results[0].pool_metrics_current?.operatingDays || null,
     };
   }
 
