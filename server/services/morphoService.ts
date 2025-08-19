@@ -74,7 +74,7 @@ export interface MorphoVault {
 }
 
 export class MorphoService {
-  private static readonly MORPHO_API_ENDPOINT = 'https://api.morpho.org/graphql';
+  private static readonly MORPHO_API_ENDPOINT = 'https://blue-api.morpho.org/graphql';
   private static readonly REQUEST_TIMEOUT = 30000; // 30 seconds
   private cache: SimpleCache;
 
@@ -142,9 +142,9 @@ export class MorphoService {
     }
 
     const query = `
-      query GetMorphoVaults($chainId: Int!) {
+      query GetMorphoVaults($chainId: [Int!]!) {
         vaults(
-          where: { chainId: $chainId }
+          where: { chainId_in: $chainId }
           first: 1000
         ) {
           items {
@@ -161,16 +161,11 @@ export class MorphoService {
               apy
               netApy
               totalAssetsUsd
-              totalSupplyUsd
               fee
             }
             chain {
               id
               network
-            }
-            curator {
-              name
-              image
             }
           }
         }
@@ -178,7 +173,7 @@ export class MorphoService {
     `;
 
     try {
-      const data = await this.executeQuery(query, { chainId });
+      const data = await this.executeQuery(query, { chainId: [chainId] });
       const vaults = data.vaults?.items || [];
       
       // Cache for 5 minutes
