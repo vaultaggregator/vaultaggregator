@@ -19,6 +19,75 @@ export function registerAdminSystemRoutes(app: Express) {
   };
 
   /**
+   * Fix operating days for Morpho pools
+   */
+  app.post("/api/admin/fix-operating-days", requireAuth, async (req, res) => {
+    try {
+      const { etherscanService } = await import("../services/etherscanService");
+      const { db } = await import("../db");
+      const { pools, platforms } = await import("../../shared/schema");
+      const { eq, and, isNotNull } = await import("drizzle-orm");
+      
+      // Get all Morpho pools that don't have operating days
+      const morphoPools = await db.select()
+        .from(pools)
+        .leftJoin(platforms, eq(pools.platformId, platforms.id))
+        .where(and(
+          eq(platforms.name, 'morpho'),
+          isNotNull(pools.poolAddress)
+        ));
+
+      let fixedCount = 0;
+      
+      for (const poolData of morphoPools) {
+        const pool = poolData.pools;
+        const currentRawData = pool.rawData || {};
+        
+        // Skip if already has operating days
+        if (currentRawData.count) continue;
+        
+        console.log(`🔄 Fixing operating days for ${pool.tokenPair} (${pool.poolAddress})`);
+        
+        try {
+          // Add delay to avoid rate limits
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
+          
+          if (operatingDays && operatingDays > 0) {
+            const updatedRawData = {
+              ...currentRawData,
+              count: operatingDays,
+              operatingDays: operatingDays
+            };
+            
+            await db.update(pools)
+              .set({ 
+                rawData: updatedRawData,
+                lastUpdated: new Date()
+              })
+              .where(eq(pools.id, pool.id));
+              
+            console.log(`✅ Fixed ${pool.tokenPair}: ${operatingDays} days`);
+            fixedCount++;
+          }
+        } catch (error) {
+          console.error(`❌ Failed to fix ${pool.tokenPair}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Fixed operating days for ${fixedCount} Morpho pools`,
+        fixedCount
+      });
+    } catch (error) {
+      console.error("Error fixing operating days:", error);
+      res.status(500).json({ error: "Failed to fix operating days" });
+    }
+  });
+
+  /**
    * Get comprehensive system health status
    */
   app.get("/api/admin/system/health", requireAuth, async (req, res) => {

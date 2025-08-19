@@ -44,7 +44,6 @@ export default function Header({ onAdminClick = () => {}, websocketStatus }: Hea
             {websocketStatus && (
               <WebSocketStatus 
                 isConnected={websocketStatus.isConnected}
-                lastUpdate={websocketStatus.lastUpdate}
                 className="hidden sm:flex"
               />
             )}

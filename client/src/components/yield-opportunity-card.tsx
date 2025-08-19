@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
 import { RiskBadge } from "@/components/risk-badge";
+import { AnimatedValue, ShimmerEffect } from "@/components/animated-value";
+import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
@@ -157,15 +159,20 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
             <div className="text-center">
-              <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
-                {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-              </p>
+              <AnimatedValue
+                value={opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                className="text-lg font-bold text-green-600"
+              >
+                <p data-testid={`text-apy-${opportunity.id}`}>
+                  {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                </p>
+              </AnimatedValue>
             </div>
             
             {/* Days */}
             <div className="text-center">
               <p className="text-base font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                {opportunity.rawData?.count || 'N/A'}
+                {opportunity.operatingDays || opportunity.rawData?.count || 'N/A'}
               </p>
             </div>
             
@@ -202,16 +209,21 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">24h APY</p>
                   </div>
-                  <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
-                    {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-                  </p>
+                  <AnimatedValue
+                    value={opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                    className="text-lg font-bold text-green-600"
+                  >
+                    <p data-testid={`text-apy-${opportunity.id}`}>
+                      {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                    </p>
+                  </AnimatedValue>
                 </div>
                 <div className="text-center">
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">Days</p>
                   </div>
                   <p className="text-base font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                    {opportunity.rawData?.count || 'N/A'}
+                    {opportunity.operatingDays || opportunity.rawData?.count || 'N/A'}
                   </p>
                 </div>
                 <div className="text-center">

@@ -52,7 +52,7 @@ export function RiskBadge({
         className
       )}
     >
-      {showScore ? formatRiskDisplay(riskConfig.score) : riskConfig.label}
+      {riskConfig.label}
     </Badge>
   );
 }

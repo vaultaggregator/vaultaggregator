@@ -561,23 +561,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(filteredPools);
     } catch (error) {
       console.error("Error fetching pools:", error);
-      res.status(500).json({ message: "Failed to fetch pools", error: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ message: "Failed to fetch pools", error: errorMessage });
     }
   });
 
   app.get("/api/pools/:id", async (req, res) => {
     try {
-      const pool = await storage.getPoolById(req.params.id);
-      if (!pool) {
+      // Use the same joined query as the pools list for consistency
+      const poolResult = await db.select()
+        .from(pools)
+        .leftJoin(platforms, eq(pools.platformId, platforms.id))
+        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
+        .where(eq(pools.id, req.params.id))
+        .limit(1);
+
+      if (!poolResult.length) {
         return res.status(404).json({ message: "Pool not found" });
       }
+
+      const result = poolResult[0];
+      const pool = result.pools;
       
       // Only serve data for visible pools
       if (!pool.isVisible) {
         return res.status(404).json({ message: "Pool not found" });
       }
+
+      // Format the same way as the pools list for consistency
+      const formattedPool = {
+        ...pool,
+        platform: {
+          id: result.platforms?.id || null,
+          name: result.platforms?.name || "Unknown",
+          displayName: result.platforms?.displayName || "Unknown",
+          logoUrl: result.platforms?.logoUrl || null,
+          website: result.platforms?.website || null
+        },
+        chain: {
+          id: result.chains?.id || null,
+          name: result.chains?.name || "ethereum",
+          displayName: result.chains?.displayName || "Ethereum",
+          color: result.chains?.color || "#627EEA"
+        },
+        notes: [],
+        categories: [],
+        holdersCount: result.pool_metrics_current?.holdersCount || null,
+        operatingDays: result.pool_metrics_current?.operatingDays || null,
+      };
       
-      res.json(pool);
+      res.json(formattedPool);
     } catch (error) {
       console.error("Error fetching pool:", error);
       res.status(500).json({ message: "Failed to fetch pool" });
