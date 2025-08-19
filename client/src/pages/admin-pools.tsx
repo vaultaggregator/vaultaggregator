@@ -1148,6 +1148,21 @@ export default function AdminPools() {
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-4 mb-2">
+                                {/* Platform logo */}
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+                                  {pool.platform.logoUrl ? (
+                                    <img 
+                                      src={pool.platform.logoUrl} 
+                                      alt={pool.platform.displayName}
+                                      className="w-full h-full object-cover rounded-full"
+                                      data-testid={`admin-logo-platform-${pool.platform.name.toLowerCase()}`}
+                                    />
+                                  ) : (
+                                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                                      {pool.platform.displayName.slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
                                 <h3 className="font-semibold text-lg">{pool.tokenPair}</h3>
                                 <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                                   ACTIVE
@@ -1254,6 +1269,21 @@ export default function AdminPools() {
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-4 mb-2">
+                                {/* Platform logo */}
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 opacity-60">
+                                  {pool.platform.logoUrl ? (
+                                    <img 
+                                      src={pool.platform.logoUrl} 
+                                      alt={pool.platform.displayName}
+                                      className="w-full h-full object-cover rounded-full"
+                                      data-testid={`admin-logo-platform-${pool.platform.name.toLowerCase()}`}
+                                    />
+                                  ) : (
+                                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                                      {pool.platform.displayName.slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
                                 <h3 className="font-semibold text-lg text-gray-600 dark:text-gray-400">{pool.tokenPair}</h3>
                                 <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                                   DEACTIVATED
@@ -1365,6 +1395,21 @@ export default function AdminPools() {
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-4 mb-2">
+                                {/* Platform logo */}
+                                <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 opacity-50">
+                                  {pool.platform.logoUrl ? (
+                                    <img 
+                                      src={pool.platform.logoUrl} 
+                                      alt={pool.platform.displayName}
+                                      className="w-full h-full object-cover rounded-full"
+                                      data-testid={`admin-logo-platform-${pool.platform.name.toLowerCase()}`}
+                                    />
+                                  ) : (
+                                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                                      {pool.platform.displayName.slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                </div>
                                 <h3 className="font-semibold text-lg text-red-600 dark:text-red-400">{pool.tokenPair}</h3>
                                 <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
                                   DELETED
