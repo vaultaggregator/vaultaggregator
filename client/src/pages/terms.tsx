@@ -20,13 +20,13 @@ export default function Terms() {
         </div>
 
         {/* Important Notice */}
-        <Card className="mb-8 border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-900/20">
+        <Card className="mb-8 border-orange-300 bg-orange-50 dark:border-orange-600 dark:bg-orange-900/30">
           <CardContent className="pt-6">
             <div className="flex items-start space-x-4">
-              <AlertTriangle className="w-8 h-8 text-orange-600 dark:text-orange-400 mt-1" />
+              <AlertTriangle className="w-8 h-8 text-orange-700 dark:text-orange-300 mt-1" />
               <div>
-                <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">Important Notice</h3>
-                <p className="text-orange-800 dark:text-orange-200 text-sm">
+                <h3 className="font-semibold text-orange-900 dark:text-orange-50 mb-2">Important Notice</h3>
+                <p className="text-orange-900 dark:text-orange-100 text-sm">
                   Please read these Terms of Service carefully before using Vault Aggregator. 
                   By accessing or using our services, you agree to be bound by these terms. 
                   If you disagree with any part of these terms, you may not access our services.
