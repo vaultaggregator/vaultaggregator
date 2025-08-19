@@ -14,6 +14,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - **Admin interface cleanup**: Removed cache management tab and all cache-related admin functionality (August 18, 2025)
 - **Enhanced Pool Management**: Tabbed interface with separate "Active Pools" and "Deactivated Pools" tabs for better organization and management (August 19, 2025)
 - **Complete Trash Bin System**: Comprehensive soft deletion with 60-day automatic cleanup, dedicated "Trash Bin" tab, restore functionality, and permanent delete operations with proper database foreign key handling (August 19, 2025)
+- **Complete Image Localization System**: All external images (platform logos, category icons) downloaded and stored locally in object storage, eliminating dependency on external image hosts including DeFiLlama icons (August 19, 2025)
 
 # User Preferences
 
@@ -52,8 +53,9 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - Fix all bugs before presenting solutions
 - Return only final working code with verification confirmation
 - Simple, everyday language for explanations
-- Always use Trust Wallet GitHub repository for token logos: `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/{chain}/assets/{contract_address}/logo.png`
-- Never use CryptoLogos.cc (returns 403 errors)
+- All images must be stored locally using the image localization system - never use external image URLs in production
+- Image localization system automatically downloads external images to object storage with unique filenames
+- Use `/public-objects/images/` paths for all platform logos and category icons after localization
 - Always test functionality after implementation to verify it works correctly
 - If something doesn't work during testing, fix it immediately before moving on
 - No task is complete until it's been tested and confirmed working
@@ -77,6 +79,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - **Scheduled data collection**: Scrapers fetch live data every 5 minutes and store in database
 - **API endpoints for manual scraping**: `/api/scrape/all` and `/api/scrape/pool/:poolId` for testing
 - **Database status monitoring**: `/api/database/status` and `/api/pools/database-only` for verification
+- **Complete image localization**: All external images stored locally using object storage with API endpoints `/api/admin/images/localize-all` and category-specific endpoints
 
 The application features a modern React frontend and a Node.js/Express backend with complete database-first data integrity.
 
