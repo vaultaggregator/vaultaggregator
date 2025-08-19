@@ -72,8 +72,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             <div className="flex items-center space-x-2 min-w-0 flex-1">
               <div className="flex items-center justify-center flex-shrink-0 w-6 h-6">
                 {opportunity.categories && opportunity.categories.length > 0 && (() => {
-                  // Check all categories for USDC or stETH, not just the first one
+                  // Check all categories for USDC, USDT, or stETH
                   const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
+                  const usdtCategory = opportunity.categories.find(cat => cat.name === 'USDT');
                   const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
                   
                   if (usdcCategory) {
@@ -83,6 +84,15 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                         alt="USDC"
                         className="w-6 h-6 flex-shrink-0 rounded-full"
                         data-testid={`logo-usdc-${opportunity.id}`}
+                      />
+                    );
+                  } else if (usdtCategory) {
+                    return (
+                      <img 
+                        src="/usdt-logo.png"
+                        alt="USDT"
+                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        data-testid={`logo-usdt-${opportunity.id}`}
                       />
                     );
                   } else if (stethCategory) {

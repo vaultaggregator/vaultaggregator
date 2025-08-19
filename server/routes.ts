@@ -1,11 +1,11 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo, poolMetricsCurrent } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo, poolMetricsCurrent, categories, poolCategories } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
 import { db } from "./db";
-import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull, isNull, inArray } from "drizzle-orm";
 import { morphoService } from "./services/morphoService";
 import { WebSocketServer, WebSocket } from 'ws';
 
@@ -480,10 +480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         whereConditions.push(eq(pools.platformId, platformId as string));
       }
 
-      // Add category filter
-      if (categoryId) {
-        whereConditions.push(eq(pools.categoryId, categoryId as string));
-      }
+      // Add category filter - we'll handle this after getting pools since it's a many-to-many relationship
       
       const poolsResults = await db
         .select()
@@ -496,6 +493,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(50);
 
       console.log(`📊 Found ${poolsResults.length} pools in database`);
+
+      // Get categories for each pool
+      const poolIds = poolsResults.map(result => result.pools.id);
+      let poolCategoriesData: any[] = [];
+      
+      if (poolIds.length > 0) {
+        poolCategoriesData = await db
+          .select()
+          .from(poolCategories)
+          .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
+          .where(inArray(poolCategories.poolId, poolIds));
+      }
+
+      // Group categories by pool ID
+      const categoriesByPool = poolCategoriesData.reduce((acc, row) => {
+        const poolId = row.pool_categories.poolId;
+        if (!acc[poolId]) acc[poolId] = [];
+        if (row.categories) {
+          acc[poolId].push({
+            id: row.categories.id,
+            name: row.categories.name,
+            displayName: row.categories.displayName,
+            slug: row.categories.slug,
+            iconUrl: row.categories.iconUrl,
+            color: row.categories.color,
+            parentId: row.categories.parentId
+          });
+        }
+        return acc;
+      }, {} as Record<string, any[]>);
 
       // Format with actual data from database joins
       const formattedPools = poolsResults.map(result => ({
@@ -514,13 +541,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
           color: result.chains?.color || "#627EEA"
         },
         notes: [],
-        categories: [],
+        categories: categoriesByPool[result.pools.id] || [],
         holdersCount: result.pool_metrics_current?.holdersCount || null,
         operatingDays: result.pool_metrics_current?.operatingDays || null,
       }));
 
-      console.log(`📊 Returning ${formattedPools.length} pools with complete platform data`);
-      res.json(formattedPools);
+      // Filter by category if specified
+      let filteredPools = formattedPools;
+      if (categoryId) {
+        filteredPools = formattedPools.filter(pool => 
+          pool.categories.some((cat: any) => cat.id === categoryId || cat.parentId === categoryId)
+        );
+      }
+
+      console.log(`📊 Returning ${filteredPools.length} pools with complete platform data`);
+      res.json(filteredPools);
     } catch (error) {
       console.error("Error fetching pools:", error);
       res.status(500).json({ message: "Failed to fetch pools", error: error.message });
