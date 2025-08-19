@@ -19,6 +19,7 @@ import AdminNetworks from "@/pages/admin-networks";
 import AdminPlatforms from "@/pages/admin-platforms";
 import AdminCategories from "@/pages/admin-categories";
 import AdminApiKeys from "@/pages/admin-api-keys";
+import AdminChatGPT from "@/pages/admin-chatgpt";
 import PoolDetail from "@/pages/pool-detail";
 
 
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route path="/admin-categories" component={AdminCategories} />
       <Route path="/admin-api-keys" component={AdminApiKeys} />
+      <Route path="/admin-chatgpt" component={AdminChatGPT} />
       <Route path="/admin-logo-management" component={AdminLogoManagement} />
       <Route path="/admin-errors" component={AdminErrors} />
 

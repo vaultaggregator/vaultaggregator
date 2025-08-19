@@ -558,6 +558,15 @@ export default function AdminDashboard() {
               >
                 API Keys
               </Button>
+              <Button 
+                onClick={() => navigate("/admin-chatgpt")} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-chatgpt"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                ChatGPT
+              </Button>
 
 
 

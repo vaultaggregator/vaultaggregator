@@ -33,6 +33,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register database-only routes
   const databaseOnlyRoutes = (await import("./routes/database-only-routes")).default;
   app.use('/api', databaseOnlyRoutes);
+
+  // Import and register OpenAI routes
+  const openaiRoutes = (await import("./routes/openai-routes")).default;
+  app.use('/api', openaiRoutes);
   
 
   // Session configuration
