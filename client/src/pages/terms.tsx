@@ -352,13 +352,10 @@ export default function Terms() {
               <CardTitle className="text-blue-900">Contact Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-blue-800 mb-3">
-                If you have any questions about these Terms of Service, please contact us:
-              </p>
+              
               
               <div className="space-y-2 text-sm text-blue-800">
-                <p><strong>Email:</strong> legal@vault-aggregator.com</p>
-                <p><strong>Address:</strong> Vault Aggregator, Inc.<br />123 Market Street, Suite 500<br />San Francisco, CA 94103</p>
+                
                 
               </div>
             </CardContent>
