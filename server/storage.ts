@@ -291,6 +291,7 @@ export class DatabaseStorage implements IStorage {
         website: platforms.website,
         visitUrlTemplate: platforms.visitUrlTemplate,
         showUnderlyingTokens: platforms.showUnderlyingTokens,
+        dataRefreshIntervalMinutes: platforms.dataRefreshIntervalMinutes,
         isActive: platforms.isActive,
         createdAt: platforms.createdAt,
         hasVisiblePools: sql`CASE WHEN COUNT(${pools.id}) > 0 THEN true ELSE false END`.as('hasVisiblePools')
@@ -342,6 +343,11 @@ export class DatabaseStorage implements IStorage {
     const [pool] = await db.select().from(pools).where(
       and(eq(pools.tokenPair, tokenPair), eq(pools.platformId, platformId))
     );
+    return pool || undefined;
+  }
+
+  async getPoolByDefiLlamaId(defiLlamaId: string): Promise<Pool | undefined> {
+    const [pool] = await db.select().from(pools).where(eq(pools.defiLlamaId, defiLlamaId));
     return pool || undefined;
   }
 
@@ -420,17 +426,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getHolderHistory(tokenAddress: string, days?: number): Promise<HolderHistory[]> {
-    let query = db.select().from(holderHistory).where(eq(holderHistory.tokenAddress, tokenAddress));
+    let conditions = [eq(holderHistory.tokenAddress, tokenAddress)];
     
     if (days) {
       const dateFilter = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      query = query.where(and(
-        eq(holderHistory.tokenAddress, tokenAddress),
-        sql`${holderHistory.timestamp} >= ${dateFilter}`
-      ));
+      conditions.push(sql`${holderHistory.timestamp} >= ${dateFilter}`);
     }
     
-    return await query.orderBy(desc(holderHistory.timestamp));
+    return await db.select().from(holderHistory)
+      .where(and(...conditions))
+      .orderBy(desc(holderHistory.timestamp));
   }
 
   async getHolderAnalytics(tokenAddress: string): Promise<{
@@ -604,7 +609,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id));
 
-    const conditions = [eq(pools.isActive, true), eq(pools.deletedAt, null)];
+    const conditions = [eq(pools.isActive, true), isNull(pools.deletedAt)];
 
     if (chainIds && chainIds.length > 0) {
       conditions.push(inArray(pools.chainId, chainIds));
@@ -821,7 +826,7 @@ export class DatabaseStorage implements IStorage {
 
   // Get trashed pools
   async getTrashedPools(): Promise<PoolWithRelations[]> {
-    return await db
+    const result = await db
       .select({
         id: pools.id,
         platformId: pools.platformId,
@@ -833,6 +838,7 @@ export class DatabaseStorage implements IStorage {
         poolAddress: pools.poolAddress,
         defiLlamaId: pools.defiLlamaId,
         project: pools.project,
+        rawData: pools.rawData,
         tokenInfoId: pools.tokenInfoId,
         showUsdInFlow: pools.showUsdInFlow,
         isVisible: pools.isVisible,
@@ -851,6 +857,7 @@ export class DatabaseStorage implements IStorage {
           website: platforms.website,
           visitUrlTemplate: platforms.visitUrlTemplate,
           showUnderlyingTokens: platforms.showUnderlyingTokens,
+          dataRefreshIntervalMinutes: platforms.dataRefreshIntervalMinutes,
           isActive: platforms.isActive,
           createdAt: platforms.createdAt,
         },
@@ -869,6 +876,14 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(chains, eq(pools.chainId, chains.id))
       .where(isNotNull(pools.deletedAt))
       .orderBy(desc(pools.deletedAt));
+
+    return result.map(pool => ({
+      ...pool,
+      notes: [],
+      categories: [],
+      holdersCount: null,
+      operatingDays: null
+    }));
   }
 
   // Restore pool from trash
@@ -1070,6 +1085,7 @@ export class DatabaseStorage implements IStorage {
         iconUrl: categories.iconUrl,
         description: categories.description,
         color: categories.color,
+        parentId: categories.parentId,
         isActive: categories.isActive,
         sortOrder: categories.sortOrder,
         createdAt: categories.createdAt,
@@ -1351,13 +1367,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserAlerts(userId: string, isActive?: boolean): Promise<UserAlert[]> {
-    let query = db.select().from(userAlerts).where(eq(userAlerts.userId, userId));
+    let conditions = [eq(userAlerts.userId, userId)];
     
     if (isActive !== undefined) {
-      query = query.where(eq(userAlerts.isActive, isActive));
+      conditions.push(eq(userAlerts.isActive, isActive));
     }
     
-    return await query;
+    return await db.select().from(userAlerts).where(and(...conditions));
   }
 
   async getAlertsByPool(poolId: string): Promise<UserAlert[]> {
@@ -1384,15 +1400,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserNotifications(userId: string, isRead?: boolean): Promise<AlertNotification[]> {
-    let query = db.select().from(alertNotifications)
-      .innerJoin(userAlerts, eq(alertNotifications.alertId, userAlerts.id))
-      .where(eq(userAlerts.userId, userId));
+    let conditions = [eq(userAlerts.userId, userId)];
     
     if (isRead !== undefined) {
-      query = query.where(eq(alertNotifications.isRead, isRead));
+      conditions.push(eq(alertNotifications.isRead, isRead));
     }
     
-    const results = await query;
+    const results = await db.select().from(alertNotifications)
+      .innerJoin(userAlerts, eq(alertNotifications.alertId, userAlerts.id))
+      .where(and(...conditions));
+      
     return results.map(r => r.alert_notifications);
   }
 
@@ -1546,8 +1563,8 @@ export class DatabaseStorage implements IStorage {
 
     const results = await query.orderBy(desc(strategies.createdAt));
 
-    const strategiesMap = new Map();
-    results.forEach(result => {
+    const strategiesMap = new Map<string, any>();
+    results.forEach((result: any) => {
       const strategy = result.strategies;
       if (!strategiesMap.has(strategy.id)) {
         strategiesMap.set(strategy.id, {
@@ -1716,8 +1733,8 @@ export class DatabaseStorage implements IStorage {
       .where(eq(watchlists.userId, userId))
       .orderBy(desc(watchlists.createdAt));
 
-    const watchlistsMap = new Map();
-    results.forEach(result => {
+    const watchlistsMap = new Map<string, any>();
+    results.forEach((result: any) => {
       const watchlist = result.watchlists;
       if (!watchlistsMap.has(watchlist.id)) {
         watchlistsMap.set(watchlist.id, {
@@ -1812,17 +1829,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getApiEndpoints(category?: string, accessLevel?: string): Promise<ApiEndpoint[]> {
-    let query = db.select().from(apiEndpoints).where(eq(apiEndpoints.isActive, true));
+    const conditions = [eq(apiEndpoints.isActive, true)];
     
     if (category) {
-      query = query.where(eq(apiEndpoints.category, category));
+      conditions.push(eq(apiEndpoints.category, category));
     }
     
     if (accessLevel) {
-      query = query.where(eq(apiEndpoints.accessLevel, accessLevel));
+      conditions.push(eq(apiEndpoints.accessLevel, accessLevel));
     }
     
-    return await query;
+    return await db.select().from(apiEndpoints).where(and(...conditions));
   }
 
   async getApiEndpoint(id: string): Promise<ApiEndpoint | undefined> {
@@ -1850,13 +1867,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDeveloperApplications(status?: string): Promise<DeveloperApplication[]> {
-    let query = db.select().from(developerApplications);
-    
     if (status) {
-      query = query.where(eq(developerApplications.status, status));
+      return await db.select().from(developerApplications)
+        .where(eq(developerApplications.status, status))
+        .orderBy(desc(developerApplications.createdAt));
     }
     
-    return await query.orderBy(desc(developerApplications.createdAt));
+    return await db.select().from(developerApplications)
+      .orderBy(desc(developerApplications.createdAt));
   }
 
   async updateDeveloperApplication(id: string, status: string): Promise<DeveloperApplication | undefined> {
