@@ -1052,9 +1052,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
               },
               '0xbeefff209270748ddd194831b3fa287a5386f5bc': {
-                tokenPair: 'MetaMorpho Vault',
-                symbol: 'MetaMorpho',
-                name: 'MetaMorpho Vault',
+                tokenPair: 'Smokehouse USDC',
+                symbol: 'SMOKEHOUSE',
+                name: 'Smokehouse USDC',
                 address: '0xBEeFFF209270748ddd194831b3fa287a5386f5bC'
               }
             };
