@@ -41,6 +41,10 @@ export default {
         accent: {
           DEFAULT: "var(--accent)",
           foreground: "var(--accent-foreground)",
+          primary: "var(--accent-primary)",
+          secondary: "var(--accent-secondary)",
+          warning: "var(--accent-warning)",
+          info: "var(--accent-info)",
         },
         destructive: {
           DEFAULT: "var(--destructive)",
@@ -78,6 +82,12 @@ export default {
         mono: ["var(--font-mono)"],
         inter: ["Inter", "sans-serif"],
       },
+      boxShadow: {
+        'soft': 'var(--shadow-sm)',
+        'medium': 'var(--shadow-md)',
+        'large': 'var(--shadow-lg)',
+        'extra-large': 'var(--shadow-xl)',
+      },
       keyframes: {
         "accordion-down": {
           from: {
@@ -103,12 +113,17 @@ export default {
           from: { transform: "translateY(20px)", opacity: "0" },
           to: { transform: "translateY(0)", opacity: "1" },
         },
+        "glow": {
+          "0%, 100%": { transform: "scale(1)", filter: "brightness(1)" },
+          "50%": { transform: "scale(1.02)", filter: "brightness(1.1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-in-out",
         "slide-up": "slide-up 0.3s ease-out",
+        "glow": "glow 2s ease-in-out infinite",
       },
     },
   },

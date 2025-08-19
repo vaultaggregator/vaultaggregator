@@ -29,7 +29,7 @@ export default function HeroSection() {
           
           {/* Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mt-6 sm:mt-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 shadow-soft hover:shadow-medium transition-all duration-200 hover:bg-white/15">
               {isLoading ? (
                 <>
                   <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mx-auto mb-2 bg-white/20" />

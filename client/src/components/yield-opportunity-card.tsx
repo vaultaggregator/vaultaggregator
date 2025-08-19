@@ -41,10 +41,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
 
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'low': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400';
-      case 'medium': return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400';
-      case 'high': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-400';
-      default: return 'bg-muted text-muted-foreground';
+      case 'low': return 'bg-green-100 dark:bg-accent-secondary/20 text-green-800 dark:text-accent-secondary border border-green-200 dark:border-accent-secondary/30';
+      case 'medium': return 'bg-yellow-100 dark:bg-accent-warning/20 text-yellow-800 dark:text-accent-warning border border-yellow-200 dark:border-accent-warning/30';
+      case 'high': return 'bg-red-100 dark:bg-destructive/20 text-red-800 dark:text-destructive border border-red-200 dark:border-destructive/30';
+      default: return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
@@ -63,7 +63,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
 
   return (
     <Link href={generateYieldUrl(opportunity)} className="block">
-      <Card className={`bg-card cursor-pointer ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-sm border border-border hover:shadow-lg hover:border-blue-300 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-blue-500' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
+      <Card className={`bg-card cursor-pointer card-hover ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-soft border border-border hover:shadow-medium hover:border-accent-primary/50 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-accent-primary' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
         <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
           {/* Left section - Token and Platform info */}
