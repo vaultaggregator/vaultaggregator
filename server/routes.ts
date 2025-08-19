@@ -528,6 +528,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // New endpoint to find pools by network/protocol/tokenPair
+  app.get("/api/pools/find/:network/:protocol/:tokenPair", async (req, res) => {
+    try {
+      const { network, protocol, tokenPair } = req.params;
+      console.log("🎯 Pool lookup requested:", { network, protocol, tokenPair });
+      
+      // Convert URL-friendly slugs back to search terms
+      const networkName = network.replace(/-/g, ' ');
+      const protocolName = protocol.replace(/-/g, ' ');
+      const tokenPairName = tokenPair.replace(/-/g, ' ');
+      
+      console.log("🔍 Searching for pool:", { networkName, protocolName, tokenPairName });
+      
+      // Get all pools and filter by network, protocol, and token pair
+      const pools = await storage.getPools({ onlyVisible: true, limit: 1000 });
+      
+      const matchingPool = pools.find(pool => {
+        const chainMatch = pool.chain.name.toLowerCase() === networkName.toLowerCase() ||
+                          pool.chain.displayName.toLowerCase() === networkName.toLowerCase();
+        const platformMatch = pool.platform.name.toLowerCase().includes(protocolName.toLowerCase()) ||
+                             pool.platform.displayName.toLowerCase().includes(protocolName.toLowerCase());
+        const tokenMatch = pool.tokenPair.toLowerCase().replace(/\s+/g, '-') === tokenPairName.toLowerCase() ||
+                          pool.tokenPair.toLowerCase().replace(/\s+/g, '') === tokenPairName.toLowerCase().replace(/-/g, '');
+        
+        console.log("🔎 Checking pool:", pool.tokenPair, "Chain match:", chainMatch, "Platform match:", platformMatch, "Token match:", tokenMatch);
+        
+        return chainMatch && platformMatch && tokenMatch;
+      });
+      
+      if (!matchingPool) {
+        console.log("❌ No matching pool found for:", { network, protocol, tokenPair });
+        return res.status(404).json({ message: "Pool not found" });
+      }
+      
+      console.log("✅ Matching pool found:", matchingPool.tokenPair, "on", matchingPool.platform.displayName);
+      res.json(matchingPool);
+    } catch (error) {
+      console.error("💥 Error finding pool:", error);
+      res.status(500).json({ message: "Failed to find pool" });
+    }
+  });
+
   // New endpoint for real historical APY averages (100% authentic data)
   app.get("/api/pools/:id/historical-averages", async (req, res) => {
     try {

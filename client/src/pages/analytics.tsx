@@ -105,6 +105,7 @@ export default function Analytics() {
   const riskChartData: ChartDataPoint[] = Object.entries(processedData.riskData).map(([name, data]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value: data.count,
+    apy: 0, // Risk chart doesn't use APY
     tvl: data.totalTvl,
     label: `$${(data.totalTvl / 1e9).toFixed(1)}B TVL`
   }));

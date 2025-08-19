@@ -171,6 +171,7 @@ export default function PoolDetail() {
     poolId?: string;
     network?: string;
     protocol?: string;
+    tokenPair?: string;
     slug?: string;
   }>();
   
@@ -178,20 +179,32 @@ export default function PoolDetail() {
   const poolId = params.poolId;
   const urlInfo = parseYieldUrl(params);
   
+  // Determine if we're using new URL format or legacy
+  const isNewUrlFormat = !poolId && params.network && params.protocol && params.tokenPair;
+  const apiEndpoint = isNewUrlFormat 
+    ? `/api/pools/find/${params.network}/${params.protocol}/${params.tokenPair}`
+    : `/api/pools/${poolId}`;
+  
+  console.log("🎯 Pool Detail URL Info:", { 
+    isNewUrlFormat, 
+    apiEndpoint,
+    params: { poolId, network: params.network, protocol: params.protocol, tokenPair: params.tokenPair }
+  });
+  
   // Enable real-time APY updates via WebSocket
   const { isConnected, lastUpdate } = useRealtimeApy();
   
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
-    queryKey: ['/api/pools', poolId],
-    enabled: !!poolId,
+    queryKey: [apiEndpoint],
+    enabled: !!(poolId || isNewUrlFormat),
     staleTime: 0, // No caching - always fresh
     gcTime: 0, // Remove from cache immediately (renamed from cacheTime in v5)
   });
 
   // Fetch real historical APY averages (100% authentic data)
   const { data: historicalAverages, isLoading: averagesLoading } = useQuery({
-    queryKey: ['/api/pools', poolId, 'historical-averages'],
-    enabled: !!poolId,
+    queryKey: ['/api/pools', pool?.id, 'historical-averages'],
+    enabled: !!pool?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes cache
     retry: 1,
     refetchOnWindowFocus: false,
@@ -199,10 +212,10 @@ export default function PoolDetail() {
 
   // Remove Morpho API dependency - using database values only
 
-  // Scroll to top when page loads or pool ID changes (mobile navigation fix)
+  // Scroll to top when page loads or pool changes (mobile navigation fix)
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [poolId]);
+  }, [pool?.id]);
 
   // Update document title and meta tags when pool data loads
   useEffect(() => {

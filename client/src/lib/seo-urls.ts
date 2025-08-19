@@ -15,14 +15,9 @@ export function generateYieldUrl(opportunity: YieldOpportunity): string {
   const network = createSlug(opportunity.chain.name);
   const protocol = createSlug(opportunity.platform.name);
   const tokenPair = createSlug(opportunity.tokenPair);
-  const apy = opportunity.rawData?.apyBase 
-    ? Math.round(parseFloat(opportunity.rawData.apyBase.toString())) 
-    : 'unknown';
   
-  // Create descriptive slug: token-pair-apy-yield
-  const slug = `${tokenPair}-${apy}apy-yield`;
-  
-  return `/yield/${network}/${protocol}/${opportunity.id}/${slug}`;
+  // Simple format: /yield/network/protocol/token-pair
+  return `/yield/${network}/${protocol}/${tokenPair}`;
 }
 
 // Generate fallback legacy URL
@@ -34,12 +29,14 @@ export function generateLegacyUrl(poolId: string): string {
 export function parseYieldUrl(params: {
   network?: string;
   protocol?: string;
-  poolId?: string;
-  slug?: string;
+  tokenPair?: string;
+  poolId?: string; // For legacy support
+  slug?: string;   // For legacy support
 }) {
   return {
     network: params.network?.replace(/-/g, ' ') || '',
     protocol: params.protocol?.replace(/-/g, ' ') || '',
+    tokenPair: params.tokenPair?.replace(/-/g, ' ') || '',
     poolId: params.poolId || '',
     slug: params.slug || ''
   };
