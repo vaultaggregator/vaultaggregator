@@ -6,24 +6,73 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { ArrowLeft, Upload, Image } from "lucide-react";
+import { ArrowLeft, Upload, Image, Plus, Trash2, Network } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import AdminHeader from "@/components/admin-header";
 import { getChainIcon } from "@/components/chain-icons";
 import type { Chain } from "@shared/schema";
 import type { UploadResult } from "@uppy/core";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const createChainSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  displayName: z.string().min(1, "Display name is required"),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, "Must be a valid hex color").default("#3B82F6"),
+  isActive: z.boolean().default(true),
+});
 
 export default function AdminNetworks() {
   const { user, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const createForm = useForm<z.infer<typeof createChainSchema>>({
+    resolver: zodResolver(createChainSchema),
+    defaultValues: {
+      name: "",
+      displayName: "",
+      color: "#3B82F6",
+      isActive: true,
+    },
+  });
 
   // Fetch ALL chains for admin (including inactive ones)
   const { data: chains = [], isLoading: chainsLoading } = useQuery<Chain[]>({
     queryKey: ["/api/admin/chains"],
+  });
+
+  const createChainMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof createChainSchema>) => {
+      const response = await apiRequest("POST", "/api/admin/chains", data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/chains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chains"] });
+      setShowCreateDialog(false);
+      createForm.reset();
+      toast({
+        title: "Success",
+        description: "Network created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create network",
+        variant: "destructive",
+      });
+    },
   });
 
   const updateChainMutation = useMutation({
@@ -43,6 +92,28 @@ export default function AdminNetworks() {
       toast({
         title: "Error",
         description: error.message || "Failed to update network",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteChainMutation = useMutation({
+    mutationFn: async (chainId: string) => {
+      const response = await apiRequest("DELETE", `/api/admin/chains/${chainId}`);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/chains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chains"] });
+      toast({
+        title: "Success",
+        description: "Network deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete network",
         variant: "destructive",
       });
     },
@@ -89,6 +160,16 @@ export default function AdminNetworks() {
     }
   };
 
+  const onCreateSubmit = (data: z.infer<typeof createChainSchema>) => {
+    createChainMutation.mutate(data);
+  };
+
+  const handleDelete = (chainId: string, chainName: string) => {
+    if (window.confirm(`Are you sure you want to delete "${chainName}"? This action cannot be undone.`)) {
+      deleteChainMutation.mutate(chainId);
+    }
+  };
+
   // Redirect if not authenticated
   if (!userLoading && !user) {
     navigate("/admin/login");
@@ -113,10 +194,107 @@ export default function AdminNetworks() {
         {/* Networks Management */}
         <Card>
           <CardHeader>
-            <CardTitle>Networks</CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Configure network visibility and upload custom icons
-            </p>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Networks</CardTitle>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Configure network visibility and upload custom icons
+                </p>
+              </div>
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button data-testid="button-create-network">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Network
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Create New Network</DialogTitle>
+                  </DialogHeader>
+                  <Form {...createForm}>
+                    <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+                      <FormField
+                        control={createForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Internal Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="ethereum"
+                                {...field}
+                                data-testid="input-create-network-name"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={createForm.control}
+                        name="displayName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Display Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Ethereum" {...field} data-testid="input-create-network-display-name" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={createForm.control}
+                        name="color"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Brand Color</FormLabel>
+                            <FormControl>
+                              <div className="flex space-x-2">
+                                <Input 
+                                  type="color" 
+                                  {...field} 
+                                  className="w-20 h-10 p-1 border rounded"
+                                  data-testid="input-create-network-color"
+                                />
+                                <Input 
+                                  placeholder="#3B82F6" 
+                                  {...field}
+                                  className="flex-1"
+                                  data-testid="input-create-network-color-text"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="flex space-x-2">
+                        <Button 
+                          type="submit" 
+                          disabled={createChainMutation.isPending}
+                          data-testid="button-submit-create-network"
+                        >
+                          {createChainMutation.isPending ? "Creating..." : "Create Network"}
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setShowCreateDialog(false)}
+                          data-testid="button-cancel-create-network"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
             {chainsLoading ? (
@@ -192,27 +370,40 @@ export default function AdminNetworks() {
                         {chain.isActive ? "Active" : "Inactive"}
                       </Badge>
 
-                      <ObjectUploader
-                        maxNumberOfFiles={1}
-                        maxFileSize={5242880} // 5MB for icons
-                        onGetUploadParameters={() => handleGetUploadParameters(chain.id)}
-                        onComplete={handleUploadComplete(chain.id)}
-                        buttonClassName="w-full mt-3"
-                      >
-                        <div className="flex items-center justify-center space-x-2">
-                          {chain.iconUrl ? (
-                            <>
-                              <Image className="h-4 w-4" />
-                              <span>Update Icon</span>
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4" />
-                              <span>Upload Icon</span>
-                            </>
-                          )}
-                        </div>
-                      </ObjectUploader>
+                      <div className="space-y-2">
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          maxFileSize={5242880} // 5MB for icons
+                          onGetUploadParameters={() => handleGetUploadParameters(chain.id)}
+                          onComplete={handleUploadComplete(chain.id)}
+                          buttonClassName="w-full"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            {chain.iconUrl ? (
+                              <>
+                                <Image className="h-4 w-4" />
+                                <span>Update Icon</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4" />
+                                <span>Upload Icon</span>
+                              </>
+                            )}
+                          </div>
+                        </ObjectUploader>
+                        
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleDelete(chain.id, chain.displayName)}
+                          data-testid={`button-delete-network-${chain.id}`}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Network
+                        </Button>
+                      </div>
                     </div>
                   </Card>
                 ))}

@@ -4,14 +4,31 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getPlatformIcon } from "@/components/platform-icons";
 import AdminHeader from "@/components/admin-header";
-import { ArrowLeft, Plus, Edit2, Trash2, Upload } from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, Upload, Building } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const createPlatformSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  displayName: z.string().min(1, "Display name is required"),
+  slug: z.string().min(1, "Slug is required"),
+  website: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  visitUrlTemplate: z.string().optional(),
+  showUnderlyingTokens: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+});
 
 interface Platform {
   id: string;
@@ -36,9 +53,72 @@ export default function AdminPlatforms() {
   const [editWebsite, setEditWebsite] = useState("");
   const [editUrlTemplate, setEditUrlTemplate] = useState("");
   const [editShowUnderlyingTokens, setEditShowUnderlyingTokens] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const createForm = useForm<z.infer<typeof createPlatformSchema>>({
+    resolver: zodResolver(createPlatformSchema),
+    defaultValues: {
+      name: "",
+      displayName: "",
+      slug: "",
+      website: "",
+      visitUrlTemplate: "",
+      showUnderlyingTokens: false,
+      isActive: true,
+    },
+  });
 
   const { data: platforms = [], isLoading, refetch } = useQuery<Platform[]>({
     queryKey: ["/api/admin/platforms"],
+  });
+
+  const createPlatformMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof createPlatformSchema>) => {
+      return apiRequest("/api/admin/platforms", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/platforms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
+      setShowCreateDialog(false);
+      createForm.reset();
+      toast({
+        title: "Success",
+        description: "Platform created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create platform",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deletePlatformMutation = useMutation({
+    mutationFn: async (platformId: string) => {
+      return apiRequest(`/api/admin/platforms/${platformId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/platforms"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/platforms"] });
+      toast({
+        title: "Success",
+        description: "Platform deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete platform",
+        variant: "destructive",
+      });
+    },
   });
 
   const updatePlatformMutation = useMutation({
@@ -168,6 +248,20 @@ export default function AdminPlatforms() {
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const onCreateSubmit = (data: z.infer<typeof createPlatformSchema>) => {
+    createPlatformMutation.mutate(data);
+  };
+
+  const handleDelete = (platformId: string, platformName: string) => {
+    if (window.confirm(`Are you sure you want to delete "${platformName}"? This action cannot be undone.`)) {
+      deletePlatformMutation.mutate(platformId);
+    }
+  };
+
+  const generateSlug = (name: string) => {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
   // Platform Card Component
@@ -342,6 +436,17 @@ export default function AdminPlatforms() {
                 <Upload className="w-4 h-4 mr-1" />
                 Upload Logo
               </ObjectUploader>
+
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => handleDelete(platform.id, platform.displayName)}
+                data-testid={`button-delete-${platform.id}`}
+                disabled={platform.hasVisiblePools}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Delete
+              </Button>
             </div>
           </div>
         )}
@@ -363,10 +468,150 @@ export default function AdminPlatforms() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Platform Management</h1>
-          <p className="text-gray-600 mt-2">
-            Manage platform information and upload platform logos
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Platform Management</h1>
+              <p className="text-gray-600 mt-2">
+                Manage platform information and upload platform logos
+              </p>
+            </div>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button data-testid="button-create-platform">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Platform
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Create New Platform</DialogTitle>
+                </DialogHeader>
+                <Form {...createForm}>
+                  <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+                    <FormField
+                      control={createForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Internal Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="morpho"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (!createForm.getValues('slug')) {
+                                  createForm.setValue('slug', generateSlug(e.target.value));
+                                }
+                              }}
+                              data-testid="input-create-name"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="displayName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Display Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Morpho" {...field} data-testid="input-create-display-name" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="slug"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Slug</FormLabel>
+                          <FormControl>
+                            <Input placeholder="morpho" {...field} data-testid="input-create-slug" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="website"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Website (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://morpho.org" {...field} data-testid="input-create-website" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="visitUrlTemplate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Visit URL Template (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://app.morpho.org/vault?address={POOL_ADDRESS}" {...field} data-testid="input-create-visit-template" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="showUnderlyingTokens"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel>Show Underlying Tokens</FormLabel>
+                            <div className="text-sm text-muted-foreground">
+                              Display underlying token details on pool pages
+                            </div>
+                          </div>
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-create-show-underlying"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex space-x-2">
+                      <Button 
+                        type="submit" 
+                        disabled={createPlatformMutation.isPending}
+                        data-testid="button-submit-create-platform"
+                      >
+                        {createPlatformMutation.isPending ? "Creating..." : "Create Platform"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setShowCreateDialog(false)}
+                        data-testid="button-cancel-create-platform"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Search Box */}

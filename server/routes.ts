@@ -939,8 +939,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         platformId,
         chainId,
         tokenPair,
-        apy: apy ? parseFloat(apy) : null,
-        tvl: tvl ? parseFloat(tvl) : null,
+        apy: apy ? apy.toString() : null,
+        tvl: tvl ? tvl.toString() : null,
         riskLevel: riskLevel || "medium",
         poolAddress: poolAddress || null,
         defiLlamaId: defiLlamaId || null,
@@ -1001,7 +1001,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/pools/:id", requireAuth, async (req, res) => {
     try {
       const poolId = req.params.id;
-      const deletedBy = req.session?.userId || null; // Use session user ID or null
+      const deletedBy = (req.session as any)?.userId || null; // Use session user ID or null
       const success = await storage.softDeletePool(poolId, deletedBy);
       
       if (!success) {
@@ -1189,6 +1189,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new platform
+  app.post("/api/admin/platforms", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertPlatformSchema.parse(req.body);
+      const newPlatform = await storage.createPlatform(validatedData);
+      res.status(201).json(newPlatform);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      console.error("Error creating platform:", error);
+      res.status(500).json({ message: "Failed to create platform" });
+    }
+  });
+
+  // Delete platform
+  app.delete("/api/admin/platforms/:id", requireAuth, async (req, res) => {
+    try {
+      const platformId = req.params.id;
+      
+      // Check if platform has pools before deletion
+      const pools = await storage.getPools({ platformId, limit: 1, offset: 0 });
+      if (pools.length > 0) {
+        return res.status(400).json({ message: "Cannot delete platform with existing pools" });
+      }
+      
+      const success = await storage.deletePlatform(platformId);
+      if (!success) {
+        return res.status(404).json({ message: "Platform not found" });
+      }
+
+      res.json({ message: "Platform deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting platform:", error);
+      res.status(500).json({ message: "Failed to delete platform" });
+    }
+  });
+
   // Admin chains endpoint
   app.get("/api/admin/chains", requireAuth, async (req, res) => {
     try {
@@ -1197,6 +1235,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching all chains:", error);
       res.status(500).json({ message: "Failed to fetch chains" });
+    }
+  });
+
+  // Create new chain
+  app.post("/api/admin/chains", requireAuth, async (req, res) => {
+    try {
+      const validatedData = insertChainSchema.parse(req.body);
+      const newChain = await storage.createChain(validatedData);
+      res.status(201).json(newChain);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      console.error("Error creating chain:", error);
+      res.status(500).json({ message: "Failed to create chain" });
+    }
+  });
+
+  // Update chain
+  app.put("/api/admin/chains/:id", requireAuth, async (req, res) => {
+    try {
+      const chainId = req.params.id;
+      const updateData = req.body;
+      
+      const updatedChain = await storage.updateChain(chainId, updateData);
+      if (!updatedChain) {
+        return res.status(404).json({ message: "Chain not found" });
+      }
+
+      res.json(updatedChain);
+    } catch (error) {
+      console.error("Error updating chain:", error);
+      res.status(500).json({ message: "Failed to update chain" });
+    }
+  });
+
+  // Delete chain
+  app.delete("/api/admin/chains/:id", requireAuth, async (req, res) => {
+    try {
+      const chainId = req.params.id;
+      
+      // Check if chain has pools before deletion
+      const pools = await storage.getPools({ chainId, limit: 1, offset: 0 });
+      if (pools.length > 0) {
+        return res.status(400).json({ message: "Cannot delete chain with existing pools" });
+      }
+      
+      const success = await storage.deleteChain(chainId);
+      if (!success) {
+        return res.status(404).json({ message: "Chain not found" });
+      }
+
+      res.json({ message: "Chain deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting chain:", error);
+      res.status(500).json({ message: "Failed to delete chain" });
     }
   });
 
@@ -2950,7 +3044,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
         } catch (error) {
           console.error(`❌ Error downloading ${token.name} image:`, error);
-          results.push({ token: token.name, success: false, error: error.message });
+          results.push({ token: token.name, success: false, error: (error as Error).message });
         }
       }
       
