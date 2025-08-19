@@ -1,5 +1,6 @@
 // DeFi Category Icons Component
 // Professional SVG icons for different DeFi categories and yield farming types
+import usdtIcon from '@assets/generated_images/USDT_token_icon_c2e0a8d3.png';
 
 export interface CategoryIconProps {
   className?: string;
@@ -84,6 +85,18 @@ export const ETHIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
       fillOpacity="0.602"
     />
   </svg>
+);
+
+// USDT - Tether token icon (using generated high-quality icon)
+export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
+  <img
+    src={usdtIcon}
+    alt="USDT"
+    width={size}
+    height={size}
+    className={`${className} rounded-full`}
+    style={{ width: size, height: size }}
+  />
 );
 
 // Lending - Handshake/loan icon
@@ -259,6 +272,8 @@ export const DefaultCategoryIcon = ({ className = "", size = 24 }: CategoryIconP
 export const getCategoryIcon = (categoryName: string): React.FC<CategoryIconProps> => {
   const name = categoryName.toLowerCase();
   
+  // Check for USDT specifically first
+  if (name.includes('usdt') || name.includes('tether')) return USDTIcon;
   if (name.includes('stables') || name.includes('stable') || name.includes('usd') || name.includes('fiat')) return StablesIcon;
   if (name.includes('eth') || name.includes('ethereum')) return ETHIcon;
   if (name.includes('lend') || name.includes('borrow') || name.includes('loan')) return LendingIcon;
