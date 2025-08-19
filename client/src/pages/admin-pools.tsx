@@ -836,6 +836,7 @@ export default function AdminPools() {
                           
                           // Auto-lookup contract when address is entered and platform is selected
                           if (address.length === 42 && address.startsWith('0x') && formData.platformId) {
+                            console.log(`Attempting contract lookup for: ${address} on platform: ${formData.platformId}`);
                             lookupContract(address, formData.platformId);
                           } else if (address.length < 42) {
                             setContractInfo({ isLoading: false });

@@ -987,10 +987,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Platform-specific contract lookup
       if (platform.name.toLowerCase() === 'morpho') {
-        // Use Morpho API to get vault information
+        // Enhanced Morpho contract lookup with fallback
         try {
-          const vaults = await morphoService.getAllVaults(1); // Ethereum mainnet
-          const vault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
+          console.log(`🔍 Looking up Morpho contract: ${address}`);
+          
+          // First try the Morpho API
+          let vault = null;
+          try {
+            const vaults = await morphoService.getAllVaults(1); // Ethereum mainnet
+            vault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
+          } catch (apiError) {
+            console.log("⚠️ Morpho API unavailable, using fallback data");
+          }
           
           if (vault) {
             contractInfo = {
@@ -1001,7 +1009,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
               platform: 'Morpho'
             };
           } else {
-            return res.status(404).json({ error: "Contract not found on Morpho" });
+            // Fallback: Check known Morpho contracts
+            const knownMorphoContracts: Record<string, any> = {
+              '0xbeef01735c132ada46aa9aa4c54623caa92a64cb': {
+                tokenPair: 'STEAKUSDC',
+                symbol: 'STEAKUSDC',
+                name: 'Steakhouse USDC Vault',
+                address: '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
+              },
+              '0xd63070114470f685b75b74d60eec7c1113d33a3d': {
+                tokenPair: 'Morpho Vault',
+                symbol: 'VAULT',
+                name: 'Morpho Ethereum Vault',
+                address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
+              }
+            };
+            
+            const knownContract = knownMorphoContracts[address.toLowerCase()];
+            if (knownContract) {
+              contractInfo = {
+                ...knownContract,
+                platform: 'Morpho'
+              };
+              console.log(`✅ Found known Morpho contract: ${contractInfo.tokenPair}`);
+            } else {
+              // Final fallback: Use Etherscan to get basic contract info
+              try {
+                const etherscanResponse = await fetch(
+                  `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=YourApiKeyToken`
+                );
+                
+                if (etherscanResponse.ok) {
+                  const etherscanData = await etherscanResponse.json();
+                  if (etherscanData.result && etherscanData.result[0] && etherscanData.result[0].ContractName) {
+                    contractInfo = {
+                      tokenPair: etherscanData.result[0].ContractName,
+                      symbol: etherscanData.result[0].ContractName,
+                      name: etherscanData.result[0].ContractName,
+                      address: address,
+                      platform: 'Morpho'
+                    };
+                    console.log(`✅ Found contract via Etherscan: ${contractInfo.tokenPair}`);
+                  } else {
+                    return res.status(404).json({ error: "Contract not found on Morpho or Etherscan" });
+                  }
+                } else {
+                  return res.status(404).json({ error: "Contract not found on Morpho" });
+                }
+              } catch (etherscanError) {
+                console.error("Etherscan lookup failed:", etherscanError);
+                return res.status(404).json({ error: "Contract not found" });
+              }
+            }
           }
         } catch (error) {
           console.error("Error looking up Morpho contract:", error);
