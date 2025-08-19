@@ -323,8 +323,9 @@ router.post('/:serviceId/trigger', async (req, res) => {
         case 'pool-scraper':
           // Import and trigger pool scraper
           try {
-            const { poolDataScraper } = await import('../services/poolDataScraper');
-            await poolDataScraper.scrapeAllPools();
+            const { ScraperManager } = await import('../scrapers/scraper-manager');
+            const scraperManager = new ScraperManager();
+            await scraperManager.scrapeAllPools();
             result = { success: true, message: 'Pool scraping triggered successfully' };
           } catch (err) {
             console.error('Pool scraper error:', err);
@@ -343,12 +344,12 @@ router.post('/:serviceId/trigger', async (req, res) => {
         case 'token-info-sync':
           // Import and trigger token info sync
           try {
-            const { TokenInfoSyncService } = await import('../services/tokenInfoSyncService');
-            const tokenService = new TokenInfoSyncService();
-            await tokenService.syncVisiblePoolTokens();
+            const { syncTokenInfo } = await import('../scripts/syncTokenInfo');
+            await syncTokenInfo();
             result = { success: true, message: 'Token info sync triggered successfully' };
-          } catch {
-            result = { success: false, message: 'Token info sync service not available' };
+          } catch (err) {
+            console.error('Token info sync error:', err);
+            result = { success: false, message: 'Token info sync service failed: ' + (err as Error).message };
           }
           break;
           
@@ -374,7 +375,7 @@ router.post('/:serviceId/trigger', async (req, res) => {
             // Get all pools and update their historical averages
             const pools = await storage.getPools({ limit: 100 });
             const promises = pools.map(pool => 
-              histApyService.calculateHistoricalAverages(pool.id)
+              histApyService.calculateRealHistoricalAverages(pool.id, pool.platform?.name)
             );
             await Promise.allSettled(promises);
             result = { success: true, message: 'Historical APY analysis triggered successfully' };
