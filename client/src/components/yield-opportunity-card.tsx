@@ -151,10 +151,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* APY */}
             <div className="text-center">
               <p className="text-sm font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
-                {opportunity.rawData?.state?.netApy ? formatApy(opportunity.rawData.state.netApy.toString()) : 
-                 opportunity.rawData?.state?.apy ? formatApy(opportunity.rawData.state.apy.toString()) : 
-                 opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
-                 opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
               </p>
             </div>
             
@@ -198,10 +195,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">24h APY</p>
                   </div>
                   <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
-                    {opportunity.rawData?.state?.netApy ? formatApy(opportunity.rawData.state.netApy.toString()) : 
-                     opportunity.rawData?.state?.apy ? formatApy(opportunity.rawData.state.apy.toString()) : 
-                     opportunity.rawData?.apyBase ? formatApy(opportunity.rawData.apyBase.toString()) : 
-                     opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
+                    {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                   </p>
                 </div>
                 <div className="text-center">
