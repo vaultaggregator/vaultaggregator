@@ -171,8 +171,10 @@ export class TokenInfoSyncService {
       // Fetch price data
       let priceUsd = null;
       try {
-        const { PriceService } = await import("./aiOutlookService");
-        priceUsd = await PriceService.getTokenPrice(result.symbol || "UNKNOWN");
+        // Price service temporarily disabled - service not available
+        // const { PriceService } = await import("./aiOutlookService");
+        // priceUsd = await PriceService.getTokenPrice(result.symbol || "UNKNOWN");
+        priceUsd = null; // Placeholder until service is available
       } catch (error) {
         console.log(`Could not fetch price for ${result.symbol}:`, error);
       }
@@ -242,8 +244,10 @@ export class TokenInfoSyncService {
       // Fetch price data
       let priceUsd = null;
       try {
-        const { PriceService } = await import("./aiOutlookService");
-        priceUsd = await PriceService.getTokenPrice(symbol);
+        // Price service temporarily disabled - service not available
+        // const { PriceService } = await import("./aiOutlookService");
+        // priceUsd = await PriceService.getTokenPrice(symbol);
+        priceUsd = null; // Placeholder until service is available
       } catch (error) {
         console.log(`Could not fetch price for ${symbol}:`, error);
       }

@@ -32,6 +32,7 @@ export class StandardizedMetricsService {
     this.collectors.set("morpho", new MorphoMetricsCollector());
     this.collectors.set("morpho-blue", new MorphoMetricsCollector()); // 🎯 Handle morpho-blue slug
     this.collectors.set("lido", new LidoMetricsCollector());
+    this.collectors.set("etherscan", new EtherscanMetricsCollector());
   }
 
   /**
@@ -191,9 +192,21 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
 
   async collectTVL(pool: Pool): Promise<{ value: number | null; error?: string }> {
     try {
-      // TVL from Morpho GraphQL - placeholder for now
-      // TODO: Implement TVL collection from Morpho API
-      return { value: null, error: "TVL collection not implemented for Morpho" };
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use existing MorphoService for TVL data
+      const { MorphoService } = await import("../services/morphoService");
+      const morphoService = new MorphoService();
+      
+      const vaultData = await morphoService.getVaultByAddress(pool.poolAddress);
+      
+      if (vaultData?.state?.totalAssetsUsd) {
+        return { value: parseFloat(vaultData.state.totalAssetsUsd.toString()) };
+      }
+      
+      return { value: null, error: "TVL data not available from Morpho API" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "TVL collection failed" };
     }
@@ -205,9 +218,25 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Pool address not available" };
       }
 
-      // Calculate days from Etherscan contract creation
-      // TODO: Use existing Etherscan integration
-      return { value: null, error: "Days calculation not implemented" };
+      // Use Etherscan to get contract creation date
+      const etherscanUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
+      
+      const response = await fetch(etherscanUrl);
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch contract creation data from Etherscan" };
+      }
+      
+      const data = await response.json();
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        const firstTx = data.result[0];
+        const creationDate = new Date(parseInt(firstTx.timeStamp) * 1000);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return { value: daysDiff };
+      }
+      
+      return { value: null, error: "No transaction history found for contract" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
     }
@@ -219,9 +248,103 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Pool address not available" };
       }
 
-      // Get holders from Etherscan
-      // TODO: Use existing TokenInfo service
-      return { value: null, error: "Holders collection not implemented" };
+      // Use Etherscan web scraping to get holder count (similar to tokenInfoSyncService)
+      const etherscanUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+      
+      const response = await fetch(etherscanUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch token page from Etherscan" };
+      }
+      
+      const html = await response.text();
+      
+      // Extract holders count from HTML
+      const holdersMatch = html.match(/Holders[^>]*?(\d{1,3}(?:,\d{3})*)/);
+      if (holdersMatch) {
+        const holdersCount = parseInt(holdersMatch[1].replace(/,/g, ''));
+        return { value: holdersCount };
+      }
+      
+      return { value: null, error: "Could not extract holders count from Etherscan page" };
+    } catch (error) {
+      return { value: null, error: error instanceof Error ? error.message : "Holders collection failed" };
+    }
+  }
+}
+
+class EtherscanMetricsCollector implements PlatformMetricsCollector {
+  async collectAPY(pool: Pool): Promise<{ value: number | null; error?: string }> {
+    return { value: null, error: "APY collection not available via Etherscan - use platform-specific APIs" };
+  }
+
+  async collectTVL(pool: Pool): Promise<{ value: number | null; error?: string }> {
+    return { value: null, error: "TVL collection not available via Etherscan - use platform-specific APIs" };
+  }
+
+  async collectDays(pool: Pool): Promise<{ value: number | null; error?: string }> {
+    try {
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use Etherscan to get contract creation date
+      const etherscanUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
+      
+      const response = await fetch(etherscanUrl);
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch contract creation data from Etherscan" };
+      }
+      
+      const data = await response.json();
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        const firstTx = data.result[0];
+        const creationDate = new Date(parseInt(firstTx.timeStamp) * 1000);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return { value: daysDiff };
+      }
+      
+      return { value: null, error: "No transaction history found for contract" };
+    } catch (error) {
+      return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
+    }
+  }
+
+  async collectHolders(pool: Pool): Promise<{ value: number | null; error?: string }> {
+    try {
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use Etherscan web scraping to get holder count
+      const etherscanUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+      
+      const response = await fetch(etherscanUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch token page from Etherscan" };
+      }
+      
+      const html = await response.text();
+      
+      // Extract holders count from HTML
+      const holdersMatch = html.match(/Holders[^>]*?(\d{1,3}(?:,\d{3})*)/);
+      if (holdersMatch) {
+        const holdersCount = parseInt(holdersMatch[1].replace(/,/g, ''));
+        return { value: holdersCount };
+      }
+      
+      return { value: null, error: "Could not extract holders count from Etherscan page" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "Holders collection failed" };
     }
@@ -244,8 +367,27 @@ class LidoMetricsCollector implements PlatformMetricsCollector {
 
   async collectTVL(pool: Pool): Promise<{ value: number | null; error?: string }> {
     try {
-      // TODO: Implement TVL collection from Lido API
-      return { value: null, error: "TVL collection not implemented for Lido" };
+      // For Lido stETH, get TVL from Lido API
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use Lido API to get stETH TVL
+      const lidoUrl = "https://stake.lido.fi/api/stats";
+      const response = await fetch(lidoUrl);
+      
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch data from Lido API" };
+      }
+      
+      const data = await response.json();
+      
+      if (data.totalPooledEther && data.stethPrice) {
+        const tvlUsd = parseFloat(data.totalPooledEther) * parseFloat(data.stethPrice);
+        return { value: tvlUsd };
+      }
+      
+      return { value: null, error: "TVL data not available from Lido API" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "TVL collection failed" };
     }
@@ -253,9 +395,29 @@ class LidoMetricsCollector implements PlatformMetricsCollector {
 
   async collectDays(pool: Pool): Promise<{ value: number | null; error?: string }> {
     try {
-      // For Lido stETH, we know it's been operating for ~1703 days as per replit.md
-      // TODO: Calculate dynamically from contract creation date
-      return { value: 1703 }; // From replit.md - Lido stETH operating days
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use Etherscan to get contract creation date dynamically
+      const etherscanUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
+      
+      const response = await fetch(etherscanUrl);
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch contract creation data from Etherscan" };
+      }
+      
+      const data = await response.json();
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        const firstTx = data.result[0];
+        const creationDate = new Date(parseInt(firstTx.timeStamp) * 1000);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        return { value: daysDiff };
+      }
+      
+      return { value: null, error: "No transaction history found for contract" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
     }
@@ -263,8 +425,33 @@ class LidoMetricsCollector implements PlatformMetricsCollector {
 
   async collectHolders(pool: Pool): Promise<{ value: number | null; error?: string }> {
     try {
-      // TODO: Get Lido stETH holders from Etherscan
-      return { value: null, error: "Holders collection not implemented for Lido" };
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use Etherscan web scraping to get holder count for Lido stETH token
+      const etherscanUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+      
+      const response = await fetch(etherscanUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        return { value: null, error: "Failed to fetch token page from Etherscan" };
+      }
+      
+      const html = await response.text();
+      
+      // Extract holders count from HTML
+      const holdersMatch = html.match(/Holders[^>]*?(\d{1,3}(?:,\d{3})*)/);
+      if (holdersMatch) {
+        const holdersCount = parseInt(holdersMatch[1].replace(/,/g, ''));
+        return { value: holdersCount };
+      }
+      
+      return { value: null, error: "Could not extract holders count from Etherscan page" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "Holders collection failed" };
     }
