@@ -565,15 +565,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1" data-testid="text-operating-days">
-                {(() => {
-                  if (pool.createdAt) {
-                    const createdDate = new Date(pool.createdAt);
-                    const now = new Date();
-                    const days = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-                    return days;
-                  }
-                  return 'N/A';
-                })()}
+                {pool.rawData?.count || 'N/A'}
               </p>
               <p className="text-xs text-amber-600/70 dark:text-amber-300/70 font-medium">Days Active</p>
             </CardContent>
