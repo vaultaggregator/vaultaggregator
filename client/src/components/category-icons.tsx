@@ -88,30 +88,25 @@ export const ETHIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
 
 // USDT - Modern Tether token icon (2024 current design)
 export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 32 32"
+  <img 
+    src="/objects/5e0ba7a2-f89c-43a2-97b9-65cf3bbd9026"
+    alt="USDT"
     className={className}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    {/* Main circular background - Official Tether brand color */}
-    <circle cx="16" cy="16" r="16" fill="#26A17B"/>
-    
-    {/* Modern clean "T" in center */}
-    <text
-      x="16"
-      y="22"
-      textAnchor="middle"
-      fontSize="18"
-      fill="white"
-      fontFamily="Arial, sans-serif"
-      fontWeight="bold"
-    >
-      T
-    </text>
-  </svg>
+    style={{ width: size, height: size }}
+    onError={(e) => {
+      // Fallback to SVG if image fails to load
+      const target = e.target as HTMLImageElement;
+      const parent = target.parentElement;
+      if (parent) {
+        parent.innerHTML = `
+          <svg width="${size}" height="${size}" viewBox="0 0 32 32" class="${className}" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="16" fill="#26A17B"/>
+            <text x="16" y="22" text-anchor="middle" font-size="18" fill="white" font-family="Arial, sans-serif" font-weight="bold">T</text>
+          </svg>
+        `;
+      }
+    }}
+  />
 );
 
 // Lending - Handshake/loan icon
