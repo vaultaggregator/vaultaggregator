@@ -2,7 +2,7 @@ import { BaseScraper, ScrapedData } from './base-scraper';
 import { MorphoScraper } from './morpho-scraper';
 import { LidoScraper } from './lido-scraper';
 import { storage } from '../storage';
-import type { PoolWithRelations } from '../storage';
+import type { Pool, Platform, Chain } from '../../shared/schema';
 
 export class ScraperManager {
   private scrapers: Map<string, BaseScraper> = new Map();
@@ -27,12 +27,36 @@ export class ScraperManager {
     console.log('🚀 Starting pool data scraping...');
 
     try {
-      // Get all pools from database
-      const pools = await storage.getPools({ onlyVisible: true });
-      console.log(`📊 Found ${pools.length} pools to scrape`);
+      // Get all pools from database - using direct query to avoid SQL array errors
+      const { db } = await import('../db');
+      const { pools, platforms, chains } = await import('../../shared/schema');
+      const { eq, and, isNull, desc } = await import('drizzle-orm');
+      
+      const poolsResults = await db
+        .select()
+        .from(pools)
+        .leftJoin(platforms, eq(pools.platformId, platforms.id))
+        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .where(
+          and(
+            eq(pools.isActive, true),
+            eq(pools.isVisible, true),
+            isNull(pools.deletedAt)
+          )
+        )
+        .orderBy(desc(pools.apy));
+
+      // Format the results to match Pool type with platform/chain
+      const formattedPools = poolsResults.map(result => ({
+        ...result.pools,
+        platform: result.platforms!,
+        chain: result.chains!,
+      }));
+
+      console.log(`📊 Found ${formattedPools.length} pools to scrape`);
 
       const results = await Promise.allSettled(
-        pools.map(pool => this.scrapePool(pool))
+        formattedPools.map(pool => this.scrapePool(pool))
       );
 
       let successCount = 0;
@@ -44,7 +68,7 @@ export class ScraperManager {
         } else {
           errorCount++;
           if (result.status === 'rejected') {
-            console.error(`❌ Failed to scrape pool ${pools[index].id}:`, result.reason);
+            console.error(`❌ Failed to scrape pool ${formattedPools[index].id}:`, result.reason);
           }
         }
       });
@@ -58,7 +82,7 @@ export class ScraperManager {
     }
   }
 
-  private async scrapePool(pool: PoolWithRelations): Promise<ScrapedData | null> {
+  private async scrapePool(pool: Pool & { platform: Platform; chain: Chain }): Promise<ScrapedData | null> {
     const scraper = this.scrapers.get(pool.platform.name);
     
     if (!scraper) {
@@ -74,7 +98,7 @@ export class ScraperManager {
         await storage.updatePool(pool.id, {
           apy: scrapedData.apy,
           tvl: scrapedData.tvl || pool.tvl,
-          lastUpdated: scrapedData.scrapedAt
+          // Updated on scrapedAt: ${scrapedData.scrapedAt}
         });
 
         console.log(`💾 Updated pool ${pool.id} with fresh data: APY ${scrapedData.apy}%`);

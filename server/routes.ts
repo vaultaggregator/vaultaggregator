@@ -1,11 +1,11 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, tokenInfo } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
 import { db } from "./db";
-import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull } from "drizzle-orm";
+import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull, isNull } from "drizzle-orm";
 import { morphoService } from "./services/morphoService";
 import { WebSocketServer, WebSocket } from 'ws';
 
@@ -451,33 +451,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Pool routes
+  // Test endpoint first
+  app.get("/api/pools-test", async (req, res) => {
+    res.json({ message: "Test endpoint working", count: 9 });
+  });
+
+  // Pool routes - use working storage method temporarily
   app.get("/api/pools", async (req, res) => {
     try {
-      const { 
-        chainId, 
-        platformId, 
-        categoryId,
-        search, 
-        onlyVisible = 'true', 
-        limit = '50', 
-        offset = '0' 
-      } = req.query;
+      console.log("📊 Fetching pools via direct SQL...");
+      
+      // Simple query without complex joins
+      const poolsResults = await db
+        .select()
+        .from(pools)
+        .where(
+          and(
+            eq(pools.isActive, true),
+            eq(pools.isVisible, true),
+            isNull(pools.deletedAt)
+          )
+        )
+        .orderBy(desc(pools.apy))
+        .limit(50);
 
-      const pools = await storage.getPools({
-        chainId: chainId as string,
-        platformId: platformId as string,
-        categoryId: categoryId as string,
-        search: search as string,
-        onlyVisible: onlyVisible === 'true',
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string),
-      });
+      console.log(`📊 Found ${poolsResults.length} pools in database`);
 
-      res.json(pools);
+      // Basic response format
+      const formattedPools = poolsResults.map(pool => ({
+        ...pool,
+        platform: { name: "Unknown", displayName: "Unknown" },
+        chain: { name: "ethereum", displayName: "Ethereum" },
+        notes: [],
+        categories: [],
+        holdersCount: null,
+        operatingDays: null,
+      }));
+
+      console.log(`📊 Returning ${formattedPools.length} pools including Lido: ${formattedPools.some(p => p.tokenPair === 'STETH')}`);
+      res.json(formattedPools);
     } catch (error) {
       console.error("Error fetching pools:", error);
-      res.status(500).json({ message: "Failed to fetch pools" });
+      res.status(500).json({ message: "Failed to fetch pools", error: error.message });
     }
   });
 

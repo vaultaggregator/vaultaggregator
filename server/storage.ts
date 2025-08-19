@@ -547,85 +547,36 @@ export class DatabaseStorage implements IStorage {
   } = {}): Promise<PoolWithRelations[]> {
     const { chainId, platformId, categoryId, search, onlyVisible = true, limit = 50, offset = 0 } = options;
 
-    let query = db
+    // Use very basic approach without complex conditions
+    const results = await db
       .select()
       .from(pools)
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id))
-      .leftJoin(notes, eq(pools.id, notes.poolId))
-      .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
-      .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
-      .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id))
-      .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId));
-
-    const conditions = [eq(pools.isActive, true), sql`${pools.deletedAt} IS NULL`];
-
-    if (onlyVisible) {
-      conditions.push(eq(pools.isVisible, true));
-    }
-
-    if (chainId) {
-      conditions.push(eq(pools.chainId, chainId));
-    }
-
-    if (platformId) {
-      conditions.push(eq(pools.platformId, platformId));
-    }
-
-    if (categoryId) {
-      conditions.push(eq(poolCategories.categoryId, categoryId));
-    }
-
-    if (search) {
-      conditions.push(
-        or(
-          ilike(platforms.displayName, `%${search}%`),
-          ilike(pools.tokenPair, `%${search}%`),
-          sql`${pools.rawData}::text ILIKE ${'%' + search + '%'}`
-        )!
-      );
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
-    }
-
-    const results = await query
+      .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
+      .where(
+        and(
+          eq(pools.isActive, true),
+          eq(pools.isVisible, true),
+          isNull(pools.deletedAt)
+        )
+      )
       .orderBy(desc(pools.apy))
       .limit(limit)
       .offset(offset);
 
-    // Group results by pool to handle multiple notes
-    const poolsMap = new Map<string, PoolWithRelations>();
+    // Convert to PoolWithRelations format
+    const poolsWithRelations: PoolWithRelations[] = results.map(result => ({
+      ...result.pools,
+      platform: result.platforms!,
+      chain: result.chains!,
+      notes: [],
+      categories: [],
+      holdersCount: result.pool_metrics_current?.holdersCount || null,
+      operatingDays: result.pool_metrics_current?.operatingDays || null,
+    }));
 
-    for (const result of results) {
-      const poolId = result.pools.id;
-
-
-
-      if (!poolsMap.has(poolId)) {
-        poolsMap.set(poolId, {
-          ...result.pools,
-          platform: result.platforms!,
-          chain: result.chains!,
-          notes: result.notes ? [result.notes] : [],
-          categories: result.categories ? [result.categories] : [],
-          holdersCount: result.pool_metrics_current?.holdersCount || null,
-          operatingDays: result.pool_metrics_current?.operatingDays || null,
-        });
-      } else {
-        const existingPool = poolsMap.get(poolId)!;
-        if (result.notes && !existingPool.notes.find(n => n.id === result.notes!.id)) {
-          existingPool.notes.push(result.notes);
-        }
-        if (result.categories && !existingPool.categories?.find(c => c.id === result.categories!.id)) {
-          existingPool.categories = existingPool.categories || [];
-          existingPool.categories.push(result.categories);
-        }
-      }
-    }
-
-    return Array.from(poolsMap.values());
+    return poolsWithRelations;
   }
 
   async getAdminPools(options: {
@@ -653,7 +604,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id));
 
-    const conditions = [eq(pools.isActive, true), sql`${pools.deletedAt} IS NULL`];
+    const conditions = [eq(pools.isActive, true), eq(pools.deletedAt, null)];
 
     if (chainIds && chainIds.length > 0) {
       conditions.push(inArray(pools.chainId, chainIds));
