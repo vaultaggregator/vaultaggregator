@@ -1018,9 +1018,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 address: '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
               },
               '0xd63070114470f685b75b74d60eec7c1113d33a3d': {
-                tokenPair: 'Morpho Vault',
-                symbol: 'VAULT',
-                name: 'Morpho Ethereum Vault',
+                tokenPair: 'MEV Capital USDC',
+                symbol: 'MEV',
+                name: 'MEV Capital USDC',
                 address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
               }
             };

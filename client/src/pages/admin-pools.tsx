@@ -364,10 +364,10 @@ export default function AdminPools() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.platformId || !formData.chainId || !formData.tokenPair) {
+    if (!formData.platformId || !formData.chainId || !contractInfo.tokenPair) {
       toast({
         title: "Validation Error",
-        description: "Platform, Chain, and Token Pair are required",
+        description: "Platform, Chain, and Pool Address are required. Contract information must be detected.",
         variant: "destructive",
       });
       return;
@@ -466,11 +466,10 @@ export default function AdminPools() {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
                     const data = {
-                      tokenPair: formData.get('tokenPair') as string,
+                      tokenPair: pool.tokenPair, // Keep existing tokenPair, don't allow editing
                       platformId: formData.get('platformId') as string,
                       chainId: formData.get('chainId') as string,
-                      poolAddress: formData.get('poolAddress') as string || null,
-                      defiLlamaId: formData.get('defiLlamaId') as string || null,
+                      poolAddress: formData.get('poolAddress') as string || undefined,
                       showUsdInFlow: formData.get('showUsdInFlow') === 'on',
                       isVisible: formData.get('isVisible') === 'on',
                       isActive: formData.get('isActive') === 'on',
