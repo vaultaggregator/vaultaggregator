@@ -577,7 +577,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1" data-testid="text-operating-days">
-                {pool.rawData?.count || 'N/A'}
+                {pool.operatingDays || 'N/A'}
               </p>
               <p className="text-xs text-amber-600/70 dark:text-amber-300/70 font-medium">Days Active</p>
             </CardContent>

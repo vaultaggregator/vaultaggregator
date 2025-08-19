@@ -287,10 +287,10 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
               <Clock className="h-3 w-3" />
               <span>30d: {pool.rawData.apyMean30d.toFixed(2)}%</span>
             </div>
-            {pool.createdAt && (
+            {pool.operatingDays && (
               <div className="flex items-center gap-1">
                 <Info className="h-3 w-3" />
-                <span>Operating {Math.floor((new Date().getTime() - new Date(pool.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days</span>
+                <span>Operating {pool.operatingDays} days</span>
               </div>
             )}
           </div>

@@ -883,6 +883,7 @@ export type PoolWithRelations = Pool & {
   poolReviews?: PoolReview[];
   aiOutlooks?: AIOutlook[];
   holdersCount?: number | null;
+  operatingDays?: number | null;
 };
 
 export type CategoryWithPoolCount = Category & {
