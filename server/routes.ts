@@ -1048,6 +1048,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid chain ID" });
       }
 
+      // Check for duplicate pools based on platform, chain, and pool address
+      if (poolAddress) {
+        const existingPool = await db
+          .select()
+          .from(pools)
+          .where(
+            and(
+              eq(pools.platformId, platformId),
+              eq(pools.chainId, chainId),
+              eq(pools.poolAddress, poolAddress),
+              isNull(pools.deletedAt) // Only check non-deleted pools
+            )
+          )
+          .limit(1);
+
+        if (existingPool.length > 0) {
+          return res.status(409).json({ 
+            message: `Pool already exists: ${tokenPair} on ${platform.displayName} (${chain.displayName}) with address ${poolAddress}`,
+            error: "DUPLICATE_POOL"
+          });
+        }
+      }
+
+      // Also check for duplicate based on platform, chain, and token pair (case-insensitive)
+      const existingPoolByTokenPair = await db
+        .select()
+        .from(pools)
+        .where(
+          and(
+            eq(pools.platformId, platformId),
+            eq(pools.chainId, chainId),
+            sql`LOWER(${pools.tokenPair}) = LOWER(${tokenPair})`,
+            isNull(pools.deletedAt) // Only check non-deleted pools
+          )
+        )
+        .limit(1);
+
+      if (existingPoolByTokenPair.length > 0) {
+        return res.status(409).json({ 
+          message: `Pool already exists: ${tokenPair} on ${platform.displayName} (${chain.displayName})`,
+          error: "DUPLICATE_POOL"
+        });
+      }
+
       const poolData = {
         platformId,
         chainId,

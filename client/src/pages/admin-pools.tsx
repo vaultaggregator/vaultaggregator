@@ -212,8 +212,14 @@ export default function AdminPools() {
         body: JSON.stringify(poolData),
       });
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        
+        // Handle duplicate pool error specifically
+        if (response.status === 409 && errorData.error === "DUPLICATE_POOL") {
+          throw new Error(errorData.message || "This pool already exists");
+        }
+        
+        throw new Error(errorData.message || "Failed to create pool");
       }
       return response.json();
     },
@@ -264,9 +270,13 @@ export default function AdminPools() {
       }
     },
     onError: (error: any) => {
+      // Show specific error message for duplicates
+      const errorMessage = error.message || "Failed to create pool";
+      const isConflict = errorMessage.includes("already exists");
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to create pool",
+        title: isConflict ? "Pool Already Exists" : "Error",
+        description: errorMessage,
         variant: "destructive",
       });
     },
