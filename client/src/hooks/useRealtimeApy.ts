@@ -47,14 +47,20 @@ export function useRealtimeApy() {
           const message: WebSocketMessage = JSON.parse(event.data);
           
           if (message.type === 'apy_update') {
-            console.log(`💰 Live APY update received for pool ${message.poolId}: ${message.apy}%`);
+            console.log(`💰 LIVE APY UPDATE: Pool ${message.poolId} = ${message.apy}%`);
             
-            // Update all relevant query caches immediately
+            // Update all relevant query caches immediately with specific targeting
             queryClient.invalidateQueries({ queryKey: ['/api/pools'] });
             queryClient.invalidateQueries({ queryKey: [`/api/pools/${message.poolId}`] });
             queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
             
+            // Force refetch data immediately
+            queryClient.refetchQueries({ queryKey: ['/api/pools'] });
+            
             setLastUpdate(message.timestamp);
+            
+            // Show visual confirmation of update
+            console.log(`🔄 Cache invalidated and data refreshed at ${new Date(message.timestamp).toLocaleTimeString()}`);
           } else if (message.type === 'connection') {
             console.log('📡 WebSocket connection confirmed');
             setLastUpdate(message.timestamp);
