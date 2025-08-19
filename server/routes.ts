@@ -1,7 +1,7 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo, poolMetricsCurrent } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
 import { db } from "./db";
@@ -456,15 +456,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ message: "Test endpoint working", count: 9 });
   });
 
-  // Pool routes - use working storage method temporarily
+  // Pool routes - properly joined with platforms and metrics
   app.get("/api/pools", async (req, res) => {
     try {
-      console.log("📊 Fetching pools via direct SQL...");
+      console.log("📊 Fetching pools with complete data via proper joins...");
       
-      // Simple query without complex joins
       const poolsResults = await db
         .select()
         .from(pools)
+        .leftJoin(platforms, eq(pools.platformId, platforms.id))
+        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
         .where(
           and(
             eq(pools.isActive, true),
@@ -477,18 +479,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📊 Found ${poolsResults.length} pools in database`);
 
-      // Basic response format
-      const formattedPools = poolsResults.map(pool => ({
-        ...pool,
-        platform: { name: "Unknown", displayName: "Unknown" },
-        chain: { name: "ethereum", displayName: "Ethereum" },
+      // Format with actual data from database joins
+      const formattedPools = poolsResults.map(result => ({
+        ...result.pools,
+        platform: {
+          id: result.platforms?.id || null,
+          name: result.platforms?.name || "Unknown",
+          displayName: result.platforms?.displayName || "Unknown",
+          logoUrl: result.platforms?.logoUrl || null,
+          website: result.platforms?.website || null
+        },
+        chain: {
+          id: result.chains?.id || null,
+          name: result.chains?.name || "ethereum",
+          displayName: result.chains?.displayName || "Ethereum",
+          color: result.chains?.color || "#627EEA"
+        },
         notes: [],
         categories: [],
-        holdersCount: null,
-        operatingDays: null,
+        holdersCount: result.pool_metrics_current?.holdersCount || null,
+        operatingDays: result.pool_metrics_current?.operatingDays || null,
       }));
 
-      console.log(`📊 Returning ${formattedPools.length} pools including Lido: ${formattedPools.some(p => p.tokenPair === 'STETH')}`);
+      console.log(`📊 Returning ${formattedPools.length} pools with complete platform data`);
       res.json(formattedPools);
     } catch (error) {
       console.error("Error fetching pools:", error);
