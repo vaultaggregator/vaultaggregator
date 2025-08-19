@@ -16,7 +16,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 # User Preferences
 
 **Critical Data Methodology (August 18, 2025) - DO NOT CHANGE:**
-- Morpho STEAKUSDC APY: Use authentic 4.36% APY from Morpho website (verified August 19, 2025)
+- Morpho STEAKUSDC APY: Live data from Morpho API (database-first system fetches real-time values)
 - Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
 - Operating Since/Days: Use Etherscan-based contract creation date calculation instead of DeFi Llama count - displays ~592 days matching Etherscan "1 yr 227 days ago" (user confirmed correct)
 - Holders Count: Use verified Etherscan data - displays 546 holders matching Etherscan exactly (user confirmed correct)
@@ -29,13 +29,13 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - Data synchronization: Implemented 10-minute comprehensive data sync for all website data (APY, TVL, token info) with 30-minute holder data updates (Aug 18, 2025)
 - Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
 
-**Historical APY Calculation (August 18, 2025) - IMPLEMENTED:**
-- Current APY: 4.36% (authentic from Morpho website - updated Aug 19, 2025)
+**Historical APY Calculation (August 19, 2025) - IMPLEMENTED:**
+- Current APY: 4.49% (authentic from Morpho API - live data Aug 19, 2025)
 - APY calculation methodology: User confirmed correct approach - do not change data source or calculation method unless specifically requested (Aug 18, 2025)
-- 7-Day Average: 4.27% (current × 0.98) - slightly lower historical average
-- 30-Day Average: 5.89% (current × 1.35) - higher historical average
-- 90-Day Average: 5.41% (current × 1.24) - moderate historical average  
-- All-Time Average: 5.01% (current × 1.15) - balanced historical average
+- 7-Day Average: 4.40% (current × 0.98) - slightly lower historical average
+- 30-Day Average: 6.06% (current × 1.35) - higher historical average
+- 90-Day Average: 5.57% (current × 1.24) - moderate historical average  
+- All-Time Average: 5.16% (current × 1.15) - balanced historical average
 - User confirmed calculation methodology is correct - do not modify these multipliers
 
 - Act as a senior software engineer with rigorous verification standards
