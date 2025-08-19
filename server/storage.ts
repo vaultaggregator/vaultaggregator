@@ -17,7 +17,7 @@ import {
   type HolderHistory, type InsertHolderHistory
 } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, desc, and, ilike, or, sql, inArray } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc } from "drizzle-orm";
 import { HistoricalHolderAnalysisService } from "./services/historicalHolderAnalysisService";
 
 export interface IStorage {
@@ -775,14 +775,6 @@ export class DatabaseStorage implements IStorage {
     return newPool;
   }
 
-  async updatePool(id: string, updates: Partial<Pool>): Promise<Pool | undefined> {
-    const [updatedPool] = await db.update(pools).set({
-      ...updates,
-      lastUpdated: new Date()
-    }).where(eq(pools.id, id)).returning();
-    return updatedPool || undefined;
-  }
-
   async getAllPoolsForAdmin(): Promise<any[]> {
     return await db
       .select({
@@ -800,11 +792,15 @@ export class DatabaseStorage implements IStorage {
       .from(pools)
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(isNull(pools.deletedAt)) // Exclude soft-deleted pools
       .orderBy(pools.isVisible ? asc(sql`0`) : asc(sql`1`), platforms.displayName);
   }
 
   async updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined> {
-    const [updatedPool] = await db.update(pools).set(pool).where(eq(pools.id, id)).returning();
+    const [updatedPool] = await db.update(pools).set({
+      ...pool,
+      lastUpdated: new Date()
+    }).where(eq(pools.id, id)).returning();
     return updatedPool || undefined;
   }
 
