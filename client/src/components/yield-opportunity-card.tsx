@@ -121,7 +121,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Protocol info - center aligned */}
             <div className="flex items-center justify-center space-x-2 flex-shrink-0">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
                   <img 
                     src={opportunity.platform.logoUrl} 
@@ -130,7 +130,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     data-testid={`logo-platform-${opportunity.platform.name.toLowerCase()}`}
                   />
                 ) : (
-                  <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                  <div className="w-4 h-4 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
                     {getPlatformInitials(opportunity.platform.displayName)}
                   </div>
                 )}
@@ -149,7 +149,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 >
                   {(() => {
                     const ChainIcon = getChainIcon(opportunity.chain.name);
-                    return <ChainIcon size={20} className="flex-shrink-0" />;
+                    return <ChainIcon size={16} className="flex-shrink-0" />;
                   })()}
                 </div>
                 <span className="text-xs font-medium text-muted-foreground">
@@ -236,7 +236,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </div>
                   <div className="flex items-center justify-center space-x-1">
                     <div 
-                      className="w-3 h-3 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
+                      className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
                       data-testid={`logo-${opportunity.platform.name}`}
                     >
                       {opportunity.platform.logoUrl ? (
@@ -248,7 +248,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       ) : (
                         (() => {
                           const PlatformIcon = getPlatformIcon(opportunity.platform.name);
-                          return <PlatformIcon size={12} className="flex-shrink-0" />;
+                          return <PlatformIcon size={16} className="flex-shrink-0" />;
                         })()
                       )}
                     </div>
