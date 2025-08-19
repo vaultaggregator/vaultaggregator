@@ -60,14 +60,35 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
 
   // Process historical data for display - 100% authentic data only
   const displayData = useMemo(() => {
+    console.log('PoolChart Debug - historicalData:', historicalData);
+    console.log('PoolChart Debug - length:', historicalData?.length);
+    
     if (!historicalData || historicalData.length === 0) {
+      console.log('PoolChart Debug - No historical data available, length:', historicalData?.length);
       return [];
     }
     
-    // Only use authentic historical data - no fallbacks or synthetic values
-    return historicalData.filter(point => 
-      point.apy !== null && point.tvl !== null
-    );
+    console.log('PoolChart Debug - Raw historical data sample:', historicalData.slice(0, 2));
+    
+    // Only use authentic historical data - convert APY from decimal to percentage  
+    const processedData = historicalData
+      .filter(point => {
+        const isValid = point.apy !== null && point.tvl !== null && 
+                        point.apy !== undefined && point.tvl !== undefined;
+        if (!isValid) {
+          console.log('PoolChart Debug - Filtering out invalid point:', point);
+        }
+        return isValid;
+      })
+      .map(point => ({
+        ...point,
+        apy: point.apy * 100, // Convert from decimal to percentage (0.1071 -> 10.71)
+        tvl: point.tvl
+      }));
+    
+    console.log('PoolChart Debug - Processed data sample:', processedData.slice(0, 2));
+    console.log('PoolChart Debug - Total processed points:', processedData.length);
+    return processedData;
   }, [historicalData]);
 
   // Calculate statistics
@@ -129,6 +150,41 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 Fetching historical data for {tokenPair}...
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state  
+  if (error) {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center h-[400px] text-center">
+            <p className="text-lg font-medium text-red-600 dark:text-red-400">Chart Error</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+              {error.message}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show no data state
+  if (displayData.length === 0) {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center h-[400px] text-center">
+            <p className="text-lg font-medium text-gray-500 dark:text-gray-400">No Chart Data</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+              No historical data available for {selectedTimeRange} period
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Raw data length: {historicalData?.length || 0}, Processed: {displayData.length}
+            </p>
           </div>
         </CardContent>
       </Card>
