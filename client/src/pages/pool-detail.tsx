@@ -204,7 +204,12 @@ export default function PoolDetail() {
   });
 
   // Fetch real historical APY averages (100% authentic data)
-  const { data: historicalAverages, isLoading: averagesLoading } = useQuery({
+  const { data: historicalAverages, isLoading: averagesLoading } = useQuery<{
+    sevenDay: number;
+    thirtyDay: number;
+    ninetyDay: number;
+    allTime: number;
+  }>({
     queryKey: ['/api/pools', pool?.id, 'historical-averages'],
     enabled: !!pool?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes cache
@@ -342,13 +347,12 @@ export default function PoolDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header onAdminClick={() => {}} />
+      <Header 
+        onAdminClick={() => {}} 
+        websocketStatus={{ isConnected, lastUpdate }}
+      />
       
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-        {/* WebSocket Status for live data */}
-        <div className="flex justify-end mb-4">
-          <WebSocketStatus variant="compact" showTime={true} />
-        </div>
       <div className="py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with back button */}
