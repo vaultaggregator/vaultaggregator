@@ -25,6 +25,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminSystemRoutes(app);
   app.use(healingRoutes);
   app.use(searchRoutes);
+  
+  // Import and register scraper routes
+  const scraperRoutes = (await import("./routes/scraper-routes")).default;
+  app.use('/api', scraperRoutes);
+  
+  // Import and register database-only routes
+  const databaseOnlyRoutes = (await import("./routes/database-only-routes")).default;
+  app.use('/api', databaseOnlyRoutes);
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here',
@@ -543,7 +551,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If Morpho API fails, use pool's existing APY data as fallback with calculated averages
       if (!apyData) {
         console.log(`⚠️ Morpho API failed, calculating simulated averages from pool APY: ${pool.apy}`);
-        const fallbackApy = parseFloat(pool.apy) / 100; // Convert from percentage to decimal
+        const fallbackApy = parseFloat(pool.apy || "0") / 100; // Convert from percentage to decimal
         apyData = {
           current: fallbackApy,
           daily: fallbackApy,
@@ -559,7 +567,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Ensure all APY values are valid numbers
-      const fallbackValue = parseFloat(pool.apy) / 100;
+      const fallbackValue = parseFloat(pool.apy || "0") / 100;
       const safeApy = {
         current: (typeof apyData.current === 'number' && !isNaN(apyData.current)) ? apyData.current : fallbackValue,
         daily: (typeof apyData.daily === 'number' && !isNaN(apyData.daily)) ? apyData.daily : fallbackValue,
@@ -629,13 +637,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`📊 INSTANT: steakUSDC metrics - $${tvlValue.toLocaleString()}, ${holders} holders, ${operatingDays} days`);
       } else if (pool.tokenPair.toUpperCase() === 'STETH') {
         // stETH - Lido staking (authentic data)
-        tvlValue = parseFloat(pool.tvl) || 35000000000; // $35B approximate TVL
+        tvlValue = parseFloat(pool.tvl || "0") || 35000000000; // $35B approximate TVL
         holders = 390000; // Approximate current holder count  
         operatingDays = 1703; // From Lido deployment (Dec 2020)
         console.log(`📊 INSTANT: stETH metrics - $${tvlValue.toLocaleString()}, ${holders} holders, ${operatingDays} days`);
       } else {
         // Unknown pool - use database values for instant response
-        tvlValue = parseFloat(pool.tvl) || 0;
+        tvlValue = parseFloat(pool.tvl || "0") || 0;
         holders = 1000; // Conservative estimate
         
         // Calculate operating days from creation date
@@ -2654,120 +2662,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   };
   
-  // Real-time APY monitoring function
-  const performApyUpdate = async () => {
-    try {
-      console.log('🔄 Fetching live APY updates...');
-      
-      // Get all visible pools
-      const visiblePools = await storage.getPools({ onlyVisible: true });
-      console.log(`📊 Found ${visiblePools.length} visible pools to monitor`);
-      
-      for (const pool of visiblePools) {
-        try {
-          console.log(`🔍 Checking pool: ${pool.tokenPair} (${pool.platform.name})`);
-          
-          // For STEAKUSDC pool, fetch live APY from Morpho
-          if (pool.tokenPair === 'STEAKUSDC') {
-            console.log('📈 Fetching live APY from Morpho steakUSDC vault...');
-            
-            try {
-              // Get current pool APY for comparison
-              const currentDbApy = parseFloat(pool.apy).toFixed(2);
-              
-              // Fetch fresh APY data from Morpho's public API
-              const response = await fetch('https://api.morpho.org/graphql', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                },
-                body: JSON.stringify({
-                  query: `
-                    query GetVault($chainId: Int!, $address: String!) {
-                      vaultByAddress(chainId: $chainId, address: $address) {
-                        state {
-                          netApy
-                        }
-                      }
-                    }
-                  `,
-                  variables: {
-                    chainId: 1,
-                    address: '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
-                  }
-                })
-              });
-              
-              if (response.ok) {
-                const data = await response.json();
-                const netApy = data?.data?.vaultByAddress?.state?.netApy;
-                
-                if (netApy) {
-                  const liveApy = (parseFloat(netApy) * 100).toFixed(2);
-                  console.log(`📊 Current APY: ${currentDbApy}%, Live Morpho APY: ${liveApy}%`);
-                  
-                  // Update if there's a change
-                  if (liveApy !== currentDbApy) {
-                    await storage.updatePool(pool.id, { apy: liveApy });
-                    console.log(`💰 APY updated for ${pool.tokenPair}: ${liveApy}% (live Morpho data)`);
-                    
-                    // Broadcast to all connected clients
-                    console.log(`📡 Broadcasting live APY update to ${wsConnections.size} connected clients`);
-                    broadcastApyUpdate(pool.id, liveApy, Date.now());
-                  } else {
-                    console.log(`📊 No APY change for ${pool.tokenPair} (${currentDbApy}%)`);
-                  }
-                } else {
-                  console.log('⚠️ No netApy data in Morpho response');
-                }
-              } else {
-                console.log(`⚠️ Morpho API response not ok: ${response.status}`);
-              }
-            } catch (error) {
-              console.error(`❌ Error fetching live Morpho APY:`, error);
-            }
-          }
-          
-          // For Lido stETH, simulate live APY changes  
-          if (pool.tokenPair === 'STETH') {
-            console.log('📈 Simulating live APY data for STETH...');
-            
-            const currentDbApy = parseFloat(pool.apy).toFixed(2);
-            
-            // Simulate realistic stETH APY fluctuations (±0.005% every update)
-            const randomChange = (Math.random() - 0.5) * 0.01; // Range: -0.005% to +0.005%
-            const newApy = Math.max(2.75, Math.min(2.85, parseFloat(pool.apy) + randomChange)).toFixed(2);
-            
-            console.log(`📊 Current APY: ${currentDbApy}%, New APY: ${newApy}%`);
-            
-            if (newApy !== currentDbApy) {
-              await storage.updatePool(pool.id, { apy: newApy });
-              console.log(`💰 APY updated for ${pool.tokenPair}: ${newApy}%`);
-              
-              console.log(`📡 Broadcasting APY update to ${wsConnections.size} connected clients`);
-              broadcastApyUpdate(pool.id, newApy, Date.now());
-            } else {
-              console.log(`📊 No APY change for ${pool.tokenPair} (${currentDbApy}%)`);
-            }
-          }
-        } catch (error) {
-          console.error(`❌ Error updating APY for pool ${pool.id}:`, error);
-        }
-      }
-      
-      console.log('✅ Real-time APY update cycle completed');
-    } catch (error) {
-      console.error('❌ Error in real-time APY monitoring:', error);
-    }
+  // Database-first WebSocket broadcast system
+  const broadcastDatabaseChange = (poolId: string, apy: string, timestamp: number) => {
+    // Only broadcast when database is actually updated by scrapers
+    broadcastApyUpdate(poolId, apy, timestamp);
   };
   
-  // Run initial update after 15 seconds to allow server to fully start
-  setTimeout(performApyUpdate, 15000);
-  
-  // Start real-time APY monitoring every 30 seconds for better real-time feel
-  const apyUpdateInterval = setInterval(performApyUpdate, 30000);
-  console.log('🚀 Real-time APY monitoring started - updates every 30 seconds');
+  // Import and start the new database-first scheduler
+  const { databaseScheduler } = await import('./services/database-scheduler');
+  databaseScheduler.start();
   
   return httpServer;
 }

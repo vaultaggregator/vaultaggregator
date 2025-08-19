@@ -63,7 +63,17 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 
 # System Architecture
 
-The application features a modern React frontend and a Node.js/Express backend.
+**Database-First Architecture (August 19, 2025):**
+- **Complete removal of hardcoded values**: All data now comes exclusively from PostgreSQL database
+- **Modular scraper system**: Live data fetching from real APIs (Morpho, Lido) with automatic database storage
+- **Database-only API endpoints**: All routes read from database with clear error handling when no data exists
+- **No fallback data**: Returns empty results or clear errors instead of synthetic/mock values
+- **Real-time WebSocket**: Broadcasts only when database is updated by scrapers, not hardcoded simulations
+- **Scheduled data collection**: Scrapers fetch live data every 5 minutes and store in database
+- **API endpoints for manual scraping**: `/api/scrape/all` and `/api/scrape/pool/:poolId` for testing
+- **Database status monitoring**: `/api/database/status` and `/api/pools/database-only` for verification
+
+The application features a modern React frontend and a Node.js/Express backend with complete database-first data integrity.
 
 ## Frontend Architecture
 
