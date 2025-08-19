@@ -22,6 +22,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - **Simplified Pool Management Interface**: Removed manual Token Pair and DeFiLlama ID fields, implemented automatic contract lookup via platform APIs with multi-layer fallback system (Morpho API, known contracts database, Etherscan verification) for streamlined pool creation (August 19, 2025)
 - **Complete Hardcode Elimination**: Removed all hardcoded contract mappings and fallback data, system now exclusively uses authentic API sources (Morpho API, Etherscan API) with proper error handling when APIs fail - maintains 100% data integrity policy compliance (August 19, 2025)
 - **CoinGecko-Style Interactive Charts**: Added professional chart visualization component to pool detail pages with timeline functionality (24H, 7D, 1M, 3M, 1Y, Max), APY/TVL toggle modes, statistical summaries, and responsive design using Recharts library (August 19, 2025)
+- **Complete Immediate Data Collection System**: Fixed and fully implemented automatic immediate metrics collection for new pools - all 4 core metrics (APY, operating days, TVL, holders) are now collected instantly via `/api/admin/metrics/collect-immediate` endpoint and correctly displayed on both homepage and pool detail pages (August 19, 2025)
 
 # User Preferences
 

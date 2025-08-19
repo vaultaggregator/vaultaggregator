@@ -2153,6 +2153,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Comprehensive scheduler disabled - using database scheduler instead for efficiency
 
+  // 🎯 Immediate metrics collection endpoint for manual triggering
+  app.post("/api/admin/metrics/collect-immediate", requireAuth, async (req, res) => {
+    try {
+      const { poolId } = req.body;
+      
+      if (!poolId) {
+        return res.status(400).json({ error: "Pool ID is required" });
+      }
+
+      console.log(`🔄 Manual immediate collection triggered for pool: ${poolId}`);
+
+      // Import standardized metrics service
+      const { StandardizedMetricsService } = await import("./services/standardizedMetricsService");
+      const metricsService = new StandardizedMetricsService(storage);
+      
+      // Trigger immediate collection
+      await metricsService.triggerImmediateCollection(poolId);
+      
+      console.log(`✅ Immediate metrics collection completed for pool: ${poolId}`);
+      
+      res.json({ 
+        message: "Immediate metrics collection completed", 
+        poolId,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error in immediate metrics collection:", error);
+      res.status(500).json({ error: "Failed to collect metrics immediately" });
+    }
+  });
+
   // Admin Error Management Routes
   const adminErrorsRouter = (await import("./routes/admin-errors")).default;
   app.use("/api/admin/errors", requireAuth, adminErrorsRouter);

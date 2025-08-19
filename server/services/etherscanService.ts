@@ -306,9 +306,11 @@ export class EtherscanService {
       
       // Look for holder count in various patterns
       const patterns = [
-        /(\d{1,3}(?:,\d{3})*)\s+holders/i,
         /Holders:\s*(\d{1,3}(?:,\d{3})*)/i,
+        /(\d{1,3}(?:,\d{3})*)\s+holders/i,
         /"holders":\s*"(\d{1,3}(?:,\d{3})*)"/i,
+        /content="[^"]*Holders:\s*(\d{1,3}(?:,\d{3})*)/i,
+        /property="og:description"\s+content="[^"]*Holders:\s*(\d{1,3}(?:,\d{3})*)/i,
         /(\d{1,3}(?:,\d{3})*)\s+addresses/i
       ];
 

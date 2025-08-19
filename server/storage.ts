@@ -610,7 +610,7 @@ export class DatabaseStorage implements IStorage {
           chain: result.chains!,
           notes: result.notes ? [result.notes] : [],
           categories: result.categories ? [result.categories] : [],
-          holdersCount: result.token_info?.holdersCount || null,
+          holdersCount: result.pool_metrics_current?.holdersCount || null,
           operatingDays: result.pool_metrics_current?.operatingDays || null,
         });
       } else {
@@ -802,7 +802,7 @@ export class DatabaseStorage implements IStorage {
       platform: results[0].platforms!,
       chain: results[0].chains!,
       notes: poolNotes,
-      holdersCount: results[0].token_info?.holdersCount || null,
+      holdersCount: results[0].pool_metrics_current?.holdersCount || null,
       operatingDays: results[0].pool_metrics_current?.operatingDays || null,
     };
   }

@@ -107,6 +107,15 @@ export class StandardizedMetricsService {
         holders.error
       );
 
+      // 🎯 Note: holdersCount and operatingDays are displayed from poolMetricsCurrent table
+      // The metrics are already stored via updatePoolMetricCurrentStatus calls above
+      console.log(`📊 Metrics successfully collected and stored for ${pool.tokenPair}`);
+      console.log(`   - APY: ${apy.value || 'N/A'}`);
+      console.log(`   - TVL: ${tvl.value || 'N/A'}`);
+      console.log(`   - Operating Days: ${days.value || 'N/A'}`);
+      console.log(`   - Holders: ${holders.value || 'N/A'}`);
+      console.log(`📊 Data is available via poolMetricsCurrent table for display`);
+
       // Store historical record
       await this.storage.storePoolMetricsHistory({
         poolId,
@@ -220,49 +229,21 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
 
       console.log(`🔍 Collecting operating days for ${pool.tokenPair} (${pool.poolAddress})`);
 
-      // MEV Capital USDC specific calculation - hardcoded from known creation date
-      console.log(`🔍 Pool address comparison: ${pool.poolAddress} === 0xd63070114470f685b75B74D60EEc7c1113d33a3D`);
-      if (pool.poolAddress?.toLowerCase() === '0xd63070114470f685b75B74D60EEc7c1113d33a3D'.toLowerCase()) {
-        const creationTimestamp = 1721845847 * 1000; // July 24, 2024 from Etherscan data
-        const creationDate = new Date(creationTimestamp);
-        const currentDate = new Date();
-        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        console.log(`✅ MEV Capital USDC created ${daysDiff} days ago (${creationDate.toISOString()})`);
-        return { value: daysDiff };
+      // Use authentic Etherscan service for operating days calculation
+      const { etherscanService } = await import("./etherscanService");
+      
+      if (!etherscanService.isAvailable()) {
+        return { value: null, error: "Etherscan service not available" };
       }
 
-      // For other contracts, use API (though API appears to have issues)
-      const apiKey = process.env.ETHERSCAN_API_KEY || 'demo';
-      const etherscanUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=${apiKey}`;
+      const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
       
-      console.log(`🌐 Fetching contract creation data from Etherscan for ${pool.poolAddress}`);
-      const response = await fetch(etherscanUrl);
-      
-      if (!response.ok) {
-        return { value: null, error: `Etherscan API returned ${response.status}` };
+      if (operatingDays !== null && operatingDays > 0) {
+        console.log(`📊 Contract ${pool.poolAddress} has been operating for ${operatingDays} days`);
+        return { value: operatingDays };
       }
-      
-      const data = await response.json();
-      console.log(`📡 Etherscan response: ${JSON.stringify(data).substring(0, 200)}...`);
-      
-      if (data.status === "1" && data.result && data.result.length > 0) {
-        const firstTx = data.result[0];
-        const creationTimestamp = parseInt(firstTx.timeStamp) * 1000;
-        const creationDate = new Date(creationTimestamp);
-        const currentDate = new Date();
-        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        console.log(`✅ Contract ${pool.poolAddress} created ${daysDiff} days ago (${creationDate.toISOString()})`);
-        return { value: daysDiff };
-      }
-      
-      if (data.status === "0") {
-        console.log(`❌ Etherscan API returned error: ${data.message}`);
-        return { value: null, error: `Etherscan API error: ${data.message}` };
-      }
-      
-      return { value: null, error: "No transaction history found for contract" };
+
+      return { value: null, error: "Could not calculate operating days from Etherscan data" };
     } catch (error) {
       console.error(`❌ Error calculating operating days for ${pool.poolAddress}:`, error);
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
@@ -289,15 +270,31 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
       }
       
       return { value: null, error: "Could not fetch holder count from Etherscan" };
+    } catch (error) {
+      return { value: null, error: error instanceof Error ? error.message : "Holders collection failed" };
+    }
+  }
+
+  async collectHolders(pool: Pool): Promise<{ value: number | null; error?: string }> {
+    try {
+      if (!pool.poolAddress) {
+        return { value: null, error: "Pool address not available" };
+      }
+
+      // Use structured Etherscan service for holder count
+      const { etherscanService } = await import("./etherscanService");
       
-      // Extract holders count from HTML
-      const holdersMatch = html.match(/Holders[^>]*?(\d{1,3}(?:,\d{3})*)/);
-      if (holdersMatch) {
-        const holdersCount = parseInt(holdersMatch[1].replace(/,/g, ''));
+      if (!etherscanService.isAvailable()) {
+        return { value: null, error: "Etherscan service not available" };
+      }
+
+      const holdersCount = await etherscanService.getTokenHoldersCount(pool.poolAddress);
+      
+      if (holdersCount !== null && holdersCount > 0) {
         return { value: holdersCount };
       }
       
-      return { value: null, error: "Could not extract holders count from Etherscan page" };
+      return { value: null, error: "Could not fetch holder count from Etherscan" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "Holders collection failed" };
     }
