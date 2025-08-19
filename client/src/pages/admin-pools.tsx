@@ -364,15 +364,25 @@ export default function AdminPools() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.platformId || !formData.chainId || !contractInfo.tokenPair) {
+    if (!formData.platformId || !formData.chainId || !formData.poolAddress) {
       toast({
         title: "Validation Error",
-        description: "Platform, Chain, and Pool Address are required. Contract information must be detected.",
+        description: "Platform, Chain, and Pool Address are required.",
         variant: "destructive",
       });
       return;
     }
 
+    if (!contractInfo.tokenPair) {
+      toast({
+        title: "Contract Detection Required",
+        description: "Please wait for contract information to be detected, or check that the pool address is valid.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Submit the form data - the mutation will handle adding contract info
     createPoolMutation.mutate(formData);
   };
 
@@ -469,7 +479,7 @@ export default function AdminPools() {
                       tokenPair: pool.tokenPair, // Keep existing tokenPair, don't allow editing
                       platformId: formData.get('platformId') as string,
                       chainId: formData.get('chainId') as string,
-                      poolAddress: formData.get('poolAddress') as string || undefined,
+                      poolAddress: formData.get('poolAddress') as string || null,
                       showUsdInFlow: formData.get('showUsdInFlow') === 'on',
                       isVisible: formData.get('isVisible') === 'on',
                       isActive: formData.get('isActive') === 'on',
