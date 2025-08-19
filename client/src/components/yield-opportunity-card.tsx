@@ -163,28 +163,28 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
             <div className="text-center">
-              <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+              <p className="text-sm font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
               </p>
             </div>
             
             {/* Days */}
             <div className="text-center">
-              <p className="text-xs font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
+              <p className="text-sm font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
                 {opportunity.operatingDays || 'N/A'}
               </p>
             </div>
             
             {/* TVL */}
             <div className="col-span-2 text-center">
-              <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+              <p className="text-sm font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
               </p>
             </div>
             
             {/* Holders */}
             <div className="col-span-2 text-center">
-              <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+              <p className="text-sm font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                 {formatHolders(opportunity.holdersCount)}
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">24h APY</p>
                   </div>
-                  <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+                  <p className="text-sm font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                     {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                   </p>
                 </div>
@@ -214,7 +214,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">Days</p>
                   </div>
-                  <p className="text-xs font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
+                  <p className="text-sm font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
                     {opportunity.operatingDays || 'N/A'}
                   </p>
                 </div>
@@ -222,7 +222,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">TVL</p>
                   </div>
-                  <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+                  <p className="text-sm font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                     {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
                   </p>
                 </div>
@@ -259,7 +259,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">Holders</p>
                   </div>
-                  <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+                  <p className="text-sm font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                     {formatHolders(opportunity.holdersCount)}
                   </p>
                 </div>
