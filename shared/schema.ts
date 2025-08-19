@@ -107,6 +107,18 @@ export const poolCategories = pgTable("pool_categories", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Historical data points for charts and analytics  
+export const poolHistoricalData = pgTable("pool_historical_data", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").references(() => pools.id, { onDelete: "cascade" }).notNull(),
+  timestamp: timestamp("timestamp").notNull(),
+  apy: decimal("apy", { precision: 10, scale: 4 }),
+  tvl: decimal("tvl", { precision: 20, scale: 2 }),
+  holders: integer("holders"),
+  dataSource: varchar("data_source", { length: 50 }).notNull().default("morpho_api"), // morpho_api, lido_api, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Token information table
 export const tokenInfo = pgTable("token_info", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

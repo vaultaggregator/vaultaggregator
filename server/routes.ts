@@ -3266,5 +3266,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Historical data endpoints for charts
+  app.get("/api/pools/:poolId/historical-data", async (req, res) => {
+    try {
+      const { poolId } = req.params;
+      const { days = "7" } = req.query;
+      
+      const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
+      const historicalData = await morphoHistoricalService.getHistoricalData(poolId, parseInt(days as string));
+      
+      res.json(historicalData);
+    } catch (error) {
+      console.error("Error fetching historical data:", error);
+      res.status(500).json({ error: "Failed to fetch historical data" });
+    }
+  });
+
+  app.post("/api/admin/collect-historical-data", async (req, res) => {
+    try {
+      const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
+      await morphoHistoricalService.collectHistoricalDataForAllMorphoPools();
+      
+      res.json({ message: "Historical data collection started for all Morpho pools" });
+    } catch (error) {
+      console.error("Error starting historical data collection:", error);
+      res.status(500).json({ error: "Failed to start historical data collection" });
+    }
+  });
+
+  app.post("/api/admin/collect-historical-data/:poolId", async (req, res) => {
+    try {
+      const { poolId } = req.params;
+      const { days = 90 } = req.body;
+      
+      // Get pool data
+      const pool = await storage.getPool(poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      if (!pool.poolAddress || !pool.poolAddress.startsWith('0x')) {
+        return res.status(400).json({ error: "Invalid pool address for historical data collection" });
+      }
+
+      const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
+      await morphoHistoricalService.storeHistoricalData(poolId, pool.poolAddress, days);
+      
+      res.json({ message: `Historical data collection completed for pool ${poolId}` });
+    } catch (error) {
+      console.error("Error collecting historical data for pool:", error);
+      res.status(500).json({ error: "Failed to collect historical data for pool" });
+    }
+  });
+
   return httpServer;
 }

@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
 
 interface ChartDataPoint {
   timestamp: number;
@@ -24,42 +25,20 @@ interface PoolChartProps {
 type TimeRange = '24H' | '7D' | '1M' | '3M' | '1Y' | 'Max';
 type ChartType = 'apy' | 'tvl' | 'both';
 
-// Generate realistic historical data patterns based on current values
-const generateHistoricalData = (currentApy: number, currentTvl: number, days: number): ChartDataPoint[] => {
-  const data: ChartDataPoint[] = [];
-  const now = Date.now();
-  
-  for (let i = days; i >= 0; i--) {
-    const timestamp = now - (i * 24 * 60 * 60 * 1000);
-    const date = new Date(timestamp);
-    
-    // Create realistic APY variations (±20% of current value with some trending)
-    const apyVariation = 0.8 + (Math.random() * 0.4); // 80% to 120% of current
-    const trendFactor = 1 + (Math.sin(i / 10) * 0.1); // Gradual trending
-    const apy = Math.max(0.1, currentApy * apyVariation * trendFactor);
-    
-    // TVL with more stability and growth trend
-    const tvlGrowthFactor = Math.pow(1.002, days - i); // 0.2% daily growth trend
-    const tvlVariation = 0.9 + (Math.random() * 0.2); // 90% to 110% variation
-    const tvl = currentTvl * tvlGrowthFactor * tvlVariation;
-    
-    data.push({
-      timestamp,
-      date: date.toISOString().split('T')[0],
-      apy: parseFloat(apy.toFixed(2)),
-      tvl: parseInt(tvl.toString()),
-      formattedDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      fullDate: date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    });
-  }
-  
-  return data;
+// Fetch real historical data from API
+const useHistoricalData = (poolId: string, days: number) => {
+  return useQuery({
+    queryKey: ['/api/pools', poolId, 'historical-data', days],
+    queryFn: async () => {
+      const response = await fetch(`/api/pools/${poolId}/historical-data?days=${days}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch historical data');
+      }
+      return response.json() as ChartDataPoint[];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
 };
 
 const timeRangeConfigs = {
@@ -75,17 +54,24 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('7D');
   const [chartType, setChartType] = useState<ChartType>('apy');
 
-  // Generate data based on selected time range
-  const chartData = useMemo(() => {
-    const config = timeRangeConfigs[selectedTimeRange];
-    return generateHistoricalData(currentApy, currentTvl, config.days);
-  }, [currentApy, currentTvl, selectedTimeRange]);
+  // Fetch real historical data based on selected time range
+  const config = timeRangeConfigs[selectedTimeRange];
+  const { data: historicalData, isLoading, error } = useHistoricalData(poolId, config.days);
 
-  // Filter data for the selected time range
+  // Process historical data for display
   const displayData = useMemo(() => {
-    const config = timeRangeConfigs[selectedTimeRange];
-    return chartData.slice(-config.days - 1);
-  }, [chartData, selectedTimeRange]);
+    if (!historicalData || historicalData.length === 0) {
+      // If no real data available, return empty array
+      return [];
+    }
+    
+    // Convert and validate real data
+    return historicalData.map(point => ({
+      ...point,
+      apy: point.apy ?? currentApy, // Fallback to current if null
+      tvl: point.tvl ?? currentTvl, // Fallback to current if null
+    }));
+  }, [historicalData, currentApy, currentTvl]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -132,6 +118,66 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     if (change < 0) return '↘';
     return '→';
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center h-[400px] text-center">
+            <div className="text-gray-500 dark:text-gray-400 mb-2">
+              <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-3"></div>
+              <p className="text-lg font-medium">Loading Chart Data</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                Fetching historical data for {tokenPair}...
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center h-[400px] text-center">
+            <div className="text-gray-500 dark:text-gray-400 mb-2">
+              <svg className="w-12 h-12 mx-auto mb-3 opacity-50 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.084 13.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <p className="text-lg font-medium">Chart Data Error</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                Failed to load historical data for {tokenPair}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (displayData.length === 0) {
+    return (
+      <Card className={cn("w-full", className)}>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center h-[400px] text-center">
+            <div className="text-gray-500 dark:text-gray-400 mb-2">
+              <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-lg font-medium">No Chart Data Available</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                Historical data for {tokenPair} is not available yet
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={cn('w-full', className)}>
