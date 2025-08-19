@@ -961,34 +961,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updatePoolCategories(newPool.id, categories);
       }
 
-      // Immediately trigger data collection for the new pool
+      // 🎯 IMMEDIATE DATA COLLECTION: Trigger comprehensive metrics collection for new pool
       try {
-        console.log(`🚀 Triggering immediate data collection for new pool: ${newPool.tokenPair}`);
+        console.log(`🚀 Triggering immediate data collection for new pool: ${newPool.tokenPair} (${newPool.id})`);
         
-        // Import scraper functionality
-        const { startPoolDataScraping } = await import("./services/database-scheduler");
+        // Import standardized metrics service for proper 4-metric collection
+        const { StandardizedMetricsService } = await import("./services/standardizedMetricsService");
+        const metricsService = new StandardizedMetricsService(storage);
         
-        // Trigger scraping for this specific pool in the background
+        // Trigger immediate collection in background (non-blocking)
         setImmediate(async () => {
           try {
-            console.log(`📊 Starting immediate scraping for pool ${newPool.id}`);
-            // This will trigger the scraper to run immediately for all pools including the new one
-            await startPoolDataScraping();
+            console.log(`🎯 Starting immediate standardized metrics collection for pool ${newPool.id}`);
             
-            // Also trigger immediate holder data sync and contract date fetching
-            console.log(`👥 Starting immediate holder data sync for pool ${newPool.id}`);
-            const { HolderDataSyncService } = await import("./services/holderDataSyncService");
-            const holderSyncService = new HolderDataSyncService();
-            await holderSyncService.syncAllHolderData();
+            // Collect all 4 core metrics: APY, DAYS, TVL, HOLDERS
+            await metricsService.triggerImmediateCollection(newPool.id);
             
-          } catch (scrapeError) {
-            console.error(`❌ Failed to immediately scrape new pool ${newPool.id}:`, scrapeError);
+            console.log(`✅ Immediate data collection completed for ${newPool.tokenPair}`);
+            
+          } catch (metricsError) {
+            console.error(`❌ Failed immediate metrics collection for pool ${newPool.id}:`, metricsError);
           }
         });
         
       } catch (error) {
         console.error("Failed to trigger immediate data collection:", error);
-        // Don't fail the pool creation if scraping fails
+        // Don't fail the pool creation if metrics collection fails
       }
 
       res.status(201).json(newPool);
