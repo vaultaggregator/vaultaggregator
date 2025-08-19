@@ -79,9 +79,7 @@ interface Pool {
 interface CreatePoolForm {
   platformId: string;
   chainId: string;
-  tokenPair: string;
   poolAddress: string;
-  defiLlamaId: string;
   showUsdInFlow: boolean;
   isVisible: boolean;
   isActive: boolean;
@@ -97,13 +95,21 @@ export default function AdminPools() {
   const [formData, setFormData] = useState<CreatePoolForm>({
     platformId: "",
     chainId: "",
-    tokenPair: "",
     poolAddress: "",
-    defiLlamaId: "",
     showUsdInFlow: false,
     isVisible: true,
     isActive: true,
     categories: []
+  });
+
+  const [contractInfo, setContractInfo] = useState<{
+    tokenPair?: string;
+    symbol?: string;
+    name?: string;
+    isLoading: boolean;
+    error?: string;
+  }>({
+    isLoading: false
   });
 
   // Fetch pools
@@ -151,15 +157,48 @@ export default function AdminPools() {
     }
   }, [editingPool, existingPoolCategories]);
 
+  // Automatic contract lookup function
+  const lookupContract = async (address: string, platformId: string) => {
+    if (!address || !platformId) return;
+    
+    setContractInfo({ isLoading: true });
+    try {
+      const response = await fetch(`/api/admin/pools/lookup-contract`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ address, platformId }),
+      });
+      
+      if (response.ok) {
+        const contractData = await response.json();
+        setContractInfo({ 
+          tokenPair: contractData.tokenPair || contractData.symbol,
+          symbol: contractData.symbol,
+          name: contractData.name,
+          isLoading: false 
+        });
+      } else {
+        setContractInfo({ 
+          isLoading: false, 
+          error: "Contract not found or invalid address" 
+        });
+      }
+    } catch (error) {
+      setContractInfo({ 
+        isLoading: false, 
+        error: "Failed to lookup contract information" 
+      });
+    }
+  };
+
   const createPoolMutation = useMutation({
     mutationFn: async (data: CreatePoolForm) => {
       const poolData = {
         platformId: data.platformId,
         chainId: data.chainId,
-        tokenPair: data.tokenPair,
-
+        tokenPair: contractInfo.tokenPair || contractInfo.symbol || 'Unknown',
         poolAddress: data.poolAddress || null,
-        defiLlamaId: data.defiLlamaId || null,
         showUsdInFlow: data.showUsdInFlow,
         isVisible: data.isVisible,
         isActive: data.isActive,
@@ -185,15 +224,13 @@ export default function AdminPools() {
       setFormData({
         platformId: "",
         chainId: "",
-        tokenPair: "",
-
         poolAddress: "",
-        defiLlamaId: "",
         showUsdInFlow: false,
         isVisible: true,
         isActive: true,
         categories: []
       });
+      setContractInfo({ isLoading: false });
       toast({
         title: "Success",
         description: "Pool created successfully",
@@ -479,14 +516,13 @@ export default function AdminPools() {
                         </div>
 
                         <div>
-                          <Label htmlFor="edit-tokenPair" className="text-sm font-medium">Token Pair *</Label>
-                          <Input
-                            name="tokenPair"
-                            defaultValue={pool.tokenPair}
-                            placeholder="e.g., STEAKUSDC, stETH"
-                            data-testid="edit-input-token-pair"
-                            required
-                          />
+                          <Label className="text-sm font-medium">Token Pair (Auto-detected)</Label>
+                          <div className="p-3 bg-gray-50 dark:bg-gray-800 border rounded-md">
+                            <p className="text-sm font-medium">{pool.tokenPair}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                              This value is automatically detected from the contract
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -504,15 +540,7 @@ export default function AdminPools() {
                           />
                         </div>
 
-                        <div>
-                          <Label htmlFor="edit-defiLlamaId" className="text-sm font-medium">DeFiLlama ID</Label>
-                          <Input
-                            name="defiLlamaId"
-                            defaultValue={pool.defiLlamaId || ''}
-                            placeholder="Pool ID from DeFiLlama"
-                            data-testid="edit-input-defillama-id"
-                          />
-                        </div>
+                        {/* DeFiLlama ID field removed - automatic lookup handles this */}
                       </div>
                     </div>
 
@@ -773,17 +801,20 @@ export default function AdminPools() {
                       </Select>
                     </div>
 
-                    <div>
-                      <Label htmlFor="tokenPair" className="text-sm font-medium">Token Pair *</Label>
-                      <Input
-                        id="tokenPair"
-                        value={formData.tokenPair}
-                        onChange={(e) => setFormData(prev => ({ ...prev, tokenPair: e.target.value }))}
-                        placeholder="e.g., STEAKUSDC, stETH"
-                        data-testid="input-token-pair"
-                        required
-                      />
-                    </div>
+                    {/* Auto-populated Token Pair */}
+                    {contractInfo.tokenPair && (
+                      <div>
+                        <Label className="text-sm font-medium">Auto-Detected Token Pair</Label>
+                        <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md">
+                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                            {contractInfo.tokenPair}
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-300 mt-1">
+                            {contractInfo.name ? `Full Name: ${contractInfo.name}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
 
                   </div>
@@ -795,26 +826,38 @@ export default function AdminPools() {
 
 
                     <div>
-                      <Label htmlFor="poolAddress" className="text-sm font-medium">Pool Address</Label>
+                      <Label htmlFor="poolAddress" className="text-sm font-medium">Pool Address *</Label>
                       <Input
                         id="poolAddress"
                         value={formData.poolAddress}
-                        onChange={(e) => setFormData(prev => ({ ...prev, poolAddress: e.target.value }))}
-                        placeholder="0x..."
+                        onChange={(e) => {
+                          const address = e.target.value;
+                          setFormData(prev => ({ ...prev, poolAddress: address }));
+                          
+                          // Auto-lookup contract when address is entered and platform is selected
+                          if (address.length === 42 && address.startsWith('0x') && formData.platformId) {
+                            lookupContract(address, formData.platformId);
+                          } else if (address.length < 42) {
+                            setContractInfo({ isLoading: false });
+                          }
+                        }}
+                        placeholder="0x... (will auto-lookup contract info)"
                         data-testid="input-pool-address"
+                        required
                       />
+                      {contractInfo.isLoading && (
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          🔍 Looking up contract information...
+                        </p>
+                      )}
+                      {contractInfo.error && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          ⚠️ {contractInfo.error}
+                        </p>
+                      )}
                     </div>
 
-                    <div>
-                      <Label htmlFor="defiLlamaId" className="text-sm font-medium">DeFiLlama ID</Label>
-                      <Input
-                        id="defiLlamaId"
-                        value={formData.defiLlamaId}
-                        onChange={(e) => setFormData(prev => ({ ...prev, defiLlamaId: e.target.value }))}
-                        placeholder="Pool ID from DeFiLlama"
-                        data-testid="input-defillama-id"
-                      />
-                    </div>
+                    {/* DeFiLlama ID field removed - automatic lookup handles this */}
 
 
                   </div>

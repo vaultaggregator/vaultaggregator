@@ -968,6 +968,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contract lookup endpoint for automatic pool information detection
+  app.post("/api/admin/pools/lookup-contract", requireAuth, async (req, res) => {
+    try {
+      const { address, platformId } = req.body;
+      
+      if (!address || !platformId) {
+        return res.status(400).json({ error: "Address and platform ID are required" });
+      }
+
+      // Get platform information
+      const platform = await storage.getPlatformById(platformId);
+      if (!platform) {
+        return res.status(400).json({ error: "Invalid platform ID" });
+      }
+
+      let contractInfo: any = {};
+
+      // Platform-specific contract lookup
+      if (platform.name.toLowerCase() === 'morpho') {
+        // Use Morpho API to get vault information
+        try {
+          const vaults = await morphoService.getAllVaults(1); // Ethereum mainnet
+          const vault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
+          
+          if (vault) {
+            contractInfo = {
+              tokenPair: vault.name || vault.symbol || 'Unknown',
+              symbol: vault.symbol,
+              name: vault.name,
+              address: vault.address,
+              platform: 'Morpho'
+            };
+          } else {
+            return res.status(404).json({ error: "Contract not found on Morpho" });
+          }
+        } catch (error) {
+          console.error("Error looking up Morpho contract:", error);
+          return res.status(500).json({ error: "Failed to lookup Morpho contract" });
+        }
+      } else if (platform.name.toLowerCase() === 'lido') {
+        // Lido contract lookup
+        if (address.toLowerCase() === '0xae7ab96520de3a18e5e111b5eaab095312d7fe84') {
+          contractInfo = {
+            tokenPair: 'stETH',
+            symbol: 'stETH',
+            name: 'Liquid staked Ether 2.0',
+            address: address,
+            platform: 'Lido'
+          };
+        } else {
+          return res.status(404).json({ error: "Contract not found on Lido" });
+        }
+      } else {
+        // Generic Ethereum contract lookup using external service
+        try {
+          // Try to get basic contract information from Etherscan
+          const response = await fetch(
+            `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=YourApiKeyToken`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.result && data.result[0] && data.result[0].ContractName) {
+              contractInfo = {
+                tokenPair: data.result[0].ContractName,
+                symbol: data.result[0].ContractName,
+                name: data.result[0].ContractName,
+                address: address,
+                platform: platform.displayName
+              };
+            } else {
+              return res.status(404).json({ error: "Contract not found or not verified" });
+            }
+          } else {
+            return res.status(404).json({ error: "Unable to verify contract" });
+          }
+        } catch (error) {
+          console.error("Error looking up contract:", error);
+          return res.status(500).json({ error: "Failed to lookup contract information" });
+        }
+      }
+
+      res.json(contractInfo);
+    } catch (error) {
+      console.error("Error in contract lookup:", error);
+      res.status(500).json({ error: "Failed to lookup contract" });
+    }
+  });
+
   // Update pool
   app.put("/api/admin/pools/:id", requireAuth, async (req, res) => {
     try {
