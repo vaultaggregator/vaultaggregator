@@ -79,7 +79,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   if (usdcCategory) {
                     return (
                       <img 
-                        src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png"
+                        src="/public-objects/images/a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
                         alt="USDC"
                         className="w-6 h-6 flex-shrink-0 rounded-full"
                         data-testid={`logo-usdc-${opportunity.id}`}
@@ -88,7 +88,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   } else if (stethCategory) {
                     return (
                       <img 
-                        src="https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84/logo.png"
+                        src="/public-objects/images/ae7ab96520de3a18e5e111b5eaab095312d7fe84.png"
                         alt="stETH"
                         className="w-6 h-6 flex-shrink-0 rounded-full"
                         data-testid={`logo-steth-${opportunity.id}`}
