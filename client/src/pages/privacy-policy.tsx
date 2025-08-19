@@ -293,17 +293,7 @@ export default function PrivacyPolicy() {
             <CardHeader>
               <CardTitle className="text-blue-900">Contact Us</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-blue-800 mb-3">
-                If you have any questions about this Privacy Policy or our privacy practices, please contact us:
-              </p>
-              
-              <div className="space-y-2 text-sm text-blue-800">
-                <p><strong>Email:</strong> privacy@vault-aggregator.com</p>
-                <p><strong>Address:</strong> 123 Market Street, Suite 500, San Francisco, CA 94103</p>
-                <p><strong>Data Protection Officer:</strong> dpo@vault-aggregator.com</p>
-              </div>
-            </CardContent>
+            
           </Card>
         </div>
       </div>
