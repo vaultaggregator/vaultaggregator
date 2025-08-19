@@ -152,7 +152,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onAdminClick={() => {}} />
+      <Header 
+        onAdminClick={() => {}} 
+        websocketStatus={{ isConnected, lastUpdate }}
+      />
       <HeroSection />
       <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
