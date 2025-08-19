@@ -11,22 +11,22 @@ export default function Terms() {
       <div className="p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900" data-testid="text-terms-title">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" data-testid="text-terms-title">
             Terms of Service
           </h1>
-          <p className="text-gray-600 mt-2" data-testid="text-terms-subtitle">
+          <p className="text-gray-600 dark:text-gray-400 mt-2" data-testid="text-terms-subtitle">
             Last updated: December 2024
           </p>
         </div>
 
         {/* Important Notice */}
-        <Card className="mb-8 border-orange-200 bg-orange-50">
+        <Card className="mb-8 border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-900/20">
           <CardContent className="pt-6">
             <div className="flex items-start space-x-4">
-              <AlertTriangle className="w-8 h-8 text-orange-600 mt-1" />
+              <AlertTriangle className="w-8 h-8 text-orange-600 dark:text-orange-400 mt-1" />
               <div>
-                <h3 className="font-semibold text-orange-900 mb-2">Important Notice</h3>
-                <p className="text-orange-800 text-sm">
+                <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">Important Notice</h3>
+                <p className="text-orange-800 dark:text-orange-200 text-sm">
                   Please read these Terms of Service carefully before using Vault Aggregator. 
                   By accessing or using our services, you agree to be bound by these terms. 
                   If you disagree with any part of these terms, you may not access our services.
@@ -46,14 +46,14 @@ export default function Terms() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 These Terms of Service ("Terms") govern your use of Vault Aggregator's website, 
                 platform, and services (collectively, the "Service") operated by Vault Aggregator, Inc. ("we," "us," or "our").
               </p>
               
               <div className="space-y-2">
-                <h4 className="font-semibold text-gray-900">By using our Service, you agree to:</h4>
-                <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100">By using our Service, you agree to:</h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4 list-disc">
                   <li>Comply with these Terms and all applicable laws and regulations</li>
                   <li>Be at least 18 years old or have parental/guardian consent</li>
                   <li>Provide accurate and truthful information</li>
@@ -72,14 +72,14 @@ export default function Terms() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Vault Aggregator is a decentralized finance (DeFi) yield aggregation platform that provides:
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Core Services</h4>
-                  <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Core Services</h4>
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4 list-disc">
                     <li>Yield opportunity discovery and comparison</li>
                     <li>Real-time APY and TVL data aggregation</li>
                     <li>Risk assessment and analytics</li>
@@ -88,8 +88,8 @@ export default function Terms() {
                 </div>
                 
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Important Disclaimers</h4>
-                  <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Important Disclaimers</h4>
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4 list-disc">
                     <li>We are an information aggregator only</li>
                     <li>We do not custody or manage your assets</li>
                     <li>We do not provide investment advice</li>
@@ -110,8 +110,8 @@ export default function Terms() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Account Security</h4>
-                <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Account Security</h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4 list-disc">
                   <li>Maintain the confidentiality of your account credentials</li>
                   <li>Notify us immediately of any unauthorized access</li>
                   <li>Use strong passwords and enable two-factor authentication where available</li>
@@ -120,8 +120,8 @@ export default function Terms() {
               </div>
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Wallet and Private Key Security</h4>
-                <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Wallet and Private Key Security</h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4 list-disc">
                   <li>You are solely responsible for your wallet and private keys</li>
                   <li>We cannot recover lost private keys or access your funds</li>
                   <li>Always verify smart contract addresses before interacting</li>
@@ -130,8 +130,8 @@ export default function Terms() {
               </div>
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Prohibited Activities</h4>
-                <ul className="text-sm text-gray-600 space-y-1 ml-4 list-disc">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Prohibited Activities</h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4 list-disc">
                   <li>Attempting to gain unauthorized access to our systems</li>
                   <li>Using the Service for money laundering or illegal activities</li>
                   <li>Manipulating or providing false information</li>
@@ -143,9 +143,9 @@ export default function Terms() {
           </Card>
 
           {/* Financial Disclaimers */}
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20">
             <CardHeader>
-              <CardTitle className="flex items-center text-red-900">
+              <CardTitle className="flex items-center text-red-900 dark:text-red-100">
                 <AlertTriangle className="w-5 h-5 mr-2" />
                 Financial Disclaimers and Risk Warnings
               </CardTitle>
@@ -154,8 +154,8 @@ export default function Terms() {
               <div className="space-y-3">
                 <div>
                   <Badge variant="destructive" className="mb-2">High Risk</Badge>
-                  <h4 className="font-semibold text-red-900 mb-2">DeFi Investment Risks</h4>
-                  <ul className="text-sm text-red-800 space-y-1 ml-4 list-disc">
+                  <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">DeFi Investment Risks</h4>
+                  <ul className="text-sm text-red-800 dark:text-red-200 space-y-1 ml-4 list-disc">
                     <li>DeFi protocols involve significant financial risk including total loss of funds</li>
                     <li>Smart contracts may contain bugs, vulnerabilities, or be subject to hacks</li>
                     <li>Token prices are highly volatile and can lose value rapidly</li>
@@ -165,8 +165,8 @@ export default function Terms() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-red-900 mb-2">No Investment Advice</h4>
-                  <p className="text-sm text-red-800">
+                  <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">No Investment Advice</h4>
+                  <p className="text-sm text-red-800 dark:text-red-200">
                     Vault Aggregator provides information only and does not constitute financial, investment, 
                     or trading advice. All investment decisions are your sole responsibility. You should conduct 
                     your own research and consult with qualified financial advisors before making investment decisions.
@@ -174,8 +174,8 @@ export default function Terms() {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-red-900 mb-2">No Guarantees</h4>
-                  <p className="text-sm text-red-800">
+                  <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">No Guarantees</h4>
+                  <p className="text-sm text-red-800 dark:text-red-200">
                     We make no representations or warranties about the accuracy of data, expected returns, 
                     or the safety of any protocol. Past performance does not predict future results. 
                     APY rates and other metrics are estimates and may not reflect actual returns.
