@@ -85,57 +85,6 @@ export const platforms = pgTable("platforms", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Platform API Configuration table for managing API credentials and endpoints
-export const platformApiConfigs = pgTable("platform_api_configs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  platformId: varchar("platform_id").notNull().references(() => platforms.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // Configuration name (e.g., "Main API", "Backup API")
-  apiType: text("api_type").notNull(), // Type of API (e.g., "morpho", "lido", "custom")
-  baseUrl: text("base_url").notNull(), // Base API URL
-  endpoints: jsonb("endpoints").notNull(), // API endpoints configuration
-  credentials: jsonb("credentials"), // Encrypted API credentials (keys, tokens, etc.)
-  headers: jsonb("headers"), // Custom headers
-  rateLimit: integer("rate_limit").default(60), // Requests per minute
-  timeout: integer("timeout").default(30000), // Request timeout in milliseconds
-  isEnabled: boolean("is_enabled").notNull().default(true),
-  lastHealthCheck: timestamp("last_health_check"),
-  healthStatus: text("health_status").default("unknown"), // healthy, unhealthy, unknown
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// API Response History for tracking all API calls and responses
-export const apiResponseHistory = pgTable("api_response_history", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  platformId: varchar("platform_id").notNull().references(() => platforms.id, { onDelete: "cascade" }),
-  configId: varchar("config_id").references(() => platformApiConfigs.id, { onDelete: "set null" }),
-  endpoint: text("endpoint").notNull(), // Which endpoint was called
-  requestData: jsonb("request_data"), // Request parameters/body
-  responseData: jsonb("response_data"), // API response data
-  statusCode: integer("status_code"), // HTTP status code
-  responseTime: integer("response_time"), // Response time in milliseconds
-  errorMessage: text("error_message"), // Error message if request failed
-  dataType: text("data_type").notNull(), // Type of data fetched (apy, tvl, vault_info, etc.)
-  isSuccess: boolean("is_success").notNull().default(false),
-  timestamp: timestamp("timestamp").defaultNow(),
-});
-
-// API Call Logs for monitoring and debugging
-export const apiCallLogs = pgTable("api_call_logs", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  platformId: varchar("platform_id").notNull().references(() => platforms.id, { onDelete: "cascade" }),
-  configId: varchar("config_id").references(() => platformApiConfigs.id, { onDelete: "set null" }),
-  callType: text("call_type").notNull(), // manual, scheduled, webhook
-  triggeredBy: text("triggered_by"), // admin_user_id, scheduler, system
-  status: text("status").notNull(), // pending, success, failed, timeout
-  startTime: timestamp("start_time").defaultNow(),
-  endTime: timestamp("end_time"),
-  duration: integer("duration"), // Duration in milliseconds
-  recordsProcessed: integer("records_processed").default(0),
-  errorsEncountered: integer("errors_encountered").default(0),
-  notes: text("notes"), // Additional notes or error details
-});
-
 export const categories = pgTable("categories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull().unique(),
@@ -407,40 +356,6 @@ export const tokenInfoRelations = relations(tokenInfo, ({ many }) => ({
 
 export const platformsRelations = relations(platforms, ({ many }) => ({
   pools: many(pools),
-  apiConfigs: many(platformApiConfigs),
-  apiResponseHistory: many(apiResponseHistory),
-  apiCallLogs: many(apiCallLogs),
-}));
-
-export const platformApiConfigsRelations = relations(platformApiConfigs, ({ one, many }) => ({
-  platform: one(platforms, {
-    fields: [platformApiConfigs.platformId],
-    references: [platforms.id],
-  }),
-  apiResponseHistory: many(apiResponseHistory),
-  apiCallLogs: many(apiCallLogs),
-}));
-
-export const apiResponseHistoryRelations = relations(apiResponseHistory, ({ one }) => ({
-  platform: one(platforms, {
-    fields: [apiResponseHistory.platformId],
-    references: [platforms.id],
-  }),
-  config: one(platformApiConfigs, {
-    fields: [apiResponseHistory.configId],
-    references: [platformApiConfigs.id],
-  }),
-}));
-
-export const apiCallLogsRelations = relations(apiCallLogs, ({ one }) => ({
-  platform: one(platforms, {
-    fields: [apiCallLogs.platformId],
-    references: [platforms.id],
-  }),
-  config: one(platformApiConfigs, {
-    fields: [apiCallLogs.configId],
-    references: [platformApiConfigs.id],
-  }),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -784,23 +699,6 @@ export const insertErrorLogSchema = createInsertSchema(errorLogs).omit({
   count: true,
 });
 
-// Platform API management insert schemas
-export const insertPlatformApiConfigSchema = createInsertSchema(platformApiConfigs).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertApiResponseHistorySchema = createInsertSchema(apiResponseHistory).omit({
-  id: true,
-  timestamp: true,
-});
-
-export const insertApiCallLogSchema = createInsertSchema(apiCallLogs).omit({
-  id: true,
-  startTime: true,
-});
-
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -840,16 +738,6 @@ export type InsertPoolCategory = z.infer<typeof insertPoolCategorySchema>;
 
 export type AIOutlook = typeof aiOutlooks.$inferSelect;
 export type InsertAIOutlook = z.infer<typeof insertAIOutlookSchema>;
-
-// Platform API management types
-export type PlatformApiConfig = typeof platformApiConfigs.$inferSelect;
-export type InsertPlatformApiConfig = z.infer<typeof insertPlatformApiConfigSchema>;
-
-export type ApiResponseHistory = typeof apiResponseHistory.$inferSelect;
-export type InsertApiResponseHistory = z.infer<typeof insertApiResponseHistorySchema>;
-
-export type ApiCallLog = typeof apiCallLogs.$inferSelect;
-export type InsertApiCallLog = z.infer<typeof insertApiCallLogSchema>;
 
 // Enhanced features types
 export type RiskScore = typeof riskScores.$inferSelect;
