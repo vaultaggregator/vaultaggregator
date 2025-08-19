@@ -7,6 +7,7 @@ import crypto from "crypto";
 import { db } from "./db";
 import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull } from "drizzle-orm";
 import { morphoService } from "./services/morphoService";
+import { WebSocketServer, WebSocket } from 'ws';
 
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -2608,5 +2609,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server for real-time APY updates
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Store WebSocket connections
+  const wsConnections = new Set<WebSocket>();
+  
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('📡 WebSocket connection established');
+    wsConnections.add(ws);
+    
+    // Send initial connection confirmation
+    ws.send(JSON.stringify({
+      type: 'connection',
+      status: 'connected',
+      timestamp: Date.now()
+    }));
+    
+    ws.on('close', () => {
+      console.log('📡 WebSocket connection closed');
+      wsConnections.delete(ws);
+    });
+    
+    ws.on('error', (error) => {
+      console.error('📡 WebSocket error:', error);
+      wsConnections.delete(ws);
+    });
+  });
+  
+  // Real-time APY update service
+  const broadcastApyUpdate = (poolId: string, apy: string, timestamp: number) => {
+    const message = JSON.stringify({
+      type: 'apy_update',
+      poolId,
+      apy,
+      timestamp
+    });
+    
+    wsConnections.forEach(ws => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    });
+  };
+  
+  // Start real-time APY monitoring every minute
+  setInterval(async () => {
+    try {
+      console.log('🔄 Fetching live APY updates...');
+      
+      // Get all visible pools
+      const visiblePools = await storage.getPools({ onlyVisible: true });
+      
+      for (const pool of visiblePools) {
+        try {
+          // For STEAKUSDC pool, get live APY from Morpho
+          if (pool.tokenPair === 'STEAKUSDC') {
+            // Bypass cache - get fresh APY data directly
+            const morphoData = await morphoService.getVaultData(
+              '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB',
+              1
+            );
+            
+            if (morphoData?.state?.netApy) {
+              const currentApy = parseFloat(morphoData.state.netApy).toFixed(2);
+              
+              // Update database if APY changed
+              if (currentApy !== parseFloat(pool.apy).toFixed(2)) {
+                await storage.updatePool(pool.id, { apy: currentApy });
+                console.log(`💰 APY updated for ${pool.tokenPair}: ${currentApy}%`);
+                
+                // Broadcast to all connected clients
+                broadcastApyUpdate(pool.id, currentApy, Date.now());
+              }
+            }
+          }
+          // For other pools, could add similar logic here
+        } catch (error) {
+          console.error(`❌ Error updating APY for pool ${pool.id}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error in real-time APY monitoring:', error);
+    }
+  }, 60000); // Run every minute
+  
   return httpServer;
 }

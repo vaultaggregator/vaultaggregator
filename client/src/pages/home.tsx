@@ -14,6 +14,7 @@ import { Plus, ChevronUp, ChevronDown, Search, TrendingUp, Shield, Users } from 
 import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { EnhancedSearch } from "@/components/enhanced-search";
+import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -26,6 +27,9 @@ export default function Home() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showSearch, setShowSearch] = useState(false);
   const limit = 12;
+  
+  // Enable real-time APY updates via WebSocket
+  const { isConnected, lastUpdate } = useRealtimeApy();
   
 
 

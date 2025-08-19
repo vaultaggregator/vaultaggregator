@@ -19,6 +19,7 @@ import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
 import { InteractivePoolChart } from "@/components/interactive-pool-chart";
 import { formatTimeAgo } from "@/lib/utils";
+import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart, Bar } from 'recharts';
@@ -193,6 +194,9 @@ export default function PoolDetail() {
   // Handle both new SEO URLs and legacy URLs
   const poolId = params.poolId;
   const urlInfo = parseYieldUrl(params);
+  
+  // Enable real-time APY updates via WebSocket
+  const { isConnected, lastUpdate } = useRealtimeApy();
   
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: ['/api/pools', poolId],
