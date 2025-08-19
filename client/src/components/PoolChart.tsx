@@ -41,21 +41,38 @@ const useHistoricalData = (poolId: string, days: number) => {
   });
 };
 
-const timeRangeConfigs = {
-  '24H': { days: 1, label: '24H' },
-  '7D': { days: 7, label: '7D' },
-  '1M': { days: 30, label: '1M' },
-  '3M': { days: 90, label: '3M' },
-  '1Y': { days: 365, label: '1Y' },
-  'Max': { days: 1000, label: 'Max' } // Request enough days to get full history
-};
+// Dynamic timeRange configs are now created inside the component based on actual pool data
 
 export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className }: PoolChartProps) {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('7D');
   const [chartType, setChartType] = useState<ChartType>('apy');
 
+  // Fetch pool data to get actual operating days for dynamic "Max" timeframe
+  const { data: poolData } = useQuery({
+    queryKey: ['/api/pools', poolId],
+    queryFn: async () => {
+      const response = await fetch(`/api/pools/${poolId}`);
+      if (!response.ok) throw new Error('Failed to fetch pool data');
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Create dynamic timeRange configs based on actual pool operating days
+  const dynamicTimeRangeConfigs = useMemo(() => {
+    const operatingDays = poolData?.operatingDays || 730; // fallback if data not loaded
+    return {
+      '24H': { days: 1, label: '24H' },
+      '7D': { days: 7, label: '7D' },
+      '1M': { days: 30, label: '1M' },
+      '3M': { days: 90, label: '3M' },
+      '1Y': { days: 365, label: '1Y' },
+      'Max': { days: Math.max(operatingDays + 10, 400), label: 'Max' } // Use actual operating days + buffer
+    };
+  }, [poolData?.operatingDays]);
+
   // Fetch real historical data based on selected time range
-  const config = timeRangeConfigs[selectedTimeRange];
+  const config = dynamicTimeRangeConfigs[selectedTimeRange];
   const { data: historicalData, isLoading, error } = useHistoricalData(poolId, config.days);
 
   // Process historical data for display - 100% authentic data only
@@ -331,7 +348,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
         {/* Timeline buttons - CoinGecko style */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            {(Object.keys(timeRangeConfigs) as TimeRange[]).map((range) => (
+            {(Object.keys(dynamicTimeRangeConfigs) as TimeRange[]).map((range) => (
               <Button
                 key={range}
                 variant={selectedTimeRange === range ? 'default' : 'ghost'}
@@ -339,7 +356,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 onClick={() => setSelectedTimeRange(range)}
                 className="text-xs font-medium px-3 py-1"
               >
-                {timeRangeConfigs[range].label}
+                {dynamicTimeRangeConfigs[range].label}
               </Button>
             ))}
           </div>

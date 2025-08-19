@@ -20,6 +20,8 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - Homepage data consistency: User confirmed all metrics display correctly and match official sources
 - Data synchronization: Implemented 10-minute comprehensive data sync for all website data (APY, TVL, token info) with 30-minute holder data updates
 - Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
+- Chart timeframes: Made "Max" timeframe dynamic based on actual pool operating days instead of hardcoded 730/1000 days
+- Historical data collection: Made days parameter dynamic based on pool operating days instead of hardcoded 600 days
 
 **Historical APY Calculation - IMPLEMENTED:**
 - Current APY: 4.49% (authentic from Morpho API - live data)

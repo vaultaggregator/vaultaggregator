@@ -81,7 +81,25 @@ export class MorphoHistoricalService {
     }
   }
 
-  async storeHistoricalData(poolId: string, vaultAddress: string, days: number = 600): Promise<void> {
+  async storeHistoricalData(poolId: string, vaultAddress: string, days?: number): Promise<void> {
+    // If days not specified, fetch pool data to get actual operating days
+    if (!days) {
+      try {
+        const { db } = await import('../db');
+        const { pools } = await import('@shared/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        const [pool] = await db.select().from(pools).where(eq(pools.id, poolId));
+        if (pool && pool.operatingDays) {
+          days = parseInt(pool.operatingDays.toString()) + 10; // Add buffer for complete history
+        } else {
+          days = 400; // Fallback only if pool data unavailable
+        }
+      } catch (error) {
+        console.warn(`⚠️ Could not fetch pool operating days, using fallback: ${error}`);
+        days = 400; // Conservative fallback
+      }
+    }
     try {
       const endTimestamp = Math.floor(Date.now() / 1000);
       const startTimestamp = endTimestamp - (days * 24 * 60 * 60);
