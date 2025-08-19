@@ -324,6 +324,198 @@ export default function AdminPools() {
           </Button>
         </div>
 
+        {/* Edit Pool Form */}
+        {editingPool && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Edit Pool</CardTitle>
+              <CardDescription>
+                Update pool information and settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const pool = pools.find(p => p.id === editingPool);
+                if (!pool) return null;
+                
+                return (
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const data = {
+                      tokenPair: formData.get('tokenPair') as string,
+                      platformId: formData.get('platformId') as string,
+                      chainId: formData.get('chainId') as string,
+                      poolAddress: formData.get('poolAddress') as string || null,
+                      defiLlamaId: formData.get('defiLlamaId') as string || null,
+                      showUsdInFlow: formData.get('showUsdInFlow') === 'on',
+                      isVisible: formData.get('isVisible') === 'on',
+                      isActive: formData.get('isActive') === 'on',
+                    };
+                    updatePoolMutation.mutate({ id: editingPool, data });
+                  }} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Basic Information */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Basic Information</h3>
+                        
+                        <div>
+                          <Label htmlFor="edit-platform" className="text-sm font-medium">Platform *</Label>
+                          <Select name="platformId" defaultValue={pool.platformId} required>
+                            <SelectTrigger data-testid="edit-select-platform">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {platforms.filter(p => p.isActive).map((platform) => (
+                                <SelectItem key={platform.id} value={platform.id}>
+                                  {platform.displayName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="edit-chain" className="text-sm font-medium">Network *</Label>
+                          <Select name="chainId" defaultValue={pool.chainId} required>
+                            <SelectTrigger data-testid="edit-select-chain">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {chains.filter(c => c.isActive).map((chain) => (
+                                <SelectItem key={chain.id} value={chain.id}>
+                                  {chain.displayName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="edit-tokenPair" className="text-sm font-medium">Token Pair *</Label>
+                          <Input
+                            name="tokenPair"
+                            defaultValue={pool.tokenPair}
+                            placeholder="e.g., STEAKUSDC, stETH"
+                            data-testid="edit-input-token-pair"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      {/* Financial Data */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Pool Details</h3>
+                        
+                        <div>
+                          <Label htmlFor="edit-poolAddress" className="text-sm font-medium">Pool Address</Label>
+                          <Input
+                            name="poolAddress"
+                            defaultValue={pool.poolAddress || ''}
+                            placeholder="0x..."
+                            data-testid="edit-input-pool-address"
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="edit-defiLlamaId" className="text-sm font-medium">DeFiLlama ID</Label>
+                          <Input
+                            name="defiLlamaId"
+                            defaultValue={pool.defiLlamaId || ''}
+                            placeholder="Pool ID from DeFiLlama"
+                            data-testid="edit-input-defillama-id"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Settings */}
+                    <div className="space-y-4 border-t pt-6">
+                      <h3 className="text-lg font-semibold">Settings</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            name="showUsdInFlow"
+                            defaultChecked={pool.showUsdInFlow}
+                            className="hidden"
+                          />
+                          <Switch
+                            defaultChecked={pool.showUsdInFlow}
+                            onCheckedChange={(checked) => {
+                              const checkbox = document.querySelector('input[name="showUsdInFlow"]') as HTMLInputElement;
+                              if (checkbox) checkbox.checked = checked;
+                            }}
+                            data-testid="edit-switch-show-usd"
+                          />
+                          <Label htmlFor="edit-showUsdInFlow" className="text-sm">Show USD in Flow</Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            name="isVisible"
+                            defaultChecked={pool.isVisible}
+                            className="hidden"
+                          />
+                          <Switch
+                            defaultChecked={pool.isVisible}
+                            onCheckedChange={(checked) => {
+                              const checkbox = document.querySelector('input[name="isVisible"]') as HTMLInputElement;
+                              if (checkbox) checkbox.checked = checked;
+                            }}
+                            data-testid="edit-switch-visible"
+                          />
+                          <Label htmlFor="edit-isVisible" className="text-sm">Visible to Users</Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            name="isActive"
+                            defaultChecked={pool.isActive}
+                            className="hidden"
+                          />
+                          <Switch
+                            defaultChecked={pool.isActive}
+                            onCheckedChange={(checked) => {
+                              const checkbox = document.querySelector('input[name="isActive"]') as HTMLInputElement;
+                              if (checkbox) checkbox.checked = checked;
+                            }}
+                            data-testid="edit-switch-active"
+                          />
+                          <Label htmlFor="edit-isActive" className="text-sm">Active</Label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Form Actions */}
+                    <div className="flex gap-4 pt-6 border-t">
+                      <Button 
+                        type="submit" 
+                        disabled={updatePoolMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                        data-testid="button-update-pool"
+                      >
+                        {updatePoolMutation.isPending ? "Updating..." : "Update Pool"}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setEditingPool(null)}
+                        data-testid="button-cancel-edit"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Create Pool Form */}
         {showCreateForm && (
           <Card className="mb-8">
