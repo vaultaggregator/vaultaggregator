@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { scraperManager } from '../scrapers/scraper-manager';
 import { morphoService } from '../services/morphoService';
 import { storage } from '../storage';
-import type { PoolWithRelations } from '@shared/schema';
 
 const router = Router();
 
@@ -100,8 +99,8 @@ router.get('/scrape/morpho/apy', async (req, res) => {
       });
     } else {
       // Try to get from database as fallback
-      const pools = await storage.getPools({ onlyVisible: true });
-      const morphoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'morpho' && p.isActive);
+      const pools = await storage.getPoolsByPlatform('morpho');
+      const morphoPool = pools.find(p => p.isVisible && p.isActive);
       
       if (morphoPool) {
         res.json({
@@ -146,8 +145,8 @@ router.get('/scrape/morpho/tvl', async (req, res) => {
       });
     } else {
       // Try to get from database as fallback
-      const pools = await storage.getPools({ onlyVisible: true });
-      const morphoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'morpho' && p.isActive);
+      const pools = await storage.getPoolsByPlatform('morpho');
+      const morphoPool = pools.find(p => p.isVisible && p.isActive);
       
       if (morphoPool) {
         res.json({
@@ -179,8 +178,8 @@ router.get('/scrape/morpho/days', async (req, res) => {
     console.log('📅 Testing Morpho Days endpoint');
     
     // Get pool data from database
-    const pools = await storage.getPools({ onlyVisible: true });
-    const morphoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'morpho' && p.isActive);
+    const pools = await storage.getPoolsByPlatform('morpho');
+    const morphoPool = pools.find(p => p.isVisible && p.isActive);
     
     if (morphoPool) {
       // Calculate days from creation date if available
@@ -223,8 +222,8 @@ router.get('/scrape/lido/apy', async (req, res) => {
     console.log('📊 Testing Lido APY endpoint');
     
     // Get pool data from database (Lido API integration would be added here)
-    const pools = await storage.getPools({ onlyVisible: true });
-    const lidoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'lido' && p.isActive);
+    const pools = await storage.getPoolsByPlatform('lido');
+    const lidoPool = pools.find(p => p.isVisible && p.isActive);
     
     if (lidoPool) {
       res.json({
@@ -255,8 +254,8 @@ router.get('/scrape/lido/tvl', async (req, res) => {
     console.log('💰 Testing Lido TVL endpoint');
     
     // Get pool data from database (Lido API integration would be added here)
-    const pools = await storage.getPools({ onlyVisible: true });
-    const lidoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'lido' && p.isActive);
+    const pools = await storage.getPoolsByPlatform('lido');
+    const lidoPool = pools.find(p => p.isVisible && p.isActive);
     
     if (lidoPool) {
       res.json({
@@ -287,8 +286,8 @@ router.get('/scrape/lido/days', async (req, res) => {
     console.log('📅 Testing Lido Days endpoint');
     
     // Get pool data from database
-    const pools = await storage.getPools({ onlyVisible: true });
-    const lidoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'lido' && p.isActive);
+    const pools = await storage.getPoolsByPlatform('lido');
+    const lidoPool = pools.find(p => p.isVisible && p.isActive);
     
     if (lidoPool) {
       // Calculate days from creation date if available

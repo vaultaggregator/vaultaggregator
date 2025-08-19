@@ -322,6 +322,9 @@ export default function AdminPlatforms() {
       case 'morpho':
         return [
           { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
+          { label: "📊 Morpho APY", method: "GET", endpoint: "/api/scrape/morpho/apy", params: "" },
+          { label: "💰 Morpho TVL", method: "GET", endpoint: "/api/scrape/morpho/tvl", params: "" },
+          { label: "📅 Morpho Days", method: "GET", endpoint: "/api/scrape/morpho/days", params: "" },
           { label: "Morpho GraphQL - Vault APY", method: "POST", endpoint: "https://api.morpho.org/graphql", 
             params: JSON.stringify({
               query: `query {
@@ -344,13 +347,15 @@ export default function AdminPlatforms() {
               }`
             }, null, 2)
           },
-          { label: "Morpho Current APY (Internal)", method: "GET", endpoint: "/api/scrape/morpho/apy", params: "" },
           { label: "Morpho Vault Details (Internal)", method: "GET", endpoint: "/api/scrape/morpho/vault", params: "" },
           { label: "Scrape Morpho Pool Data", method: "POST", endpoint: "/api/scrape/pool/d6a1f6b8-a970-4cc0-9f02-14da0152738e", params: "" },
         ];
       case 'lido':
         return [
           { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
+          { label: "📊 Lido APY", method: "GET", endpoint: "/api/scrape/lido/apy", params: "" },
+          { label: "💰 Lido TVL", method: "GET", endpoint: "/api/scrape/lido/tvl", params: "" },
+          { label: "📅 Lido Days", method: "GET", endpoint: "/api/scrape/lido/days", params: "" },
           { label: "Lido APR (Internal)", method: "GET", endpoint: "/api/scrape/lido/apr", params: "" },
           { label: "Scrape Lido Pool Data", method: "POST", endpoint: "/api/scrape/pool/31e292ba-a842-490b-8688-3868e18bd615", params: "" },
         ];

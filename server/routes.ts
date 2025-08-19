@@ -39,7 +39,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api', openaiRoutes);
 
   // Import and register standardized metrics routes
-  const { default: metricsRoutes } = await import("./routes/metrics-routes");
+  const metricsRoutes = (await import("./routes/metrics-routes")).default;
   app.use('/api', metricsRoutes);
   
 
