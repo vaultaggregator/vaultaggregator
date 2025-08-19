@@ -288,13 +288,7 @@ export default function PrivacyPolicy() {
             </CardContent>
           </Card>
 
-          {/* Contact Information */}
-          <Card className="border-blue-200 bg-blue-50">
-            <CardHeader>
-              <CardTitle className="text-blue-900">Contact Us</CardTitle>
-            </CardHeader>
-            
-          </Card>
+          
         </div>
       </div>
       </div>

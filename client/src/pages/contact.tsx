@@ -102,57 +102,9 @@ export default function Contact() {
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Send us a message</CardTitle>
-              <p className="text-gray-600">
-                Fill out the form below and we'll get back to you as soon as possible.
-              </p>
+              <p className="text-gray-600">vaultaggregator@protonmail.com</p>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Name *</label>
-                    <Input
-                      placeholder="Your full name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      required
-                      data-testid="input-contact-name"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email *</label>
-                    <Input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      required
-                      data-testid="input-contact-email"
-                    />
-                  </div>
-                </div>
-
-                
-
-                
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message *</label>
-                  <Textarea
-                    placeholder="Tell us how we can help..."
-                    rows={6}
-                    value={formData.message}
-                    onChange={(e) => handleInputChange('message', e.target.value)}
-                    required
-                    data-testid="textarea-contact-message"
-                  />
-                </div>
-
-                <Button type="submit" className="w-full" data-testid="button-submit-contact">
-                  Send Message
-                </Button>
-              </form>
-            </CardContent>
+            
           </Card>
 
           

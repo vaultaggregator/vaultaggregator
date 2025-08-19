@@ -346,17 +346,7 @@ export default function Terms() {
             </CardContent>
           </Card>
 
-          {/* Contact Information */}
-          <Card className="border-blue-200 bg-blue-50">
-            <CardHeader>
-              <CardTitle className="text-blue-900">Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-blue-800">
-                If you have any questions, please contact us: vaultaggregator@protonmail.com
-              </p>
-            </CardContent>
-          </Card>
+          
         </div>
       </div>
       </div>
