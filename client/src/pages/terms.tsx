@@ -352,12 +352,9 @@ export default function Terms() {
               <CardTitle className="text-blue-900">Contact Information</CardTitle>
             </CardHeader>
             <CardContent>
-              
-              
-              <div className="space-y-2 text-sm text-blue-800">
-                
-                
-              </div>
+              <p className="text-sm text-blue-800">
+                If you have any questions, please contact us: vaultaggregator@protonmail.com
+              </p>
             </CardContent>
           </Card>
         </div>
