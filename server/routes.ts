@@ -995,6 +995,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             console.log(`✅ Immediate data collection completed for ${newPool.tokenPair}`);
             
+            // 📊 HISTORICAL DATA COLLECTION: Automatically collect historical data for new pools
+            console.log(`📊 Starting automatic historical data collection for new pool: ${newPool.tokenPair}`);
+            
+            // Check platform type for appropriate historical data collection
+            if (platform.name.toLowerCase() === 'morpho' && newPool.poolAddress) {
+              try {
+                const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
+                console.log(`🔶 Collecting Morpho historical data for vault ${newPool.poolAddress}`);
+                await morphoHistoricalService.storeHistoricalData(newPool.id, newPool.poolAddress);
+                console.log(`✅ Morpho historical data collection completed for ${newPool.tokenPair}`);
+              } catch (morphoError) {
+                console.error(`❌ Failed Morpho historical data collection for pool ${newPool.id}:`, morphoError);
+              }
+            } else if (platform.name.toLowerCase() === 'lido' && newPool.poolAddress) {
+              try {
+                const { LidoHistoricalService } = await import("./services/lidoHistoricalService");
+                const lidoHistoricalService = new LidoHistoricalService();
+                console.log(`🔵 Collecting Lido historical data for token ${newPool.poolAddress}`);
+                await lidoHistoricalService.storeHistoricalData(newPool.id);
+                console.log(`✅ Lido historical data collection completed for ${newPool.tokenPair}`);
+              } catch (lidoError) {
+                console.error(`❌ Failed Lido historical data collection for pool ${newPool.id}:`, lidoError);
+              }
+            } else {
+              console.log(`⚠️ No historical data collection method available for platform: ${platform.name}`);
+            }
+            
           } catch (metricsError) {
             console.error(`❌ Failed immediate metrics collection for pool ${newPool.id}:`, metricsError);
           }
@@ -3343,8 +3370,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(historicalData);
     } catch (error) {
       console.error("❌ Error fetching historical data:", error);
-      console.error("❌ Error details:", error.message);
-      console.error("❌ Error stack:", error.stack);
+      console.error("❌ Error details:", error instanceof Error ? error.message : String(error));
+      console.error("❌ Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({ error: "Failed to fetch historical data" });
     }
   });

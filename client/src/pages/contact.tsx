@@ -70,9 +70,7 @@ export default function Contact() {
           <h1 className="text-3xl font-bold text-gray-900" data-testid="text-contact-title">
             Contact Us
           </h1>
-          <p className="text-gray-600 mt-2" data-testid="text-contact-subtitle">
-            Get in touch with our team - we're here to help with any questions or feedback
-          </p>
+          <p className="text-gray-600 mt-2" data-testid="text-contact-subtitle">Get in touch with our team - we're here to help with any questions or feedback  vaultaggregator@protonmail.com</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

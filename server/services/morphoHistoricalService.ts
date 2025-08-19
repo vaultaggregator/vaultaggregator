@@ -90,8 +90,8 @@ export class MorphoHistoricalService {
         const { eq } = await import('drizzle-orm');
         
         const [pool] = await db.select().from(pools).where(eq(pools.id, poolId));
-        if (pool && pool.operatingDays) {
-          days = parseInt(pool.operatingDays.toString()) + 10; // Add buffer for complete history
+        if (pool && (pool as any).operatingDays) {
+          days = parseInt((pool as any).operatingDays.toString()) + 10; // Add buffer for complete history
         } else {
           days = 400; // Fallback only if pool data unavailable
         }
