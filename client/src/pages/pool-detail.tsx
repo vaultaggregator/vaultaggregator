@@ -565,16 +565,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mb-1" data-testid="text-operating-days">
-                {(() => {
-                  // Use authentic database values for operating days calculation
-                  if (pool.createdAt) {
-                    const createdDate = new Date(pool.createdAt);
-                    const now = new Date();
-                    const days = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-                    return days;
-                  }
-                  return 'N/A';
-                })()}
+                {pool.rawData?.count ? `${pool.rawData.count}` : 'N/A'}
               </p>
               <p className="text-xs text-amber-600/70 dark:text-amber-300/70 font-medium">Days Active</p>
             </CardContent>
@@ -594,7 +585,7 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
-                {tokenInfo && typeof tokenInfo === 'object' && tokenInfo !== null && 'holdersCount' in tokenInfo ? (tokenInfo as any).holdersCount : 'N/A'}
+                {pool.holdersCount ? formatHolders(pool.holdersCount) : 'N/A'}
               </p>
               <p className="text-xs text-violet-600/70 dark:text-violet-300/70 font-medium">Active Participants</p>
             </CardContent>

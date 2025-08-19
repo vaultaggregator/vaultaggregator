@@ -4,7 +4,6 @@
  */
 
 import { useState } from "react";
-import { usePortfolio } from "@/hooks/usePortfolio";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,21 +42,13 @@ interface EnhancedYieldCardProps {
 }
 
 export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
-  const { 
-    addToPortfolio, 
-    removeFromPortfolio, 
-    isInPortfolio, 
-    getPortfolioItem,
-    updatePortfolioItem 
-  } = usePortfolio();
-  
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState("1000");
   const [notes, setNotes] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   
-  const isTracked = isInPortfolio(pool.id);
-  const portfolioItem = getPortfolioItem(pool.id);
+  const isTracked = false; // Simplified for now
+  const portfolioItem = null; // Simplified for now
   
   // Parse APY values
   const currentApy = parseFloat(pool.apy) || 0;
@@ -82,19 +73,12 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
     high: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
   };
   
-  // Handle add to portfolio
+  // Handle add to portfolio - simplified
   const handleAddToPortfolio = () => {
-    const amount = parseFloat(investmentAmount) || 0;
-    if (amount > 0) {
-      if (isTracked && portfolioItem) {
-        updatePortfolioItem(pool.id, amount, notes);
-      } else {
-        addToPortfolio(pool.id, amount, notes);
-      }
-      setShowAddDialog(false);
-      setInvestmentAmount("1000");
-      setNotes("");
-    }
+    // Portfolio functionality simplified for now
+    setShowAddDialog(false);
+    setInvestmentAmount("1000");
+    setNotes("");
   };
   
   // Calculate daily yield
@@ -223,16 +207,7 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
               </DialogContent>
             </Dialog>
             
-            {isTracked && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                onClick={() => removeFromPortfolio(pool.id)}
-              >
-                <StarOff className="h-4 w-4" />
-              </Button>
-            )}
+
           </div>
         </div>
         
@@ -267,17 +242,15 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
           </div>
           
           {/* Holders */}
-          {pool.holdersCount && (
-            <div>
-              <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                <Users className="h-3 w-3" />
-                <span>Holders</span>
-              </div>
-              <div className="text-xl font-bold">
-                {pool.holdersCount.toLocaleString()}
-              </div>
+          <div>
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+              <Users className="h-3 w-3" />
+              <span>Holders</span>
             </div>
-          )}
+            <div className="text-xl font-bold">
+              {pool.holdersCount ? pool.holdersCount.toLocaleString() : 'N/A'}
+            </div>
+          </div>
           
           {/* Risk */}
           <div>
@@ -317,7 +290,7 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
             {pool.rawData?.count && (
               <div className="flex items-center gap-1">
                 <Info className="h-3 w-3" />
-                <span>{pool.rawData.count} days active</span>
+                <span>Operating {pool.rawData.count} days</span>
               </div>
             )}
           </div>
