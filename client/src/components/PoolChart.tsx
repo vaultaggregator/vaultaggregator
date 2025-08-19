@@ -562,10 +562,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
           </div>
         </div>
 
-        {/* Data source note */}
-        <div className="mt-4 text-xs text-gray-400 dark:text-gray-500 text-center">
-          Historical patterns simulated from current data • Real historical data will display as it accumulates
-        </div>
+
       </CardContent>
     </Card>
   );
