@@ -9,13 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getPlatformIcon } from "@/components/platform-icons";
 import AdminHeader from "@/components/admin-header";
-import { ArrowLeft, Plus, Edit2, Trash2, Upload, Building, Terminal, Play } from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, Upload, Building } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -45,23 +45,6 @@ interface Platform {
   hasVisiblePools?: boolean;
 }
 
-// API endpoints configuration for testing
-const API_ENDPOINTS = [
-  { label: "GET Platforms", method: "GET", endpoint: "/api/platforms", params: "" },
-  { label: "GET Admin Platforms", method: "GET", endpoint: "/api/admin/platforms", params: "" },
-  { label: "CREATE Platform", method: "POST", endpoint: "/api/admin/platforms", params: '{"name":"test","displayName":"Test Platform","slug":"test"}' },
-  { label: "UPDATE Platform", method: "PUT", endpoint: "/api/admin/platforms/{id}", params: '{"displayName":"Updated Name"}' },
-  { label: "DELETE Platform", method: "DELETE", endpoint: "/api/admin/platforms/{id}", params: "" },
-  { label: "GET Logo Configured Platforms", method: "GET", endpoint: "/api/admin/logos/configured-platforms", params: "" },
-  { label: "UPDATE All Platform Logos", method: "POST", endpoint: "/api/admin/logos/update-all", params: "" },
-  { label: "UPDATE Platform Logo", method: "POST", endpoint: "/api/admin/logos/update/{platformName}", params: "" },
-  { label: "GET System Health", method: "GET", endpoint: "/api/admin/system/health", params: "" },
-  { label: "GET System Environment", method: "GET", endpoint: "/api/admin/system/environment", params: "" },
-  { label: "GET System APIs", method: "GET", endpoint: "/api/admin/system/apis", params: "" },
-  { label: "GET System Jobs", method: "GET", endpoint: "/api/admin/system/jobs", params: "" },
-  { label: "POST System Check", method: "POST", endpoint: "/api/admin/system/check", params: "" },
-];
-
 export default function AdminPlatforms() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,12 +55,6 @@ export default function AdminPlatforms() {
   const [editUrlTemplate, setEditUrlTemplate] = useState("");
   const [editShowUnderlyingTokens, setEditShowUnderlyingTokens] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  
-  // API Testing state
-  const [selectedApi, setSelectedApi] = useState("");
-  const [apiParameters, setApiParameters] = useState("");
-  const [apiResponse, setApiResponse] = useState("");
-  const [apiLoading, setApiLoading] = useState(false);
 
   const createForm = useForm<z.infer<typeof createPlatformSchema>>({
     resolver: zodResolver(createPlatformSchema),
@@ -293,89 +270,6 @@ export default function AdminPlatforms() {
 
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  };
-
-  // API Testing functionality
-  const handleApiCall = async () => {
-    if (!selectedApi) {
-      toast({
-        title: "Error",
-        description: "Please select an API endpoint",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setApiLoading(true);
-    setApiResponse("");
-
-    try {
-      const selectedEndpoint = API_ENDPOINTS.find(api => api.label === selectedApi);
-      if (!selectedEndpoint) throw new Error("Invalid API endpoint");
-
-      let endpoint = selectedEndpoint.endpoint;
-      let body: string | undefined;
-
-      // Handle URL parameters replacement
-      if (apiParameters && (endpoint.includes("{id}") || endpoint.includes("{platformName}"))) {
-        try {
-          const params = JSON.parse(apiParameters);
-          if (params.id) endpoint = endpoint.replace("{id}", params.id);
-          if (params.platformName) endpoint = endpoint.replace("{platformName}", params.platformName);
-        } catch {
-          // If not JSON, treat as direct replacement for single parameter
-          endpoint = endpoint.replace(/{[^}]+}/g, apiParameters);
-        }
-      }
-
-      // Handle request body
-      if (selectedEndpoint.method !== "GET" && selectedEndpoint.method !== "DELETE") {
-        body = apiParameters || selectedEndpoint.params;
-      }
-
-      const response = await fetch(endpoint, {
-        method: selectedEndpoint.method,
-        headers: selectedEndpoint.method !== "GET" && selectedEndpoint.method !== "DELETE" 
-          ? { "Content-Type": "application/json" } 
-          : {},
-        credentials: "include",
-        body: body || undefined,
-      });
-
-      const responseData = await response.json();
-      
-      setApiResponse(JSON.stringify({
-        status: response.status,
-        statusText: response.statusText,
-        data: responseData,
-        timestamp: new Date().toISOString()
-      }, null, 2));
-
-      if (!response.ok) {
-        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
-      }
-
-      toast({
-        title: "Success",
-        description: `API call completed successfully (${response.status})`,
-      });
-
-    } catch (error: any) {
-      const errorResponse = {
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-      
-      setApiResponse(JSON.stringify(errorResponse, null, 2));
-      
-      toast({
-        title: "Error",
-        description: error.message || "Failed to call API",
-        variant: "destructive",
-      });
-    } finally {
-      setApiLoading(false);
-    }
   };
 
   // Platform Card Component
@@ -842,104 +736,6 @@ export default function AdminPlatforms() {
           );
 
         })()}
-
-        {/* API Testing Interface */}
-        <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Terminal className="w-5 h-5" />
-                API Testing Interface
-              </CardTitle>
-              <p className="text-sm text-gray-600">
-                Test platform-related API endpoints directly from the admin interface
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="api-select">Select API Endpoint</Label>
-                  <Select value={selectedApi} onValueChange={setSelectedApi}>
-                    <SelectTrigger data-testid="select-api-endpoint">
-                      <SelectValue placeholder="Choose an API endpoint to test" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {API_ENDPOINTS.map((api) => (
-                        <SelectItem key={api.label} value={api.label}>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              {api.method}
-                            </Badge>
-                            <span>{api.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="api-params">Parameters/Body (JSON)</Label>
-                  <Input
-                    id="api-params"
-                    placeholder='{"id": "platform-id"} or {"name": "test", "displayName": "Test"}'
-                    value={apiParameters}
-                    onChange={(e) => setApiParameters(e.target.value)}
-                    data-testid="input-api-parameters"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    For URL params: {`{"id": "value"}`} • For body: JSON object
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleApiCall} 
-                  disabled={!selectedApi || apiLoading}
-                  data-testid="button-execute-api"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {apiLoading ? "Executing..." : "Execute API Call"}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setSelectedApi("");
-                    setApiParameters("");
-                    setApiResponse("");
-                  }}
-                  data-testid="button-clear-api"
-                >
-                  Clear
-                </Button>
-              </div>
-
-              {selectedApi && (
-                <div className="bg-gray-50 p-3 rounded-md border">
-                  <p className="text-sm font-medium">Selected Endpoint:</p>
-                  <p className="text-sm font-mono">
-                    {API_ENDPOINTS.find(api => api.label === selectedApi)?.method}{" "}
-                    {API_ENDPOINTS.find(api => api.label === selectedApi)?.endpoint}
-                  </p>
-                </div>
-              )}
-
-              {apiResponse && (
-                <div>
-                  <Label>API Response:</Label>
-                  <Textarea
-                    value={apiResponse}
-                    readOnly
-                    className="min-h-[200px] font-mono text-sm"
-                    data-testid="textarea-api-response"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
