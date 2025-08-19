@@ -2874,5 +2874,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { databaseScheduler } = await import('./services/database-scheduler');
   databaseScheduler.start();
   
+  // Image localization endpoint for missing token images
+  app.post("/api/localize-token-images", async (req, res) => {
+    try {
+      console.log('🔄 Localizing missing token images...');
+      
+      const { ObjectStorageService } = await import("./objectStorage");
+      const objectStorage = new ObjectStorageService();
+      
+      // Get public path for storing images
+      const publicPaths = objectStorage.getPublicObjectSearchPaths();
+      const publicPath = publicPaths[0];
+      
+      const tokenImages = [
+        {
+          name: 'USDC',
+          url: 'https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png',
+          filename: 'a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png'
+        },
+        {
+          name: 'stETH', 
+          url: 'https://tokens.1inch.io/0xae7ab96520de3a18e5e111b5eaab095312d7fe84.png',
+          filename: 'ae7ab96520de3a18e5e111b5eaab095312d7fe84.png'
+        }
+      ];
+      
+      const results = [];
+      
+      for (const token of tokenImages) {
+        try {
+          console.log(`📥 Downloading ${token.name} image from: ${token.url}`);
+          
+          const response = await fetch(token.url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (compatible; VaultAggregator/1.0)',
+            },
+          });
+
+          if (!response.ok) {
+            console.warn(`❌ Failed to fetch ${token.name} image: ${response.status}`);
+            results.push({ token: token.name, success: false, error: response.statusText });
+            continue;
+          }
+
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          
+          // Store in object storage
+          const fullObjectPath = `${publicPath}/images/${token.filename}`;
+          const pathParts = fullObjectPath.split("/");
+          const bucketName = pathParts[1];
+          const objectName = pathParts.slice(2).join("/");
+          
+          const { objectStorageClient } = await import("./objectStorage");
+          const bucket = objectStorageClient.bucket(bucketName);
+          const file = bucket.file(objectName);
+          
+          await file.save(buffer, {
+            metadata: {
+              contentType: 'image/png',
+              metadata: {
+                'original-url': token.url,
+                'localized-at': new Date().toISOString(),
+                'token': token.name
+              }
+            }
+          });
+
+          console.log(`✅ ${token.name} image saved to: /public-objects/images/${token.filename}`);
+          results.push({ token: token.name, success: true, path: `/public-objects/images/${token.filename}` });
+          
+        } catch (error) {
+          console.error(`❌ Error downloading ${token.name} image:`, error);
+          results.push({ token: token.name, success: false, error: error.message });
+        }
+      }
+      
+      const successCount = results.filter(r => r.success).length;
+      console.log(`🎉 Token image localization completed: ${successCount}/${tokenImages.length} successful`);
+      
+      res.json({ 
+        message: `Localized ${successCount}/${tokenImages.length} token images`,
+        results 
+      });
+      
+    } catch (error) {
+      console.error('❌ Error localizing token images:', error);
+      res.status(500).json({ error: 'Failed to localize token images' });
+    }
+  });
+
   return httpServer;
 }
