@@ -158,7 +158,15 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* Days */}
             <div className="text-center">
               <p className="text-sm font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                {opportunity.rawData?.count ? `${opportunity.rawData.count}` : 'N/A'}
+                {(() => {
+                  if (opportunity.rawData?.createdAt) {
+                    const createdDate = new Date(opportunity.rawData.createdAt);
+                    const now = new Date();
+                    const days = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                    return days;
+                  }
+                  return 'N/A';
+                })()}
               </p>
             </div>
             
@@ -202,7 +210,15 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">Days</p>
                   </div>
                   <p className="text-xs font-bold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
-                    {opportunity.rawData?.count ? `${opportunity.rawData.count}` : 'N/A'}
+                    {(() => {
+                      if (opportunity.rawData?.createdAt) {
+                        const createdDate = new Date(opportunity.rawData.createdAt);
+                        const now = new Date();
+                        const days = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                        return days;
+                      }
+                      return 'N/A';
+                    })()}
                   </p>
                 </div>
                 <div className="text-center">
