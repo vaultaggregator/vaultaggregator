@@ -261,6 +261,13 @@ export default function Analytics() {
                           <XAxis dataKey="name" />
                           <YAxis tickFormatter={formatTvl} />
                           <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'var(--background)', 
+                              border: '1px solid var(--border)', 
+                              borderRadius: '8px',
+                              color: 'var(--foreground)',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
                             formatter={(value: any, name: string) => [formatTvl(Number(value)), 'TVL']}
                             labelFormatter={(label) => `Platform: ${label}`}
                           />
@@ -286,6 +293,13 @@ export default function Analytics() {
                           <XAxis dataKey="name" />
                           <YAxis tickFormatter={(value) => `${value.toFixed(1)}%`} />
                           <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'var(--background)', 
+                              border: '1px solid var(--border)', 
+                              borderRadius: '8px',
+                              color: 'var(--foreground)',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
                             formatter={(value: any) => [`${Number(value).toFixed(2)}%`, 'Avg APY']}
                             labelFormatter={(label) => `Platform: ${label}`}
                           />
@@ -326,7 +340,16 @@ export default function Analytics() {
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: any) => [formatTvl(Number(value)), 'TVL']} />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'var(--background)', 
+                              border: '1px solid var(--border)', 
+                              borderRadius: '8px',
+                              color: 'var(--foreground)',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
+                            formatter={(value: any) => [formatTvl(Number(value)), 'TVL']} 
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
@@ -390,6 +413,13 @@ export default function Analytics() {
                           />
                           <YAxis tickFormatter={(value) => `${value}%`} />
                           <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'var(--background)', 
+                              border: '1px solid var(--border)', 
+                              borderRadius: '8px',
+                              color: 'var(--foreground)',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
                             formatter={(value: any, name: string) => {
                               if (name === 'apy') return [`${Number(value).toFixed(2)}%`, 'APY'];
                               if (name === 'tvl') return [formatTvl(Number(value)), 'TVL'];
@@ -426,6 +456,13 @@ export default function Analytics() {
                           <YAxis yAxisId="left" tickFormatter={(value) => `${value}%`} />
                           <YAxis yAxisId="right" orientation="right" tickFormatter={formatTvl} />
                           <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'var(--background)', 
+                              border: '1px solid var(--border)', 
+                              borderRadius: '8px',
+                              color: 'var(--foreground)',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
                             formatter={(value: any, name: string) => {
                               if (name === 'apy') return [`${Number(value).toFixed(2)}%`, 'APY'];
                               if (name === 'tvl') return [formatTvl(Number(value)), 'TVL'];
@@ -470,7 +507,16 @@ export default function Analytics() {
                               <Cell key={`cell-${index}`} fill={getRiskColor(entry.name.toLowerCase())} />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value: any) => [`${value} pools`, 'Count']} />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'var(--background)', 
+                              border: '1px solid var(--border)', 
+                              borderRadius: '8px',
+                              color: 'var(--foreground)',
+                              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                            }}
+                            formatter={(value: any) => [`${value} pools`, 'Count']} 
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>

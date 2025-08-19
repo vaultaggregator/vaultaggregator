@@ -224,7 +224,7 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
       if (!data) return null;
       
       return (
-        <div className="bg-gray-900 text-white p-3 rounded-lg shadow-xl border border-gray-700 text-sm">
+        <div className="bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 p-3 rounded-lg shadow-xl border border-gray-700 dark:border-gray-600 text-sm">
           <p className="font-semibold mb-2 text-gray-300">{label}</p>
           <div className="space-y-1">
             <div className="flex justify-between items-center gap-4">

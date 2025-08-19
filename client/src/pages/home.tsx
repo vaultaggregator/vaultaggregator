@@ -15,6 +15,7 @@ import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animati
 import { CryptoLoader } from "@/components/crypto-loader";
 import { EnhancedSearch } from "@/components/enhanced-search";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
+import { WebSocketStatus } from "@/components/websocket-status";
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -160,6 +161,11 @@ export default function Home() {
       <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* WebSocket Status for live data - positioned at top right */}
+        <div className="flex justify-end mb-4">
+          <WebSocketStatus variant="compact" showTime={true} />
+        </div>
+
         {/* Table Header - Hidden on mobile */}
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
           <div className="px-3 sm:px-4 py-4 bg-muted/50 rounded-t-xl border-b border-border/50">

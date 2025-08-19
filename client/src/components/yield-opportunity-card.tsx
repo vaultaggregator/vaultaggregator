@@ -8,6 +8,7 @@ import { MetricTooltip } from "./metric-tooltip";
 import { RiskBadge } from "@/components/risk-badge";
 import { AnimatedValue, ShimmerEffect } from "@/components/animated-value";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
+import { WebSocketStatus } from "@/components/websocket-status";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
@@ -193,8 +194,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* Risk */}
             <div className="text-center">
               <RiskBadge 
-                riskLevel={opportunity.riskLevel}
-                size="sm"
+                vault={opportunity}
+                risk={opportunity.riskLevel || 'medium'}
+                variant="compact"
+                showScore={true}
+                showLabel={true}
+                useDynamic={true}
                 data-testid={`badge-risk-${opportunity.id}`}
               />
             </div>
@@ -280,8 +285,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   )}
                   <div className="flex justify-center">
                     <RiskBadge 
-                      riskLevel={opportunity.riskLevel}
-                      size="sm"
+                      vault={opportunity}
+                      risk={opportunity.riskLevel || 'medium'}
+                      variant="compact"
+                      showScore={true}
+                      showLabel={true}
+                      useDynamic={true}
                       data-testid={`badge-risk-${opportunity.id}`}
                     />
                   </div>

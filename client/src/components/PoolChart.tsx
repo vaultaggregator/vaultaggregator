@@ -420,10 +420,11 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: 'none', 
+                    backgroundColor: 'var(--background)', 
+                    border: '1px solid var(--border)', 
                     borderRadius: '8px',
-                    color: '#fff'
+                    color: 'var(--foreground)',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                   }}
                   formatter={(value: number) => [formatApy(value), 'APY']}
                   labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
@@ -459,10 +460,11 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: 'none', 
+                    backgroundColor: 'var(--background)', 
+                    border: '1px solid var(--border)', 
                     borderRadius: '8px',
-                    color: '#fff'
+                    color: 'var(--foreground)',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                   }}
                   formatter={(value: number) => [formatTvl(value), 'TVL']}
                   labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
@@ -502,10 +504,11 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1f2937', 
-                    border: 'none', 
+                    backgroundColor: 'var(--background)', 
+                    border: '1px solid var(--border)', 
                     borderRadius: '8px',
-                    color: '#fff'
+                    color: 'var(--foreground)',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
                   }}
                   formatter={(value: number, name: string) => [
                     name === 'apy' ? formatApy(value) : formatTvl(value),

@@ -1,58 +1,99 @@
 import { Badge } from "@/components/ui/badge";
-import { getRiskConfig, convertToRiskScore, getLegacyRiskConfig, formatRiskDisplay } from "@/lib/risk-utils";
 import { cn } from "@/lib/utils";
+import { parseRiskLevel, calculateRiskFromVault } from "@/lib/risk-scoring";
 
 interface RiskBadgeProps {
-  // Either provide a numeric score (1-10) or legacy risk level string
-  riskScore?: number;
-  riskLevel?: string;
-  overallScore?: number; // 0-100 scale from database
+  risk?: string | number;
+  vault?: any; // For dynamic calculation
+  variant?: 'full' | 'compact' | 'minimal' | 'legacy';
   className?: string;
-  showScore?: boolean; // Whether to show numeric score
-  size?: 'sm' | 'md' | 'lg';
+  showLabel?: boolean;
+  showScore?: boolean;
+  useDynamic?: boolean; // Enable dynamic risk calculation
 }
 
+/**
+ * Enhanced Risk Badge with dynamic calculation support
+ */
 export function RiskBadge({ 
-  riskScore, 
-  riskLevel, 
-  overallScore,
-  className, 
+  risk, 
+  vault,
+  variant = 'compact',
+  className,
+  showLabel = true,
   showScore = true,
-  size = 'md'
+  useDynamic = true
 }: RiskBadgeProps) {
-  // Determine risk configuration from available data
-  let riskConfig;
+  // Calculate dynamic risk if enabled and vault data is available
+  let riskData;
   
-  if (riskScore) {
-    riskConfig = getRiskConfig(riskScore);
-  } else if (overallScore !== undefined) {
-    const convertedScore = convertToRiskScore(overallScore);
-    riskConfig = getRiskConfig(convertedScore);
-  } else if (riskLevel) {
-    riskConfig = getLegacyRiskConfig(riskLevel);
+  if (useDynamic && vault) {
+    try {
+      riskData = calculateRiskFromVault(vault);
+    } catch (error) {
+      console.warn('Failed to calculate dynamic risk, falling back to static:', error);
+      riskData = risk ? parseRiskLevel(risk) : parseRiskLevel('medium');
+    }
+  } else if (risk !== undefined) {
+    riskData = parseRiskLevel(risk);
   } else {
-    // Default fallback
-    riskConfig = getRiskConfig(5);
+    riskData = parseRiskLevel('medium'); // Default fallback
   }
-
-  const sizeClasses = {
-    sm: 'text-xs px-1.5 py-0.5',
-    md: 'text-xs px-2 py-1',
-    lg: 'text-sm px-3 py-1.5'
+  
+  // Legacy mode - only show the label (old behavior)
+  if (variant === 'legacy') {
+    return (
+      <Badge 
+        variant="outline" 
+        className={cn(
+          riskData.color.text,
+          riskData.color.background, 
+          riskData.color.border,
+          className
+        )}
+        data-testid="risk-badge-legacy"
+      >
+        {riskData.label}
+      </Badge>
+    );
+  }
+  
+  // New enhanced modes - Updated to show "number followed by word" format
+  const getDisplayText = () => {
+    if (variant === 'minimal') {
+      return showScore ? riskData.numeric.toString() : riskData.label;
+    }
+    
+    if (variant === 'compact') {
+      if (showScore && showLabel) {
+        return `${riskData.numeric} ${riskData.label}`;  // Changed to "number word" format
+      }
+      return showScore ? riskData.numeric.toString() : riskData.label;
+    }
+    
+    // Full variant
+    if (showScore && showLabel) {
+      return `${riskData.numeric} ${riskData.label}`;  // Changed to "number word" format
+    } else if (showScore) {
+      return `Risk Score: ${riskData.numeric}`;
+    } else {
+      return `Risk: ${riskData.label}`;
+    }
   };
-
+  
   return (
     <Badge 
+      variant="outline" 
       className={cn(
-        'font-medium border',
-        riskConfig.color.bg,
-        riskConfig.color.text,
-        riskConfig.color.border,
-        sizeClasses[size],
+        riskData.color.text,
+        riskData.color.background, 
+        riskData.color.border,
         className
       )}
+      data-testid="risk-badge"
+      title={riskData.factors ? `Calculated from: Days (${riskData.factors.daysRunning.description}), TVL (${riskData.factors.tvl.description}), APY (${riskData.factors.apy.description}), Users (${riskData.factors.userCount.description})` : undefined}
     >
-      {riskConfig.label}
+      {getDisplayText()}
     </Badge>
   );
 }

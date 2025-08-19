@@ -41,12 +41,7 @@ export default function Header({ onAdminClick = () => {}, websocketStatus }: Hea
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            {websocketStatus && (
-              <WebSocketStatus 
-                isConnected={websocketStatus.isConnected}
-                className="hidden sm:flex"
-              />
-            )}
+            <WebSocketStatus variant="compact" className="hidden sm:flex" />
             <ThemeToggle />
             {/* Mobile Menu Button */}
             <button 

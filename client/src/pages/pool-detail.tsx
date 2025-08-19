@@ -22,6 +22,7 @@ import { PoolChart } from "@/components/PoolChart";
 
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
+import { WebSocketStatus } from "@/components/websocket-status";
 
 
 
@@ -297,7 +298,10 @@ export default function PoolDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header onAdminClick={() => {}} />
+        <Header 
+          onAdminClick={() => {}} 
+          websocketStatus={{ isConnected, lastUpdate }}
+        />
         <div className="py-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <CryptoLoader message="Loading pool details and market data..." />
@@ -311,7 +315,10 @@ export default function PoolDetail() {
   if (error || !pool) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header onAdminClick={() => {}} />
+        <Header 
+          onAdminClick={() => {}} 
+          websocketStatus={{ isConnected, lastUpdate }}
+        />
         <div className="py-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
@@ -336,6 +343,12 @@ export default function PoolDetail() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onAdminClick={() => {}} />
+      
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* WebSocket Status for live data */}
+        <div className="flex justify-end mb-4">
+          <WebSocketStatus variant="compact" showTime={true} />
+        </div>
       <div className="py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with back button */}
@@ -401,8 +414,12 @@ export default function PoolDetail() {
                       <div className="flex items-center gap-1">
                         <Shield className="w-3 h-3" />
                         <RiskBadge 
-                          riskLevel={pool.riskLevel || 'medium'}
-                          size="md"
+                          vault={pool}
+                          risk={pool.riskLevel || 'medium'}
+                          variant="compact"
+                          showScore={true}
+                          showLabel={true}
+                          useDynamic={true}
                           data-testid="badge-risk"
                         />
                       </div>
@@ -676,8 +693,10 @@ export default function PoolDetail() {
             <CardContent className="pt-0">
               <div className="mb-1">
                 <RiskBadge 
-                  riskLevel={pool.riskLevel || 'medium'}
-                  size="lg"
+                  risk={pool.riskLevel || 'medium'}
+                  variant="full"
+                  showScore={true}
+                  showLabel={true}
                   data-testid="text-risk-level"
                 />
               </div>
@@ -707,8 +726,9 @@ export default function PoolDetail() {
 
 
 
+        </div>
       </div>
-      </div>
+      </main>
       <Footer />
     </div>
   );

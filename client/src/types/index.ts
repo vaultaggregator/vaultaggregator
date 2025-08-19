@@ -34,6 +34,7 @@ export interface YieldOpportunity {
     [key: string]: any;
   };
   holdersCount?: number | null;
+  operatingDays?: number | null;
 }
 
 export interface FilterOptions {
