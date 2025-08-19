@@ -1,52 +1,29 @@
 # Overview
 
-Vault Aggregator is a streamlined DeFi yield aggregation platform that helps users discover, track, and compare yield farming opportunities across various blockchain networks and protocols. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project aims to provide accurate, reliable DeFi data to empower user investment decisions.
-
-**Major Platform Simplification (August 18, 2025):**
-- **Database cleanup completed**: Removed 8,597 hidden pools, keeping only 2 visible pools (STETH and STEAKUSDC)
-- **Platform cleanup completed**: Removed 322 unused platforms, keeping only 2 active platforms (Lido and Morpho)
-- **Network cleanup completed**: Removed 18 unused chains, keeping only Ethereum (used by both pools)
-- **Ultra-simplified architecture**: 2 pools, 2 platforms, 1 chain - maximum efficiency and focus
-- **Focused scope**: Platform now exclusively tracks the core yield opportunities users actually see
-- **Removed features**: "Scan Pools", "View Consolidated", and "Smart Tokens" functionality completely eliminated
-- **Clean architecture**: All associated data properly cleaned up with no orphaned records
-- **Caching system removal**: All caching mechanisms completely disabled - frontend TanStack Query, backend services, and HTTP cache headers (August 18, 2025)
-- **Admin interface cleanup**: Removed cache management tab and all cache-related admin functionality (August 18, 2025)
-- **Enhanced Pool Management**: Tabbed interface with separate "Active Pools" and "Deactivated Pools" tabs for better organization and management (August 19, 2025)
-- **Complete Trash Bin System**: Comprehensive soft deletion with 60-day automatic cleanup, dedicated "Trash Bin" tab, restore functionality, and permanent delete operations with proper database foreign key handling (August 19, 2025)
-- **Complete Image Localization System**: All external images (platform logos, category icons) downloaded and stored locally in object storage, eliminating dependency on external image hosts including DeFiLlama icons (August 19, 2025)
-- **Admin Interface Cleanup**: Removed Image Localization admin tab and manual controls while preserving automatic background localization functionality (August 19, 2025)
-- **Standardized Metrics Collection System**: Implemented comprehensive 4-metric collection framework (APY, DAYS, TVL, HOLDERS) with platform-specific API integration (Morpho, Lido, Etherscan), historical tracking, status monitoring, customizable refresh intervals, and complete admin management interface (August 19, 2025)
-- **Immediate Data Collection for New Pools**: Added automatic immediate metrics collection trigger when creating new pools - all 4 core metrics (APY, operating days, TVL, holders) are collected instantly for new Morpho platform pools to prevent future "N/A" display issues (August 19, 2025)
-- **Restored Structured Etherscan Integration**: Reinstalled comprehensive EtherscanService with organized API access and re-enabled automated holder sync functionality - complete integration now provides contract creation dates, holder counts, and token information through centralized service (August 19, 2025)
-- **Simplified Pool Management Interface**: Removed manual Token Pair and DeFiLlama ID fields, implemented automatic contract lookup via platform APIs with multi-layer fallback system (Morpho API, known contracts database, Etherscan verification) for streamlined pool creation (August 19, 2025)
-- **Complete Hardcode Elimination**: Removed all hardcoded contract mappings and fallback data, system now exclusively uses authentic API sources (Morpho API, Etherscan API) with proper error handling when APIs fail - maintains 100% data integrity policy compliance (August 19, 2025)
-- **CoinGecko-Style Interactive Charts**: Added professional chart visualization component to pool detail pages with timeline functionality (24H, 7D, 1M, 3M, 1Y, Max), APY/TVL toggle modes, statistical summaries, and responsive design using Recharts library (August 19, 2025)
-- **Complete Immediate Data Collection System**: Fixed and fully implemented automatic immediate metrics collection for new pools - all 4 core metrics (APY, operating days, TVL, holders) are now collected instantly via `/api/admin/metrics/collect-immediate` endpoint and correctly displayed on both homepage and pool detail pages (August 19, 2025)
-- **Enhanced Etherscan Rate Limiting**: Implemented robust rate limiting with progressive delays, automatic retry logic, and proper error handling to ensure operating days are calculated correctly for every new pool without API failures (August 19, 2025)
+Vault Aggregator is a streamlined DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities across various blockchain networks and protocols. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project's ambition is to provide accurate, reliable DeFi data to empower user investment decisions, focusing on efficiency and a clean architecture by exclusively tracking core yield opportunities for two specific pools (STETH and STEAKUSDC) on two platforms (Lido and Morpho) on the Ethereum chain.
 
 # User Preferences
 
-**Critical Data Methodology (August 18, 2025) - DO NOT CHANGE:**
+**Critical Data Methodology - DO NOT CHANGE:**
 - Morpho STEAKUSDC APY: Live data from Morpho API (database-first system fetches real-time values)
 - Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
 - Operating Since/Days: Use Etherscan-based contract creation date calculation instead of DeFi Llama count - displays ~592 days matching Etherscan "1 yr 227 days ago" (user confirmed correct)
 - Holders Count: Use verified Etherscan data - displays 546 holders matching Etherscan exactly (user confirmed correct)
 - Lido stETH: Use current methodology - currently displays 2.8% APY matching Lido website
-- Single pool page data accuracy: All metrics verified as working correctly - user confirmed satisfaction (Aug 18, 2025)
-- Homepage and pool detail consistency: Both pages now display identical 546 holders matching Etherscan (Aug 18, 2025)
-- APY display consistency: Fixed single page to show same database APY as homepage - both now display 4.49% from live Morpho data (Aug 19, 2025)
-- Data consistency fixes: Eliminated all rawData dependencies - homepage and single page now use identical database-first values for APY, TVL, and holders (Aug 19, 2025)
-- Operating days consistency: Fixed homepage to calculate days from creation date instead of using cached rawData.count, ensuring consistency with single page (Aug 19, 2025)
-- Operating days consistency: Homepage and pool detail both show 591 days from Etherscan blockchain data (Aug 18, 2025)
-- Lido stETH operating days: Updated to accurate 1703 days (4 yrs 243 days) from Etherscan verified deployment date (Aug 18, 2025)
-- Homepage data consistency: User confirmed all metrics display correctly and match official sources (Aug 18, 2025)
-- Data synchronization: Implemented 10-minute comprehensive data sync for all website data (APY, TVL, token info) with 30-minute holder data updates (Aug 18, 2025)
+- Single pool page data accuracy: All metrics verified as working correctly - user confirmed satisfaction
+- Homepage and pool detail consistency: Both pages now display identical 546 holders matching Etherscan
+- APY display consistency: Fixed single page to show same database APY as homepage - both now display 4.49% from live Morpho data
+- Data consistency fixes: Eliminated all rawData dependencies - homepage and single page now use identical database-first values for APY, TVL, and holders
+- Operating days consistency: Fixed homepage to calculate days from creation date instead of using cached rawData.count, ensuring consistency with single page
+- Operating days consistency: Homepage and pool detail both show 591 days from Etherscan blockchain data
+- Lido stETH operating days: Updated to accurate 1703 days (4 yrs 243 days) from Etherscan verified deployment date
+- Homepage data consistency: User confirmed all metrics display correctly and match official sources
+- Data synchronization: Implemented 10-minute comprehensive data sync for all website data (APY, TVL, token info) with 30-minute holder data updates
 - Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
 
-**Historical APY Calculation (August 19, 2025) - IMPLEMENTED:**
-- Current APY: 4.49% (authentic from Morpho API - live data Aug 19, 2025)
-- APY calculation methodology: User confirmed correct approach - do not change data source or calculation method unless specifically requested (Aug 18, 2025)
+**Historical APY Calculation - IMPLEMENTED:**
+- Current APY: 4.49% (authentic from Morpho API - live data)
+- APY calculation methodology: User confirmed correct approach - do not change data source or calculation method unless specifically requested
 - 7-Day Average: 4.40% (current × 0.98) - slightly lower historical average
 - 30-Day Average: 6.06% (current × 1.35) - higher historical average
 - 90-Day Average: 5.57% (current × 1.24) - moderate historical average  
@@ -75,57 +52,28 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - Never use fake, mock, or placeholder data for yield information (APY, TVL, operating days)
 - Always display "N/A" when authentic data is not available
 - Users rely on accurate data for investment decisions
+- 100% authentic data requirement: All charts and historical data must come from real API sources with no fallbacks, simulations, or synthetic values
 - Use correct field mappings: 24h APY = "apyBase", 30d APY = "apyMean30d", TVL = "tvlUsd", Operating = "count"
 
 # System Architecture
 
-**Database-First Architecture (August 19, 2025):**
-- **Complete removal of hardcoded values**: All data now comes exclusively from PostgreSQL database
-- **Modular scraper system**: Live data fetching from real APIs (Morpho, Lido) with automatic database storage
-- **Database-only API endpoints**: All routes read from database with clear error handling when no data exists
-- **No fallback data**: Returns empty results or clear errors instead of synthetic/mock values
-- **Real-time WebSocket**: Broadcasts only when database is updated by scrapers, not hardcoded simulations
-- **Scheduled data collection**: Scrapers fetch live data every 5 minutes and store in database
-- **API endpoints for manual scraping**: `/api/scrape/all` and `/api/scrape/pool/:poolId` for testing
-- **Database status monitoring**: `/api/database/status` and `/api/pools/database-only` for verification
-- **Complete image localization**: All external images stored locally using object storage with API endpoints `/api/admin/images/localize-all` and category-specific endpoints
-
-The application features a modern React frontend and a Node.js/Express backend with complete database-first data integrity.
+The application features a modern React frontend and a Node.js/Express backend, built on a database-first architecture where all data originates from the PostgreSQL database, ensuring complete data integrity and eliminating hardcoded values.
 
 ## Frontend Architecture
 
-The client is built with React 18 and TypeScript, utilizing shadcn/ui components, Tailwind CSS, TanStack Query for state management, Wouter for routing, and Vite as the build tool. It uses a modular structure with reusable components, custom hooks, and type-safe interfaces.
-
-### Interactive Data Visualization (August 18, 2025)
-- **Interactive Pool Chart Component**: Beautiful chart visualization on pool detail pages showing historical APY and TVL data
-- **Multi-timeframe Navigation**: 7D, 30D, 90D, and All-Time period selection with smooth transitions
-- **Chart Type Toggles**: Combined view, APY-only, and TVL-only display modes with gradient fills
-- **Statistical Summaries**: Real-time calculation of average and maximum values for selected periods
-- **Responsive Design**: Mobile-optimized charts with proper tooltips and legends using Recharts library
+The client is built with React 18 and TypeScript, using `shadcn/ui` components, Tailwind CSS for styling, TanStack Query for state management, Wouter for routing, and Vite as the build tool. It emphasizes a modular structure with reusable components, custom hooks, and type-safe interfaces. A key feature is the interactive chart component on pool detail pages, visualizing historical APY and TVL data with multi-timeframe navigation (7D, 30D, 90D, All-Time), chart type toggles, statistical summaries, and responsive design using the Recharts library.
 
 ## Backend Architecture
 
-The server is built with Express.js, following a layered architecture with an API layer (RESTful endpoints), a Storage layer (Drizzle-based data access), and a Service layer (external API integration and data analysis). PostgreSQL with Drizzle ORM is used for the database.
-
-### Data Collection & Analysis System
-
-The backend includes a comprehensive multi-source data collection and analysis system:
-- **Data Collection Services**: Handles synchronizing pool data, token holder analytics, comprehensive token information with caching, and advanced protocol-aware token transfer analysis.
-- **Analytics Services**: Provides comprehensive pool analytics, market-wide analytics, and a breakthrough system for reconstructing authentic holder timelines from blockchain transfers.
-- **Enhanced API Resilience**: Implements intelligent rate limiting, exponential backoff retry logic, smart caching (5-minute TTL for expensive metrics), and graceful degradation with stale data fallbacks.
-- **Self-Healing Mechanism**: Features an intelligent error recovery system with pattern-based healing strategies, automatic retry logic with exponential backoff, and smart error analysis for common issues like network, API, and rate limit failures.
+The server is built with Express.js, following a layered architecture with an API layer (RESTful endpoints), a Storage layer (Drizzle-based data access), and a Service layer (external API integration and data analysis). PostgreSQL with Drizzle ORM is used for data persistence. The backend includes a comprehensive multi-source data collection and analysis system, with services for synchronizing pool data, token holder analytics, and token information. It features enhanced API resilience with intelligent rate limiting, exponential backoff, and self-healing mechanisms for error recovery. Data is collected via a modular scraper system from real APIs (Morpho, Lido) every 5 minutes and stored in the database.
 
 ## Data Storage Solutions
 
-The database schema includes tables for Chains, Platforms, Tokens, Pools, Notes, and Users, using UUIDs for primary keys and proper foreign key relationships. Drizzle ORM ensures type-safe operations. Token information is stored in a `tokenInfo` table and cached.
-
-## Authentication and Authorization
-
-A basic user system for admin access includes password-based authentication, session management, and role-based access control for administrative functions.
+The database schema includes tables for Chains, Platforms, Tokens, Pools, Notes, and Users, using UUIDs for primary keys and proper foreign key relationships. Drizzle ORM ensures type-safe operations. A `tokenInfo` table stores and caches token information. The system also implements comprehensive soft deletion with a "Trash Bin" system and 60-day automatic cleanup.
 
 ## UI/UX Decisions
 
-The application prioritizes a consistent UI architecture with standardized header/footer layouts, responsive design, and consistent branding. It uses professional brand assets for blockchain network icons and DeFi protocol logos. The dark theme is set as default. Risk display uses simple text badges.
+The application prioritizes a consistent UI with standardized header/footer layouts, responsive design, and consistent branding. It uses professional brand assets for blockchain network icons and DeFi protocol logos. The dark theme is default. Risk display uses simple text badges (Low/Medium/High). All external images are localized and stored locally in object storage, eliminating external image host dependencies.
 
 # External Dependencies
 
@@ -138,9 +86,11 @@ The application prioritizes a consistent UI architecture with standardized heade
 - **Radix UI**: Headless UI primitives.
 - **shadcn/ui**: Pre-built component library based on Radix UI.
 - **Lucide React**: Icon library.
+- **Recharts**: For interactive data visualization charts.
 
 ## Key Integrations
 
 - **Morpho API**: Integrated for authenticated data synchronization, providing comprehensive historical APY data (7d, 30d, 90d) and live vault data.
 - **Alchemy API**: Used for direct analysis of Ethereum transfers.
-- **Etherscan**: Used for accurate holder count data.
+- **Etherscan**: Used for accurate holder count data and contract creation dates.
+- **Lido API**: Integrated for data fetching for Lido pools.

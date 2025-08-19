@@ -47,7 +47,7 @@ export class MorphoHistoricalService {
         }
       };
 
-      console.log(`📊 Fetching historical data for vault ${vaultAddress} from ${new Date(startTimestamp * 1000).toDateString()} to ${new Date(endTimestamp * 1000).toDateString()}`);
+      console.log(`📊 Fetching authentic historical data for vault ${vaultAddress} from ${new Date(startTimestamp * 1000).toDateString()} to ${new Date(endTimestamp * 1000).toDateString()}`);
 
       const response = await fetch(this.MORPHO_API_URL, {
         method: 'POST',
@@ -95,7 +95,7 @@ export class MorphoHistoricalService {
 
       const { apy, netApy, totalAssetsUsd } = historicalData.vaultByAddress.historicalState;
 
-      // Use netApy if available, otherwise fall back to apy
+      // Use netApy if available, otherwise use regular apy - both are authentic Morpho data
       const apyData = netApy && netApy.length > 0 ? netApy : apy;
       const tvlData = totalAssetsUsd;
 

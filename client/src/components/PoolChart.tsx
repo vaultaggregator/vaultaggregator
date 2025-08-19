@@ -58,20 +58,17 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
   const config = timeRangeConfigs[selectedTimeRange];
   const { data: historicalData, isLoading, error } = useHistoricalData(poolId, config.days);
 
-  // Process historical data for display
+  // Process historical data for display - 100% authentic data only
   const displayData = useMemo(() => {
     if (!historicalData || historicalData.length === 0) {
-      // If no real data available, return empty array
       return [];
     }
     
-    // Convert and validate real data
-    return historicalData.map(point => ({
-      ...point,
-      apy: point.apy ?? currentApy, // Fallback to current if null
-      tvl: point.tvl ?? currentTvl, // Fallback to current if null
-    }));
-  }, [historicalData, currentApy, currentTvl]);
+    // Only use authentic historical data - no fallbacks or synthetic values
+    return historicalData.filter(point => 
+      point.apy !== null && point.tvl !== null
+    );
+  }, [historicalData]);
 
   // Calculate statistics
   const stats = useMemo(() => {
