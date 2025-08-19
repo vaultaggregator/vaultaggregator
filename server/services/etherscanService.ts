@@ -337,29 +337,53 @@ export class EtherscanService {
    */
   async getContractOperatingDays(contractAddress: string): Promise<number | null> {
     try {
-      // Get contract creation transaction
-      const creationData = await this.getContractCreation([contractAddress]);
-      
-      if (creationData && creationData.length > 0) {
-        const txHash = creationData[0].txHash;
+      // First try the full method if API key is available
+      try {
+        const creationData = await this.getContractCreation([contractAddress]);
         
-        // Get transaction details
-        const txData = await this.getTransactionByHash(txHash);
-        
-        if (txData && txData.blockNumber) {
-          // Get block details for timestamp
-          const blockData = await this.getBlockByNumber(txData.blockNumber);
+        if (creationData && creationData.length > 0) {
+          const txHash = creationData[0].txHash;
           
-          if (blockData && blockData.timestamp) {
-            const creationTimestamp = parseInt(blockData.timestamp, 16) * 1000;
-            const creationDate = new Date(creationTimestamp);
-            const currentDate = new Date();
-            const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+          // Get transaction details
+          const txData = await this.getTransactionByHash(txHash);
+          
+          if (txData && txData.blockNumber) {
+            // Get block details for timestamp
+            const blockData = await this.getBlockByNumber(txData.blockNumber);
             
-            console.log(`📅 Contract ${contractAddress} created ${daysDiff} days ago (Etherscan blockchain data)`);
-            return daysDiff;
+            if (blockData && blockData.timestamp) {
+              const creationTimestamp = parseInt(blockData.timestamp, 16) * 1000;
+              const creationDate = new Date(creationTimestamp);
+              const currentDate = new Date();
+              const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+              
+              console.log(`📅 Contract ${contractAddress} created ${daysDiff} days ago (Etherscan blockchain data)`);
+              return daysDiff;
+            }
           }
         }
+      } catch (apiError) {
+        console.log(`⚠️ Etherscan API failed, trying fallback method for ${contractAddress}`);
+      }
+      
+      // Fallback: Use public API with demo key to get first transaction
+      const fallbackUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${contractAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
+      
+      const response = await fetch(fallbackUrl);
+      if (!response.ok) {
+        throw new Error(`Fallback API request failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        const firstTx = data.result[0];
+        const creationTimestamp = parseInt(firstTx.timeStamp) * 1000;
+        const creationDate = new Date(creationTimestamp);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        console.log(`📅 Contract ${contractAddress} created ${daysDiff} days ago (fallback method)`);
+        return daysDiff;
       }
       
       return null;

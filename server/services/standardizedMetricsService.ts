@@ -218,21 +218,39 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Pool address not available" };
       }
 
-      // Use structured Etherscan service for contract creation date
-      const { etherscanService } = await import("./etherscanService");
-      
-      if (!etherscanService.isAvailable()) {
-        return { value: null, error: "Etherscan service not available" };
-      }
+      console.log(`🔍 Collecting operating days for ${pool.tokenPair} (${pool.poolAddress})`);
 
-      const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
+      // Direct calculation using first transaction
+      const etherscanUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
       
-      if (operatingDays !== null) {
-        return { value: operatingDays };
+      console.log(`🌐 Fetching contract creation data from Etherscan for ${pool.poolAddress}`);
+      const response = await fetch(etherscanUrl);
+      
+      if (!response.ok) {
+        return { value: null, error: `Etherscan API returned ${response.status}` };
       }
       
-      return { value: null, error: "Could not calculate operating days from contract creation" };
+      const data = await response.json();
+      console.log(`📡 Etherscan response status: ${data.status}, message: ${data.message}`);
+      
+      if (data.status === "1" && data.result && data.result.length > 0) {
+        const firstTx = data.result[0];
+        const creationTimestamp = parseInt(firstTx.timeStamp) * 1000;
+        const creationDate = new Date(creationTimestamp);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        console.log(`✅ Contract ${pool.poolAddress} created ${daysDiff} days ago (${creationDate.toISOString()})`);
+        return { value: daysDiff };
+      }
+      
+      if (data.status === "0") {
+        return { value: null, error: `Etherscan API error: ${data.message}` };
+      }
+      
+      return { value: null, error: "No transaction history found for contract" };
     } catch (error) {
+      console.error(`❌ Error calculating operating days for ${pool.poolAddress}:`, error);
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
     }
   }
