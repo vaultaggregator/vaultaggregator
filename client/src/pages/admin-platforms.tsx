@@ -16,7 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getPlatformIcon } from "@/components/platform-icons";
 import AdminHeader from "@/components/admin-header";
-import { ArrowLeft, Plus, Edit2, Trash2, Upload, Building, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, Upload, Building } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,14 +58,6 @@ export default function AdminPlatforms() {
   const [editShowUnderlyingTokens, setEditShowUnderlyingTokens] = useState(false);
   const [editRefreshInterval, setEditRefreshInterval] = useState(10);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  
-  // API Testing state
-  const [showApiDialog, setShowApiDialog] = useState(false);
-  const [selectedPlatformForApi, setSelectedPlatformForApi] = useState<Platform | null>(null);
-  const [selectedApi, setSelectedApi] = useState("");
-  const [apiParameters, setApiParameters] = useState("");
-  const [apiResponse, setApiResponse] = useState("");
-  const [apiLoading, setApiLoading] = useState(false);
 
   const createForm = useForm<z.infer<typeof createPlatformSchema>>({
     resolver: zodResolver(createPlatformSchema),
@@ -314,179 +306,9 @@ export default function AdminPlatforms() {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
-  // Platform-specific API endpoints
-  const getPlatformApiEndpoints = (platformName: string) => {
-    const normalizedName = platformName.toLowerCase().trim();
-    
-    switch (normalizedName) {
-      case 'morpho':
-        return [
-          { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
-          { label: "📊 Morpho APY", method: "GET", endpoint: "/api/scrape/morpho/apy", params: "" },
-          { label: "💰 Morpho TVL", method: "GET", endpoint: "/api/scrape/morpho/tvl", params: "" },
-          { label: "📅 Morpho Days", method: "GET", endpoint: "/api/scrape/morpho/days", params: "" },
-          { label: "Morpho GraphQL - Vault APY", method: "POST", endpoint: "https://api.morpho.org/graphql", 
-            params: JSON.stringify({
-              query: `query {
-                vaultByAddress(
-                  address: "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB"
-                  chainId: 1
-                ) {
-                  state {
-                    apy
-                    netApy
-                    netApyWithoutRewards
-                    dailyApy
-                    dailyNetApy
-                    weeklyApy
-                    weeklyNetApy
-                    monthlyApy
-                    monthlyNetApy
-                  }
-                }
-              }`
-            }, null, 2)
-          },
-          { label: "Morpho Vault Details (Internal)", method: "GET", endpoint: "/api/scrape/morpho/vault", params: "" },
-          { label: "Scrape Morpho Pool Data", method: "POST", endpoint: "/api/scrape/pool/d6a1f6b8-a970-4cc0-9f02-14da0152738e", params: "" },
-        ];
-      case 'lido':
-        return [
-          { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
-          { label: "📊 Lido APY", method: "GET", endpoint: "/api/scrape/lido/apy", params: "" },
-          { label: "💰 Lido TVL", method: "GET", endpoint: "/api/scrape/lido/tvl", params: "" },
-          { label: "📅 Lido Days", method: "GET", endpoint: "/api/scrape/lido/days", params: "" },
-          { label: "Lido APR (Internal)", method: "GET", endpoint: "/api/scrape/lido/apr", params: "" },
-          { label: "Scrape Lido Pool Data", method: "POST", endpoint: "/api/scrape/pool/31e292ba-a842-490b-8688-3868e18bd615", params: "" },
-        ];
-      default:
-        return [
-          { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
-          { label: "Platform Info", method: "GET", endpoint: "/api/platforms", params: "" },
-        ];
-    }
-  };
 
-  // API Testing functionality
-  const handleApiCall = async () => {
-    if (!selectedApi || !selectedPlatformForApi) {
-      toast({
-        title: "Error",
-        description: "Please select an API endpoint",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    setApiLoading(true);
-    setApiResponse("");
 
-    try {
-      const endpoints = getPlatformApiEndpoints(selectedPlatformForApi.name);
-      const selectedEndpoint = endpoints.find(api => api.label === selectedApi);
-      if (!selectedEndpoint) throw new Error("Invalid API endpoint");
-
-      let endpoint = selectedEndpoint.endpoint;
-      let body: string | undefined;
-
-      // Handle URL parameters replacement
-      if (apiParameters && endpoint.includes("{")) {
-        try {
-          const params = JSON.parse(apiParameters);
-          Object.keys(params).forEach(key => {
-            endpoint = endpoint.replace(`{${key}}`, params[key]);
-          });
-        } catch {
-          // If not JSON, treat as direct replacement
-          endpoint = endpoint.replace(/{[^}]+}/g, apiParameters);
-        }
-      }
-
-      // Handle request body
-      if (selectedEndpoint.method !== "GET" && selectedEndpoint.method !== "DELETE") {
-        body = apiParameters || selectedEndpoint.params;
-      }
-
-      // Special handling for external GraphQL endpoints
-      const isExternalEndpoint = endpoint.startsWith("http");
-      const requestHeaders: Record<string, string> = {};
-      
-      if (selectedEndpoint.method !== "GET" && selectedEndpoint.method !== "DELETE") {
-        requestHeaders["Content-Type"] = "application/json";
-      }
-      
-      // For external APIs, don't include credentials
-      const fetchOptions: RequestInit = {
-        method: selectedEndpoint.method,
-        headers: requestHeaders,
-        body: body || undefined,
-      };
-      
-      if (!isExternalEndpoint) {
-        fetchOptions.credentials = "include";
-      }
-
-      const response = await fetch(endpoint, fetchOptions);
-
-      let responseData;
-      try {
-        responseData = await response.json();
-      } catch {
-        responseData = await response.text();
-      }
-      
-      setApiResponse(JSON.stringify({
-        status: response.status,
-        statusText: response.statusText,
-        data: responseData,
-        timestamp: new Date().toISOString()
-      }, null, 2));
-
-      if (!response.ok) {
-        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
-      }
-
-      toast({
-        title: "Success",
-        description: `${selectedPlatformForApi.displayName} API call completed successfully`,
-      });
-
-    } catch (error: any) {
-      const errorResponse = {
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-      
-      setApiResponse(JSON.stringify(errorResponse, null, 2));
-      
-      toast({
-        title: "Error",
-        description: error.message || "Failed to call API",
-        variant: "destructive",
-      });
-    } finally {
-      setApiLoading(false);
-    }
-  };
-
-  const openApiDialog = (platform: Platform) => {
-    setSelectedPlatformForApi(platform);
-    setSelectedApi("");
-    setApiParameters("");
-    setApiResponse("");
-    setShowApiDialog(true);
-    
-    // Auto-populate GraphQL query for Morpho
-    if (platform.name.toLowerCase() === 'morpho') {
-      setTimeout(() => {
-        const morphoEndpoints = getPlatformApiEndpoints('morpho');
-        const graphqlEndpoint = morphoEndpoints.find(ep => ep.label.includes('GraphQL'));
-        if (graphqlEndpoint) {
-          setApiParameters(graphqlEndpoint.params);
-        }
-      }, 100);
-    }
-  };
 
   // Platform Card Component
   const PlatformCard = ({ platform }: { platform: Platform }) => (
@@ -680,15 +502,7 @@ export default function AdminPlatforms() {
                 Upload Logo
               </ObjectUploader>
 
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => openApiDialog(platform)}
-                data-testid={`button-api-test-${platform.id}`}
-              >
-                <Settings className="w-4 h-4 mr-1" />
-                API
-              </Button>
+
 
               <Button
                 size="sm"
@@ -983,105 +797,7 @@ export default function AdminPlatforms() {
         })()}
       </div>
 
-      {/* API Testing Dialog */}
-      <Dialog open={showApiDialog} onOpenChange={setShowApiDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              API Testing - {selectedPlatformForApi?.displayName}
-            </DialogTitle>
-            <p className="text-sm text-gray-600">
-              Test {selectedPlatformForApi?.displayName} platform APIs directly from the admin interface
-            </p>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="api-select">Select API Endpoint</Label>
-                <Select value={selectedApi} onValueChange={setSelectedApi}>
-                  <SelectTrigger data-testid="select-platform-api-endpoint">
-                    <SelectValue placeholder="Choose an API endpoint to test" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedPlatformForApi && getPlatformApiEndpoints(selectedPlatformForApi.name).map((api) => (
-                      <SelectItem key={api.label} value={api.label}>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {api.method}
-                          </Badge>
-                          <span>{api.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
-              <div>
-                <Label htmlFor="api-params">Parameters/Body (JSON)</Label>
-                <Textarea
-                  id="api-params"
-                  placeholder='{"param": "value"} or leave empty for GET requests'
-                  value={apiParameters}
-                  onChange={(e) => setApiParameters(e.target.value)}
-                  data-testid="input-platform-api-parameters"
-                  rows={3}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  For URL params: {`{"id": "value"}`} • For GraphQL: use provided query • For body: JSON object
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleApiCall} 
-                disabled={!selectedApi || apiLoading}
-                data-testid="button-execute-platform-api"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                {apiLoading ? "Executing..." : "Execute API Call"}
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSelectedApi("");
-                  setApiParameters("");
-                  setApiResponse("");
-                }}
-                data-testid="button-clear-platform-api"
-              >
-                Clear
-              </Button>
-            </div>
-
-            {selectedApi && selectedPlatformForApi && (
-              <div className="bg-gray-50 p-3 rounded-md border">
-                <p className="text-sm font-medium">Selected Endpoint:</p>
-                <p className="text-sm font-mono">
-                  {getPlatformApiEndpoints(selectedPlatformForApi.name).find(api => api.label === selectedApi)?.method}{" "}
-                  {getPlatformApiEndpoints(selectedPlatformForApi.name).find(api => api.label === selectedApi)?.endpoint}
-                </p>
-              </div>
-            )}
-
-            {apiResponse && (
-              <div>
-                <Label>API Response:</Label>
-                <Textarea
-                  value={apiResponse}
-                  readOnly
-                  className="min-h-[300px] font-mono text-sm"
-                  data-testid="textarea-platform-api-response"
-                />
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 } 
