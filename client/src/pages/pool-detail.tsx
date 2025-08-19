@@ -118,7 +118,7 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
                     <p className="text-sm text-gray-600 dark:text-gray-400">{pool.platform.displayName} on {pool.chain.displayName}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold text-green-600">{pool.apy}%</p>
+                    <p className="text-lg font-bold text-green-600">{parseFloat(pool.apy).toFixed(2)}%</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">APY</p>
                   </div>
                 </div>
