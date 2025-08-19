@@ -68,9 +68,6 @@ export class HistoricalApyService {
         allTime: allTimeData.length
       });
 
-      // Determine if we need to convert decimals to percentages (Morpho stores decimals)
-      const isMorpho = platformName?.toLowerCase() === 'morpho';
-      
       return {
         current: currentApy,
         sevenDay: this.calculateAverage(sevenDayData, isMorpho),

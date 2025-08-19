@@ -64,13 +64,13 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
   return (
     <Link href={generateYieldUrl(opportunity)} className="block">
       <Card className={`bg-card cursor-pointer card-hover ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-soft border border-border hover:shadow-medium hover:border-accent-primary/50 transition-all duration-300 animate-fade-in border-l-4 border-l-transparent hover:border-l-accent-primary' : 'rounded-none shadow-none border-0 hover:bg-muted/50 transition-colors'}`}>
-        <CardContent className="p-3 sm:p-4">
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
+        <CardContent className="p-2 sm:p-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
           {/* Left section - Token and Platform info */}
-          <div className="flex items-center space-x-4 min-w-0 flex-1">
+          <div className="flex items-center space-x-3 min-w-0 flex-1">
             {/* Subcategory Icon and Pool Name together - moved to leftmost position */}
-            <div className="flex items-center space-x-3 min-w-0 flex-1">
-              <div className="flex items-center justify-center flex-shrink-0 w-8 h-8">
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <div className="flex items-center justify-center flex-shrink-0 w-6 h-6">
                 {opportunity.categories && opportunity.categories.length > 0 && (() => {
                   // Check all categories for USDC or stETH, not just the first one
                   const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
@@ -81,7 +81,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       <img 
                         src="/public-objects/images/a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
                         alt="USDC"
-                        className="w-8 h-8 flex-shrink-0 rounded-full"
+                        className="w-6 h-6 flex-shrink-0 rounded-full"
                         data-testid={`logo-usdc-${opportunity.id}`}
                       />
                     );
@@ -90,7 +90,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       <img 
                         src="/public-objects/images/ae7ab96520de3a18e5e111b5eaab095312d7fe84.png"
                         alt="stETH"
-                        className="w-8 h-8 flex-shrink-0 rounded-full"
+                        className="w-6 h-6 flex-shrink-0 rounded-full"
                         data-testid={`logo-steth-${opportunity.id}`}
                       />
                     );
@@ -98,12 +98,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   
                   // Fall back to SVG icons for other categories
                   const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                  return <CategoryIcon size={32} className="flex-shrink-0" />;
+                  return <CategoryIcon size={24} className="flex-shrink-0" />;
                 })()}
               </div>
               
               <div className="min-w-0 flex-1 flex items-center">
-                <h3 className="font-bold text-lg text-foreground truncate m-0 leading-6" data-testid={`text-token-pair-${opportunity.id}`}>
+                <h3 className="font-bold text-base text-foreground truncate m-0 leading-5" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
               </div>
@@ -111,7 +111,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Protocol info - center aligned */}
             <div className="flex items-center justify-center space-x-2 flex-shrink-0">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
                   <img 
                     src={opportunity.platform.logoUrl} 
@@ -120,12 +120,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     data-testid={`logo-platform-${opportunity.platform.name.toLowerCase()}`}
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                  <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
                     {getPlatformInitials(opportunity.platform.displayName)}
                   </div>
                 )}
               </div>
-              <span className="text-sm font-medium text-muted-foreground text-center">
+              <span className="text-xs font-medium text-muted-foreground text-center">
                 {opportunity.platform.displayName || opportunity.platform.name}
               </span>
             </div>
@@ -142,7 +142,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     return <ChainIcon size={20} className="flex-shrink-0" />;
                   })()}
                 </div>
-                <span className="text-sm font-medium text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground">
                   {opportunity.chain.displayName || opportunity.chain.name}
                 </span>
               </div>
@@ -153,35 +153,35 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
             <div className="text-center">
-              <p className="text-sm font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+              <p className="text-xs font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
               </p>
             </div>
             
             {/* Days */}
             <div className="text-center">
-              <p className="text-sm font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
+              <p className="text-xs font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
                 {opportunity.operatingDays || 'N/A'}
               </p>
             </div>
             
             {/* TVL */}
             <div className="col-span-2 text-center">
-              <p className="text-sm font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
+              <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
                 {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
               </p>
             </div>
             
             {/* Holders */}
             <div className="col-span-2 text-center">
-              <p className="text-sm font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+              <p className="text-xs font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                 {formatHolders(opportunity.holdersCount)}
               </p>
             </div>
             
             {/* Risk */}
             <div className="text-center">
-              <Badge className={`text-xs px-2 py-1 ${getRiskColor(opportunity.riskLevel)}`} data-testid={`badge-risk-${opportunity.id}`}>
+              <Badge className={`text-xs px-1 py-0.5 ${getRiskColor(opportunity.riskLevel)}`} data-testid={`badge-risk-${opportunity.id}`}>
                 {opportunity.riskLevel.charAt(0).toUpperCase() + opportunity.riskLevel.slice(1)}
               </Badge>
             </div>
