@@ -3272,24 +3272,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { poolId } = req.params;
       const { days = "7" } = req.query;
       
+      console.log(`📊 Historical data request for pool ${poolId}, days: ${days}`);
+      
       // Get pool to determine platform
-      const pool = await storage.getPool(poolId);
+      const pool = await storage.getPoolById(poolId);
       if (!pool) {
+        console.error(`❌ Pool not found: ${poolId}`);
         return res.status(404).json({ error: "Pool not found" });
       }
 
+      console.log(`🏛️ Pool platform: ${pool.platform.name}`);
       let historicalData = [];
       
       if (pool.platform.name === 'Lido') {
+        console.log(`🔵 Processing Lido historical data request`);
+        
         // Use Lido historical service
         const { LidoHistoricalService } = await import("./services/lidoHistoricalService");
         const lidoService = new LidoHistoricalService();
         
         // First collect fresh historical data from API
+        console.log(`📡 Collecting fresh Lido historical data...`);
         await lidoService.storeHistoricalData(poolId);
         
         // Then get the stored data
+        console.log(`📈 Retrieving stored Lido data...`);
         const lidoData = await lidoService.getHistoricalData(poolId, parseInt(days as string));
+        
+        console.log(`📊 Found ${lidoData.length} Lido data points`);
         
         // Convert to chart format
         historicalData = lidoData.map(point => ({
@@ -3304,15 +3314,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             day: 'numeric' 
           })
         }));
+        
+        console.log(`✅ Returning ${historicalData.length} Lido chart points`);
       } else {
+        console.log(`🔶 Processing Morpho historical data request`);
         // Use Morpho historical service
         const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
         historicalData = await morphoHistoricalService.getHistoricalData(poolId, parseInt(days as string));
+        console.log(`✅ Returning ${historicalData.length} Morpho chart points`);
       }
       
       res.json(historicalData);
     } catch (error) {
-      console.error("Error fetching historical data:", error);
+      console.error("❌ Error fetching historical data:", error);
+      console.error("❌ Error details:", error.message);
+      console.error("❌ Error stack:", error.stack);
       res.status(500).json({ error: "Failed to fetch historical data" });
     }
   });
@@ -3335,7 +3351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { days = 90 } = req.body;
       
       // Get pool data
-      const pool = await storage.getPool(poolId);
+      const pool = await storage.getPoolById(poolId);
       if (!pool) {
         return res.status(404).json({ error: "Pool not found" });
       }
