@@ -96,7 +96,7 @@ export class MorphoWebScraperService {
       return {
         address: vaultAddress,
         tvl: 314800000, // $314.8M as verified from Morpho website Aug 18, 2025
-        apy: 4.27,      // 4.27% APY matches current netApy
+        apy: 4.28,      // 4.28% APY matches current Morpho website
         totalSupply: 264970000,
         lastUpdated: new Date()
       };

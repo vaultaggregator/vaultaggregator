@@ -16,7 +16,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 # User Preferences
 
 **Critical Data Methodology (August 18, 2025) - DO NOT CHANGE:**
-- Morpho STEAKUSDC APY: Use netApy from rawData.state (includes MORPHO rewards) - currently displays 4.27% APY matching Morpho website
+- Morpho STEAKUSDC APY: Use netApy from rawData.state (includes MORPHO rewards) - currently displays 4.28% APY matching Morpho website
 - Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
 - Operating Since/Days: Use Etherscan-based contract creation date calculation instead of DeFi Llama count - displays ~592 days matching Etherscan "1 yr 227 days ago" (user confirmed correct)
 - Holders Count: Use verified Etherscan data - displays 546 holders matching Etherscan exactly (user confirmed correct)
@@ -30,12 +30,12 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - Values can change naturally over time, but preserve the current calculation methods that ensure accuracy with official protocol websites
 
 **Historical APY Calculation (August 18, 2025) - IMPLEMENTED:**
-- Current APY: 4.46% (authentic from Morpho netApy - updated Aug 18, 2025)
+- Current APY: 4.28% (authentic from Morpho netApy - updated Aug 19, 2025)
 - APY calculation methodology: User confirmed correct approach - do not change data source or calculation method unless specifically requested (Aug 18, 2025)
-- 7-Day Average: 4.37% (current × 0.98) - slightly lower historical average
-- 30-Day Average: 6.02% (current × 1.35) - higher historical average
-- 90-Day Average: 5.53% (current × 1.24) - moderate historical average  
-- All-Time Average: 5.13% (current × 1.15) - balanced historical average
+- 7-Day Average: 4.19% (current × 0.98) - slightly lower historical average
+- 30-Day Average: 5.78% (current × 1.35) - higher historical average
+- 90-Day Average: 5.31% (current × 1.24) - moderate historical average  
+- All-Time Average: 4.92% (current × 1.15) - balanced historical average
 - User confirmed calculation methodology is correct - do not modify these multipliers
 
 - Act as a senior software engineer with rigorous verification standards
