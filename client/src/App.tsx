@@ -48,6 +48,7 @@ function Router() {
       <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
       <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
       <Route path="/pools/:poolId" component={PoolDetail} /> {/* Pools (plural) support */}
+      <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support */}
 
       <Route path="/admin/healing" component={HealingDashboard} />
       <Route path="/admin/login" component={AdminLogin} />

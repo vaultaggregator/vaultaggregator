@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { LineChart, Line, Area, AreaChart, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from "recharts";
+import { LineChart, Line, Area, AreaChart, XAxis, YAxis, ResponsiveContainer, ReferenceLine, Tooltip } from "recharts";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -22,37 +22,17 @@ export function MorphoStyleChart({ poolId, tokenPair, currentAPY, currentTVL }: 
   const [selectedMetric, setSelectedMetric] = useState<'apy' | 'tvl'>('apy');
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
 
-  // Generate sample historical data based on current values
+  // Use current authentic values only - no historical simulation
   const chartData = useMemo(() => {
-    const now = new Date();
-    const data: ChartDataPoint[] = [];
-    
-    const periodDays = {
-      '7d': 7,
-      '30d': 30,
-      '90d': 90,
-      'all': 365
-    };
-    
-    const days = periodDays[selectedPeriod];
-    
-    for (let i = days; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      
-      // Generate realistic fluctuations around current values
-      const apyVariation = 1 + (Math.sin(i * 0.1) * 0.15 + Math.random() * 0.1 - 0.05);
-      const tvlVariation = 1 + (Math.sin(i * 0.05) * 0.08 + Math.random() * 0.05 - 0.025);
-      
-      data.push({
-        date: date.toISOString().split('T')[0],
-        apy: Number((currentAPY * apyVariation).toFixed(2)),
-        tvl: Number((currentTVL * tvlVariation).toFixed(0)),
-        timestamp: date.getTime()
-      });
-    }
-    
-    return data;
-  }, [currentAPY, currentTVL, selectedPeriod]);
+    // Since we don't have historical data from Morpho API, 
+    // we show current values as single data point
+    return [{
+      date: new Date().toISOString().split('T')[0],
+      apy: currentAPY,
+      tvl: currentTVL,
+      timestamp: Date.now()
+    }];
+  }, [currentAPY, currentTVL]);
 
   const currentValue = selectedMetric === 'apy' ? currentAPY : currentTVL;
   const average = useMemo(() => {
