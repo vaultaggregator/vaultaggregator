@@ -974,6 +974,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`📊 Starting immediate scraping for pool ${newPool.id}`);
             // This will trigger the scraper to run immediately for all pools including the new one
             await startPoolDataScraping();
+            
+            // Also trigger immediate holder data sync and contract date fetching
+            console.log(`👥 Starting immediate holder data sync for pool ${newPool.id}`);
+            const { HolderDataSyncService } = await import("./services/holderDataSyncService");
+            const holderSyncService = new HolderDataSyncService();
+            await holderSyncService.syncAllHolderData();
+            
           } catch (scrapeError) {
             console.error(`❌ Failed to immediately scrape new pool ${newPool.id}:`, scrapeError);
           }

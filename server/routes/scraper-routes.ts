@@ -249,4 +249,42 @@ router.get('/scrape/lido/days', async (req, res) => {
   }
 });
 
+// Add holder data sync endpoint
+router.post("/admin/sync-holders", async (req, res) => {
+  try {
+    console.log(`👥 Starting manual holder data sync...`);
+    
+    const { HolderDataSyncService } = await import("../services/holderDataSyncService");
+    const holderSyncService = new HolderDataSyncService();
+    await holderSyncService.syncAllHolderData();
+    
+    res.json({ 
+      success: true, 
+      message: "Holder data sync completed successfully" 
+    });
+  } catch (error) {
+    console.error("Manual holder sync failed:", error);
+    res.status(500).json({ error: "Holder sync failed" });
+  }
+});
+
+// Add pool-specific scraping endpoint  
+router.post("/scrape/pool/:poolId", async (req, res) => {
+  try {
+    const poolId = req.params.poolId;
+    console.log(`🎯 Starting targeted scraping for pool: ${poolId}`);
+    
+    // Trigger scraping for all pools (which includes the new one)
+    await scraperManager.scrapeAllPools();
+    
+    res.json({ 
+      success: true, 
+      message: `Data collection initiated for pool ${poolId}` 
+    });
+  } catch (error) {
+    console.error(`Pool-specific scraping failed for ${req.params.poolId}:`, error);
+    res.status(500).json({ error: "Pool scraping failed" });
+  }
+});
+
 export default router;

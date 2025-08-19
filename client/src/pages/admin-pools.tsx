@@ -242,14 +242,14 @@ export default function AdminPools() {
         if (scrapeResponse.ok) {
           toast({
             title: "Pool Created & Data Collection Started",
-            description: "Pool created successfully and data collection initiated",
+            description: "Pool created successfully. Collecting APY, TVL, holder data, and contract information...",
           });
           
-          // Refresh data after scraping
+          // Refresh data after scraping (wait longer for holder data)
           setTimeout(() => {
             queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
             queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/all"] });
-          }, 2000);
+          }, 5000); // Wait 5 seconds for all data collection
         } else {
           toast({
             title: "Pool Created",
@@ -506,7 +506,7 @@ export default function AdminPools() {
                       tokenPair: pool.tokenPair, // Keep existing tokenPair, don't allow editing
                       platformId: formData.get('platformId') as string,
                       chainId: formData.get('chainId') as string,
-                      poolAddress: formData.get('poolAddress') as string || undefined,
+                      poolAddress: formData.get('poolAddress') as string || null,
                       showUsdInFlow: formData.get('showUsdInFlow') === 'on',
                       isVisible: formData.get('isVisible') === 'on',
                       isActive: formData.get('isActive') === 'on',

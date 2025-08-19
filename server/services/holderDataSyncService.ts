@@ -50,6 +50,9 @@ export class HolderDataSyncService {
         // Handle special cases - use actual vault contract addresses for holder data
         if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
           underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'; // steakUSDC vault contract
+        } else if (pool.poolAddress) {
+          // For new pools, use the poolAddress if available
+          underlyingToken = pool.poolAddress;
         }
         
         if (underlyingToken && this.isValidTokenAddress(underlyingToken)) {
