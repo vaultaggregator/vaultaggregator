@@ -80,6 +80,10 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
           data-testid="logo-steth-category"
         />
       );
+    } else if (category.name === 'USDT') {
+      // Fall back to SVG icon for USDT since no localized image is available
+      const CategoryIcon = getCategoryIcon(category.name);
+      return <CategoryIcon size={16} className="flex-shrink-0" />;
     }
     
     // Fall back to SVG icons for other categories
