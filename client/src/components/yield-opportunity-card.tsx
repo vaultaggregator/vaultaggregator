@@ -165,8 +165,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* TVL */}
             <div className="col-span-2 text-center">
               <p className="text-sm font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
-                {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
-                 opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
+                {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
               </p>
             </div>
             
@@ -211,8 +210,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">TVL</p>
                   </div>
                   <p className="text-xs font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
-                    {opportunity.rawData?.tvlUsd ? formatTvl(opportunity.rawData.tvlUsd.toString()) : 
-                     opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
+                    {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
                   </p>
                 </div>
               </div>
