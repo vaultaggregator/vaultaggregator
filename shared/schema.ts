@@ -81,6 +81,7 @@ export const platforms = pgTable("platforms", {
   website: text("website"),
   visitUrlTemplate: text("visit_url_template"), // Custom URL template with variables
   showUnderlyingTokens: boolean("show_underlying_tokens").default(false), // Display underlying tokens on pool detail page
+  dataRefreshIntervalMinutes: integer("data_refresh_interval_minutes").notNull().default(10), // Platform-specific data refresh interval
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -133,6 +134,60 @@ export const holderHistory = pgTable("holder_history", {
   priceUsd: decimal("price_usd", { precision: 20, scale: 8 }),
   marketCapUsd: decimal("market_cap_usd", { precision: 20, scale: 2 }),
   timestamp: timestamp("timestamp").defaultNow(),
+});
+
+// 🎯 Standardized Pool Metrics Historical Tracking System
+// Core 4 metrics: APY, DAYS, TVL, HOLDERS - collected from platform-specific APIs
+
+export const poolMetricsHistory = pgTable("pool_metrics_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  
+  // Core 4 metrics
+  apy: decimal("apy", { precision: 10, scale: 4 }), // APY from platform API
+  operatingDays: integer("operating_days"), // Days since contract creation (Etherscan)
+  tvl: decimal("tvl", { precision: 20, scale: 2 }), // Total Value Locked from platform API
+  holdersCount: integer("holders_count"), // Token holders from Etherscan
+  
+  // Metadata for tracking
+  dataSource: text("data_source").notNull(), // "morpho", "lido", "etherscan", etc.
+  collectionMethod: text("collection_method").notNull(), // "auto", "manual", "immediate"
+  apiResponse: jsonb("api_response"), // Raw API response for debugging
+  errorLog: text("error_log"), // Any errors during collection
+  
+  collectedAt: timestamp("collected_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Current pool metrics (latest values from historical tracking)
+export const poolMetricsCurrent = pgTable("pool_metrics_current", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }).unique(),
+  
+  // Current values of core 4 metrics
+  apy: decimal("apy", { precision: 10, scale: 4 }),
+  operatingDays: integer("operating_days"),
+  tvl: decimal("tvl", { precision: 20, scale: 2 }),
+  holdersCount: integer("holders_count"),
+  
+  // Status tracking
+  apyStatus: text("apy_status").notNull().default("pending"), // "success", "error", "pending", "n/a"
+  daysStatus: text("days_status").notNull().default("pending"),
+  tvlStatus: text("tvl_status").notNull().default("pending"),
+  holdersStatus: text("holders_status").notNull().default("pending"),
+  
+  // Error messages for failed collections
+  apyError: text("apy_error"),
+  daysError: text("days_error"),
+  tvlError: text("tvl_error"),
+  holdersError: text("holders_error"),
+  
+  lastCollectionAt: timestamp("last_collection_at"),
+  lastSuccessfulCollectionAt: timestamp("last_successful_collection_at"),
+  nextCollectionAt: timestamp("next_collection_at"),
+  
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const pools = pgTable("pools", {
@@ -400,6 +455,8 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
   strategyPools: many(strategyPools),
   discussions: many(discussions),
   watchlistPools: many(watchlistPools),
+  metricsHistory: many(poolMetricsHistory),
+  metricsCurrent: one(poolMetricsCurrent),
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
@@ -537,6 +594,21 @@ export const watchlistPoolsRelations = relations(watchlistPools, ({ one }) => ({
   }),
 }));
 
+// Metrics tables relations
+export const poolMetricsHistoryRelations = relations(poolMetricsHistory, ({ one }) => ({
+  pool: one(pools, {
+    fields: [poolMetricsHistory.poolId],
+    references: [pools.id],
+  }),
+}));
+
+export const poolMetricsCurrentRelations = relations(poolMetricsCurrent, ({ one }) => ({
+  pool: one(pools, {
+    fields: [poolMetricsCurrent.poolId],
+    references: [pools.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -669,6 +741,19 @@ export const insertDiscussionReplySchema = createInsertSchema(discussionReplies)
   createdAt: true,
 });
 
+// Metrics tables insert schemas
+export const insertPoolMetricsHistorySchema = createInsertSchema(poolMetricsHistory).omit({
+  id: true,
+  collectedAt: true,
+  createdAt: true,
+});
+
+export const insertPoolMetricsCurrentSchema = createInsertSchema(poolMetricsCurrent).omit({
+  id: true,
+  updatedAt: true,
+  createdAt: true,
+});
+
 export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
   id: true,
   createdAt: true,
@@ -781,6 +866,12 @@ export type InsertDeveloperApplication = z.infer<typeof insertDeveloperApplicati
 
 export type ErrorLog = typeof errorLogs.$inferSelect;
 export type InsertErrorLog = z.infer<typeof insertErrorLogSchema>;
+
+export type PoolMetricsHistory = typeof poolMetricsHistory.$inferSelect;
+export type InsertPoolMetricsHistory = z.infer<typeof insertPoolMetricsHistorySchema>;
+
+export type PoolMetricsCurrent = typeof poolMetricsCurrent.$inferSelect;
+export type InsertPoolMetricsCurrent = z.infer<typeof insertPoolMetricsCurrentSchema>;
 
 // Extended types for API responses
 export type PoolWithRelations = Pool & {
