@@ -2667,28 +2667,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log(`🔍 Checking pool: ${pool.tokenPair} (${pool.platform.name})`);
           
-          // For STEAKUSDC pool, use authentic 4.36% APY from Morpho website
+          // For STEAKUSDC pool, fetch live APY from Morpho
           if (pool.tokenPair === 'STEAKUSDC') {
-            console.log('📈 Setting authentic Morpho APY data for STEAKUSDC...');
+            console.log('📈 Fetching live APY from Morpho steakUSDC vault...');
             
-            // Get current pool APY for comparison
-            const currentDbApy = parseFloat(pool.apy).toFixed(2);
-            
-            // Use authentic 4.36% APY from Morpho website
-            const authenticApy = "4.36";
-            
-            console.log(`📊 Current APY: ${currentDbApy}%, Authentic Morpho APY: ${authenticApy}%`);
-            
-            // Update to authentic value if different
-            if (authenticApy !== currentDbApy) {
-              await storage.updatePool(pool.id, { apy: authenticApy });
-              console.log(`💰 APY updated for ${pool.tokenPair}: ${authenticApy}% (authentic Morpho data)`);
+            try {
+              // Get current pool APY for comparison
+              const currentDbApy = parseFloat(pool.apy).toFixed(2);
               
-              // Broadcast to all connected clients
-              console.log(`📡 Broadcasting authentic APY update to ${wsConnections.size} connected clients`);
-              broadcastApyUpdate(pool.id, authenticApy, Date.now());
-            } else {
-              console.log(`📊 APY already matches authentic Morpho value: ${currentDbApy}%`);
+              // Fetch fresh APY data from Morpho's public API
+              const response = await fetch('https://api.morpho.org/graphql', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                  query: `
+                    query GetVault($chainId: Int!, $address: String!) {
+                      vaultByAddress(chainId: $chainId, address: $address) {
+                        state {
+                          netApy
+                        }
+                      }
+                    }
+                  `,
+                  variables: {
+                    chainId: 1,
+                    address: '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'
+                  }
+                })
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                const netApy = data?.data?.vaultByAddress?.state?.netApy;
+                
+                if (netApy) {
+                  const liveApy = (parseFloat(netApy) * 100).toFixed(2);
+                  console.log(`📊 Current APY: ${currentDbApy}%, Live Morpho APY: ${liveApy}%`);
+                  
+                  // Update if there's a change
+                  if (liveApy !== currentDbApy) {
+                    await storage.updatePool(pool.id, { apy: liveApy });
+                    console.log(`💰 APY updated for ${pool.tokenPair}: ${liveApy}% (live Morpho data)`);
+                    
+                    // Broadcast to all connected clients
+                    console.log(`📡 Broadcasting live APY update to ${wsConnections.size} connected clients`);
+                    broadcastApyUpdate(pool.id, liveApy, Date.now());
+                  } else {
+                    console.log(`📊 No APY change for ${pool.tokenPair} (${currentDbApy}%)`);
+                  }
+                } else {
+                  console.log('⚠️ No netApy data in Morpho response');
+                }
+              } else {
+                console.log(`⚠️ Morpho API response not ok: ${response.status}`);
+              }
+            } catch (error) {
+              console.error(`❌ Error fetching live Morpho APY:`, error);
             }
           }
           
@@ -2725,12 +2762,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
   
-  // Run initial update after 10 seconds to allow server to fully start
-  setTimeout(performApyUpdate, 10000);
+  // Run initial update after 15 seconds to allow server to fully start
+  setTimeout(performApyUpdate, 15000);
   
-  // Start real-time APY monitoring every minute  
-  const apyUpdateInterval = setInterval(performApyUpdate, 60000);
-  console.log('🚀 Real-time APY monitoring started - updates every 60 seconds');
+  // Start real-time APY monitoring every 30 seconds for better real-time feel
+  const apyUpdateInterval = setInterval(performApyUpdate, 30000);
+  console.log('🚀 Real-time APY monitoring started - updates every 30 seconds');
   
   return httpServer;
 }
