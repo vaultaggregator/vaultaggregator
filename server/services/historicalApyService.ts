@@ -38,8 +38,8 @@ export class HistoricalApyService {
         };
       }
 
-      // Convert current APY from decimal to percentage format
-      const currentApy = parseFloat(latestData[0].apy || '0') * 100;
+      // APY is already stored as percentage in database (e.g., 2.648 for 2.648%)
+      const currentApy = parseFloat(latestData[0].apy || '0');
       
       // Calculate date thresholds
       const now = new Date();
@@ -115,10 +115,10 @@ export class HistoricalApyService {
     const sum = validApyValues.reduce((acc, apy) => acc + apy, 0);
     const average = sum / validApyValues.length;
     
-    // Convert from decimal to percentage format (0.0976 -> 9.76)
-    const percentageAverage = average * 100;
+    // Database already stores APY as percentage (e.g., 2.648 for 2.648%)
+    // No conversion needed - just return the calculated average
     
-    console.log(`📊 Calculated average from ${validApyValues.length} authentic data points: ${percentageAverage.toFixed(4)}%`);
-    return parseFloat(percentageAverage.toFixed(4));
+    console.log(`📊 Calculated average from ${validApyValues.length} authentic data points: ${average.toFixed(4)}%`);
+    return parseFloat(average.toFixed(4));
   }
 }
