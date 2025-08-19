@@ -1,7 +1,10 @@
 import type { Express } from "express";
 import { systemMonitor } from "../services/systemMonitorService";
+import adminServiceMonitorRoutes from "./admin-service-monitor";
 
 export function registerAdminSystemRoutes(app: Express) {
+  // Register service monitor routes
+  app.use('/api/admin/services', adminServiceMonitorRoutes);
   // Middleware to check if user is authenticated admin
   const requireAuth = (req: any, res: any, next: any) => {
     // During development, bypass authentication for easier testing

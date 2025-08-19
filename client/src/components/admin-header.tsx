@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers } from "lucide-react";
+import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers, Activity } from "lucide-react";
 import { useAuth, type User } from "@/hooks/useAuth";
 
 export function AdminHeader() {
@@ -20,6 +20,7 @@ export function AdminHeader() {
   const navItems = [
     { path: "/admin", icon: BarChart3, label: "Dashboard" },
     { path: "/admin/system", icon: Monitor, label: "System", highlight: "system" },
+    { path: "/admin/services", icon: Activity, label: "Service Monitor", highlight: "service" },
     { path: "/admin/pools", icon: Layers, label: "Pool Management" },
 
     { path: "/admin-platforms", icon: Database, label: "Platforms" },
@@ -61,6 +62,10 @@ export function AdminHeader() {
                   return active
                     ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
                     : "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-300";
+                } else if (type === "service") {
+                  return active
+                    ? "bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300"
+                    : "text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300";
                 }
                 return active
                   ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
