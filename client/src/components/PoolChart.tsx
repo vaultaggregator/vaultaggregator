@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 interface ChartDataPoint {
   timestamp: number;
   date: string;
-  apy: number | null;
+  apy: number;
   tvl: number | null;
   formattedDate: string;
   fullDate: string;
@@ -96,11 +96,13 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     // Only use authentic historical data - convert APY from decimal to percentage  
     const processedData = historicalData
       .filter(point => {
-        const isValid = point.apy !== null && point.tvl !== null && 
-                        point.apy !== undefined && point.tvl !== undefined &&
-                        !isNaN(point.apy) && !isNaN(point.tvl);
+        // APY is required, TVL is optional (Lido historical data doesn't include TVL)
+        const hasValidApy = point.apy !== null && point.apy !== undefined && !isNaN(point.apy);
+        const hasValidTvl = point.tvl === null || (point.tvl !== undefined && !isNaN(point.tvl));
+        const isValid = hasValidApy && hasValidTvl;
+        
         if (!isValid) {
-          console.log('PoolChart Debug - Filtering out invalid point:', point);
+          console.log('PoolChart Debug - Filtering out invalid point:', point, { hasValidApy, hasValidTvl });
         }
         return isValid;
       })
@@ -111,7 +113,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
             ? ((point.apy as number) * 100).toFixed(2)  // Convert decimal: 0.0438 -> 4.38%
             : (point.apy as number).toFixed(2)          // Already percentage: 11.00 -> 11.00%
         ),
-        tvl: parseFloat((point.tvl as number).toFixed(2)), // Ensure clean numbers
+        tvl: point.tvl !== null ? parseFloat((point.tvl as number).toFixed(2)) : null, // Handle null TVL for Lido
         timestamp: point.timestamp,
         date: point.date,
         formattedDate: point.formattedDate,
@@ -131,7 +133,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     if (displayData.length === 0) return null;
     
     const apyValues = displayData.map(d => d.apy);
-    const tvlValues = displayData.map(d => d.tvl);
+    const nonNullTvlValues = displayData.map(d => d.tvl).filter((tvl): tvl is number => tvl !== null);
     
     return {
       apy: {
@@ -141,13 +143,14 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
         max: Math.max(...apyValues),
         change: apyValues[apyValues.length - 1] - apyValues[0]
       },
-      tvl: {
-        current: tvlValues[tvlValues.length - 1],
-        avg: tvlValues.reduce((a, b) => a + b, 0) / tvlValues.length,
-        min: Math.min(...tvlValues),
-        max: Math.max(...tvlValues),
-        change: tvlValues[tvlValues.length - 1] - tvlValues[0]
-      }
+      tvl: nonNullTvlValues.length > 0 ? {
+        current: displayData[displayData.length - 1].tvl,
+        avg: nonNullTvlValues.reduce((a, b) => a + b, 0) / nonNullTvlValues.length,
+        min: Math.min(...nonNullTvlValues),
+        max: Math.max(...nonNullTvlValues),
+        change: nonNullTvlValues.length > 1 ? 
+          (displayData[displayData.length - 1].tvl || 0) - (displayData[0].tvl || 0) : 0
+      } : null
     };
   }, [displayData]);
 
@@ -327,7 +330,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 </div>
               )}
 
-              {(chartType === 'tvl' || chartType === 'both') && (
+              {(chartType === 'tvl' || chartType === 'both') && stats.tvl && (
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
                   <div className="text-sm text-blue-700 dark:text-blue-300 mb-1">Current TVL</div>
                   <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
@@ -338,6 +341,15 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                   </div>
                   <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                     Avg: {formatTvl(stats.tvl.avg)} | Range: {formatTvl(stats.tvl.min)} - {formatTvl(stats.tvl.max)}
+                  </div>
+                </div>
+              )}
+              
+              {(chartType === 'tvl' || chartType === 'both') && !stats.tvl && (
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 rounded-lg p-4">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">TVL Data</div>
+                  <div className="text-lg text-gray-500 dark:text-gray-400">
+                    Historical TVL not available for this platform
                   </div>
                 </div>
               )}
