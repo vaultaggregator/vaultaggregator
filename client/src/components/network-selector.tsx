@@ -83,7 +83,7 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
     } else if (category.name === 'USDT') {
       return (
         <img 
-          src="/public-objects/images/c6147b632d9099be.png"
+          src="/usdt-logo.png"
           alt="USDT"
           className="w-4 h-4 flex-shrink-0 rounded-full"
           data-testid="logo-usdt-category"
