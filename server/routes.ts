@@ -878,6 +878,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all pools for pool management (no pagination)
+  app.get("/api/admin/pools/all", requireAuth, async (req, res) => {
+    try {
+      const pools = await storage.getAllPoolsWithRelations();
+      res.json(pools);
+    } catch (error) {
+      console.error("Error fetching all pools:", error);
+      res.status(500).json({ message: "Failed to fetch pools" });
+    }
+  });
+
+  // Create new pool
+  app.post("/api/admin/pools", requireAuth, async (req, res) => {
+    try {
+      const {
+        platformId,
+        chainId,
+        tokenPair,
+        apy,
+        tvl,
+        riskLevel,
+        poolAddress,
+        defiLlamaId,
+        project,
+        showUsdInFlow,
+        isVisible,
+        isActive,
+        categories
+      } = req.body;
+
+      // Validate required fields
+      if (!platformId || !chainId || !tokenPair) {
+        return res.status(400).json({ 
+          message: "Platform, Chain, and Token Pair are required" 
+        });
+      }
+
+      // Check if platform and chain exist
+      const platform = await storage.getPlatformById(platformId);
+      const chain = await storage.getChainById(chainId);
+      
+      if (!platform) {
+        return res.status(400).json({ message: "Invalid platform ID" });
+      }
+      
+      if (!chain) {
+        return res.status(400).json({ message: "Invalid chain ID" });
+      }
+
+      const poolData = {
+        platformId,
+        chainId,
+        tokenPair,
+        apy: apy ? parseFloat(apy) : null,
+        tvl: tvl ? parseFloat(tvl) : null,
+        riskLevel: riskLevel || "medium",
+        poolAddress: poolAddress || null,
+        defiLlamaId: defiLlamaId || null,
+        project: project || null,
+        showUsdInFlow: showUsdInFlow || false,
+        isVisible: isVisible !== undefined ? isVisible : true,
+        isActive: isActive !== undefined ? isActive : true,
+      };
+
+      const newPool = await storage.createPool(poolData);
+      
+      // Add categories if provided
+      if (categories && Array.isArray(categories) && categories.length > 0) {
+        await storage.updatePoolCategories(newPool.id, categories);
+      }
+
+      res.status(201).json(newPool);
+    } catch (error) {
+      console.error("Error creating pool:", error);
+      res.status(500).json({ message: "Failed to create pool" });
+    }
+  });
+
+  // Update pool
+  app.put("/api/admin/pools/:id", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const updateData = req.body;
+
+      // Validate IDs if provided
+      if (updateData.platformId) {
+        const platform = await storage.getPlatformById(updateData.platformId);
+        if (!platform) {
+          return res.status(400).json({ message: "Invalid platform ID" });
+        }
+      }
+
+      if (updateData.chainId) {
+        const chain = await storage.getChainById(updateData.chainId);
+        if (!chain) {
+          return res.status(400).json({ message: "Invalid chain ID" });
+        }
+      }
+
+      const updatedPool = await storage.updatePool(poolId, updateData);
+      if (!updatedPool) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      res.json(updatedPool);
+    } catch (error) {
+      console.error("Error updating pool:", error);
+      res.status(500).json({ message: "Failed to update pool" });
+    }
+  });
+
+  // Delete pool
+  app.delete("/api/admin/pools/:id", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const success = await storage.deletePool(poolId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      res.json({ message: "Pool deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting pool:", error);
+      res.status(500).json({ message: "Failed to delete pool" });
+    }
+  });
+
+  // Get token info for admin
+  app.get("/api/admin/token-info", requireAuth, async (req, res) => {
+    try {
+      const tokenInfos = await storage.getAllTokenInfo();
+      res.json(tokenInfos);
+    } catch (error) {
+      console.error("Error fetching token info:", error);
+      res.status(500).json({ message: "Failed to fetch token info" });
+    }
+  });
+
   // Update underlying tokens
   app.put("/api/admin/pools/:id/underlying-tokens", requireAuth, async (req, res) => {
     try {

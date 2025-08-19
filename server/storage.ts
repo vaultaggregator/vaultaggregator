@@ -30,6 +30,7 @@ export interface IStorage {
   getChains(): Promise<Chain[]>;
   getActiveChains(): Promise<Chain[]>;
   getChainByName(name: string): Promise<Chain | undefined>;
+  getChainById(id: string): Promise<Chain | undefined>;
   createChain(chain: InsertChain): Promise<Chain>;
   updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined>;
 
@@ -38,6 +39,7 @@ export interface IStorage {
   getActivePlatforms(): Promise<Platform[]>;
   getPlatformsWithVisibility(): Promise<(Platform & { hasVisiblePools: boolean })[]>;
   getPlatformByName(name: string): Promise<Platform | undefined>;
+  getPlatformById(id: string): Promise<Platform | undefined>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
   updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined>;
 
@@ -49,6 +51,7 @@ export interface IStorage {
 
   // Token Info methods
   getTokenInfoByAddress(address: string): Promise<TokenInfo | undefined>;
+  getAllTokenInfo(): Promise<TokenInfo[]>;
   createTokenInfo(tokenInfo: InsertTokenInfo): Promise<TokenInfo>;
   updateTokenInfo(address: string, tokenInfo: Partial<InsertTokenInfo>): Promise<TokenInfo | undefined>;
   upsertTokenInfo(address: string, tokenInfo: InsertTokenInfo): Promise<TokenInfo>;
@@ -83,7 +86,9 @@ export interface IStorage {
     limit: number;
     offset: number;
   }): Promise<{pools: PoolWithRelations[], total: number}>;
+  getAllPoolsWithRelations(): Promise<PoolWithRelations[]>;
   getPoolById(id: string): Promise<PoolWithRelations | undefined>;
+  getPoolByDefiLlamaId(defiLlamaId: string): Promise<Pool | undefined>;
   getPoolByTokenAndPlatform(tokenPair: string, platformId: string): Promise<Pool | undefined>;
   createPool(pool: InsertPool): Promise<Pool>;
   updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined>;
@@ -280,6 +285,11 @@ export class DatabaseStorage implements IStorage {
     return platform || undefined;
   }
 
+  async getPlatformById(id: string): Promise<Platform | undefined> {
+    const [platform] = await db.select().from(platforms).where(eq(platforms.id, id));
+    return platform || undefined;
+  }
+
   async getPlatformBySlug(slug: string): Promise<Platform | undefined> {
     const [platform] = await db.select().from(platforms).where(eq(platforms.slug, slug));
     return platform || undefined;
@@ -287,6 +297,11 @@ export class DatabaseStorage implements IStorage {
 
   async getChainByName(name: string): Promise<Chain | undefined> {
     const [chain] = await db.select().from(chains).where(eq(chains.name, name));
+    return chain || undefined;
+  }
+
+  async getChainById(id: string): Promise<Chain | undefined> {
+    const [chain] = await db.select().from(chains).where(eq(chains.id, id));
     return chain || undefined;
   }
 
@@ -345,6 +360,10 @@ export class DatabaseStorage implements IStorage {
       lastUpdated: new Date()
     }).where(eq(tokenInfo.address, address)).returning();
     return updatedTokenInfo || undefined;
+  }
+
+  async getAllTokenInfo(): Promise<TokenInfo[]> {
+    return await db.select().from(tokenInfo).orderBy(tokenInfo.symbol);
   }
 
   async upsertTokenInfo(address: string, tokenInfoData: InsertTokenInfo): Promise<TokenInfo> {
@@ -678,6 +697,49 @@ export class DatabaseStorage implements IStorage {
       pools: Array.from(poolsMap.values()),
       total
     };
+  }
+
+  async getAllPoolsWithRelations(): Promise<PoolWithRelations[]> {
+    const results = await db
+      .select()
+      .from(pools)
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .leftJoin(notes, eq(pools.id, notes.poolId))
+      .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
+      .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
+      .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id))
+      .where(eq(pools.isActive, true))
+      .orderBy(desc(pools.isVisible), desc(pools.apy));
+
+    // Group results by pool to handle multiple notes and categories
+    const poolsMap = new Map<string, PoolWithRelations>();
+
+    for (const result of results) {
+      const poolId = result.pools.id;
+
+      if (!poolsMap.has(poolId)) {
+        poolsMap.set(poolId, {
+          ...result.pools,
+          platform: result.platforms!,
+          chain: result.chains!,
+          notes: result.notes ? [result.notes] : [],
+          categories: result.categories ? [result.categories] : [],
+          holdersCount: result.token_info?.holdersCount || null,
+        });
+      } else {
+        const existingPool = poolsMap.get(poolId)!;
+        if (result.notes && !existingPool.notes.find(n => n.id === result.notes!.id)) {
+          existingPool.notes.push(result.notes);
+        }
+        if (result.categories && !existingPool.categories?.find(c => c.id === result.categories!.id)) {
+          existingPool.categories = existingPool.categories || [];
+          existingPool.categories.push(result.categories);
+        }
+      }
+    }
+
+    return Array.from(poolsMap.values());
   }
 
   async getPoolById(id: string): Promise<PoolWithRelations | undefined> {

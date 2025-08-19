@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor } from "lucide-react";
+import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 export function AdminHeader() {
@@ -20,6 +20,7 @@ export function AdminHeader() {
   const navItems = [
     { path: "/admin", icon: BarChart3, label: "Dashboard" },
     { path: "/admin/system", icon: Monitor, label: "System", highlight: "system" },
+    { path: "/admin/pools", icon: Layers, label: "Pool Management" },
     { path: "/admin-platforms", icon: Database, label: "Platforms" },
     { path: "/admin-networks", icon: Settings, label: "Networks" },
     { path: "/admin-categories", icon: Tag, label: "Categories" },
