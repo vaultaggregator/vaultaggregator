@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Plus, Settings, Database, Trash2, Edit, Eye, EyeOff, PlayCircle, PauseCircle } from "lucide-react";
+import { ArrowLeft, Plus, Settings, Database, Trash2, Edit, Eye, EyeOff, PlayCircle, PauseCircle, RotateCcw, Trash } from "lucide-react";
 import AdminHeader from "@/components/admin-header";
 
 interface Platform {
@@ -65,6 +65,9 @@ interface Pool {
   showUsdInFlow: boolean;
   isVisible: boolean;
   isActive: boolean;
+  deletedAt?: string;
+  deletedBy?: string;
+  permanentDeleteAt?: string;
   lastUpdated: string;
   createdAt: string;
   platform: Platform;
@@ -88,7 +91,7 @@ export default function AdminPools() {
   const { toast } = useToast();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingPool, setEditingPool] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"active" | "deactivated">("active");
+  const [activeTab, setActiveTab] = useState<"active" | "deactivated" | "trash">("active");
   const [formData, setFormData] = useState<CreatePoolForm>({
     platformId: "",
     chainId: "",
@@ -104,6 +107,11 @@ export default function AdminPools() {
   // Fetch pools
   const { data: pools = [], isLoading, refetch } = useQuery<Pool[]>({
     queryKey: ["/api/admin/pools/all"],
+  });
+
+  // Fetch trashed pools
+  const { data: trashedPools = [], isLoading: isLoadingTrash, refetch: refetchTrash } = useQuery<Pool[]>({
+    queryKey: ["/api/admin/trash"],
   });
 
   // Fetch platforms
@@ -226,13 +234,65 @@ export default function AdminPools() {
       queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
       toast({
         title: "Success",
-        description: "Pool deleted successfully",
+        description: "Pool moved to trash successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete pool",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const restorePoolMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/admin/trash/${id}/restore`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to restore pool");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/trash"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
+      toast({
+        title: "Success",
+        description: "Pool restored successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to restore pool",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const permanentDeleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/admin/trash/${id}/permanent`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to permanently delete pool");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/trash"] });
+      toast({
+        title: "Success",
+        description: "Pool permanently deleted",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to permanently delete pool",
         variant: "destructive",
       });
     },
@@ -700,8 +760,8 @@ export default function AdminPools() {
                 <span className="ml-3">Loading pools...</span>
               </div>
             ) : (
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "deactivated")} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "deactivated" | "trash")} className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="active" className="flex items-center gap-2">
                     <PlayCircle className="w-4 h-4" />
                     Active Pools ({activePools.length})
@@ -709,6 +769,10 @@ export default function AdminPools() {
                   <TabsTrigger value="deactivated" className="flex items-center gap-2">
                     <PauseCircle className="w-4 h-4" />
                     Deactivated Pools ({deactivatedPools.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="trash" className="flex items-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Trash Bin ({trashedPools.length})
                   </TabsTrigger>
                 </TabsList>
                 
@@ -905,6 +969,95 @@ export default function AdminPools() {
                                 data-testid={`button-delete-${pool.tokenPair}`}
                               >
                                 <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="trash" className="mt-6">
+                  {isLoadingTrash ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <span className="ml-3">Loading trashed pools...</span>
+                    </div>
+                  ) : trashedPools.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 dark:text-gray-400">No pools in trash</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {trashedPools.map((pool) => (
+                        <div key={pool.id} className="border rounded-lg p-4 bg-red-50 dark:bg-red-900/10 opacity-75">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-4 mb-2">
+                                <h3 className="font-semibold text-lg text-red-600 dark:text-red-400">{pool.tokenPair}</h3>
+                                <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                  DELETED
+                                </Badge>
+                                <Badge className={getRiskColor(pool.riskLevel)}>
+                                  {pool.riskLevel.toUpperCase()}
+                                </Badge>
+                                <span className="text-sm text-gray-500">
+                                  {pool.platform.displayName} • {pool.chain.displayName}
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <span className="text-gray-500">APY:</span>
+                                  <span className="ml-2 font-medium">{formatApy(pool.apy)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">TVL:</span>
+                                  <span className="ml-2 font-medium">{formatValue(pool.tvl)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Deleted:</span>
+                                  <span className="ml-2">{pool.deletedAt ? new Date(pool.deletedAt).toLocaleDateString() : 'N/A'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Auto-delete:</span>
+                                  <span className="ml-2">{pool.permanentDeleteAt ? new Date(pool.permanentDeleteAt).toLocaleDateString() : 'N/A'}</span>
+                                </div>
+                              </div>
+
+                              <div className="mt-3 text-sm">
+                                <span className="text-gray-500">Deleted by:</span>
+                                <span className="ml-2">{pool.deletedBy || 'Unknown'}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 ml-4">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => restorePoolMutation.mutate(pool.id)}
+                                disabled={restorePoolMutation.isPending}
+                                className="text-green-600 hover:text-green-700"
+                                data-testid={`button-restore-${pool.tokenPair}`}
+                              >
+                                <RotateCcw className="w-4 h-4 mr-1" />
+                                Restore
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  if (window.confirm('This will permanently delete the pool. This action cannot be undone. Continue?')) {
+                                    permanentDeleteMutation.mutate(pool.id);
+                                  }
+                                }}
+                                disabled={permanentDeleteMutation.isPending}
+                                className="text-red-600 hover:text-red-700"
+                                data-testid={`button-permanent-delete-${pool.tokenPair}`}
+                              >
+                                <Trash className="w-4 h-4 mr-1" />
+                                Delete Forever
                               </Button>
                             </div>
                           </div>

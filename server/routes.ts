@@ -993,16 +993,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/pools/:id", requireAuth, async (req, res) => {
     try {
       const poolId = req.params.id;
-      const success = await storage.deletePool(poolId);
+      const deletedBy = req.session?.userId || null; // Use session user ID or null
+      const success = await storage.softDeletePool(poolId, deletedBy);
       
       if (!success) {
         return res.status(404).json({ message: "Pool not found" });
       }
 
-      res.json({ message: "Pool deleted successfully" });
+      res.json({ message: "Pool moved to trash successfully" });
     } catch (error) {
       console.error("Error deleting pool:", error);
       res.status(500).json({ message: "Failed to delete pool" });
+    }
+  });
+
+  // Trash bin routes
+  app.get("/api/admin/trash", requireAuth, async (req, res) => {
+    try {
+      const trashedPools = await storage.getTrashedPools();
+      res.json(trashedPools);
+    } catch (error) {
+      console.error("Error fetching trashed pools:", error);
+      res.status(500).json({ message: "Failed to fetch trashed pools" });
+    }
+  });
+
+  app.post("/api/admin/trash/:id/restore", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const success = await storage.restorePool(poolId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Pool not found in trash" });
+      }
+
+      res.json({ message: "Pool restored successfully" });
+    } catch (error) {
+      console.error("Error restoring pool:", error);
+      res.status(500).json({ message: "Failed to restore pool" });
+    }
+  });
+
+  app.delete("/api/admin/trash/:id/permanent", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const success = await storage.permanentlyDeletePool(poolId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Pool not found" });
+      }
+
+      res.json({ message: "Pool permanently deleted" });
+    } catch (error) {
+      console.error("Error permanently deleting pool:", error);
+      res.status(500).json({ message: "Failed to permanently delete pool" });
+    }
+  });
+
+  app.post("/api/admin/trash/cleanup", requireAuth, async (req, res) => {
+    try {
+      const deletedCount = await storage.cleanupExpiredPools();
+      res.json({ 
+        message: `Cleanup completed. ${deletedCount} expired pools permanently deleted.`,
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Error during cleanup:", error);
+      res.status(500).json({ message: "Failed to cleanup expired pools" });
     }
   });
 

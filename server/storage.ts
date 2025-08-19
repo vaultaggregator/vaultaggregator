@@ -94,6 +94,13 @@ export interface IStorage {
   updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined>;
   deletePool(id: string): Promise<boolean>;
   upsertPool(defiLlamaId: string, pool: InsertPool): Promise<Pool>;
+  
+  // Trash bin methods
+  softDeletePool(id: string, deletedBy: string | null): Promise<boolean>;
+  getTrashedPools(): Promise<PoolWithRelations[]>;
+  restorePool(id: string): Promise<boolean>;
+  permanentlyDeletePool(id: string): Promise<boolean>;
+  cleanupExpiredPools(): Promise<number>;
 
   // Note methods
   getNotesByPool(poolId: string): Promise<Note[]>;
@@ -519,7 +526,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
       .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id));
 
-    const conditions = [eq(pools.isActive, true)];
+    const conditions = [eq(pools.isActive, true), sql`${pools.deletedAt} IS NULL`];
 
     if (onlyVisible) {
       conditions.push(eq(pools.isVisible, true));
@@ -613,7 +620,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(platforms, eq(pools.platformId, platforms.id))
       .leftJoin(chains, eq(pools.chainId, chains.id));
 
-    const conditions = [eq(pools.isActive, true)];
+    const conditions = [eq(pools.isActive, true), sql`${pools.deletedAt} IS NULL`];
 
     if (chainIds && chainIds.length > 0) {
       conditions.push(inArray(pools.chainId, chainIds));
@@ -809,6 +816,109 @@ export class DatabaseStorage implements IStorage {
   async deletePool(id: string): Promise<boolean> {
     const result = await db.delete(pools).where(eq(pools.id, id));
     return (result.rowCount || 0) > 0;
+  }
+
+  // Soft delete pool (move to trash)
+  async softDeletePool(id: string, deletedBy: string | null): Promise<boolean> {
+    const now = new Date();
+    const permanentDeleteAt = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000); // 60 days
+    
+    const result = await db
+      .update(pools)
+      .set({ 
+        deletedAt: now, 
+        deletedBy, 
+        permanentDeleteAt,
+        isVisible: false // Hide from regular listings
+      })
+      .where(eq(pools.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Get trashed pools
+  async getTrashedPools(): Promise<PoolWithRelations[]> {
+    return await db
+      .select({
+        id: pools.id,
+        platformId: pools.platformId,
+        chainId: pools.chainId,
+        tokenPair: pools.tokenPair,
+        apy: pools.apy,
+        tvl: pools.tvl,
+        riskLevel: pools.riskLevel,
+        poolAddress: pools.poolAddress,
+        defiLlamaId: pools.defiLlamaId,
+        project: pools.project,
+        tokenInfoId: pools.tokenInfoId,
+        showUsdInFlow: pools.showUsdInFlow,
+        isVisible: pools.isVisible,
+        isActive: pools.isActive,
+        deletedAt: pools.deletedAt,
+        deletedBy: pools.deletedBy,
+        permanentDeleteAt: pools.permanentDeleteAt,
+        lastUpdated: pools.lastUpdated,
+        createdAt: pools.createdAt,
+        platform: {
+          id: platforms.id,
+          name: platforms.name,
+          displayName: platforms.displayName,
+          slug: platforms.slug,
+          logoUrl: platforms.logoUrl,
+          website: platforms.website,
+          visitUrlTemplate: platforms.visitUrlTemplate,
+          showUnderlyingTokens: platforms.showUnderlyingTokens,
+          isActive: platforms.isActive,
+          createdAt: platforms.createdAt,
+        },
+        chain: {
+          id: chains.id,
+          name: chains.name,
+          displayName: chains.displayName,
+          color: chains.color,
+          iconUrl: chains.iconUrl,
+          isActive: chains.isActive,
+          createdAt: chains.createdAt,
+        }
+      })
+      .from(pools)
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .where(isNotNull(pools.deletedAt))
+      .orderBy(desc(pools.deletedAt));
+  }
+
+  // Restore pool from trash
+  async restorePool(id: string): Promise<boolean> {
+    const result = await db
+      .update(pools)
+      .set({ 
+        deletedAt: null, 
+        deletedBy: null, 
+        permanentDeleteAt: null,
+        isVisible: true // Restore visibility
+      })
+      .where(eq(pools.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Permanently delete pool
+  async permanentlyDeletePool(id: string): Promise<boolean> {
+    const result = await db.delete(pools).where(eq(pools.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Cleanup expired pools (automatically called by scheduler)
+  async cleanupExpiredPools(): Promise<number> {
+    const now = new Date();
+    const result = await db
+      .delete(pools)
+      .where(
+        and(
+          isNotNull(pools.permanentDeleteAt),
+          lte(pools.permanentDeleteAt, now)
+        )
+      );
+    return result.rowCount || 0;
   }
 
   async upsertPool(defiLlamaId: string, poolData: InsertPool): Promise<Pool> {

@@ -151,6 +151,10 @@ export const pools = pgTable("pools", {
   showUsdInFlow: boolean("show_usd_in_flow").notNull().default(false), // Admin control for USD display in token flow analysis
   isVisible: boolean("is_visible").notNull().default(true),
   isActive: boolean("is_active").notNull().default(true),
+  // Soft deletion fields for trash bin system
+  deletedAt: timestamp("deleted_at"), // When the pool was soft deleted
+  deletedBy: varchar("deleted_by").references(() => users.id), // Who deleted it
+  permanentDeleteAt: timestamp("permanent_delete_at"), // When to permanently delete (deletedAt + 60 days)
   lastUpdated: timestamp("last_updated").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });

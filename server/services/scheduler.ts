@@ -74,6 +74,23 @@ export function startScheduler(): void {
   // Clean expired outlooks and old data every hour
   cleanupInterval = setInterval(async () => {
     try {
+      console.log("🗑️ Running scheduled pool cleanup...");
+      const deletedCount = await storage.cleanupExpiredPools();
+      if (deletedCount > 0) {
+        console.log(`✅ Cleaned up ${deletedCount} expired pools`);
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error("❌ Error in scheduled pool cleanup:", errorMsg);
+      await logError(
+        'Scheduled Pool Cleanup Failed',
+        'Scheduled cleanup of expired pools failed. Trash bin may accumulate old pools.',
+        errorMsg,
+        'PoolCleanup',
+        'low'
+      );
+    }
+    try {
       console.log("Running data cleanup tasks...");
       
 
