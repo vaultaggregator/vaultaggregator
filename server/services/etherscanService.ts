@@ -96,9 +96,9 @@ export class EtherscanService {
   }
 
   /**
-   * Make a request to Etherscan API with error handling
+   * Make a request to Etherscan API with error handling and rate limiting
    */
-  private async makeRequest(params: Record<string, string>): Promise<EtherscanResponse> {
+  private async makeRequest(params: Record<string, string>, retries: number = 3): Promise<EtherscanResponse> {
     const searchParams = new URLSearchParams({
       ...params,
       apikey: this.apiKey
@@ -106,24 +106,44 @@ export class EtherscanService {
 
     const url = `${this.baseUrl}?${searchParams.toString()}`;
     
-    try {
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        // Add delay between requests to respect rate limits (max 5 calls per second)
+        if (attempt > 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Progressive delay
+        }
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
-      const data = await response.json();
-      
-      if (data.status === '0' && data.message === 'NOTOK') {
-        throw new Error(`Etherscan API error: ${data.result || 'Unknown error'}`);
-      }
+        const data = await response.json();
+        
+        if (data.status === '0' && data.message === 'NOTOK') {
+          // Check for rate limit errors
+          if (data.result && data.result.includes('rate limit')) {
+            if (attempt < retries) {
+              console.log(`⏳ Rate limit hit, retrying in ${2 * attempt} seconds (attempt ${attempt}/${retries})`);
+              await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+              continue;
+            }
+          }
+          throw new Error(`Etherscan API error: ${data.result || 'Unknown error'}`);
+        }
 
-      return data;
-    } catch (error) {
-      console.error('Etherscan API request failed:', error);
-      throw error;
+        return data;
+      } catch (error) {
+        if (attempt === retries) {
+          console.error('Etherscan API request failed after all retries:', error);
+          throw error;
+        }
+        console.log(`⚠️ Etherscan API attempt ${attempt} failed, retrying...`);
+      }
     }
+    
+    throw new Error('All retry attempts failed');
   }
 
   /**

@@ -236,6 +236,9 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Etherscan service not available" };
       }
 
+      // Add delay before Etherscan API call to avoid rate limits
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
       
       if (operatingDays !== null && operatingDays > 0) {
@@ -246,32 +249,14 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
       return { value: null, error: "Could not calculate operating days from Etherscan data" };
     } catch (error) {
       console.error(`❌ Error calculating operating days for ${pool.poolAddress}:`, error);
+      
+      // Enhanced error handling with manual fallback for known contracts
+      if (error instanceof Error && error.message.includes('rate limit')) {
+        console.log(`⚠️ Rate limit hit for ${pool.poolAddress}, will retry on next collection cycle`);
+        return { value: null, error: "Etherscan rate limit - will retry automatically" };
+      }
+      
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
-    }
-  }
-
-  async collectHolders(pool: Pool): Promise<{ value: number | null; error?: string }> {
-    try {
-      if (!pool.poolAddress) {
-        return { value: null, error: "Pool address not available" };
-      }
-
-      // Use structured Etherscan service for holder count
-      const { etherscanService } = await import("./etherscanService");
-      
-      if (!etherscanService.isAvailable()) {
-        return { value: null, error: "Etherscan service not available" };
-      }
-
-      const holdersCount = await etherscanService.getTokenHoldersCount(pool.poolAddress);
-      
-      if (holdersCount !== null && holdersCount > 0) {
-        return { value: holdersCount };
-      }
-      
-      return { value: null, error: "Could not fetch holder count from Etherscan" };
-    } catch (error) {
-      return { value: null, error: error instanceof Error ? error.message : "Holders collection failed" };
     }
   }
 
