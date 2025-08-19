@@ -359,7 +359,7 @@ export default function Terms() {
               <div className="space-y-2 text-sm text-blue-800">
                 <p><strong>Email:</strong> legal@vault-aggregator.com</p>
                 <p><strong>Address:</strong> Vault Aggregator, Inc.<br />123 Market Street, Suite 500<br />San Francisco, CA 94103</p>
-                <p><strong>Support:</strong> support@vault-aggregator.com</p>
+                
               </div>
             </CardContent>
           </Card>
