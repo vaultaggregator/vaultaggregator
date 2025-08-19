@@ -17,7 +17,7 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
-import { InteractivePoolChart } from "@/components/interactive-pool-chart";
+import { MorphoStyleChart } from "@/components/morpho-style-chart";
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 
@@ -773,11 +773,11 @@ export default function PoolDetail() {
 
         {/* Interactive Historical Chart */}
         <div className="mb-8">
-          <InteractivePoolChart 
+          <MorphoStyleChart 
             poolId={pool.id}
-            poolName={pool.tokenPair}
-            currentApy={parseFloat(pool.apy)}
-            currentTvl={parseFloat(pool.tvl)}
+            tokenPair={pool.tokenPair}
+            currentAPY={parseFloat(pool.apy)}
+            currentTVL={parseFloat(pool.tvl)}
           />
         </div>
 
