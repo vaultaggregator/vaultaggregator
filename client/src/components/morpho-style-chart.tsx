@@ -3,6 +3,7 @@ import { LineChart, Line, Area, AreaChart, XAxis, YAxis, ResponsiveContainer, Re
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 interface ChartDataPoint {
   date: string;
@@ -22,17 +23,34 @@ export function MorphoStyleChart({ poolId, tokenPair, currentAPY, currentTVL }: 
   const [selectedMetric, setSelectedMetric] = useState<'apy' | 'tvl'>('apy');
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
 
-  // Use current authentic values only - no historical simulation
+  // Fetch chart data from backend
+  const { data: chartResponse, isLoading } = useQuery({
+    queryKey: ['/api/pools', poolId, 'chart-data'],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
   const chartData = useMemo(() => {
-    // Since we don't have historical data from Morpho API, 
-    // we show current values as single data point
-    return [{
-      date: new Date().toISOString().split('T')[0],
-      apy: currentAPY,
-      tvl: currentTVL,
-      timestamp: Date.now()
-    }];
-  }, [currentAPY, currentTVL]);
+    if (!chartResponse?.data) {
+      // Fallback to single data point if no chart data
+      return [{
+        date: new Date().toISOString().split('T')[0],
+        apy: currentAPY,
+        tvl: currentTVL,
+        timestamp: Date.now()
+      }];
+    }
+    
+    // Filter data based on selected period
+    const now = new Date();
+    const daysBack = selectedPeriod === '7d' ? 7 : selectedPeriod === '30d' ? 30 : selectedPeriod === '90d' ? 90 : 365;
+    const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
+    
+    return chartResponse.data.filter((point: ChartDataPoint) => 
+      new Date(point.date) >= cutoffDate
+    );
+  }, [chartResponse, selectedPeriod, currentAPY, currentTVL]);
 
   const currentValue = selectedMetric === 'apy' ? currentAPY : currentTVL;
   const average = useMemo(() => {
@@ -72,6 +90,40 @@ export function MorphoStyleChart({ poolId, tokenPair, currentAPY, currentTVL }: 
   const minValue = Math.min(...chartData.map(d => d[selectedMetric]));
   const maxValue = Math.max(...chartData.map(d => d[selectedMetric]));
   const padding = (maxValue - minValue) * 0.1;
+
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                  APY Chart
+                </div>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
+                  <div className="w-2 h-2 bg-blue-300 rounded-sm"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-baseline gap-2">
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">
+              Loading...
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="pt-0">
+          <div className="h-64 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="text-gray-500 dark:text-gray-400">Loading chart data...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full">
