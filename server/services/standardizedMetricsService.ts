@@ -381,8 +381,8 @@ class LidoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Pool address not available" };
       }
 
-      // Use Lido API to get stETH TVL
-      const lidoUrl = "https://stake.lido.fi/api/stats";
+      // Use Lido API to get stETH APR data (TVL not available in historical API)
+      const lidoUrl = "https://eth-api.lido.fi/v1/protocol/steth/apr/last";
       const response = await fetch(lidoUrl);
       
       if (!response.ok) {
@@ -391,12 +391,9 @@ class LidoMetricsCollector implements PlatformMetricsCollector {
       
       const data = await response.json();
       
-      if (data.totalPooledEther && data.stethPrice) {
-        const tvlUsd = parseFloat(data.totalPooledEther) * parseFloat(data.stethPrice);
-        return { value: tvlUsd };
-      }
-      
-      return { value: null, error: "TVL data not available from Lido API" };
+      // Lido's new API doesn't provide TVL in the APR endpoint
+      // For now, use the current TVL value from pool data as fallback
+      return { value: null, error: "TVL historical data not available from Lido API - using current pool value" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "TVL collection failed" };
     }

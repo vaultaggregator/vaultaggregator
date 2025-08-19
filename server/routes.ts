@@ -3272,8 +3272,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { poolId } = req.params;
       const { days = "7" } = req.query;
       
-      const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
-      const historicalData = await morphoHistoricalService.getHistoricalData(poolId, parseInt(days as string));
+      // Get pool to determine platform
+      const pool = await storage.getPool(poolId);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      let historicalData = [];
+      
+      if (pool.platform.name === 'Lido') {
+        // Use Lido historical service
+        const { LidoHistoricalService } = await import("./services/lidoHistoricalService");
+        const lidoService = new LidoHistoricalService();
+        
+        // First collect fresh historical data from API
+        await lidoService.storeHistoricalData(poolId);
+        
+        // Then get the stored data
+        const lidoData = await lidoService.getHistoricalData(poolId, parseInt(days as string));
+        
+        // Convert to chart format
+        historicalData = lidoData.map(point => ({
+          timestamp: Math.floor(point.timestamp.getTime() / 1000),
+          date: point.timestamp.toISOString().split('T')[0],
+          apy: point.apy,
+          tvl: point.tvl,
+          formattedDate: point.timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          fullDate: point.timestamp.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })
+        }));
+      } else {
+        // Use Morpho historical service
+        const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
+        historicalData = await morphoHistoricalService.getHistoricalData(poolId, parseInt(days as string));
+      }
       
       res.json(historicalData);
     } catch (error) {
@@ -3305,14 +3340,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Pool not found" });
       }
 
-      if (!pool.poolAddress || !pool.poolAddress.startsWith('0x')) {
-        return res.status(400).json({ error: "Invalid pool address for historical data collection" });
-      }
+      if (pool.platform.name === 'Lido') {
+        // Use Lido historical service
+        const { LidoHistoricalService } = await import("./services/lidoHistoricalService");
+        const lidoService = new LidoHistoricalService();
+        await lidoService.storeHistoricalData(poolId);
+        
+        res.json({ message: `Lido historical data collection completed for pool ${poolId}` });
+      } else {
+        // Use Morpho historical service
+        if (!pool.poolAddress || !pool.poolAddress.startsWith('0x')) {
+          return res.status(400).json({ error: "Invalid pool address for historical data collection" });
+        }
 
-      const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
-      await morphoHistoricalService.storeHistoricalData(poolId, pool.poolAddress, days);
-      
-      res.json({ message: `Historical data collection completed for pool ${poolId}` });
+        const { morphoHistoricalService } = await import("./services/morphoHistoricalService");
+        await morphoHistoricalService.storeHistoricalData(poolId, pool.poolAddress, days);
+        
+        res.json({ message: `Morpho historical data collection completed for pool ${poolId}` });
+      }
     } catch (error) {
       console.error("Error collecting historical data for pool:", error);
       res.status(500).json({ error: "Failed to collect historical data for pool" });

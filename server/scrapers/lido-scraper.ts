@@ -1,11 +1,11 @@
 import { BaseScraper, ScrapedData } from './base-scraper';
-import type { PoolWithRelations } from '../storage';
+import type { PoolWithRelations } from '@shared/schema';
 
 export class LidoScraper extends BaseScraper {
   constructor() {
     super({
       name: 'Lido',
-      baseUrl: 'https://stake.lido.fi/api',
+      baseUrl: 'https://eth-api.lido.fi/v1',
       rateLimit: 60 // 60 requests per minute
     });
   }
@@ -17,8 +17,8 @@ export class LidoScraper extends BaseScraper {
         return null;
       }
 
-      // Fetch stETH APR from Lido's stats API
-      const response = await this.rateLimitedFetch('https://stake.lido.fi/api/stats');
+      // Fetch stETH APR from Lido's official API
+      const response = await this.rateLimitedFetch('https://eth-api.lido.fi/v1/protocol/steth/apr/sma');
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
