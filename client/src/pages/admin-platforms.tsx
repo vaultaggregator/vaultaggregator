@@ -283,27 +283,49 @@ export default function AdminPlatforms() {
 
   // Platform-specific API endpoints
   const getPlatformApiEndpoints = (platformName: string) => {
-    const common = [
-      { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
-      { label: "Platform Info", method: "GET", endpoint: `/api/platforms`, params: "" },
-    ];
-
-    switch (platformName.toLowerCase()) {
+    const normalizedName = platformName.toLowerCase().trim();
+    
+    switch (normalizedName) {
       case 'morpho':
         return [
-          ...common,
-          { label: "Current APY", method: "GET", endpoint: "/api/scrape/morpho/apy", params: "" },
-          { label: "Vault Details", method: "GET", endpoint: "/api/scrape/morpho/vault", params: "" },
-          { label: "Scrape Pool Data", method: "POST", endpoint: "/api/scrape/pool/d6a1f6b8-a970-4cc0-9f02-14da0152738e", params: "" },
+          { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
+          { label: "Morpho GraphQL - Vault APY", method: "POST", endpoint: "https://api.morpho.org/graphql", 
+            params: JSON.stringify({
+              query: `query {
+                vaultByAddress(
+                  address: "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB"
+                  chainId: 1
+                ) {
+                  state {
+                    apy
+                    netApy
+                    netApyWithoutRewards
+                    dailyApy
+                    dailyNetApy
+                    weeklyApy
+                    weeklyNetApy
+                    monthlyApy
+                    monthlyNetApy
+                  }
+                }
+              }`
+            }, null, 2)
+          },
+          { label: "Morpho Current APY (Internal)", method: "GET", endpoint: "/api/scrape/morpho/apy", params: "" },
+          { label: "Morpho Vault Details (Internal)", method: "GET", endpoint: "/api/scrape/morpho/vault", params: "" },
+          { label: "Scrape Morpho Pool Data", method: "POST", endpoint: "/api/scrape/pool/d6a1f6b8-a970-4cc0-9f02-14da0152738e", params: "" },
         ];
       case 'lido':
         return [
-          ...common,
-          { label: "Lido APR", method: "GET", endpoint: "/api/scrape/lido/apr", params: "" },
-          { label: "Scrape Pool Data", method: "POST", endpoint: "/api/scrape/pool/31e292ba-a842-490b-8688-3868e18bd615", params: "" },
+          { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
+          { label: "Lido APR (Internal)", method: "GET", endpoint: "/api/scrape/lido/apr", params: "" },
+          { label: "Scrape Lido Pool Data", method: "POST", endpoint: "/api/scrape/pool/31e292ba-a842-490b-8688-3868e18bd615", params: "" },
         ];
       default:
-        return common;
+        return [
+          { label: "Health Check", method: "GET", endpoint: "/api/admin/system/health", params: "" },
+          { label: "Platform Info", method: "GET", endpoint: "/api/platforms", params: "" },
+        ];
     }
   };
 
@@ -347,14 +369,26 @@ export default function AdminPlatforms() {
         body = apiParameters || selectedEndpoint.params;
       }
 
-      const response = await fetch(endpoint, {
+      // Special handling for external GraphQL endpoints
+      const isExternalEndpoint = endpoint.startsWith("http");
+      const requestHeaders: Record<string, string> = {};
+      
+      if (selectedEndpoint.method !== "GET" && selectedEndpoint.method !== "DELETE") {
+        requestHeaders["Content-Type"] = "application/json";
+      }
+      
+      // For external APIs, don't include credentials
+      const fetchOptions: RequestInit = {
         method: selectedEndpoint.method,
-        headers: selectedEndpoint.method !== "GET" && selectedEndpoint.method !== "DELETE" 
-          ? { "Content-Type": "application/json" } 
-          : {},
-        credentials: "include",
+        headers: requestHeaders,
         body: body || undefined,
-      });
+      };
+      
+      if (!isExternalEndpoint) {
+        fetchOptions.credentials = "include";
+      }
+
+      const response = await fetch(endpoint, fetchOptions);
 
       let responseData;
       try {
@@ -403,6 +437,17 @@ export default function AdminPlatforms() {
     setApiParameters("");
     setApiResponse("");
     setShowApiDialog(true);
+    
+    // Auto-populate GraphQL query for Morpho
+    if (platform.name.toLowerCase() === 'morpho') {
+      setTimeout(() => {
+        const morphoEndpoints = getPlatformApiEndpoints('morpho');
+        const graphqlEndpoint = morphoEndpoints.find(ep => ep.label.includes('GraphQL'));
+        if (graphqlEndpoint) {
+          setApiParameters(graphqlEndpoint.params);
+        }
+      }, 100);
+    }
   };
 
   // Platform Card Component
@@ -919,15 +964,16 @@ export default function AdminPlatforms() {
 
               <div>
                 <Label htmlFor="api-params">Parameters/Body (JSON)</Label>
-                <Input
+                <Textarea
                   id="api-params"
                   placeholder='{"param": "value"} or leave empty for GET requests'
                   value={apiParameters}
                   onChange={(e) => setApiParameters(e.target.value)}
                   data-testid="input-platform-api-parameters"
+                  rows={3}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  For URL params: {`{"id": "value"}`} • For body: JSON object
+                  For URL params: {`{"id": "value"}`} • For GraphQL: use provided query • For body: JSON object
                 </p>
               </div>
             </div>
