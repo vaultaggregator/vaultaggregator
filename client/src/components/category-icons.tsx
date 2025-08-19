@@ -86,7 +86,7 @@ export const ETHIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
   </svg>
 );
 
-// USDT - Authentic Tether token icon (official brand specifications)
+// USDT - Modern Tether token icon (2024 current design)
 export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
   <svg
     width={size}
@@ -99,32 +99,17 @@ export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
     {/* Main circular background - Official Tether brand color */}
     <circle cx="16" cy="16" r="16" fill="#26A17B"/>
     
-    {/* Outer circle border */}
-    <circle cx="16" cy="16" r="12" fill="none" stroke="white" strokeWidth="1"/>
-    
-    {/* Inner circle */}
-    <circle cx="16" cy="16" r="9" fill="none" stroke="white" strokeWidth="0.5"/>
-    
-    {/* The distinctive "T" shape in the center */}
-    <g fill="white">
-      {/* Top horizontal bar of T */}
-      <rect x="10" y="12" width="12" height="2"/>
-      
-      {/* Vertical stem of T */}
-      <rect x="15" y="12" width="2" height="8"/>
-    </g>
-    
-    {/* Small "USDT" text at bottom */}
+    {/* Modern clean "T" in center */}
     <text
       x="16"
-      y="26"
+      y="22"
       textAnchor="middle"
-      fontSize="3"
+      fontSize="18"
       fill="white"
       fontFamily="Arial, sans-serif"
-      fontWeight="600"
+      fontWeight="bold"
     >
-      USDT
+      T
     </text>
   </svg>
 );
