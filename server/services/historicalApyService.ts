@@ -15,7 +15,7 @@ export class HistoricalApyService {
    * Calculate real historical APY averages from authentic data
    * Returns null for periods with insufficient data
    */
-  async calculateRealHistoricalAverages(poolId: string): Promise<HistoricalApyAverages> {
+  async calculateRealHistoricalAverages(poolId: string, platformName?: string): Promise<HistoricalApyAverages> {
     try {
       console.log(`📊 Calculating real historical APY averages for pool ${poolId}`);
       
@@ -38,8 +38,14 @@ export class HistoricalApyService {
         };
       }
 
-      // APY is already stored as percentage in database (e.g., 2.648 for 2.648%)
-      const currentApy = parseFloat(latestData[0].apy || '0');
+      // APY handling depends on platform - Morpho stores decimals, Lido stores percentages
+      let currentApy = parseFloat(latestData[0].apy || '0');
+      
+      // Determine if we need to convert decimals to percentages for current APY
+      const isMorpho = platformName?.toLowerCase() === 'morpho';
+      if (isMorpho) {
+        currentApy = currentApy * 100;
+      }
       
       // Calculate date thresholds
       const now = new Date();
@@ -62,12 +68,15 @@ export class HistoricalApyService {
         allTime: allTimeData.length
       });
 
+      // Determine if we need to convert decimals to percentages (Morpho stores decimals)
+      const isMorpho = platformName?.toLowerCase() === 'morpho';
+      
       return {
         current: currentApy,
-        sevenDay: this.calculateAverage(sevenDayData),
-        thirtyDay: this.calculateAverage(thirtyDayData),
-        ninetyDay: this.calculateAverage(ninetyDayData),
-        allTime: this.calculateAverage(allTimeData)
+        sevenDay: this.calculateAverage(sevenDayData, isMorpho),
+        thirtyDay: this.calculateAverage(thirtyDayData, isMorpho),
+        ninetyDay: this.calculateAverage(ninetyDayData, isMorpho),
+        allTime: this.calculateAverage(allTimeData, isMorpho)
       };
 
     } catch (error) {
@@ -103,7 +112,7 @@ export class HistoricalApyService {
       .orderBy(desc(poolHistoricalData.timestamp));
   }
 
-  private calculateAverage(data: any[]): number | null {
+  private calculateAverage(data: any[], isMorpho: boolean = false): number | null {
     if (data.length === 0) return null;
     
     const validApyValues = data
@@ -113,10 +122,13 @@ export class HistoricalApyService {
     if (validApyValues.length === 0) return null;
 
     const sum = validApyValues.reduce((acc, apy) => acc + apy, 0);
-    const average = sum / validApyValues.length;
+    let average = sum / validApyValues.length;
     
-    // Database already stores APY as percentage (e.g., 2.648 for 2.648%)
-    // No conversion needed - just return the calculated average
+    // Morpho stores APY as decimals (0.0456 = 4.56%), convert to percentage
+    // Lido stores APY as percentages (2.648 = 2.648%), use as-is
+    if (isMorpho) {
+      average = average * 100;
+    }
     
     console.log(`📊 Calculated average from ${validApyValues.length} authentic data points: ${average.toFixed(4)}%`);
     return parseFloat(average.toFixed(4));

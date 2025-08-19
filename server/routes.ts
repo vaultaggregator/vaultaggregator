@@ -593,7 +593,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const service = new HistoricalApyService();
       
       console.log(`📊 Calculating authentic historical APY averages for pool ${req.params.id}`);
-      const averages = await service.calculateRealHistoricalAverages(req.params.id);
+      
+      // Get pool info to determine platform
+      const pool = await storage.getPoolById(req.params.id);
+      if (!pool) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+      
+      const averages = await service.calculateRealHistoricalAverages(req.params.id, pool.platform.name);
       
       res.json(averages);
     } catch (error) {
