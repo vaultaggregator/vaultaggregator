@@ -86,7 +86,7 @@ export const ETHIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
   </svg>
 );
 
-// USDT - Authentic Tether token icon (official brand colors)
+// USDT - Authentic Tether token icon (official brand specifications)
 export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
   <svg
     width={size}
@@ -96,25 +96,35 @@ export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <circle cx="16" cy="16" r="16" fill="#009393"/>
-    <path
-      d="M22 12v-2H10v2h4v2h-4v6h4v2h4v-2h4v-6h-4v-2h4z"
-      fill="white"
-    />
-    <path
-      d="M14 16h4v-2h-4v2z"
-      fill="#009393"
-    />
+    {/* Main circular background - Official Tether brand color */}
+    <circle cx="16" cy="16" r="16" fill="#26A17B"/>
+    
+    {/* Outer circle border */}
+    <circle cx="16" cy="16" r="12" fill="none" stroke="white" strokeWidth="1"/>
+    
+    {/* Inner circle */}
+    <circle cx="16" cy="16" r="9" fill="none" stroke="white" strokeWidth="0.5"/>
+    
+    {/* The distinctive "T" shape in the center */}
+    <g fill="white">
+      {/* Top horizontal bar of T */}
+      <rect x="10" y="12" width="12" height="2"/>
+      
+      {/* Vertical stem of T */}
+      <rect x="15" y="12" width="2" height="8"/>
+    </g>
+    
+    {/* Small "USDT" text at bottom */}
     <text
       x="16"
-      y="20"
+      y="26"
       textAnchor="middle"
-      fontSize="6"
+      fontSize="3"
       fill="white"
       fontFamily="Arial, sans-serif"
-      fontWeight="bold"
+      fontWeight="600"
     >
-      ₮
+      USDT
     </text>
   </svg>
 );
