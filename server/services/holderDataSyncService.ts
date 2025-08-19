@@ -112,68 +112,72 @@ export class HolderDataSyncService {
         }
       }
 
-      // Etherscan functionality removed - simplified holder sync
-      console.log(`Holder data sync for ${tokenAddress} skipped - Etherscan integration removed`);
-      return;
-
-      if (!tokenInfo) {
-        console.warn(`Could not fetch token info for ${tokenAddress}`);
+      // Restore Etherscan holder sync functionality
+      const { etherscanService } = await import('./etherscanService');
+      
+      if (!etherscanService.isAvailable()) {
+        console.warn(`Etherscan service not available for ${tokenAddress}`);
         return;
       }
 
-      // Calculate holder count from various sources
-      let holdersCount = 0;
-      
-      // Try to get holder count from token info first
-      if (tokenInfo.holdersCount && tokenInfo.holdersCount > 0) {
-        holdersCount = tokenInfo.holdersCount;
-      } 
-      // Fallback to top holders count if available
-      else if (topHolders && topHolders.length > 0) {
-        // This is a minimum count based on top holders
-        holdersCount = Math.max(topHolders.length, analytics?.uniqueAddresses30d || 0);
-      }
-      // Fallback to analytics unique addresses
-      else if (analytics?.uniqueAddresses30d) {
-        holdersCount = analytics.uniqueAddresses30d;
+      // Fetch token info and holder count from Etherscan
+      const tokenInfo = await etherscanService.getTokenInfo(tokenAddress);
+      const holdersCount = await etherscanService.getTokenHoldersCount(tokenAddress);
+
+      if (!tokenInfo && !holdersCount) {
+        console.warn(`Could not fetch token info or holder count for ${tokenAddress}`);
+        return;
       }
 
-      // Calculate market metrics
-      const totalSupplyNum = parseFloat(tokenSupply?.totalSupply || '0');
-      const decimals = parseInt(tokenInfo.decimals || '18');
-      const adjustedSupply = totalSupplyNum / Math.pow(10, decimals);
+      // Use the fetched or scraped holder count
+      let finalHoldersCount = 0;
+      if (holdersCount && holdersCount > 0) {
+        finalHoldersCount = holdersCount;
+      } else if (tokenInfo?.holdersCount && tokenInfo.holdersCount > 0) {
+        finalHoldersCount = tokenInfo.holdersCount;
+      }
 
-      // For now, we don't have direct price data, but we can store supply info
+      // Calculate market metrics if token info is available
       let priceUsd: string | null = null;
       let marketCapUsd: string | null = null;
+      let totalSupply: string | null = null;
+      let decimals = 18;
 
-      // If we have price data from external sources, calculate market cap
-      if (priceUsd && adjustedSupply) {
-        marketCapUsd = (parseFloat(priceUsd) * adjustedSupply).toString();
+      if (tokenInfo) {
+        totalSupply = tokenInfo.totalSupply;
+        decimals = parseInt(tokenInfo.divisor || '18');
+        priceUsd = tokenInfo.tokenPriceUSD || null;
+        
+        // Calculate market cap if we have price and supply
+        if (priceUsd && totalSupply) {
+          const totalSupplyNum = parseFloat(totalSupply);
+          const adjustedSupply = totalSupplyNum / Math.pow(10, decimals);
+          marketCapUsd = (parseFloat(priceUsd) * adjustedSupply).toString();
+        }
       }
 
       // Store holder history data
-      const holderData: InsertHolderHistory = {
+      const holderData = {
         tokenAddress: tokenAddress.toLowerCase(),
-        holdersCount,
+        holdersCount: finalHoldersCount,
         priceUsd,
         marketCapUsd,
         timestamp: new Date(),
-        totalSupply: tokenSupply?.totalSupply,
-        circulatingSupply: tokenSupply?.circulatingSupply,
-        uniqueAddresses24h: analytics?.uniqueAddresses24h,
-        uniqueAddresses7d: analytics?.uniqueAddresses7d,
-        uniqueAddresses30d: analytics?.uniqueAddresses30d,
-        transferCount24h: analytics?.transferCount24h,
-        transferCount7d: analytics?.transferCount7d,
-        transferCount30d: analytics?.transferCount30d,
-        volume24h: analytics?.volume24h,
-        volume7d: analytics?.volume7d,
-        volume30d: analytics?.volume30d
+        totalSupply: totalSupply,
+        circulatingSupply: null, // Not available from Etherscan
+        uniqueAddresses24h: null,
+        uniqueAddresses7d: null,
+        uniqueAddresses30d: null,
+        transferCount24h: null,
+        transferCount7d: null,
+        transferCount30d: null,
+        volume24h: null,
+        volume7d: null,
+        volume30d: null
       };
 
       await storage.storeHolderHistory(holderData);
-      console.log(`Successfully synced holder data for ${tokenAddress}: ${holdersCount} holders`);
+      console.log(`Successfully synced holder data for ${tokenAddress}: ${finalHoldersCount} holders`);
 
     } catch (error) {
       console.error(`Error syncing holder data for ${tokenAddress}:`, error);

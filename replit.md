@@ -17,6 +17,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - **Complete Image Localization System**: All external images (platform logos, category icons) downloaded and stored locally in object storage, eliminating dependency on external image hosts including DeFiLlama icons (August 19, 2025)
 - **Admin Interface Cleanup**: Removed Image Localization admin tab and manual controls while preserving automatic background localization functionality (August 19, 2025)
 - **Standardized Metrics Collection System**: Implemented comprehensive 4-metric collection framework (APY, DAYS, TVL, HOLDERS) with platform-specific API integration (Morpho, Lido, Etherscan), historical tracking, status monitoring, customizable refresh intervals, and complete admin management interface (August 19, 2025)
+- **Restored Structured Etherscan Integration**: Reinstalled comprehensive EtherscanService with organized API access and re-enabled automated holder sync functionality - complete integration now provides contract creation dates, holder counts, and token information through centralized service (August 19, 2025)
 
 # User Preferences
 

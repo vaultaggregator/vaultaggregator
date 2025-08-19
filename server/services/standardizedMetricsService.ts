@@ -218,25 +218,20 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Pool address not available" };
       }
 
-      // Use Etherscan to get contract creation date
-      const etherscanUrl = `https://api.etherscan.io/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
+      // Use structured Etherscan service for contract creation date
+      const { etherscanService } = await import("./etherscanService");
       
-      const response = await fetch(etherscanUrl);
-      if (!response.ok) {
-        return { value: null, error: "Failed to fetch contract creation data from Etherscan" };
+      if (!etherscanService.isAvailable()) {
+        return { value: null, error: "Etherscan service not available" };
+      }
+
+      const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
+      
+      if (operatingDays !== null) {
+        return { value: operatingDays };
       }
       
-      const data = await response.json();
-      if (data.status === "1" && data.result && data.result.length > 0) {
-        const firstTx = data.result[0];
-        const creationDate = new Date(parseInt(firstTx.timeStamp) * 1000);
-        const currentDate = new Date();
-        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        return { value: daysDiff };
-      }
-      
-      return { value: null, error: "No transaction history found for contract" };
+      return { value: null, error: "Could not calculate operating days from contract creation" };
     } catch (error) {
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
     }
@@ -248,20 +243,20 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
         return { value: null, error: "Pool address not available" };
       }
 
-      // Use Etherscan web scraping to get holder count (similar to tokenInfoSyncService)
-      const etherscanUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+      // Use structured Etherscan service for holder count
+      const { etherscanService } = await import("./etherscanService");
       
-      const response = await fetch(etherscanUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-      });
+      if (!etherscanService.isAvailable()) {
+        return { value: null, error: "Etherscan service not available" };
+      }
+
+      const holdersCount = await etherscanService.getTokenHoldersCount(pool.poolAddress);
       
-      if (!response.ok) {
-        return { value: null, error: "Failed to fetch token page from Etherscan" };
+      if (holdersCount !== null && holdersCount > 0) {
+        return { value: holdersCount };
       }
       
-      const html = await response.text();
+      return { value: null, error: "Could not fetch holder count from Etherscan" };
       
       // Extract holders count from HTML
       const holdersMatch = html.match(/Holders[^>]*?(\d{1,3}(?:,\d{3})*)/);
