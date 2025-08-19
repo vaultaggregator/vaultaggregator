@@ -17,12 +17,12 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
-import { MorphoStyleChart } from "@/components/morpho-style-chart";
+
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart, Bar } from 'recharts';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { YieldOpportunity } from "@/types";
 
@@ -42,25 +42,7 @@ function formatTvl(value: string): string {
   }
 }
 
-interface ChartData {
-  date: string;
-  apy: number;
-  tvl: number;
-}
 
-interface ChartResponse {
-  hasData: boolean;
-  data?: ChartData[];
-  mockData?: ChartData[];
-  message?: string;
-  poolInfo?: any;
-  summary?: {
-    dataPoints: number;
-    averageApy: number;
-    minApy: number;
-    maxApy: number;
-  };
-}
 
 // Related Pools Component
 function RelatedPools({ currentPoolId, platform, chainId }: { 
@@ -230,7 +212,7 @@ export default function PoolDetail() {
     }
   }, [pool]);
 
-  // Chart data and DeFi Llama queries removed - historical data now via Morpho API
+  // Chart functionality removed per user request
 
   // Token info with optimized loading
   const { data: tokenInfo, isLoading: tokenInfoLoading } = useQuery({
@@ -684,15 +666,7 @@ export default function PoolDetail() {
 
         
 
-        {/* Interactive Historical Chart */}
-        <div className="mb-8">
-          <MorphoStyleChart 
-            poolId={pool.id}
-            tokenPair={pool.tokenPair}
-            currentAPY={parseFloat(pool.apy)}
-            currentTVL={parseFloat(pool.tvl)}
-          />
-        </div>
+
 
         {/* Related Pools from Website */}
         <RelatedPools currentPoolId={pool.id} platform={pool.platform.displayName} chainId={pool.chain.id} />
