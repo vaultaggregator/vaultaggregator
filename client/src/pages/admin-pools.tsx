@@ -76,7 +76,6 @@ interface CreatePoolForm {
   platformId: string;
   chainId: string;
   tokenPair: string;
-  riskLevel: string;
   poolAddress: string;
   defiLlamaId: string;
   showUsdInFlow: boolean;
@@ -94,7 +93,6 @@ export default function AdminPools() {
     platformId: "",
     chainId: "",
     tokenPair: "",
-    riskLevel: "medium",
     poolAddress: "",
     defiLlamaId: "",
     showUsdInFlow: false,
@@ -134,12 +132,9 @@ export default function AdminPools() {
         platformId: data.platformId,
         chainId: data.chainId,
         tokenPair: data.tokenPair,
-        apy: data.apy ? parseFloat(data.apy) : null,
-        tvl: data.tvl ? parseFloat(data.tvl) : null,
-        riskLevel: data.riskLevel,
+
         poolAddress: data.poolAddress || null,
         defiLlamaId: data.defiLlamaId || null,
-        project: data.project || null,
         showUsdInFlow: data.showUsdInFlow,
         isVisible: data.isVisible,
         isActive: data.isActive,
@@ -166,12 +161,9 @@ export default function AdminPools() {
         platformId: "",
         chainId: "",
         tokenPair: "",
-        apy: "",
-        tvl: "",
-        riskLevel: "medium",
+
         poolAddress: "",
         defiLlamaId: "",
-        project: "",
         showUsdInFlow: false,
         isVisible: true,
         isActive: true,
@@ -400,22 +392,7 @@ export default function AdminPools() {
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="riskLevel" className="text-sm font-medium">Risk Level *</Label>
-                      <Select 
-                        value={formData.riskLevel} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, riskLevel: value }))}
-                      >
-                        <SelectTrigger data-testid="select-risk">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+
                   </div>
 
                   {/* Financial Data */}
