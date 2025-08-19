@@ -57,3 +57,9 @@ class DatabaseScheduler {
 }
 
 export const databaseScheduler = new DatabaseScheduler();
+
+// Export function for immediate data collection when pools are created
+export async function startPoolDataScraping(): Promise<void> {
+  console.log('🚀 Starting immediate pool data scraping...');
+  await scraperManager.scrapeAllPools();
+}

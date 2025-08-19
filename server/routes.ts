@@ -961,6 +961,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updatePoolCategories(newPool.id, categories);
       }
 
+      // Immediately trigger data collection for the new pool
+      try {
+        console.log(`🚀 Triggering immediate data collection for new pool: ${newPool.tokenPair}`);
+        
+        // Import scraper functionality
+        const { startPoolDataScraping } = await import("./services/database-scheduler");
+        
+        // Trigger scraping for this specific pool in the background
+        setImmediate(async () => {
+          try {
+            console.log(`📊 Starting immediate scraping for pool ${newPool.id}`);
+            // This will trigger the scraper to run immediately for all pools including the new one
+            await startPoolDataScraping();
+          } catch (scrapeError) {
+            console.error(`❌ Failed to immediately scrape new pool ${newPool.id}:`, scrapeError);
+          }
+        });
+        
+      } catch (error) {
+        console.error("Failed to trigger immediate data collection:", error);
+        // Don't fail the pool creation if scraping fails
+      }
+
       res.status(201).json(newPool);
     } catch (error) {
       console.error("Error creating pool:", error);

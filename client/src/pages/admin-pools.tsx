@@ -217,7 +217,7 @@ export default function AdminPools() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async (newPool) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/all"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
       setShowCreateForm(false);
@@ -231,10 +231,37 @@ export default function AdminPools() {
         categories: []
       });
       setContractInfo({ isLoading: false });
-      toast({
-        title: "Success",
-        description: "Pool created successfully",
-      });
+      
+      // Immediately trigger data collection for the new pool
+      try {
+        const scrapeResponse = await fetch(`/api/scrape/pool/${newPool.id}`, {
+          method: "POST",
+          credentials: "include",
+        });
+        
+        if (scrapeResponse.ok) {
+          toast({
+            title: "Pool Created & Data Collection Started",
+            description: "Pool created successfully and data collection initiated",
+          });
+          
+          // Refresh data after scraping
+          setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/all"] });
+          }, 2000);
+        } else {
+          toast({
+            title: "Pool Created",
+            description: "Pool created successfully. Data collection will start on next scheduled run.",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Pool Created",
+          description: "Pool created successfully. Data collection will start automatically.",
+        });
+      }
     },
     onError: (error: any) => {
       toast({
@@ -479,7 +506,7 @@ export default function AdminPools() {
                       tokenPair: pool.tokenPair, // Keep existing tokenPair, don't allow editing
                       platformId: formData.get('platformId') as string,
                       chainId: formData.get('chainId') as string,
-                      poolAddress: formData.get('poolAddress') as string || null,
+                      poolAddress: formData.get('poolAddress') as string || undefined,
                       showUsdInFlow: formData.get('showUsdInFlow') === 'on',
                       isVisible: formData.get('isVisible') === 'on',
                       isActive: formData.get('isActive') === 'on',
