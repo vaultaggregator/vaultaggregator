@@ -81,9 +81,14 @@ export default function NetworkSelector({ filters, onFilterChange }: NetworkSele
         />
       );
     } else if (category.name === 'USDT') {
-      // Fall back to SVG icon for USDT since no localized image is available
-      const CategoryIcon = getCategoryIcon(category.name);
-      return <CategoryIcon size={16} className="flex-shrink-0" />;
+      return (
+        <img 
+          src="/public-objects/images/c6147b632d9099be.png"
+          alt="USDT"
+          className="w-4 h-4 flex-shrink-0 rounded-full"
+          data-testid="logo-usdt-category"
+        />
+      );
     }
     
     // Fall back to SVG icons for other categories
