@@ -1,6 +1,5 @@
 // DeFi Category Icons Component
 // Professional SVG icons for different DeFi categories and yield farming types
-import usdtIcon from '@assets/generated_images/USDT_token_icon_c2e0a8d3.png';
 
 export interface CategoryIconProps {
   className?: string;
@@ -87,16 +86,37 @@ export const ETHIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
   </svg>
 );
 
-// USDT - Tether token icon (using generated high-quality icon)
+// USDT - Authentic Tether token icon (official brand colors)
 export const USDTIcon = ({ className = "", size = 24 }: CategoryIconProps) => (
-  <img
-    src={usdtIcon}
-    alt="USDT"
+  <svg
     width={size}
     height={size}
-    className={`${className} rounded-full`}
-    style={{ width: size, height: size }}
-  />
+    viewBox="0 0 32 32"
+    className={className}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="16" cy="16" r="16" fill="#009393"/>
+    <path
+      d="M22 12v-2H10v2h4v2h-4v6h4v2h4v-2h4v-6h-4v-2h4z"
+      fill="white"
+    />
+    <path
+      d="M14 16h4v-2h-4v2z"
+      fill="#009393"
+    />
+    <text
+      x="16"
+      y="20"
+      textAnchor="middle"
+      fontSize="6"
+      fill="white"
+      fontFamily="Arial, sans-serif"
+      fontWeight="bold"
+    >
+      ₮
+    </text>
+  </svg>
 );
 
 // Lending - Handshake/loan icon
