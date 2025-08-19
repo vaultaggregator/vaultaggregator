@@ -8,8 +8,8 @@ import { useQuery } from '@tanstack/react-query';
 interface ChartDataPoint {
   timestamp: number;
   date: string;
-  apy: number;
-  tvl: number;
+  apy: number | null;
+  tvl: number | null;
   formattedDate: string;
   fullDate: string;
 }
@@ -27,14 +27,14 @@ type ChartType = 'apy' | 'tvl' | 'both';
 
 // Fetch real historical data from API
 const useHistoricalData = (poolId: string, days: number) => {
-  return useQuery({
+  return useQuery<ChartDataPoint[]>({
     queryKey: ['/api/pools', poolId, 'historical-data', days],
-    queryFn: async () => {
+    queryFn: async (): Promise<ChartDataPoint[]> => {
       const response = await fetch(`/api/pools/${poolId}/historical-data?days=${days}`);
       if (!response.ok) {
         throw new Error('Failed to fetch historical data');
       }
-      return response.json() as ChartDataPoint[];
+      return response.json();
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
@@ -60,21 +60,25 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
 
   // Process historical data for display - 100% authentic data only
   const displayData = useMemo(() => {
-    console.log('PoolChart Debug - historicalData:', historicalData);
-    console.log('PoolChart Debug - length:', historicalData?.length);
+    console.log('📊 Chart Debug - historicalData length:', historicalData?.length);
     
     if (!historicalData || historicalData.length === 0) {
-      console.log('PoolChart Debug - No historical data available, length:', historicalData?.length);
+      console.log('❌ Chart Debug - No historical data available');
       return [];
     }
     
-    console.log('PoolChart Debug - Raw historical data sample:', historicalData.slice(0, 2));
+    console.log('📊 Chart Debug - Raw sample:', {
+      apy: historicalData[0]?.apy,
+      tvl: historicalData[0]?.tvl,
+      total: historicalData.length
+    });
     
     // Only use authentic historical data - convert APY from decimal to percentage  
     const processedData = historicalData
       .filter(point => {
         const isValid = point.apy !== null && point.tvl !== null && 
-                        point.apy !== undefined && point.tvl !== undefined;
+                        point.apy !== undefined && point.tvl !== undefined &&
+                        !isNaN(point.apy) && !isNaN(point.tvl);
         if (!isValid) {
           console.log('PoolChart Debug - Filtering out invalid point:', point);
         }
@@ -82,8 +86,12 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
       })
       .map(point => ({
         ...point,
-        apy: point.apy * 100, // Convert from decimal to percentage (0.1071 -> 10.71)
-        tvl: point.tvl
+        apy: parseFloat(((point.apy as number) * 100).toFixed(2)), // Convert decimal to percentage: 0.0438 -> 4.38
+        tvl: parseFloat((point.tvl as number).toFixed(2)), // Ensure clean numbers
+        timestamp: point.timestamp,
+        date: point.date,
+        formattedDate: point.formattedDate,
+        fullDate: point.fullDate
       }));
     
     console.log('PoolChart Debug - Processed data sample:', processedData.slice(0, 2));
@@ -185,6 +193,9 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Raw data length: {historicalData?.length || 0}, Processed: {displayData.length}
             </p>
+            <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+              Sample raw data: {JSON.stringify(historicalData?.slice(0, 1))}
+            </div>
           </div>
         </CardContent>
       </Card>
