@@ -70,7 +70,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="flex items-center space-x-4 min-w-0 flex-1">
             {/* Subcategory Icon and Pool Name together - moved to leftmost position */}
             <div className="flex items-center space-x-3 min-w-0 flex-1">
-              <div className="flex items-center justify-center flex-shrink-0 w-6 h-6">
+              <div className="flex items-center justify-center flex-shrink-0 w-8 h-8">
                 {opportunity.categories && opportunity.categories.length > 0 && (() => {
                   // Check all categories for USDC or stETH, not just the first one
                   const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
@@ -81,7 +81,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       <img 
                         src="/public-objects/images/a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png"
                         alt="USDC"
-                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        className="w-8 h-8 flex-shrink-0 rounded-full"
                         data-testid={`logo-usdc-${opportunity.id}`}
                       />
                     );
@@ -90,7 +90,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       <img 
                         src="/public-objects/images/ae7ab96520de3a18e5e111b5eaab095312d7fe84.png"
                         alt="stETH"
-                        className="w-6 h-6 flex-shrink-0 rounded-full"
+                        className="w-8 h-8 flex-shrink-0 rounded-full"
                         data-testid={`logo-steth-${opportunity.id}`}
                       />
                     );
@@ -98,7 +98,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   
                   // Fall back to SVG icons for other categories
                   const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
-                  return <CategoryIcon size={24} className="flex-shrink-0" />;
+                  return <CategoryIcon size={32} className="flex-shrink-0" />;
                 })()}
               </div>
               
@@ -111,15 +111,18 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Protocol info - center aligned */}
             <div className="flex items-center justify-center space-x-2 flex-shrink-0">
-              <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
                   <img 
                     src={opportunity.platform.logoUrl} 
                     alt={opportunity.platform.displayName}
                     className="w-full h-full object-cover rounded-full"
+                    data-testid={`logo-platform-${opportunity.platform.name.toLowerCase()}`}
                   />
                 ) : (
-                  <div className="w-4 h-4 bg-muted rounded-full"></div>
+                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
+                    {getPlatformInitials(opportunity.platform.displayName)}
+                  </div>
                 )}
               </div>
               <span className="text-sm font-medium text-muted-foreground text-center">
