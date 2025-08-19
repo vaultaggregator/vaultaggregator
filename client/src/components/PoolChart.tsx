@@ -47,7 +47,7 @@ const timeRangeConfigs = {
   '1M': { days: 30, label: '1M' },
   '3M': { days: 90, label: '3M' },
   '1Y': { days: 365, label: '1Y' },
-  'Max': { days: 730, label: 'Max' } // 2 years
+  'Max': { days: 1000, label: 'Max' } // Request enough days to get full history
 };
 
 export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className }: PoolChartProps) {

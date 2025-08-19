@@ -81,7 +81,7 @@ export class MorphoHistoricalService {
     }
   }
 
-  async storeHistoricalData(poolId: string, vaultAddress: string, days: number = 90): Promise<void> {
+  async storeHistoricalData(poolId: string, vaultAddress: string, days: number = 600): Promise<void> {
     try {
       const endTimestamp = Math.floor(Date.now() / 1000);
       const startTimestamp = endTimestamp - (days * 24 * 60 * 60);
