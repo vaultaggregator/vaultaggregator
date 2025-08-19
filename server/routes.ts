@@ -1050,6 +1050,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 symbol: 'MEV',
                 name: 'MEV Capital USDC',
                 address: '0xd63070114470f685b75B74D60EEc7c1113d33a3D'
+              },
+              '0xbeefff209270748ddd194831b3fa287a5386f5bc': {
+                tokenPair: 'MetaMorpho Vault',
+                symbol: 'MetaMorpho',
+                name: 'MetaMorpho Vault',
+                address: '0xBEeFFF209270748ddd194831b3fa287a5386f5bC'
               }
             };
             
@@ -1063,8 +1069,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else {
               // Final fallback: Use Etherscan to get basic contract info
               try {
+                const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
                 const etherscanResponse = await fetch(
-                  `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=YourApiKeyToken`
+                  `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
                 );
                 
                 if (etherscanResponse.ok) {
@@ -1111,8 +1118,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Generic Ethereum contract lookup using external service
         try {
           // Try to get basic contract information from Etherscan
+          const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
           const response = await fetch(
-            `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=YourApiKeyToken`
+            `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
           );
           
           if (response.ok) {
