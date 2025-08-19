@@ -481,7 +481,7 @@ export default function PoolDetail() {
               ) : (
                 <>
                   <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
-                    {morphoApyData?.apy?.current ? `${(parseFloat(morphoApyData.apy.current) * 100).toFixed(2)}%` : formatApy(pool.apy)}
+                    {formatApy(pool.apy)}
                   </p>
                   <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Current APY</p>
                 </>
