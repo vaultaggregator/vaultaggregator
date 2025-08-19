@@ -39,17 +39,11 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
-
-
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />
 
-      <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
-      <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
-      <Route path="/pools/:poolId" component={PoolDetail} /> {/* Pools (plural) support */}
-      <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support */}
-
+      {/* Admin routes MUST come before the catch-all pool route */}
       <Route path="/admin/healing" component={HealingDashboard} />
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin-login" component={AdminLogin} />
@@ -60,13 +54,18 @@ function Router() {
       <Route path="/admin/panel" component={AdminPanel} />
       <Route path="/admin/pools" component={AdminPools} />
       <Route path="/admin-pools" component={AdminPools} />
-
       <Route path="/admin-networks" component={AdminNetworks} />
       <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route path="/admin-categories" component={AdminCategories} />
       <Route path="/admin-api-keys" component={AdminApiKeys} />
       <Route path="/admin-logo-management" component={AdminLogoManagement} />
       <Route path="/admin-errors" component={AdminErrors} />
+
+      {/* Pool detail routes - these must come AFTER admin routes */}
+      <Route path="/yield/:network/:protocol/:poolId/:slug?" component={PoolDetail} />
+      <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy support */}
+      <Route path="/pools/:poolId" component={PoolDetail} /> {/* Pools (plural) support */}
+      <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support - MUST be last */}
       <Route component={NotFound} />
     </Switch>
   );
