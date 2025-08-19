@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Plus, Settings, Database, Trash2, Edit, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Plus, Settings, Database, Trash2, Edit, Eye, EyeOff, PlayCircle, PauseCircle } from "lucide-react";
 import AdminHeader from "@/components/admin-header";
 
 interface Platform {
@@ -91,6 +92,7 @@ export default function AdminPools() {
   const { toast } = useToast();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingPool, setEditingPool] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"active" | "deactivated">("active");
   const [formData, setFormData] = useState<CreatePoolForm>({
     platformId: "",
     chainId: "",
@@ -298,6 +300,10 @@ export default function AdminPools() {
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
+
+  // Filter pools by active status
+  const activePools = pools.filter(pool => pool.isActive);
+  const deactivatedPools = pools.filter(pool => !pool.isActive);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -544,13 +550,13 @@ export default function AdminPools() {
           </Card>
         )}
 
-        {/* Pools List */}
+        {/* Pools List with Tabs */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
                 <Settings className="w-5 h-5 mr-2 text-blue-600" />
-                Existing Pools ({pools.length})
+                Pool Management ({pools.length} total)
               </span>
             </CardTitle>
             <CardDescription>
@@ -563,98 +569,221 @@ export default function AdminPools() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 <span className="ml-3">Loading pools...</span>
               </div>
-            ) : pools.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400">No pools found</p>
-              </div>
             ) : (
-              <div className="space-y-4">
-                {pools.map((pool) => (
-                  <div key={pool.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-2">
-                          <h3 className="font-semibold text-lg">{pool.tokenPair}</h3>
-                          <Badge className={getRiskColor(pool.riskLevel)}>
-                            {pool.riskLevel.toUpperCase()}
-                          </Badge>
-                          <span className="text-sm text-gray-500">
-                            {pool.platform.displayName} • {pool.chain.displayName}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-500">APY:</span>
-                            <span className="ml-2 font-medium">{formatApy(pool.apy)}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">TVL:</span>
-                            <span className="ml-2 font-medium">{formatValue(pool.tvl)}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Pool Address:</span>
-                            <span className="ml-2 font-mono text-xs">{pool.poolAddress || 'N/A'}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Project:</span>
-                            <span className="ml-2 font-medium">{pool.project || 'N/A'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        {/* Quick toggles */}
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleQuickToggle(pool.id, 'isVisible', !pool.isVisible)}
-                            data-testid={`button-toggle-visibility-${pool.id}`}
-                          >
-                            {pool.isVisible ? (
-                              <Eye className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <EyeOff className="w-4 h-4 text-gray-400" />
-                            )}
-                          </Button>
-                          
-                          <Switch
-                            checked={pool.isActive}
-                            onCheckedChange={(checked) => handleQuickToggle(pool.id, 'isActive', checked)}
-                            data-testid={`switch-active-${pool.id}`}
-                          />
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingPool(pool.id)}
-                            data-testid={`button-edit-${pool.id}`}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (confirm('Are you sure you want to delete this pool?')) {
-                                deletePoolMutation.mutate(pool.id);
-                              }
-                            }}
-                            className="text-red-600 hover:text-red-700"
-                            data-testid={`button-delete-${pool.id}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "active" | "deactivated")} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="active" className="flex items-center gap-2">
+                    <PlayCircle className="w-4 h-4" />
+                    Active Pools ({activePools.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="deactivated" className="flex items-center gap-2">
+                    <PauseCircle className="w-4 h-4" />
+                    Deactivated Pools ({deactivatedPools.length})
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="active" className="mt-6">
+                  {activePools.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 dark:text-gray-400">No active pools found</p>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {activePools.map((pool) => (
+                        <div key={pool.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-4 mb-2">
+                                <h3 className="font-semibold text-lg">{pool.tokenPair}</h3>
+                                <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                  ACTIVE
+                                </Badge>
+                                <Badge className={getRiskColor(pool.riskLevel)}>
+                                  {pool.riskLevel.toUpperCase()}
+                                </Badge>
+                                <span className="text-sm text-gray-500">
+                                  {pool.platform.displayName} • {pool.chain.displayName}
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <span className="text-gray-500">APY:</span>
+                                  <span className="ml-2 font-medium">{formatApy(pool.apy)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">TVL:</span>
+                                  <span className="ml-2 font-medium">{formatValue(pool.tvl)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Pool Address:</span>
+                                  <span className="ml-2 font-mono text-xs">{pool.poolAddress || 'N/A'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Updated:</span>
+                                  <span className="ml-2">{new Date(pool.lastUpdated).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 mt-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500">Visible:</span>
+                                  <Switch 
+                                    checked={pool.isVisible}
+                                    onCheckedChange={(checked) => handleQuickToggle(pool.id, 'isVisible', checked)}
+                                    disabled={updatePoolMutation.isPending}
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500">USD Flow:</span>
+                                  <Switch 
+                                    checked={pool.showUsdInFlow}
+                                    onCheckedChange={(checked) => handleQuickToggle(pool.id, 'showUsdInFlow', checked)}
+                                    disabled={updatePoolMutation.isPending}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 ml-4">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleQuickToggle(pool.id, 'isActive', false)}
+                                disabled={updatePoolMutation.isPending}
+                                className="text-orange-600 hover:text-orange-700"
+                                data-testid={`button-deactivate-${pool.tokenPair}`}
+                              >
+                                <PauseCircle className="w-4 h-4" />
+                                Deactivate
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingPool(pool.id)}
+                                data-testid={`button-edit-${pool.tokenPair}`}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deletePoolMutation.mutate(pool.id)}
+                                disabled={deletePoolMutation.isPending}
+                                className="text-red-600 hover:text-red-700"
+                                data-testid={`button-delete-${pool.tokenPair}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="deactivated" className="mt-6">
+                  {deactivatedPools.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 dark:text-gray-400">No deactivated pools found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {deactivatedPools.map((pool) => (
+                        <div key={pool.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50 opacity-75">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-4 mb-2">
+                                <h3 className="font-semibold text-lg text-gray-600 dark:text-gray-400">{pool.tokenPair}</h3>
+                                <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                  DEACTIVATED
+                                </Badge>
+                                <Badge className={getRiskColor(pool.riskLevel)}>
+                                  {pool.riskLevel.toUpperCase()}
+                                </Badge>
+                                <span className="text-sm text-gray-500">
+                                  {pool.platform.displayName} • {pool.chain.displayName}
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                <div>
+                                  <span className="text-gray-500">APY:</span>
+                                  <span className="ml-2 font-medium">{formatApy(pool.apy)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">TVL:</span>
+                                  <span className="ml-2 font-medium">{formatValue(pool.tvl)}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Pool Address:</span>
+                                  <span className="ml-2 font-mono text-xs">{pool.poolAddress || 'N/A'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Updated:</span>
+                                  <span className="ml-2">{new Date(pool.lastUpdated).toLocaleDateString()}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-4 mt-3 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500">Visible:</span>
+                                  <Switch 
+                                    checked={pool.isVisible}
+                                    onCheckedChange={(checked) => handleQuickToggle(pool.id, 'isVisible', checked)}
+                                    disabled={updatePoolMutation.isPending}
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500">USD Flow:</span>
+                                  <Switch 
+                                    checked={pool.showUsdInFlow}
+                                    onCheckedChange={(checked) => handleQuickToggle(pool.id, 'showUsdInFlow', checked)}
+                                    disabled={updatePoolMutation.isPending}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 ml-4">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleQuickToggle(pool.id, 'isActive', true)}
+                                disabled={updatePoolMutation.isPending}
+                                className="text-green-600 hover:text-green-700"
+                                data-testid={`button-reactivate-${pool.tokenPair}`}
+                              >
+                                <PlayCircle className="w-4 h-4" />
+                                Reactivate
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingPool(pool.id)}
+                                data-testid={`button-edit-${pool.tokenPair}`}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deletePoolMutation.mutate(pool.id)}
+                                disabled={deletePoolMutation.isPending}
+                                className="text-red-600 hover:text-red-700"
+                                data-testid={`button-delete-${pool.tokenPair}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>

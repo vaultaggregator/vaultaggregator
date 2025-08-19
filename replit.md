@@ -12,6 +12,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - **Clean architecture**: All associated data properly cleaned up with no orphaned records
 - **Caching system removal**: All caching mechanisms completely disabled - frontend TanStack Query, backend services, and HTTP cache headers (August 18, 2025)
 - **Admin interface cleanup**: Removed cache management tab and all cache-related admin functionality (August 18, 2025)
+- **Enhanced Pool Management**: Tabbed interface with separate "Active Pools" and "Deactivated Pools" tabs for better organization and management (August 19, 2025)
 
 # User Preferences
 
