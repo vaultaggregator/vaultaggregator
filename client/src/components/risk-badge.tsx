@@ -88,6 +88,7 @@ export function RiskBadge({
         riskData.color.text,
         riskData.color.background, 
         riskData.color.border,
+        "whitespace-nowrap", // Ensure text stays on one line
         className
       )}
       data-testid="risk-badge"
