@@ -163,7 +163,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
             <div className="text-center">
-              <p className="text-base font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+              <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                 {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
               </p>
             </div>
@@ -206,7 +206,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">24h APY</p>
                   </div>
-                  <p className="text-base font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
+                  <p className="text-lg font-bold text-green-600" data-testid={`text-apy-${opportunity.id}`}>
                     {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                   </p>
                 </div>
