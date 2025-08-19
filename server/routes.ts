@@ -34,8 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const databaseOnlyRoutes = (await import("./routes/database-only-routes")).default;
   app.use('/api', databaseOnlyRoutes);
   
-  // Import image localization service
-  const { imageLocalizationService } = await import("./services/imageLocalizationService");
+
   // Session configuration
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here',
@@ -821,78 +820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Image Localization API Endpoints
-  app.post("/api/admin/images/localize-all", requireAuth, async (req, res) => {
-    try {
-      console.log('📸 Starting complete image localization process...');
-      await imageLocalizationService.localizeAllImages();
-      
-      res.json({ 
-        success: true, 
-        message: "All external images have been downloaded and stored locally" 
-      });
-    } catch (error) {
-      console.error("Error localizing all images:", error);
-      res.status(500).json({ 
-        error: "Failed to localize images",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
 
-  app.post("/api/admin/images/localize-platforms", requireAuth, async (req, res) => {
-    try {
-      console.log('📸 Localizing platform images...');
-      await imageLocalizationService.localizePlatformImages();
-      
-      res.json({ 
-        success: true, 
-        message: "Platform logos have been downloaded and stored locally" 
-      });
-    } catch (error) {
-      console.error("Error localizing platform images:", error);
-      res.status(500).json({ 
-        error: "Failed to localize platform images",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/admin/images/localize-categories", requireAuth, async (req, res) => {
-    try {
-      console.log('📸 Localizing category images...');
-      await imageLocalizationService.localizeCategoryImages();
-      
-      res.json({ 
-        success: true, 
-        message: "Category icons have been downloaded and stored locally" 
-      });
-    } catch (error) {
-      console.error("Error localizing category images:", error);
-      res.status(500).json({ 
-        error: "Failed to localize category images",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  app.post("/api/admin/images/localize-chains", requireAuth, async (req, res) => {
-    try {
-      console.log('📸 Localizing chain images...');
-      await imageLocalizationService.localizeChainImages();
-      
-      res.json({ 
-        success: true, 
-        message: "Chain icons have been downloaded and stored locally" 
-      });
-    } catch (error) {
-      console.error("Error localizing chain images:", error);
-      res.status(500).json({ 
-        error: "Failed to localize chain images",
-        details: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
 
   // Manual sync endpoints for admin use
 
@@ -1094,50 +1022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image localization endpoints
-  app.post("/api/admin/images/localize-all", requireAuth, async (req, res) => {
-    try {
-      const { imageLocalizationService } = await import('./services/imageLocalizationService');
-      await imageLocalizationService.localizeAllImages();
-      res.json({ message: "All images localized successfully" });
-    } catch (error) {
-      console.error("Error localizing images:", error);
-      res.status(500).json({ message: "Failed to localize images" });
-    }
-  });
 
-  app.post("/api/admin/images/localize-platforms", requireAuth, async (req, res) => {
-    try {
-      const { imageLocalizationService } = await import('./services/imageLocalizationService');
-      await imageLocalizationService.localizePlatformImages();
-      res.json({ message: "Platform images localized successfully" });
-    } catch (error) {
-      console.error("Error localizing platform images:", error);
-      res.status(500).json({ message: "Failed to localize platform images" });
-    }
-  });
-
-  app.post("/api/admin/images/localize-chains", requireAuth, async (req, res) => {
-    try {
-      const { imageLocalizationService } = await import('./services/imageLocalizationService');
-      await imageLocalizationService.localizeChainImages();
-      res.json({ message: "Chain images localized successfully" });
-    } catch (error) {
-      console.error("Error localizing chain images:", error);
-      res.status(500).json({ message: "Failed to localize chain images" });
-    }
-  });
-
-  app.post("/api/admin/images/localize-categories", requireAuth, async (req, res) => {
-    try {
-      const { imageLocalizationService } = await import('./services/imageLocalizationService');
-      await imageLocalizationService.localizeCategoryImages();
-      res.json({ message: "Category images localized successfully" });
-    } catch (error) {
-      console.error("Error localizing category images:", error);
-      res.status(500).json({ message: "Failed to localize category images" });
-    }
-  });
 
   app.post("/api/admin/trash/:id/restore", requireAuth, async (req, res) => {
     try {

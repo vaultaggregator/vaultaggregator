@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers, Image } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers } from "lucide-react";
+import { useAuth, type User } from "@/hooks/useAuth";
 
 export function AdminHeader() {
   const [location] = useLocation();
@@ -21,7 +21,7 @@ export function AdminHeader() {
     { path: "/admin", icon: BarChart3, label: "Dashboard" },
     { path: "/admin/system", icon: Monitor, label: "System", highlight: "system" },
     { path: "/admin/pools", icon: Layers, label: "Pool Management" },
-    { path: "/admin/images", icon: Image, label: "Image Localization" },
+
     { path: "/admin-platforms", icon: Database, label: "Platforms" },
     { path: "/admin-networks", icon: Settings, label: "Networks" },
     { path: "/admin-categories", icon: Tag, label: "Categories" },
@@ -94,7 +94,9 @@ export function AdminHeader() {
             {user && (
               <div className="flex items-center space-x-3">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{(user as any).username || 'Admin'}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {(user as User)?.username || 'Admin'}
+                  </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
                 </div>
                 <Button

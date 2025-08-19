@@ -15,6 +15,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform that helps use
 - **Enhanced Pool Management**: Tabbed interface with separate "Active Pools" and "Deactivated Pools" tabs for better organization and management (August 19, 2025)
 - **Complete Trash Bin System**: Comprehensive soft deletion with 60-day automatic cleanup, dedicated "Trash Bin" tab, restore functionality, and permanent delete operations with proper database foreign key handling (August 19, 2025)
 - **Complete Image Localization System**: All external images (platform logos, category icons) downloaded and stored locally in object storage, eliminating dependency on external image hosts including DeFiLlama icons (August 19, 2025)
+- **Admin Interface Cleanup**: Removed Image Localization admin tab and manual controls while preserving automatic background localization functionality (August 19, 2025)
 
 # User Preferences
 

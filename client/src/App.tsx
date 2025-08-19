@@ -27,7 +27,7 @@ import AdminErrors from "@/pages/admin-errors";
 import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
 import AdminPools from "@/pages/admin-pools";
-import AdminImageLocalization from "@/pages/admin-image-localization";
+
 
 
 import HealingDashboard from "@/pages/healing-dashboard";
@@ -60,7 +60,7 @@ function Router() {
       <Route path="/admin/panel" component={AdminPanel} />
       <Route path="/admin/pools" component={AdminPools} />
       <Route path="/admin-pools" component={AdminPools} />
-      <Route path="/admin/images" component={AdminImageLocalization} />
+
       <Route path="/admin-networks" component={AdminNetworks} />
       <Route path="/admin-platforms" component={AdminPlatforms} />
       <Route path="/admin-categories" component={AdminCategories} />
