@@ -76,12 +76,9 @@ interface CreatePoolForm {
   platformId: string;
   chainId: string;
   tokenPair: string;
-  apy: string;
-  tvl: string;
   riskLevel: string;
   poolAddress: string;
   defiLlamaId: string;
-  project: string;
   showUsdInFlow: boolean;
   isVisible: boolean;
   isActive: boolean;
@@ -97,12 +94,9 @@ export default function AdminPools() {
     platformId: "",
     chainId: "",
     tokenPair: "",
-    apy: "",
-    tvl: "",
     riskLevel: "medium",
     poolAddress: "",
     defiLlamaId: "",
-    project: "",
     showUsdInFlow: false,
     isVisible: true,
     isActive: true,
@@ -428,31 +422,7 @@ export default function AdminPools() {
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Financial Data</h3>
                     
-                    <div>
-                      <Label htmlFor="apy" className="text-sm font-medium">APY (%)</Label>
-                      <Input
-                        id="apy"
-                        type="number"
-                        step="0.01"
-                        value={formData.apy}
-                        onChange={(e) => setFormData(prev => ({ ...prev, apy: e.target.value }))}
-                        placeholder="e.g., 4.49"
-                        data-testid="input-apy"
-                      />
-                    </div>
 
-                    <div>
-                      <Label htmlFor="tvl" className="text-sm font-medium">TVL (USD)</Label>
-                      <Input
-                        id="tvl"
-                        type="number"
-                        step="0.01"
-                        value={formData.tvl}
-                        onChange={(e) => setFormData(prev => ({ ...prev, tvl: e.target.value }))}
-                        placeholder="e.g., 314000000"
-                        data-testid="input-tvl"
-                      />
-                    </div>
 
                     <div>
                       <Label htmlFor="poolAddress" className="text-sm font-medium">Pool Address</Label>
@@ -476,16 +446,7 @@ export default function AdminPools() {
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="project" className="text-sm font-medium">Project/Source</Label>
-                      <Input
-                        id="project"
-                        value={formData.project}
-                        onChange={(e) => setFormData(prev => ({ ...prev, project: e.target.value }))}
-                        placeholder="e.g., morpho-blue, lido"
-                        data-testid="input-project"
-                      />
-                    </div>
+
                   </div>
                 </div>
 
