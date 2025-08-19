@@ -17,6 +17,7 @@ import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { TokenInfo } from "@/components/token-info";
+import { PoolChart } from "@/components/PoolChart";
 
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
@@ -527,6 +528,17 @@ export default function PoolDetail() {
             </CardContent>
           </Card>
 
+        </div>
+
+        {/* Interactive Chart - CoinGecko Style */}
+        <div className="mb-8">
+          <PoolChart
+            poolId={pool.id}
+            currentApy={parseFloat(pool.apy) || 0}
+            currentTvl={parseFloat(pool.tvl) || 0}
+            tokenPair={pool.tokenPair}
+            className="w-full"
+          />
         </div>
 
         {/* Secondary Metrics */}
