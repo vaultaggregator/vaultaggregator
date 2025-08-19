@@ -1980,9 +1980,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register market intelligence routes
 
-  // Start data sync scheduler
-  const { startScheduler } = await import('./services/scheduler');
-  startScheduler();
+  // Comprehensive scheduler disabled - using database scheduler instead for efficiency
 
   // Admin Error Management Routes
   const adminErrorsRouter = (await import("./routes/admin-errors")).default;

@@ -162,7 +162,7 @@ export function stopScheduler(): void {
   console.log("✅ Scheduler stopped");
 }
 
-// Start scheduler automatically when module is imported
-if (process.env.NODE_ENV !== 'test') {
-  startScheduler();
-}
+// Auto-start disabled - using database scheduler instead for efficiency
+// if (process.env.NODE_ENV !== 'test') {
+//   startScheduler();
+// }
