@@ -709,8 +709,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
       .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
       .leftJoin(tokenInfo, eq(pools.tokenInfoId, tokenInfo.id))
-      .where(eq(pools.isActive, true))
-      .orderBy(desc(pools.isVisible), desc(pools.apy));
+      .orderBy(desc(pools.isActive), desc(pools.isVisible), desc(pools.apy));
 
     // Group results by pool to handle multiple notes and categories
     const poolsMap = new Map<string, PoolWithRelations>();
