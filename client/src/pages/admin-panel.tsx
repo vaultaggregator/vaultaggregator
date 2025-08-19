@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, Settings, DollarSign, Eye, EyeOff } from "lucide-react";
+import AdminHeader from "@/components/admin-header";
 
 interface Pool {
   id: string;
@@ -37,10 +38,7 @@ export default function AdminPanel() {
 
   const updatePoolMutation = useMutation({
     mutationFn: async ({ poolId, updates }: { poolId: string; updates: Partial<Pool> }) => {
-      await apiRequest(`/api/admin/pools/${poolId}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates),
-      });
+      await apiRequest(`/api/admin/pools/${poolId}`, "PATCH", updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
@@ -85,7 +83,9 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <AdminHeader />
+      <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
@@ -222,6 +222,7 @@ export default function AdminPanel() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

@@ -20,7 +20,7 @@ import {
   Monitor
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AdminHeader } from "@/components/admin-header";
+import AdminHeader from "@/components/admin-header";
 
 interface SystemHealth {
   overall: 'healthy' | 'degraded' | 'down';
