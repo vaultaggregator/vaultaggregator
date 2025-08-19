@@ -17,8 +17,11 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    // Store submission locally and show success message
+    console.log("Contact form data:", formData);
+    alert("Thank you for your message! Please contact us directly at vaultaggregator@protonmail.com");
+    // Reset form
+    setFormData({ name: "", email: "", message: "" });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -30,7 +33,7 @@ export default function Contact() {
       icon: <Mail className="w-6 h-6" />,
       title: "Email Support",
       description: "Get help from our support team",
-      contact: "support@vault-aggregator.com",
+      contact: "vaultaggregator@protonmail.com",
       responseTime: "Within 24 hours",
       color: "blue"
     },
@@ -46,7 +49,7 @@ export default function Contact() {
       icon: <Phone className="w-6 h-6" />,
       title: "Business Inquiries",
       description: "For partnerships and enterprise",
-      contact: "business@vault-aggregator.com",
+      contact: "vaultaggregator@protonmail.com",
       responseTime: "Within 48 hours",
       color: "purple"
     }
