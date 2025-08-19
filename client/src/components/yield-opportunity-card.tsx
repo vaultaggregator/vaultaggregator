@@ -41,9 +41,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
 
   const getRiskColor = (riskLevel: string) => {
     switch (riskLevel) {
-      case 'low': return 'bg-green-100 dark:bg-accent-secondary/20 text-green-800 dark:text-accent-secondary border border-green-200 dark:border-accent-secondary/30';
-      case 'medium': return 'bg-yellow-100 dark:bg-accent-warning/20 text-yellow-800 dark:text-accent-warning border border-yellow-200 dark:border-accent-warning/30';
-      case 'high': return 'bg-red-100 dark:bg-destructive/20 text-red-800 dark:text-destructive border border-red-200 dark:border-destructive/30';
+      case 'low': return 'bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-100 border border-green-200 dark:border-green-800';
+      case 'medium': return 'bg-yellow-100 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100 border border-yellow-200 dark:border-yellow-800';
+      case 'high': return 'bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-100 border border-red-200 dark:border-red-800';
       default: return 'bg-muted text-muted-foreground border border-border';
     }
   };
