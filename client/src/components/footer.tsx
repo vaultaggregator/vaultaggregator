@@ -55,7 +55,11 @@ export default function Footer() {
           <div className="text-center">
             <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-gray-400">
-
+              <li>
+                <Link href="/risk-calculation" className="hover:text-white transition-colors duration-200" data-testid="link-risk-calculation">
+                  How Risk is Calculated
+                </Link>
+              </li>
               <li>
                 <Link href="/contact" className="hover:text-white transition-colors duration-200" data-testid="link-contact">
                   Contact Us

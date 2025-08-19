@@ -303,10 +303,7 @@ export default function PoolDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header 
-          onAdminClick={() => {}} 
-          websocketStatus={{ isConnected, lastUpdate }}
-        />
+        <Header onAdminClick={() => {}} />
         <div className="py-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <CryptoLoader message="Loading pool details and market data..." />
@@ -320,10 +317,7 @@ export default function PoolDetail() {
   if (error || !pool) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header 
-          onAdminClick={() => {}} 
-          websocketStatus={{ isConnected, lastUpdate }}
-        />
+        <Header onAdminClick={() => {}} />
         <div className="py-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/">
@@ -347,10 +341,7 @@ export default function PoolDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header 
-        onAdminClick={() => {}} 
-        websocketStatus={{ isConnected, lastUpdate }}
-      />
+      <Header onAdminClick={() => {}} />
       
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
       <div className="py-8">

@@ -3,17 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Menu, BarChart3, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { WebSocketStatus } from "@/components/websocket-status";
+
 
 interface HeaderProps {
   onAdminClick?: () => void;
-  websocketStatus?: {
-    isConnected: boolean;
-    lastUpdate: number | null;
-  };
 }
 
-export default function Header({ onAdminClick = () => {}, websocketStatus }: HeaderProps) {
+export default function Header({ onAdminClick = () => {} }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -41,7 +37,6 @@ export default function Header({ onAdminClick = () => {}, websocketStatus }: Hea
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            <WebSocketStatus variant="compact" className="hidden sm:flex" />
             <ThemeToggle />
             {/* Mobile Menu Button */}
             <button 

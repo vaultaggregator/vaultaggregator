@@ -157,9 +157,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           </div>
 
           {/* Desktop grid layout - matches header structure */}
-          <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
+          <div className="hidden sm:grid sm:grid-cols-9 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
-            <div className="text-center">
+            <div className="col-span-2 text-center">
               <AnimatedValue
                 value={opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
                 className="text-lg font-bold text-green-600"

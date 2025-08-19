@@ -153,10 +153,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header 
-        onAdminClick={() => {}} 
-        websocketStatus={{ isConnected, lastUpdate }}
-      />
+      <Header onAdminClick={() => {}} />
       <HeroSection />
       <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
@@ -191,8 +188,8 @@ export default function Home() {
               </div>
 
               {/* Metrics section - exactly matches card grid */}
-              <div className="hidden sm:grid sm:grid-cols-8 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
-                <div className="text-center">
+              <div className="hidden sm:grid sm:grid-cols-9 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
+                <div className="col-span-2 text-center">
                   <SortHeader field="apy">
                     <span className="text-sm font-semibold text-foreground">APY</span>
                   </SortHeader>
