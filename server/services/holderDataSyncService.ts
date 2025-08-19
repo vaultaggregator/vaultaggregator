@@ -180,6 +180,59 @@ export class HolderDataSyncService {
       };
 
       await storage.storeHolderHistory(holderData);
+      
+      // Also update or create tokenInfo with the holder count
+      try {
+        const existingTokenInfo = await storage.getTokenInfoByAddress(tokenAddress);
+        if (existingTokenInfo) {
+          // Update existing tokenInfo with new holder count
+          await storage.updateTokenInfo(tokenAddress, {
+            holdersCount: finalHoldersCount,
+            lastUpdated: new Date()
+          });
+          console.log(`Updated tokenInfo holder count for ${tokenAddress}: ${finalHoldersCount} holders`);
+        } else {
+          // Create new tokenInfo record
+          await storage.upsertTokenInfo(tokenAddress, {
+            address: tokenAddress,
+            holdersCount: finalHoldersCount,
+            lastUpdated: new Date(),
+            createdAt: new Date()
+          });
+          console.log(`Created tokenInfo with holder count for ${tokenAddress}: ${finalHoldersCount} holders`);
+        }
+        
+        // Also update any pools that use this token address to link to the tokenInfo
+        try {
+          const poolsToUpdate = await db
+            .select()
+            .from(pools)
+            .where(and(
+              eq(pools.poolAddress, tokenAddress),
+              isNull(pools.tokenInfoId)
+            ));
+          
+          if (poolsToUpdate.length > 0) {
+            const tokenInfoRecord = await storage.getTokenInfoByAddress(tokenAddress);
+            if (tokenInfoRecord) {
+              for (const pool of poolsToUpdate) {
+                await db
+                  .update(pools)
+                  .set({ tokenInfoId: tokenInfoRecord.id })
+                  .where(eq(pools.id, pool.id));
+                console.log(`🔗 Linked pool ${pool.tokenPair} to tokenInfo for immediate holder data display`);
+              }
+            }
+          }
+        } catch (linkError) {
+          console.error(`Failed to link pools to tokenInfo for ${tokenAddress}:`, linkError);
+        }
+        
+      } catch (tokenInfoError) {
+        console.error(`Failed to update tokenInfo for ${tokenAddress}:`, tokenInfoError);
+        // Don't fail the entire sync if tokenInfo update fails
+      }
+      
       console.log(`Successfully synced holder data for ${tokenAddress}: ${finalHoldersCount} holders`);
 
     } catch (error) {
