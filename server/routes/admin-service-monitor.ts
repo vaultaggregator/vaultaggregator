@@ -342,10 +342,17 @@ router.post('/:serviceId/trigger', async (req, res) => {
           break;
           
         case 'token-info-sync':
-          // Import and trigger token info sync
+          // Import and trigger token info sync via service
           try {
-            const { syncTokenInfo } = await import('../scripts/syncTokenInfo');
-            await syncTokenInfo();
+            const { TokenInfoSyncService } = await import('../services/tokenInfoSyncService');
+            const tokenService = new TokenInfoSyncService();
+            
+            // Get all active pools and sync their token info
+            const pools = await storage.getPools({ limit: 100 });
+            const promises = pools.map(pool => 
+              tokenService.syncTokenInfo(pool.id, pool.rawData)
+            );
+            await Promise.allSettled(promises);
             result = { success: true, message: 'Token info sync triggered successfully' };
           } catch (err) {
             console.error('Token info sync error:', err);
@@ -404,7 +411,8 @@ router.post('/:serviceId/trigger', async (req, res) => {
             for (const error of recentErrors.rows) {
               try {
                 // Mark error as resolved if it's from services that might have recovered
-                if (error.source?.includes('Service') || error.source?.includes('sync')) {
+                const errorSource = String(error.source || '');
+                if (errorSource.includes('Service') || errorSource.includes('sync')) {
                   await db.execute(sql`
                     UPDATE error_logs 
                     SET is_resolved = true, resolved_at = NOW(), resolved_by = 'AutoHealing'
