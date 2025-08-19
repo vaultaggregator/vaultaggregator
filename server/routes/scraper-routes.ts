@@ -81,52 +81,6 @@ router.get('/scrapers/platforms', (req, res) => {
 
 // ===== MORPHO PLATFORM ENDPOINTS =====
 
-// Get Morpho APY
-router.get('/scrape/morpho/apy', async (req, res) => {
-  try {
-    console.log('📊 Testing Morpho APY endpoint');
-    
-    // Try to get vault data from Morpho API
-    const vaultData = await morphoService.getVaultByAddress('0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB');
-    
-    if (vaultData && vaultData.state?.apy) {
-      res.json({
-        success: true,
-        source: 'morpho_api',
-        apy: vaultData.state.apy,
-        netApy: vaultData.state.netApy,
-        vaultAddress: vaultData.address,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      // Try to get from database as fallback
-      const pools = await storage.getPools({ onlyVisible: true });
-      const morphoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'morpho' && p.isActive);
-      
-      if (morphoPool) {
-        res.json({
-          success: true,
-          source: 'database',
-          apy: morphoPool.apy,
-          poolId: morphoPool.id,
-          timestamp: new Date().toISOString()
-        });
-      } else {
-        res.status(404).json({
-          error: 'No Morpho APY data available',
-          message: 'Unable to fetch from API or database'
-        });
-      }
-    }
-  } catch (error) {
-    console.error('❌ Error fetching Morpho APY:', error);
-    res.status(500).json({
-      error: 'Failed to fetch Morpho APY',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
 // Get Morpho TVL
 router.get('/scrape/morpho/tvl', async (req, res) => {
   try {
@@ -147,7 +101,8 @@ router.get('/scrape/morpho/tvl', async (req, res) => {
     } else {
       // Try to get from database as fallback
       const pools = await storage.getPools({ onlyVisible: true });
-      const morphoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'morpho' && p.isActive);
+      const morphoPool = pools.find((p: PoolWithRelations) => 
+        p.platform?.name?.toLowerCase().includes('morpho') && p.isActive);
       
       if (morphoPool) {
         res.json({
@@ -180,7 +135,8 @@ router.get('/scrape/morpho/days', async (req, res) => {
     
     // Get pool data from database
     const pools = await storage.getPools({ onlyVisible: true });
-    const morphoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'morpho' && p.isActive);
+    const morphoPool = pools.find((p: PoolWithRelations) => 
+      p.platform?.name?.toLowerCase().includes('morpho') && p.isActive);
     
     if (morphoPool) {
       // Calculate days from creation date if available
@@ -217,38 +173,6 @@ router.get('/scrape/morpho/days', async (req, res) => {
 
 // ===== LIDO PLATFORM ENDPOINTS =====
 
-// Get Lido APY
-router.get('/scrape/lido/apy', async (req, res) => {
-  try {
-    console.log('📊 Testing Lido APY endpoint');
-    
-    // Get pool data from database (Lido API integration would be added here)
-    const pools = await storage.getPools({ onlyVisible: true });
-    const lidoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'lido' && p.isActive);
-    
-    if (lidoPool) {
-      res.json({
-        success: true,
-        source: 'database',
-        apy: lidoPool.apy,
-        poolId: lidoPool.id,
-        timestamp: new Date().toISOString()
-      });
-    } else {
-      res.status(404).json({
-        error: 'No Lido APY data available',
-        message: 'Unable to fetch from database'
-      });
-    }
-  } catch (error) {
-    console.error('❌ Error fetching Lido APY:', error);
-    res.status(500).json({
-      error: 'Failed to fetch Lido APY',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-});
-
 // Get Lido TVL
 router.get('/scrape/lido/tvl', async (req, res) => {
   try {
@@ -256,7 +180,8 @@ router.get('/scrape/lido/tvl', async (req, res) => {
     
     // Get pool data from database (Lido API integration would be added here)
     const pools = await storage.getPools({ onlyVisible: true });
-    const lidoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'lido' && p.isActive);
+    const lidoPool = pools.find((p: PoolWithRelations) => 
+      p.platform?.name?.toLowerCase().includes('lido') && p.isActive);
     
     if (lidoPool) {
       res.json({
@@ -288,7 +213,8 @@ router.get('/scrape/lido/days', async (req, res) => {
     
     // Get pool data from database
     const pools = await storage.getPools({ onlyVisible: true });
-    const lidoPool = pools.find((p: PoolWithRelations) => p.platform?.name === 'lido' && p.isActive);
+    const lidoPool = pools.find((p: PoolWithRelations) => 
+      p.platform?.name?.toLowerCase().includes('lido') && p.isActive);
     
     if (lidoPool) {
       // Calculate days from creation date if available
