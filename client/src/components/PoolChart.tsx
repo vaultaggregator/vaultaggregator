@@ -139,7 +139,9 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
       totalPoints: processedData.length,
       firstThreeProcessed: processedData.slice(0, 3).map(p => ({ apy: p.apy, tvl: p.tvl }))
     });
-    return processedData;
+    
+    // Reverse the data order to show most recent data on the left (horizontal inversion)
+    return processedData.reverse();
   }, [historicalData]);
 
   // Calculate statistics
@@ -539,7 +541,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
             <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
               {displayData.length > 0 && (
                 <span>
-                  {displayData[0].formattedDate} → {displayData[displayData.length - 1].formattedDate}
+                  {displayData[0].formattedDate} ← {displayData[displayData.length - 1].formattedDate}
                 </span>
               )}
             </div>
