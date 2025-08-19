@@ -162,6 +162,31 @@ async function getServiceStatus(serviceId: string): Promise<Partial<ServiceStatu
       lastRun = tokenResult.rows[0]?.last_run as string || null;
       totalRuns = Number(tokenResult.rows[0]?.tokens_updated || 0);
       status = totalRuns > 0 ? 'active' : (errorCount > 0 ? 'error' : 'unknown');
+      
+    } else if (serviceId === 'historical-apy') {
+      // Check pool_historical_data for recent updates (historical APY service updates this table)
+      const histApyResult = await db.execute(sql`
+        SELECT MAX(timestamp) as last_run, COUNT(DISTINCT pool_id) as pools_updated
+        FROM pool_historical_data 
+        WHERE timestamp > NOW() - INTERVAL '1 hour'
+      `);
+      
+      lastRun = histApyResult.rows[0]?.last_run as string || null;
+      totalRuns = Number(histApyResult.rows[0]?.pools_updated || 0);
+      status = totalRuns > 0 ? 'active' : (errorCount > 0 ? 'error' : 'unknown');
+      
+    } else if (serviceId === 'error-healing') {
+      // Check error_logs for recent resolutions (error healing marks errors as resolved)
+      const healingResult = await db.execute(sql`
+        SELECT MAX(resolved_at) as last_run, COUNT(*) as errors_healed
+        FROM error_logs 
+        WHERE resolved_by = 'AutoHealing' 
+        AND resolved_at > NOW() - INTERVAL '2 hours'
+      `);
+      
+      lastRun = healingResult.rows[0]?.last_run as string || null;
+      totalRuns = Number(healingResult.rows[0]?.errors_healed || 0);
+      status = totalRuns >= 0 ? 'active' : (errorCount > 0 ? 'error' : 'unknown');
     }
 
     // Get last error message
