@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo, poolMetricsCurrent, categories, poolCategories } from "@shared/schema";
@@ -13,6 +13,9 @@ import session from "express-session";
 import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve static files from public directory (for logos, favicons, etc.)
+  app.use(express.static('public'));
+  
   // Import and register admin routes
   const { registerAdminSystemRoutes } = await import("./routes/admin-system");
   const healingRoutes = (await import("./routes/healingRoutes")).default;
