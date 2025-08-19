@@ -126,9 +126,9 @@ export default function PrivacyPolicy() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-950 dark:border-red-800">
-                <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">We Do NOT Sell Your Data</h4>
-                <p className="text-red-800 dark:text-red-200 text-sm">
+              <div className="bg-red-50 border border-red-300 rounded-lg p-4 dark:bg-red-900/30 dark:border-red-600">
+                <h4 className="font-semibold text-red-900 dark:text-red-50 mb-2">We Do NOT Sell Your Data</h4>
+                <p className="text-red-800 dark:text-red-100 text-sm">
                   Vault Aggregator does not sell, rent, or trade your personal information to third parties for marketing purposes.
                 </p>
               </div>
