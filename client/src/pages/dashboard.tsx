@@ -150,30 +150,30 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-semibold">Ethereum</p>
-                  <p className="text-sm text-gray-600">127 pools</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Ethereum</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-300">127 pools</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-green-600">$1.2B</p>
                   <Badge variant="secondary" className="text-xs">+8.3%</Badge>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-semibold">Polygon</p>
-                  <p className="text-sm text-gray-600">89 pools</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Polygon</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-300">89 pools</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-green-600">$520M</p>
                   <Badge variant="secondary" className="text-xs">+12.1%</Badge>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-semibold">Arbitrum</p>
-                  <p className="text-sm text-gray-600">64 pools</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Arbitrum</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-300">64 pools</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-green-600">$380M</p>
@@ -191,30 +191,30 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-semibold">Aave V3</p>
-                  <p className="text-sm text-gray-600">32 pools</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Aave V3</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-300">32 pools</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-blue-600">12.4%</p>
                   <Badge variant="default" className="text-xs bg-green-600">High Yield</Badge>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-semibold">Compound V3</p>
-                  <p className="text-sm text-gray-600">28 pools</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Compound V3</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-300">28 pools</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-blue-600">9.8%</p>
                   <Badge variant="secondary" className="text-xs">Stable</Badge>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div>
-                  <p className="font-semibold">Uniswap V3</p>
-                  <p className="text-sm text-gray-600">45 pools</p>
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Uniswap V3</p>
+                  <p className="text-sm text-gray-800 dark:text-gray-300">45 pools</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-blue-600">8.2%</p>
