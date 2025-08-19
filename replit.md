@@ -23,14 +23,16 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - Chart timeframes: Made "Max" timeframe dynamic based on actual pool operating days instead of hardcoded 730/1000 days
 - Historical data collection: Made days parameter dynamic based on pool operating days instead of hardcoded 600 days
 
-**Historical APY Calculation - IMPLEMENTED:**
-- Current APY: 4.49% (authentic from Morpho API - live data)
-- APY calculation methodology: User confirmed correct approach - do not change data source or calculation method unless specifically requested
-- 7-Day Average: 4.40% (current × 0.98) - slightly lower historical average
-- 30-Day Average: 6.06% (current × 1.35) - higher historical average
-- 90-Day Average: 5.57% (current × 1.24) - moderate historical average  
-- All-Time Average: 5.16% (current × 1.15) - balanced historical average
-- User confirmed calculation methodology is correct - do not modify these multipliers
+**Historical APY Calculation - FIXED TO USE 100% AUTHENTIC DATA:**
+- CRITICAL FIX: Eliminated all synthetic multiplier calculations that violated authentic data requirement
+- Current APY: Fetched live from database (Morpho API data)
+- 7-Day Average: Calculated from real historical data points (last 7 days)
+- 30-Day Average: Calculated from real historical data points (last 30 days) 
+- 90-Day Average: Calculated from real historical data points (last 90 days)
+- All-Time Average: Calculated from all 1175 comprehensive historical data points from DefiLlama
+- NEW: historicalApyService.ts provides 100% authentic calculations using real database values
+- NEW: /api/pools/:id/historical-averages endpoint serves authentic historical averages
+- All calculations now use genuine historical data with no fallbacks, simulations, or synthetic values
 
 - Act as a senior software engineer with rigorous verification standards
 - Always restate requests first to confirm understanding

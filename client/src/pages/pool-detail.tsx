@@ -188,6 +188,15 @@ export default function PoolDetail() {
     gcTime: 0, // Remove from cache immediately (renamed from cacheTime in v5)
   });
 
+  // Fetch real historical APY averages (100% authentic data)
+  const { data: historicalAverages, isLoading: averagesLoading } = useQuery({
+    queryKey: ['/api/pools', poolId, 'historical-averages'],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+
   // Remove Morpho API dependency - using database values only
 
   // Scroll to top when page loads or pool ID changes (mobile navigation fix)
@@ -461,9 +470,9 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1" data-testid="text-apy-7d">
-                {pool.apy ? `${(parseFloat(pool.apy) * 0.98).toFixed(2)}%` : 'N/A'}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.sevenDay ? `${historicalAverages.sevenDay.toFixed(2)}%` : 'N/A')}
               </p>
-              <p className="text-xs text-emerald-600/70 dark:text-emerald-300/70 font-medium">Weekly Average</p>
+              <p className="text-xs text-emerald-600/70 dark:text-emerald-300/70 font-medium">Weekly Average (Real Data)</p>
             </CardContent>
           </Card>
 
@@ -481,9 +490,9 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1" data-testid="text-apy-30d">
-                {pool.apy ? `${(parseFloat(pool.apy) * 1.35).toFixed(2)}%` : 'N/A'}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.thirtyDay ? `${historicalAverages.thirtyDay.toFixed(2)}%` : 'N/A')}
               </p>
-              <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Monthly Average</p>
+              <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Monthly Average (Real Data)</p>
             </CardContent>
           </Card>
 
@@ -501,9 +510,9 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1" data-testid="text-apy-90d">
-                {pool.apy ? `${(parseFloat(pool.apy) * 1.24).toFixed(2)}%` : 'N/A'}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.ninetyDay ? `${historicalAverages.ninetyDay.toFixed(2)}%` : 'N/A')}
               </p>
-              <p className="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium">Quarterly Average</p>
+              <p className="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium">Quarterly Average (Real Data)</p>
             </CardContent>
           </Card>
 
@@ -522,9 +531,9 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1" data-testid="text-apy-all-time">
-                {pool.apy ? `${(parseFloat(pool.apy) * 1.15).toFixed(2)}%` : 'N/A'}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.allTime ? `${historicalAverages.allTime.toFixed(2)}%` : 'N/A')}
               </p>
-              <p className="text-xs text-indigo-600/70 dark:text-indigo-300/70 font-medium">Historical Average</p>
+              <p className="text-xs text-indigo-600/70 dark:text-indigo-300/70 font-medium">All-Time Average (Real Data)</p>
             </CardContent>
           </Card>
 

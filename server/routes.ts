@@ -500,6 +500,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // New endpoint for real historical APY averages (100% authentic data)
+  app.get("/api/pools/:id/historical-averages", async (req, res) => {
+    try {
+      const { HistoricalApyService } = await import('./services/historicalApyService');
+      const service = new HistoricalApyService();
+      
+      console.log(`📊 Calculating authentic historical APY averages for pool ${req.params.id}`);
+      const averages = await service.calculateRealHistoricalAverages(req.params.id);
+      
+      res.json(averages);
+    } catch (error) {
+      console.error("Error calculating historical averages:", error);
+      res.status(500).json({ error: "Failed to calculate historical averages" });
+    }
+  });
+
   // DeFi Llama integration removed - using Morpho API instead
 
 
