@@ -3442,6 +3442,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     broadcastApyUpdate(poolId, apy, timestamp);
   };
   
+  // Test endpoint to manually trigger WebSocket animation for debugging
+  app.post("/api/admin/websocket/test-animation", async (req, res) => {
+    try {
+      // Get the first pool to test with
+      const pools = await db.select().from(poolMetricsCurrent).limit(1);
+      if (pools.length === 0) {
+        return res.status(404).json({ error: "No pools found for testing" });
+      }
+      
+      const testPool = pools[0];
+      const currentApy = parseFloat(testPool.apy || "4.49");
+      // Add a small random variation to trigger animation (±0.01%)
+      const variation = (Math.random() - 0.5) * 0.02;
+      const newApy = (currentApy + variation).toFixed(2);
+      
+      console.log(`🧪 Testing WebSocket animation: Pool ${testPool.poolId} APY ${currentApy}% → ${newApy}%`);
+      
+      // Broadcast the test update
+      broadcastApyUpdate(testPool.poolId, newApy, Date.now());
+      
+      res.json({ 
+        success: true, 
+        message: "Test APY update broadcasted",
+        poolId: testPool.poolId,
+        oldApy: currentApy.toFixed(2) + "%",
+        newApy: newApy + "%",
+        connectedClients: wsConnections.size
+      });
+    } catch (error) {
+      console.error("Error testing WebSocket animation:", error);
+      res.status(500).json({ error: "Failed to test WebSocket animation" });
+    }
+  });
+  
   // Import and start the new database-first scheduler
   const { databaseScheduler } = await import('./services/database-scheduler');
   databaseScheduler.start();

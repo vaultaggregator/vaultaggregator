@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
 import NetworkSelector from "@/components/network-selector";
@@ -14,8 +14,7 @@ import { Plus, ChevronUp, ChevronDown, Search, TrendingUp, Shield, Users } from 
 import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { EnhancedSearch } from "@/components/enhanced-search";
-
-
+import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -28,12 +27,20 @@ export default function Home() {
   const [showSearch, setShowSearch] = useState(false);
   const limit = 12;
   
+  // Initialize WebSocket connection for real-time updates
+  const { isConnected, lastUpdate } = useRealtimeApy();
+  
+  // Debug: Log when WebSocket updates are received
+  useEffect(() => {
+    console.log('🏠 Homepage WebSocket status:', { isConnected, lastUpdate });
+  }, [isConnected, lastUpdate]);
+  
 
   
 
 
   const { data: pools = [], isLoading, error, refetch } = useQuery<YieldOpportunity[]>({
-    queryKey: ['/api/pools', filters, page],
+    queryKey: ['/api/pools', filters, page, lastUpdate], // Include lastUpdate to trigger refetch on WebSocket updates
     queryFn: async () => {
       const params = new URLSearchParams({
         limit: limit.toString(),
@@ -48,6 +55,8 @@ export default function Home() {
       }
       return response.json();
     },
+    staleTime: 1000, // Consider data stale after 1 second to allow frequent updates
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   const handleFilterChange = (newFilters: FilterOptions) => {
