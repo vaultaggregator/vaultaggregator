@@ -44,6 +44,7 @@ interface Platform {
   isActive: boolean;
   createdAt: string;
   hasVisiblePools?: boolean;
+  dataRefreshIntervalMinutes: number;
 }
 
 export default function AdminPlatforms() {
@@ -55,6 +56,7 @@ export default function AdminPlatforms() {
   const [editWebsite, setEditWebsite] = useState("");
   const [editUrlTemplate, setEditUrlTemplate] = useState("");
   const [editShowUnderlyingTokens, setEditShowUnderlyingTokens] = useState(false);
+  const [editRefreshInterval, setEditRefreshInterval] = useState(10);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   
   // API Testing state
@@ -216,11 +218,40 @@ export default function AdminPlatforms() {
     },
   });
 
+  // 🎯 Mutation for updating platform refresh interval
+  const updateRefreshIntervalMutation = useMutation({
+    mutationFn: async ({ platformId, dataRefreshIntervalMinutes }: { platformId: string; dataRefreshIntervalMinutes: number }) => {
+      const response = await fetch(`/api/admin/platforms/${platformId}/refresh-interval`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ dataRefreshIntervalMinutes }),
+      });
+      if (!response.ok) throw new Error("Failed to update refresh interval");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/platforms"] });
+      toast({
+        title: "Success",
+        description: "Platform refresh interval updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update refresh interval",
+        variant: "destructive",
+      });
+    },
+  });
+
   const startEditing = (platform: Platform) => {
     setEditingPlatform(platform.id);
     setEditName(platform.name);
     setEditDisplayName(platform.displayName);
     setEditWebsite(platform.website || "");
+    setEditRefreshInterval(platform.dataRefreshIntervalMinutes || 10);
     setEditUrlTemplate(platform.visitUrlTemplate || "");
     setEditShowUnderlyingTokens(platform.showUnderlyingTokens || false);
   };
@@ -232,6 +263,7 @@ export default function AdminPlatforms() {
     setEditWebsite("");
     setEditUrlTemplate("");
     setEditShowUnderlyingTokens(false);
+    setEditRefreshInterval(10);
   };
 
   const savePlatform = () => {
@@ -245,6 +277,7 @@ export default function AdminPlatforms() {
         website: editWebsite || undefined,
         visitUrlTemplate: editUrlTemplate || undefined,
         showUnderlyingTokens: editShowUnderlyingTokens,
+        dataRefreshIntervalMinutes: editRefreshInterval,
       },
     });
   };
@@ -533,6 +566,19 @@ export default function AdminPlatforms() {
                   data-testid={`input-edit-url-template-${platform.id}`}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">🎯 Data Refresh Interval (Minutes)</label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="1440"
+                  value={editRefreshInterval}
+                  onChange={(e) => setEditRefreshInterval(parseInt(e.target.value) || 10)}
+                  placeholder="10"
+                  data-testid={`input-edit-refresh-interval-${platform.id}`}
+                />
+                <p className="text-xs text-gray-500 mt-1">How often to collect metrics for pools on this platform (1-1440 minutes)</p>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -594,6 +640,12 @@ export default function AdminPlatforms() {
                     : 'bg-gray-100 text-gray-600'
                 }`}>
                   {platform.showUnderlyingTokens ? 'Yes' : 'No'}
+                </span>
+              </p>
+              <p className="text-sm text-gray-600">
+                🎯 Metrics Refresh: 
+                <span className="ml-1 px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
+                  {platform.dataRefreshIntervalMinutes || 10} minutes
                 </span>
               </p>
               <p className="text-sm text-gray-500 mt-1">

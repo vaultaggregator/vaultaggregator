@@ -2,6 +2,7 @@ import {
   pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
+  poolMetricsHistory, poolMetricsCurrent,
   type Pool, type Platform, type Chain, type Token, type TokenInfo, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
@@ -14,10 +15,11 @@ import {
   type Discussion, type InsertDiscussion, type DiscussionWithReplies, type DiscussionReply, type InsertDiscussionReply,
   type Watchlist, type InsertWatchlist, type WatchlistWithPools, type WatchlistPool, type InsertWatchlistPool,
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
-  type HolderHistory, type InsertHolderHistory
+  type HolderHistory, type InsertHolderHistory,
+  type PoolMetricsHistory, type InsertPoolMetricsHistory, type PoolMetricsCurrent, type InsertPoolMetricsCurrent
 } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc } from "drizzle-orm";
+import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc, lte } from "drizzle-orm";
 import { HistoricalHolderAnalysisService } from "./services/historicalHolderAnalysisService";
 
 export interface IStorage {
@@ -138,6 +140,23 @@ export interface IStorage {
   deleteApiKey(id: string): Promise<boolean>;
   logApiKeyUsage(usage: InsertApiKeyUsage): Promise<void>;
   getApiKeyUsage(keyId: string, hours?: number): Promise<number>;
+
+  // 🎯 Standardized Pool Metrics Methods
+  // Core 4 metrics: APY, DAYS, TVL, HOLDERS - collected from platform-specific APIs
+  
+  // Current metrics (latest values)
+  getPoolMetricsCurrent(poolId: string): Promise<PoolMetricsCurrent | undefined>;
+  upsertPoolMetricsCurrent(poolId: string, metrics: Partial<InsertPoolMetricsCurrent>): Promise<PoolMetricsCurrent>;
+  updatePoolMetricCurrentStatus(poolId: string, metric: 'apy' | 'days' | 'tvl' | 'holders', status: 'success' | 'error' | 'pending' | 'n/a', value?: any, error?: string): Promise<void>;
+  
+  // Historical metrics tracking
+  storePoolMetricsHistory(metrics: InsertPoolMetricsHistory): Promise<PoolMetricsHistory>;
+  getPoolMetricsHistory(poolId: string, days?: number): Promise<PoolMetricsHistory[]>;
+  
+  // Metrics collection management
+  triggerImmediateMetricsCollection(poolId: string): Promise<void>;
+  getPoolsNeedingMetricsCollection(): Promise<Pool[]>;
+  scheduleNextMetricsCollection(poolId: string, platformRefreshInterval: number): Promise<void>;
 
 
 
@@ -1895,6 +1914,148 @@ export class DatabaseStorage implements IStorage {
       .where(eq(developerApplications.id, id))
       .returning();
     return updated;
+  }
+
+  // 🎯 Standardized Pool Metrics Implementation
+  
+  async getPoolMetricsCurrent(poolId: string): Promise<PoolMetricsCurrent | undefined> {
+    const [current] = await db
+      .select()
+      .from(poolMetricsCurrent)
+      .where(eq(poolMetricsCurrent.poolId, poolId));
+    return current;
+  }
+
+  async upsertPoolMetricsCurrent(poolId: string, metrics: Partial<InsertPoolMetricsCurrent>): Promise<PoolMetricsCurrent> {
+    // Check if record exists
+    const existing = await this.getPoolMetricsCurrent(poolId);
+    
+    if (existing) {
+      // Update existing record
+      const [updated] = await db
+        .update(poolMetricsCurrent)
+        .set({ ...metrics, updatedAt: new Date() })
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .returning();
+      return updated;
+    } else {
+      // Create new record
+      const [created] = await db
+        .insert(poolMetricsCurrent)
+        .values({ poolId, ...metrics })
+        .returning();
+      return created;
+    }
+  }
+
+  async updatePoolMetricCurrentStatus(
+    poolId: string, 
+    metric: 'apy' | 'days' | 'tvl' | 'holders', 
+    status: 'success' | 'error' | 'pending' | 'n/a', 
+    value?: any, 
+    error?: string
+  ): Promise<void> {
+    const updates: any = {
+      [`${metric}Status`]: status,
+      updatedAt: new Date(),
+      lastCollectionAt: new Date()
+    };
+
+    if (status === 'success' && value !== undefined) {
+      updates[metric === 'days' ? 'operatingDays' : metric === 'holders' ? 'holdersCount' : metric] = value;
+      updates.lastSuccessfulCollectionAt = new Date();
+    }
+
+    if (status === 'error' && error) {
+      updates[`${metric}Error`] = error;
+    }
+
+    await this.upsertPoolMetricsCurrent(poolId, updates);
+  }
+
+  async storePoolMetricsHistory(metrics: InsertPoolMetricsHistory): Promise<PoolMetricsHistory> {
+    const [created] = await db
+      .insert(poolMetricsHistory)
+      .values(metrics)
+      .returning();
+    return created;
+  }
+
+  async getPoolMetricsHistory(poolId: string, days: number = 30): Promise<PoolMetricsHistory[]> {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    return await db
+      .select()
+      .from(poolMetricsHistory)
+      .where(
+        and(
+          eq(poolMetricsHistory.poolId, poolId),
+          sql`${poolMetricsHistory.collectedAt} >= ${since}`
+        )
+      )
+      .orderBy(desc(poolMetricsHistory.collectedAt));
+  }
+
+  async triggerImmediateMetricsCollection(poolId: string): Promise<void> {
+    // Initialize metrics current record if it doesn't exist
+    await this.upsertPoolMetricsCurrent(poolId, {
+      apyStatus: 'pending',
+      daysStatus: 'pending', 
+      tvlStatus: 'pending',
+      holdersStatus: 'pending',
+      lastCollectionAt: new Date()
+    });
+  }
+
+  async getPoolsNeedingMetricsCollection(): Promise<Pool[]> {
+    // Get pools that need metrics collection based on platform refresh intervals
+    const result = await db
+      .select({
+        pool: pools,
+        platform: platforms,
+        current: poolMetricsCurrent
+      })
+      .from(pools)
+      .leftJoin(platforms, eq(pools.platformId, platforms.id))
+      .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
+      .where(
+        and(
+          eq(pools.isActive, true),
+          eq(pools.isVisible, true),
+          isNull(pools.deletedAt)
+        )
+      );
+
+    const poolsNeedingUpdate: Pool[] = [];
+    const now = new Date();
+
+    for (const row of result) {
+      const pool = row.pool;
+      const platform = row.platform;
+      const current = row.current;
+
+      if (!platform) continue;
+
+      const refreshIntervalMs = (platform.dataRefreshIntervalMinutes || 10) * 60 * 1000;
+      
+      // Check if metrics collection is needed
+      if (!current || !current.lastCollectionAt || 
+          (now.getTime() - current.lastCollectionAt.getTime()) > refreshIntervalMs) {
+        poolsNeedingUpdate.push(pool);
+      }
+    }
+
+    return poolsNeedingUpdate;
+  }
+
+  async scheduleNextMetricsCollection(poolId: string, platformRefreshInterval: number): Promise<void> {
+    const nextCollection = new Date();
+    nextCollection.setMinutes(nextCollection.getMinutes() + platformRefreshInterval);
+
+    await this.upsertPoolMetricsCurrent(poolId, {
+      nextCollectionAt: nextCollection
+    });
   }
 }
 
