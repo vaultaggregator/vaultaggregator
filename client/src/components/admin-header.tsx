@@ -91,25 +91,23 @@ export function AdminHeader() {
               </Button>
             </Link>
             
-            {user && (
-              <div className="flex items-center space-x-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {(user as User)?.username || 'Admin'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
-                </div>
-                <Button
-                  onClick={handleLogout}
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:inline">Logout</span>
-                </Button>
+            <div className="flex items-center space-x-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {user ? (user as User)?.username || 'Admin' : 'Admin'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
               </div>
-            )}
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </Button>
+            </div>
           </div>
         </div>
 
