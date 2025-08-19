@@ -94,15 +94,29 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     });
     
     // Only use authentic historical data - convert APY from decimal to percentage  
+    console.log(`📊 Chart Debug [${poolId}] - Starting data filtering...`);
+    
     const processedData = historicalData
-      .filter(point => {
+      .filter((point, index) => {
         // APY is required, TVL is optional (Lido historical data doesn't include TVL)
         const hasValidApy = point.apy !== null && point.apy !== undefined && !isNaN(point.apy);
         const hasValidTvl = point.tvl === null || (point.tvl !== undefined && !isNaN(point.tvl));
         const isValid = hasValidApy && hasValidTvl;
         
+        console.log(`📊 Chart Debug [${poolId}] - Point ${index}:`, {
+          point,
+          hasValidApy,
+          hasValidTvlCheck: {
+            isNull: point.tvl === null,
+            isNotUndefined: point.tvl !== undefined,
+            isNotNaN: point.tvl !== null ? !isNaN(point.tvl) : 'N/A (null)',
+            finalTvlValid: hasValidTvl
+          },
+          isValid
+        });
+        
         if (!isValid) {
-          console.log('PoolChart Debug - Filtering out invalid point:', point, { hasValidApy, hasValidTvl });
+          console.log('❌ Chart Debug - FILTERED OUT point:', point, { hasValidApy, hasValidTvl });
         }
         return isValid;
       })
