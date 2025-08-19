@@ -222,15 +222,23 @@ export default function AdminPools() {
 
   const deletePoolMutation = useMutation({
     mutationFn: async (id: string) => {
+      console.log("Deleting pool with ID:", id);
       const response = await fetch(`/api/admin/pools/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
-      if (!response.ok) throw new Error("Failed to delete pool");
+      console.log("Delete response status:", response.status);
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("Delete error response:", errorData);
+        throw new Error(`Failed to delete pool: ${response.status} ${errorData}`);
+      }
       return response.json();
     },
     onSuccess: () => {
+      console.log("Pool deleted successfully, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/trash"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
       toast({
         title: "Success",
@@ -238,6 +246,7 @@ export default function AdminPools() {
       });
     },
     onError: (error: any) => {
+      console.error("Delete pool error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to delete pool",
@@ -862,7 +871,12 @@ export default function AdminPools() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deletePoolMutation.mutate(pool.id)}
+                                onClick={() => {
+                                  console.log("Delete button clicked for active pool:", pool.id, pool.tokenPair);
+                                  if (window.confirm(`Are you sure you want to move "${pool.tokenPair}" to trash?`)) {
+                                    deletePoolMutation.mutate(pool.id);
+                                  }
+                                }}
                                 disabled={deletePoolMutation.isPending}
                                 className="text-red-600 hover:text-red-700"
                                 data-testid={`button-delete-${pool.tokenPair}`}
@@ -963,7 +977,12 @@ export default function AdminPools() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => deletePoolMutation.mutate(pool.id)}
+                                onClick={() => {
+                                  console.log("Delete button clicked for deactivated pool:", pool.id, pool.tokenPair);
+                                  if (window.confirm(`Are you sure you want to move "${pool.tokenPair}" to trash?`)) {
+                                    deletePoolMutation.mutate(pool.id);
+                                  }
+                                }}
                                 disabled={deletePoolMutation.isPending}
                                 className="text-red-600 hover:text-red-700"
                                 data-testid={`button-delete-${pool.tokenPair}`}
