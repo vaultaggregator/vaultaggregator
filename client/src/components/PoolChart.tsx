@@ -67,10 +67,11 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
       return [];
     }
     
-    console.log('📊 Chart Debug - Raw sample:', {
-      apy: historicalData[0]?.apy,
-      tvl: historicalData[0]?.tvl,
-      total: historicalData.length
+    console.log('📊 Chart Debug - Data conversion check:', {
+      rawAPY: historicalData[0]?.apy,
+      convertedAPY: (historicalData[0]?.apy as number) * 100,
+      rawTVL: historicalData[0]?.tvl,
+      totalPoints: historicalData.length
     });
     
     // Only use authentic historical data - convert APY from decimal to percentage  
@@ -86,7 +87,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
       })
       .map(point => ({
         ...point,
-        apy: parseFloat(((point.apy as number) * 100).toFixed(2)), // Convert decimal to percentage: 0.0438 -> 4.38
+        apy: parseFloat(((point.apy as number) * 100).toFixed(2)), // Convert decimal to percentage: 0.0438 -> 4.38%
         tvl: parseFloat((point.tvl as number).toFixed(2)), // Ensure clean numbers
         timestamp: point.timestamp,
         date: point.date,
