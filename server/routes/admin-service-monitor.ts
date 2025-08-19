@@ -103,7 +103,7 @@ async function getServiceStatus(serviceId: string): Promise<Partial<ServiceStatu
       SELECT COUNT(*) as error_count
       FROM error_logs 
       WHERE source = ${serviceId} 
-      AND created_at > NOW() - INTERVAL '24 hours'
+      AND occurred_at > NOW() - INTERVAL '24 hours'
     `);
     
     const errorCount = Number(errorResult.rows[0]?.error_count || 0);
@@ -169,7 +169,7 @@ async function getServiceStatus(serviceId: string): Promise<Partial<ServiceStatu
       SELECT description 
       FROM error_logs 
       WHERE source = ${serviceId}
-      ORDER BY created_at DESC 
+      ORDER BY occurred_at DESC 
       LIMIT 1
     `);
     
@@ -250,14 +250,14 @@ router.get('/errors', async (req, res) => {
       SELECT 
         id,
         source as service_id,
-        created_at as timestamp,
+        occurred_at as timestamp,
         error_type,
         description as error_message,
         severity,
-        false as resolved
+        is_resolved as resolved
       FROM error_logs 
-      WHERE created_at > NOW() - INTERVAL '24 hours'
-      ORDER BY created_at DESC 
+      WHERE occurred_at > NOW() - INTERVAL '24 hours'
+      ORDER BY occurred_at DESC 
       LIMIT 50
     `);
     
