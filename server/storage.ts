@@ -33,6 +33,7 @@ export interface IStorage {
   getChainById(id: string): Promise<Chain | undefined>;
   createChain(chain: InsertChain): Promise<Chain>;
   updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined>;
+  deleteChain(id: string): Promise<boolean>;
 
   // Platform methods
   getPlatforms(): Promise<Platform[]>;
@@ -42,6 +43,7 @@ export interface IStorage {
   getPlatformById(id: string): Promise<Platform | undefined>;
   createPlatform(platform: InsertPlatform): Promise<Platform>;
   updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined>;
+  deletePlatform(id: string): Promise<boolean>;
 
   // Token methods
   getTokens(): Promise<Token[]>;
@@ -246,6 +248,11 @@ export class DatabaseStorage implements IStorage {
     return updatedChain || undefined;
   }
 
+  async deleteChain(id: string): Promise<boolean> {
+    const result = await db.delete(chains).where(eq(chains.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
   async getPlatforms(): Promise<Platform[]> {
     return await db.select().from(platforms).orderBy(platforms.displayName);
   }
@@ -331,6 +338,11 @@ export class DatabaseStorage implements IStorage {
   async updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined> {
     const [updatedPlatform] = await db.update(platforms).set(platform).where(eq(platforms.id, id)).returning();
     return updatedPlatform || undefined;
+  }
+
+  async deletePlatform(id: string): Promise<boolean> {
+    const result = await db.delete(platforms).where(eq(platforms.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 
   async getTokens(): Promise<Token[]> {
