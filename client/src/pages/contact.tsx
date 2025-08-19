@@ -1,32 +1,10 @@
-import { useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Mail, MapPin, Phone, Clock, MessageSquare, Twitter, Github, ExternalLink } from "lucide-react";
 
 export default function Contact() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: ""
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Store submission locally and show success message
-    console.log("Contact form data:", formData);
-    alert("Thank you for your message! Please contact us directly at vaultaggregator@protonmail.com");
-    // Reset form
-    setFormData({ name: "", email: "", message: "" });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
 
   const contactMethods = [
     {
@@ -98,12 +76,8 @@ export default function Contact() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Contact Form */}
+          {/* Contact Information */}
           <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Send us a message</CardTitle>
-              <p className="text-gray-600">vaultaggregator@protonmail.com</p>
-            </CardHeader>
             
           </Card>
 
