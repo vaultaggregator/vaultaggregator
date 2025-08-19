@@ -187,7 +187,7 @@ export class MorphoHistoricalService {
             lte(poolHistoricalData.timestamp, endDate)
           )
         )
-        .orderBy(poolHistoricalData.timestamp);
+        .orderBy(desc(poolHistoricalData.timestamp));
 
       return historicalRecords.map(record => {
         const date = new Date(record.timestamp);
