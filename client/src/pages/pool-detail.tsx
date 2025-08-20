@@ -664,36 +664,35 @@ export default function PoolDetail() {
 
 
 
-        {/* Platform Info Cards */}
-        <div className="grid grid-cols-1 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/20 border-sky-200 dark:border-sky-700">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-sky-700 dark:text-sky-300 flex items-center justify-between">
-                <div className="flex items-center">
-                  <Globe className="w-5 h-5 mr-2 text-sky-600" />
+        {/* Network, Risk Cards and APY Calculator Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Left Column: Network and Risk Cards */}
+          <div className="space-y-4">
+            {/* Network Card - Smaller */}
+            <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/20 border-sky-200 dark:border-sky-700">
+              <CardHeader className="pb-2 pt-4">
+                <CardTitle className="text-xs font-semibold text-sky-700 dark:text-sky-300 flex items-center">
+                  <Globe className="w-4 h-4 mr-1.5 text-sky-600" />
                   <span>Network</span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <p className="text-2xl font-bold text-sky-600 dark:text-sky-400 mb-1" data-testid="text-network">
-                {pool.chain.displayName}
-              </p>
-              <p className="text-xs text-sky-600/70 dark:text-sky-300/70 font-medium">Blockchain Network</p>
-            </CardContent>
-          </Card>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 pb-4">
+                <p className="text-lg font-bold text-sky-600 dark:text-sky-400" data-testid="text-network">
+                  {pool.chain.displayName}
+                </p>
+                <p className="text-xs text-sky-600/70 dark:text-sky-300/70">Blockchain</p>
+              </CardContent>
+            </Card>
 
-          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-rose-700 dark:text-rose-300 flex items-center justify-between">
-                <div className="flex items-center">
-                  <Shield className="w-5 h-5 mr-2 text-rose-600" />
+            {/* Risk Card - Smaller */}
+            <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
+              <CardHeader className="pb-2 pt-4">
+                <CardTitle className="text-xs font-semibold text-rose-700 dark:text-rose-300 flex items-center">
+                  <Shield className="w-4 h-4 mr-1.5 text-rose-600" />
                   <span>Risk Assessment</span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="mb-1">
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 pb-4">
                 <RiskBadge 
                   risk={pool.riskLevel || 'medium'}
                   variant="full"
@@ -701,18 +700,18 @@ export default function PoolDetail() {
                   showLabel={true}
                   data-testid="text-risk-level"
                 />
-              </div>
-              <p className="text-xs text-rose-600/70 dark:text-rose-300/70 font-medium">Security Rating</p>
-            </CardContent>
-          </Card>
-        </div>
+                <p className="text-xs text-rose-600/70 dark:text-rose-300/70 mt-1">Security Rating</p>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* APY Calculator */}
-        <div className="mb-8">
-          <APYCalculator 
-            currentAPY={parseFloat(pool.apy || '0')}
-            tokenSymbol={pool.tokenPair.split('/')[0] || 'USDC'}
-          />
+          {/* Right Column: APY Calculator */}
+          <div>
+            <APYCalculator 
+              currentAPY={parseFloat(pool.apy || '0')}
+              tokenSymbol={pool.tokenPair.split('/')[0] || 'USDC'}
+            />
+          </div>
         </div>
 
         {/* Pool Chart */}
