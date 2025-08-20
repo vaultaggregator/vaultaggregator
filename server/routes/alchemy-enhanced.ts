@@ -38,16 +38,15 @@ router.get('/api/websocket/status', (req, res) => {
  */
 router.post('/api/websocket/start', async (req, res) => {
   try {
-    await smartWebSocketService.startRealTimeMonitoring();
+    // DISABLED: Real-time monitoring to prevent excessive Alchemy API usage
+    // This was causing millions of requests by monitoring every block
+    // await smartWebSocketService.startRealTimeMonitoring();
+    
     res.json({
-      success: true,
-      message: '✅ Real-time monitoring started successfully',
-      capabilities: [
-        'Live APY/TVL updates',
-        'Mempool monitoring',
-        'Whale alerts',
-        'Gas price tracking'
-      ]
+      success: false,
+      message: '⚠️ Real-time monitoring temporarily disabled to prevent excessive API usage',
+      reason: 'Monitoring every block on Ethereum + Base was generating millions of API requests',
+      solution: 'Enable only with proper rate limiting and selective monitoring'
     });
   } catch (error) {
     console.error('Error starting WebSocket monitoring:', error);

@@ -3574,10 +3574,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Smart WebSocket service with the WebSocket server
   smartWebSocketService.initializeWebSocketServer(wss);
   
-  // Start real-time monitoring
-  smartWebSocketService.startRealTimeMonitoring().catch(error => {
-    console.error('Failed to start Smart WebSocket monitoring:', error);
-  });
+  // DISABLED: Real-time blockchain monitoring to prevent millions of Alchemy API requests
+  // This was monitoring EVERY block on Ethereum (~7,200/day) and Base (~43,200/day)
+  // causing excessive API usage. Re-enable only with proper rate limiting.
+  // smartWebSocketService.startRealTimeMonitoring().catch(error => {
+  //   console.error('Failed to start Smart WebSocket monitoring:', error);
+  // });
   
   // Store WebSocket connections
   const wsConnections = new Set<WebSocket>();
