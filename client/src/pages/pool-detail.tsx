@@ -388,7 +388,7 @@ export default function PoolDetail() {
                   {/* Network Badge */}
                   <Badge 
                     variant="outline"
-                    className="text-xs sm:text-sm px-2 sm:px-3 py-1"
+                    className="text-xs px-2 py-0.5"
                     style={{ 
                       backgroundColor: `${pool.chain.color}20`, 
                       color: pool.chain.color,
