@@ -476,25 +476,13 @@ export default function PoolDetail() {
                 })()}
                 
                 {/* Etherscan Link */}
-                {pool.pool_address && (
+                {pool.poolAddress && (
                   <Button 
                     variant="outline" 
                     size="default" 
                     className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
                     data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/address/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
-                  >
-                    <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    View on Etherscan
-                  </Button>
-                )}
-                {pool.pool_address && (
-                  <Button 
-                    variant="outline" 
-                    size="default"
-                    className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
-                    data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/token/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(`https://etherscan.io/address/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
                   >
                     <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     View on Etherscan
