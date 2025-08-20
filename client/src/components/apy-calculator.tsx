@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatNumber } from '@/lib/format';
+
 import { Calculator, DollarSign, TrendingUp } from 'lucide-react';
 
 interface APYCalculatorProps {
@@ -64,7 +64,7 @@ export function APYCalculator({ currentAPY, tokenSymbol = 'USDC' }: APYCalculato
             />
           </div>
           <p className="text-xs text-gray-600 dark:text-gray-400">
-            ${formatNumber(parseFloat(depositAmount) || 0, { maxDecimals: 2 })}
+            ${(parseFloat(depositAmount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export function APYCalculator({ currentAPY, tokenSymbol = 'USDC' }: APYCalculato
           <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
             <span className="text-sm font-medium text-green-700 dark:text-green-300">Monthly earnings</span>
             <span className="text-lg font-bold text-green-600 dark:text-green-400" data-testid="text-monthly-earnings">
-              ${formatNumber(monthlyEarnings, { maxDecimals: 2 })}
+              ${monthlyEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
 
@@ -93,7 +93,7 @@ export function APYCalculator({ currentAPY, tokenSymbol = 'USDC' }: APYCalculato
           <div className="flex justify-between items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
             <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Yearly earnings</span>
             <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400" data-testid="text-yearly-earnings">
-              ${formatNumber(yearlyEarnings, { maxDecimals: 2 })}
+              ${yearlyEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
           </div>
         </div>
