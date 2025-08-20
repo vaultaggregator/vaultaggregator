@@ -101,15 +101,16 @@ export class AlchemyService {
       }
       
       // Strategy 2: Get ALL transfer events to find all holders
-      if (holders.length < 20) {
+      // Always use transfer events for comprehensive holder discovery
+      if (holders.length < limit * 0.8) { // Continue if we haven't found enough holders
         console.log(`🔄 Fetching all transfer events to find holders...`);
         
         const latestBlock = await client.core.getBlockNumber();
         const uniqueAddresses = new Set<string>();
         let pageKey: string | undefined;
         let iterations = 0;
-        // With 300 req/s, no need to limit iterations for any network
-        const maxIterations = 200; // Can handle much more with high-speed API
+        // Increase iterations for comprehensive holder discovery
+        const maxIterations = 500; // Increased to ensure we find all holders
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
