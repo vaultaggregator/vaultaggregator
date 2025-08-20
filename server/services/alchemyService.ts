@@ -13,6 +13,7 @@ export interface TokenHolder {
 
 export class AlchemyService {
   private alchemy: Alchemy;
+  private alchemyBase: Alchemy;
   
   constructor() {
     const apiKey = process.env.ALCHEMY_API_KEY;
@@ -20,21 +21,39 @@ export class AlchemyService {
       throw new Error('ALCHEMY_API_KEY is required for holder data');
     }
     
+    // Initialize Ethereum mainnet client
     this.alchemy = new Alchemy({
       apiKey,
       network: Network.ETH_MAINNET,
     });
+    
+    // Initialize Base network client
+    this.alchemyBase = new Alchemy({
+      apiKey,
+      network: Network.BASE_MAINNET,
+    });
+  }
+  
+  /**
+   * Get the appropriate Alchemy client for the given network
+   */
+  private getAlchemyClient(network?: string): Alchemy {
+    if (network?.toUpperCase() === 'BASE') {
+      return this.alchemyBase;
+    }
+    return this.alchemy; // Default to Ethereum mainnet
   }
 
   /**
    * Get top token holders for a specific token contract
    */
-  async getTopTokenHolders(tokenAddress: string, limit: number = 100): Promise<TokenHolder[]> {
+  async getTopTokenHolders(tokenAddress: string, limit: number = 100, network?: string): Promise<TokenHolder[]> {
     try {
-      console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress}`);
+      const client = this.getAlchemyClient(network);
+      console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress} on ${network || 'Ethereum'}`);
       
       // Get token metadata first
-      const metadata = await this.alchemy.core.getTokenMetadata(tokenAddress);
+      const metadata = await client.core.getTokenMetadata(tokenAddress);
       console.log(`📊 Token: ${metadata.name} (${metadata.symbol}), Decimals: ${metadata.decimals}`);
       
       const holders: TokenHolder[] = [];
@@ -42,7 +61,7 @@ export class AlchemyService {
       
       // Strategy 1: Try to get owners directly (works for NFTs and some ERC-20s)
       try {
-        const ownersResponse = await this.alchemy.nft.getOwnersForContract(tokenAddress);
+        const ownersResponse = await client.nft.getOwnersForContract(tokenAddress);
         console.log(`📈 Found ${ownersResponse.owners.length} owners via NFT API`);
         
         for (const owner of ownersResponse.owners.slice(0, limit)) {
@@ -50,7 +69,7 @@ export class AlchemyService {
             processedAddresses.add(owner.toLowerCase());
             
             try {
-              const balance = await this.alchemy.core.getTokenBalances(owner, [tokenAddress]);
+              const balance = await client.core.getTokenBalances(owner, [tokenAddress]);
               if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
                 const rawBalance = balance.tokenBalances[0].tokenBalance;
                 const decimals = metadata.decimals || 18;
@@ -81,7 +100,7 @@ export class AlchemyService {
       if (holders.length < 20) {
         console.log(`🔄 Fetching all transfer events to find holders...`);
         
-        const latestBlock = await this.alchemy.core.getBlockNumber();
+        const latestBlock = await client.core.getBlockNumber();
         const uniqueAddresses = new Set<string>();
         let pageKey: string | undefined;
         let iterations = 0;
@@ -89,7 +108,7 @@ export class AlchemyService {
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
-          const transfers = await this.alchemy.core.getAssetTransfers({
+          const transfers = await client.core.getAssetTransfers({
             fromBlock: '0x0', // Start from genesis
             toBlock: 'latest',
             contractAddresses: [tokenAddress],
@@ -144,7 +163,7 @@ export class AlchemyService {
           checkedCount++;
           
           try {
-            const balance = await this.alchemy.core.getTokenBalances(address, [tokenAddress]);
+            const balance = await client.core.getTokenBalances(address, [tokenAddress]);
             if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
               const rawBalance = balance.tokenBalances[0].tokenBalance;
               const decimals = metadata.decimals || 18;

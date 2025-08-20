@@ -65,8 +65,11 @@ export class HolderService {
 
       console.log(`📊 Syncing holders for ${pool.tokenPair} on ${pool.poolAddress}`);
 
-      // Get token holders from Etherscan
-      const holders = await this.fetchTokenHolders(pool.poolAddress);
+      // Get the network name from the pool's chain
+      const networkName = pool.chain?.name;
+
+      // Get token holders from appropriate service based on network
+      const holders = await this.fetchTokenHolders(pool.poolAddress, networkName);
       if (!holders || holders.length === 0) {
         console.log(`⚠️ No holders found for pool ${poolId}`);
         await this.logError(
@@ -121,7 +124,7 @@ export class HolderService {
   /**
    * Fetch token holders using Alchemy API
    */
-  private async fetchTokenHolders(tokenAddress: string): Promise<any[]> {
+  private async fetchTokenHolders(tokenAddress: string, networkName?: string): Promise<any[]> {
     try {
       console.log(`🔍 Fetching token holders for ${tokenAddress}`);
       
@@ -132,7 +135,7 @@ export class HolderService {
           const holderLimit = 1000;
           
           console.log(`📊 Fetching top ${holderLimit} holders for ${tokenAddress}`);
-          const holders = await this.alchemy.getTopTokenHolders(tokenAddress, holderLimit);
+          const holders = await this.alchemy.getTopTokenHolders(tokenAddress, holderLimit, networkName);
           console.log(`✅ Fetched ${holders.length} holders from Alchemy`);
           
           // Convert to expected format

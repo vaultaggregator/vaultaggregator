@@ -450,10 +450,27 @@ export default function PoolDetail() {
                       size="default" 
                       className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-xs sm:text-sm px-4 sm:px-6 w-full lg:w-auto"
                       data-testid="button-etherscan-link"
-                      onClick={() => window.open(`https://etherscan.io/token/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
+                      onClick={() => {
+                        const network = pool.chain?.name?.toUpperCase() || 'ETHEREUM';
+                        let explorerUrl = '';
+                        let explorerName = 'Etherscan';
+                        
+                        if (network === 'BASE') {
+                          explorerUrl = `https://basescan.org/token/${pool.poolAddress}`;
+                          explorerName = 'Basescan';
+                        } else if (network === 'ETHEREUM' || network === 'ETH') {
+                          explorerUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+                          explorerName = 'Etherscan';
+                        } else {
+                          // Default to Etherscan for unknown networks
+                          explorerUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+                        }
+                        
+                        window.open(explorerUrl, '_blank', 'noopener,noreferrer');
+                      }}
                     >
                       <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                      View on Etherscan
+                      View on {pool.chain?.name?.toUpperCase() === 'BASE' ? 'Basescan' : 'Etherscan'}
                     </Button>
                   )}
                   
