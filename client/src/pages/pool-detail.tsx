@@ -461,13 +461,13 @@ export default function PoolDetail() {
                 {/* Etherscan Link */}
                 {pool.poolAddress && (
                   <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800/20 text-xs sm:text-sm px-3 sm:px-4 text-gray-600 dark:text-gray-400"
+                    variant="outline" 
+                    size="default"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
                     data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/address/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(`https://etherscan.io/token/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
                   >
-                    <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     View on Etherscan
                   </Button>
                 )}
