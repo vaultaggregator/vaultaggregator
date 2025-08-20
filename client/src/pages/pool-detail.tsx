@@ -17,6 +17,7 @@ import { RiskBadge } from "@/components/risk-badge";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
+import { APYCalculator } from '@/components/apy-calculator';
 import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
 
@@ -704,6 +705,14 @@ export default function PoolDetail() {
               <p className="text-xs text-rose-600/70 dark:text-rose-300/70 font-medium">Security Rating</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* APY Calculator */}
+        <div className="mb-8">
+          <APYCalculator 
+            currentAPY={parseFloat(pool.apy || '0')}
+            tokenSymbol={pool.tokenPair.split('/')[0] || 'USDC'}
+          />
         </div>
 
         {/* Pool Chart */}
