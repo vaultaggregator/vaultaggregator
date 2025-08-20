@@ -383,8 +383,9 @@ export default function PoolDetail() {
 
               {/* Right Section - Protocol Badge, Live APY Card and Action Buttons */}
               <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
-                {/* Protocol Badge */}
-                <div className="flex items-center">
+                {/* Network Badge and Risk Score */}
+                <div className="flex flex-col gap-2">
+                  {/* Network Badge */}
                   <Badge 
                     variant="outline"
                     className="text-xs sm:text-sm px-2 sm:px-3 py-1"
@@ -397,6 +398,19 @@ export default function PoolDetail() {
                   >
                     {pool.chain.displayName}
                   </Badge>
+                  
+                  {/* Risk Score Display */}
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs text-gray-600 dark:text-gray-400">Risk:</span>
+                    <RiskBadge 
+                      risk={pool.riskLevel || 'medium'}
+                      variant="compact"
+                      showScore={true}
+                      showLabel={true}
+                      data-testid="text-risk-score"
+                    />
+                  </div>
                 </div>
                 
                 {/* Live APY Card - Beautiful Compact Display */}
@@ -665,31 +679,10 @@ export default function PoolDetail() {
 
 
 
-        {/* Risk Cards and APY Calculator Side by Side */}
+        {/* AI Insights and APY Calculator Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Left Column: Risk Cards */}
-          <div className="space-y-4">
-            {/* Risk Card - Smaller */}
-            <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
-              <CardHeader className="pb-2 pt-4">
-                <CardTitle className="text-xs font-semibold text-rose-700 dark:text-rose-300 flex items-center">
-                  <Shield className="w-4 h-4 mr-1.5 text-rose-600" />
-                  <span>Risk Assessment</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 pb-4">
-                <RiskBadge 
-                  risk={pool.riskLevel || 'medium'}
-                  variant="full"
-                  showScore={true}
-                  showLabel={true}
-                  data-testid="text-risk-level"
-                />
-                <p className="text-xs text-rose-600/70 dark:text-rose-300/70 mt-1">Security Rating</p>
-              </CardContent>
-            </Card>
-
-            {/* AI Insights Card */}
+          {/* Left Column: AI Insights Card */}
+          <div>
             <AIInsightsCard poolId={pool.id} />
           </div>
 
