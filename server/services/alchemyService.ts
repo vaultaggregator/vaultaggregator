@@ -153,7 +153,7 @@ export class AlchemyService {
                 const balanceBigInt = BigInt(rawBalance);
                 const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
                 
-                if (formattedBalance > 0.00001) { // Lower threshold to capture more holders
+                if (formattedBalance > 0.000001) { // Even lower threshold to capture dust holders
                   holders.push({
                     address,
                     balance: balanceBigInt.toString(),
