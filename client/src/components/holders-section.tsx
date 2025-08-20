@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight, Users, Wallet, TrendingUp, ExternalLink, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, Wallet, TrendingUp, ExternalLink, ChevronsLeft, ChevronsRight, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Holder {
   address: string;
@@ -201,11 +202,19 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
           </Badge>
         </div>
         <CardDescription>
-          {lidoNote?.isLido ? (
-            <>Showing top {lidoNote.sampleSize} of {lidoNote.actualTotal.toLocaleString()} holders • Lido stETH • Data from Etherscan</>
-          ) : (
-            <>Showing holders {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, pagination.total)} • Real-time blockchain data from Etherscan</>
-          )}
+          <div className="space-y-1">
+            <div>
+              {lidoNote?.isLido ? (
+                <>Showing top {lidoNote.sampleSize} of {lidoNote.actualTotal.toLocaleString()} holders • Lido stETH • Data from Etherscan</>
+              ) : (
+                <>Showing holders {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, pagination.total)} • Real-time blockchain data from Etherscan</>
+              )}
+            </div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Info className="h-3 w-3" />
+              <span>Portfolio values only include assets from networks, protocols and tokens tracked by our platform</span>
+            </div>
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -216,7 +225,21 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
             <div className="col-span-3">Address</div>
             <div className="col-span-2">Balance</div>
             <div className="col-span-2">USD Value</div>
-            <div className="col-span-2">Portfolio Value</div>
+            <div className="col-span-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 cursor-help">
+                      Portfolio Value
+                      <Info className="h-3 w-3" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">Portfolio values only include assets from networks, protocols and tokens tracked by our platform</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="col-span-2">Pool Share</div>
           </div>
 
