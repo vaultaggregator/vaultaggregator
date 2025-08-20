@@ -27,23 +27,28 @@ export function AnimatedValue({
     decrease: 'text-red-500'
   }
 }: AnimatedValueProps) {
+  // Always use the formatted value for display, never the compareValue
   const [displayValue, setDisplayValue] = useState(value);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationClass, setAnimationClass] = useState('');
   const [changeDirection, setChangeDirection] = useState<'increase' | 'decrease' | 'none'>('none');
-  const previousValueRef = useRef(value);
+  const previousCompareRef = useRef(compareValue || value);
   const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    const currentValue = compareValue !== undefined ? compareValue : value;
-    const previousValue = previousValueRef.current;
+    // Always update the display with the formatted value
+    setDisplayValue(value);
+    
+    // Use compareValue for comparison if provided, otherwise use value
+    const currentCompare = compareValue !== undefined ? compareValue : value;
+    const previousCompare = previousCompareRef.current;
     
     // Convert values to numbers for comparison if they're numeric strings
-    const currentNum = typeof currentValue === 'string' ? parseFloat(currentValue) : currentValue;
-    const previousNum = typeof previousValue === 'string' ? parseFloat(previousValue) : previousValue;
+    const currentNum = typeof currentCompare === 'string' ? parseFloat(currentCompare) : currentCompare;
+    const previousNum = typeof previousCompare === 'string' ? parseFloat(previousCompare) : previousCompare;
     
-    // Determine if there's a meaningful change
-    const hasChanged = currentValue !== previousValue;
+    // Determine if there's a meaningful change based on compare values
+    const hasChanged = currentCompare !== previousCompare;
     
     if (hasChanged && !isNaN(currentNum as number) && !isNaN(previousNum as number)) {
       // Determine direction of change
@@ -74,9 +79,6 @@ export function AnimatedValue({
           break;
       }
       
-      // Update the display value
-      setDisplayValue(currentValue);
-      
       // Remove animation after duration
       timeoutRef.current = setTimeout(() => {
         setIsAnimating(false);
@@ -85,7 +87,6 @@ export function AnimatedValue({
       }, duration);
     } else if (hasChanged) {
       // Non-numeric changes (like text updates)
-      setDisplayValue(currentValue);
       setIsAnimating(true);
       setAnimationClass('animate-pulse');
       
@@ -93,13 +94,10 @@ export function AnimatedValue({
         setIsAnimating(false);
         setAnimationClass('');
       }, duration);
-    } else {
-      // No change, just update display value
-      setDisplayValue(currentValue);
     }
     
-    // Update previous value ref
-    previousValueRef.current = currentValue;
+    // Update previous compare value ref for next comparison
+    previousCompareRef.current = currentCompare;
     
     return () => {
       if (timeoutRef.current) {
