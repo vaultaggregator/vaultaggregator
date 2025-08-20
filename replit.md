@@ -12,6 +12,13 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - Token matching uses three comparison methods: exact normalized match, cleaned comparison, space-to-hyphen conversion
 - All pool detail pages now accessible via `/pools/:network/:protocol/:tokenPair` format
 
+**Etherscan Integration - STANDARDIZED:**
+- All pools display Etherscan links when contract addresses are available
+- Etherscan button appears above Visit Platform button for better user flow
+- All 32 existing pools have proper contract addresses stored in database
+- New pools will automatically show Etherscan links when pool_address is populated
+- Uses standard token URL format: `https://etherscan.io/token/{contract_address}`
+
 **Critical Data Methodology - DO NOT CHANGE:**
 - Morpho STEAKUSDC APY: Live data from Morpho API (database-first system fetches real-time values)
 - Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
