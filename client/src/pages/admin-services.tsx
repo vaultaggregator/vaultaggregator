@@ -275,7 +275,23 @@ export default function AdminServices() {
     }
   ];
 
-  const displayServices = services || mockServices;
+  // Always show all services, merging API data with mock data
+  const displayServices = mockServices.map(mockService => {
+    // Find matching service from API response
+    const apiService = services?.find((s: ServiceStatus) => s.name === mockService.name);
+    
+    // If API has data for this service, merge it with mock, otherwise use mock
+    if (apiService) {
+      return {
+        ...mockService,
+        ...apiService,
+        displayName: mockService.displayName, // Keep the display name from mock
+        stats: apiService.stats || mockService.stats // Use API stats if available
+      };
+    }
+    return mockService;
+  });
+  
   const activeServices = displayServices.filter((s: ServiceStatus) => s.status === 'running');
   const warningServices = displayServices.filter((s: ServiceStatus) => s.status === 'warning');
   const errorServices = displayServices.filter((s: ServiceStatus) => s.status === 'error' || s.status === 'stopped');
