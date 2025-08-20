@@ -344,7 +344,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
                   <div className="text-sm text-blue-700 dark:text-blue-300 mb-1">Current TVL</div>
                   <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                    {formatTvl(stats.tvl.current)}
+                    {formatTvl(stats.tvl.current || 0)}
                   </div>
                   <div className={cn('text-sm flex items-center', getChangeColor(stats.tvl.change))}>
                     {getChangeIcon(stats.tvl.change)} {formatTvl(Math.abs(stats.tvl.change))} ({selectedTimeRange})

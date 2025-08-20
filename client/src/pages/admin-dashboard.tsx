@@ -22,6 +22,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import PoolDataModal from "@/components/pool-data-modal";
 
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
+import { formatCurrency, formatNumber } from "@/lib/format";
 
 type SortField = 'platform' | 'chain' | 'apy' | 'tvl' | 'risk' | 'visible';
 type SortDirection = 'asc' | 'desc' | null;
@@ -922,13 +923,14 @@ export default function AdminDashboard() {
                         </td>
                         <td className="py-3 px-2 text-right">
                           <span className="font-mono text-sm">
-                            ${parseFloat(pool.tvl || '0').toLocaleString()}
+                            {formatCurrency(parseFloat(pool.tvl || '0'))}
                           </span>
                         </td>
                         <td className="py-3 px-2 text-center">
                           <RiskBadge 
-                            riskLevel={pool.riskLevel}
-                            size="sm"
+                            risk={pool.riskLevel}
+                            variant="compact"
+                            className="text-xs"
                           />
                         </td>
 

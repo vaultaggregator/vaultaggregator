@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { formatNumber } from '@/lib/format';
 
 interface AnimatedValueProps {
   value: string | number;
@@ -236,13 +237,11 @@ export function AnimatedCurrency({
   value,
   currency = '$',
   className,
-  compact = false
+  compact = true
 }: AnimatedCurrencyProps) {
   const formatValue = (val: number) => {
     if (compact) {
-      if (val >= 1e9) return `${currency}${(val / 1e9).toFixed(1)}B`;
-      if (val >= 1e6) return `${currency}${(val / 1e6).toFixed(1)}M`;
-      if (val >= 1e3) return `${currency}${(val / 1e3).toFixed(1)}K`;
+      return formatNumber(val, { currency, maxDecimals: 1 });
     }
     return `${currency}${val.toLocaleString()}`;
   };

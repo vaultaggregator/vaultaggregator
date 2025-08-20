@@ -24,7 +24,7 @@ import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import { WebSocketStatus } from "@/components/websocket-status";
 import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
-import { formatTvl, formatHolders } from "@/lib/format";
+import { formatTvl, formatHolders, formatCurrency, formatNumber } from "@/lib/format";
 
 
 
@@ -251,10 +251,7 @@ export default function PoolDetail() {
     if (!tvl || tvl === '') return 'N/A';
     const num = parseFloat(tvl);
     if (isNaN(num)) return 'N/A';
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
-    return `$${num.toFixed(2)}`;
+    return formatCurrency(num);
   };
 
   const formatApy = (apy: string): string => {
@@ -266,7 +263,7 @@ export default function PoolDetail() {
 
   const formatHolders = (holders: number): string => {
     if (isNaN(holders)) return "N/A";
-    return holders.toLocaleString();
+    return formatNumber(holders);
   };
 
   const getRiskColor = (riskLevel: string) => {
