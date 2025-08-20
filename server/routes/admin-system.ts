@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { systemMonitor } from "../services/systemMonitorService";
 import adminServiceMonitorRoutes from "./admin-service-monitor";
+import * as os from "os";
 
 export function registerAdminSystemRoutes(app: Express) {
   // Register service monitor routes
@@ -44,10 +45,13 @@ export function registerAdminSystemRoutes(app: Express) {
       
       for (const poolData of morphoPools) {
         const pool = poolData.pools;
-        const currentRawData = pool.rawData || {};
+        const currentRawData = (pool.rawData || {}) as any;
         
         // Skip if already has operating days
         if (currentRawData.count) continue;
+        
+        // Skip if pool address is null
+        if (!pool.poolAddress) continue;
         
         console.log(`🔄 Fixing operating days for ${pool.tokenPair} (${pool.poolAddress})`);
         
@@ -296,7 +300,7 @@ export function registerAdminSystemRoutes(app: Express) {
       res.json({
         cpuMetrics: {
           executionTime: Math.round(executionTime * 100) / 100,
-          loadAverage: require('os').loadavg()
+          loadAverage: os.loadavg()
         },
         memoryMetrics: health.memoryUsage,
         cacheMetrics: health.cachePerformance,
