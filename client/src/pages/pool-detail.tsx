@@ -377,6 +377,25 @@ export default function PoolDetail() {
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
                     {pool.platform.displayName}
                   </p>
+                  
+                  {/* Large Live APY Display */}
+                  <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-3">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                      <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      <span className="text-sm font-semibold text-green-700 dark:text-green-300">Live APY</span>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-green-600 dark:text-green-400">LIVE</span>
+                      </div>
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <AnimatedPercentage 
+                        value={parseFloat(pool.apy || '0')} 
+                        className="text-4xl sm:text-5xl font-black text-green-600 dark:text-green-400" 
+                        data-testid="text-large-apy"
+                      />
+                    </div>
+                  </div>
                   <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
                     <Badge 
                       variant="outline"
@@ -461,32 +480,32 @@ export default function PoolDetail() {
         </Card>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* TVL Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center justify-between">
                 <div className="flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                  <span>Live APY</span>
+                  <DollarSign className="w-5 h-5 mr-2 text-blue-600" />
+                  <span>Total Value Locked</span>
                 </div>
-                <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
-                  <AlertCircle className="w-4 h-4 text-green-500 hover:text-green-600 cursor-help" />
+                <MetricTooltip metric="tvl" variant="icon" side="bottom">
+                  <AlertCircle className="w-4 h-4 text-blue-500 hover:text-blue-600 cursor-help" />
                 </MetricTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
-                {pool.apy ? (
-                  <AnimatedPercentage 
-                    value={parseFloat(pool.apy)} 
-                    precision={2}
-                  />
-                ) : 'N/A'}
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1" data-testid="text-tvl">
+                <AnimatedCurrency 
+                  value={parseFloat(pool.tvl || '0')} 
+                  compact={true}
+                />
               </p>
-              <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Real-time Rate</p>
+              <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Pool Assets</p>
             </CardContent>
           </Card>
 
+          {/* 7-Day Average APY Card */}
           <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
