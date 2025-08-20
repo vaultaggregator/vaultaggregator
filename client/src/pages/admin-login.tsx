@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
+import { ArrowLeft } from "lucide-react";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -86,6 +87,13 @@ export default function AdminLogin() {
               {isLoginPending ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          
+          <div className="mt-6 pt-6 border-t text-center">
+            <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors" data-testid="link-homepage">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Homepage
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
