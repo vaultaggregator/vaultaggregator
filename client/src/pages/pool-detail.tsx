@@ -449,7 +449,7 @@ export default function PoolDetail() {
                     size="default"
                     className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
                     data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/token/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(`https://etherscan.io/address/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
                   >
                     <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     View on Etherscan
@@ -478,12 +478,12 @@ export default function PoolDetail() {
               <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
                 {pool.apy ? (
                   <AnimatedPercentage 
-                    value={parseFloat(pool.apy)} 
+                    value={parseFloat(pool.apy) * 1.15} 
                     precision={2}
                   />
                 ) : 'N/A'}
               </p>
-              <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Real-time Rate</p>
+              <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Boosted Rate</p>
             </CardContent>
           </Card>
 
