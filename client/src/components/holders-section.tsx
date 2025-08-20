@@ -333,18 +333,6 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  {/* First Page Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(1)}
-                    disabled={pagination.page <= 1}
-                    data-testid="button-first-page"
-                    className="h-8 w-8 p-0"
-                  >
-                    <ChevronsLeft className="h-4 w-4" />
-                  </Button>
-                  
                   {/* Previous Button */}
                   <Button
                     variant="outline"
@@ -386,8 +374,19 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                     </Button>
                   </div>
                   
-                  {/* Page Numbers */}
+                  {/* Page Numbers with First Page Button */}
                   <div className="flex items-center gap-1">
+                    {/* First Page Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(1)}
+                      disabled={pagination.page <= 1}
+                      data-testid="button-first-page"
+                      className="h-8 w-8 p-0"
+                    >
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
                     {(() => {
                       const pages = [];
                       const maxVisible = 5;
