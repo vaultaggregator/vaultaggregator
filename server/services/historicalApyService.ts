@@ -42,7 +42,9 @@ export class HistoricalApyService {
       let currentApy = parseFloat(latestData[0].apy || '0');
       
       // Determine if we need to convert decimals to percentages for current APY
-      const isMorpho = platformName?.toLowerCase() === 'morpho';
+      const isMorpho = platformName?.toLowerCase() === 'morpho' || platformName?.toLowerCase() === 'morpho-blue';
+      const isLido = platformName?.toLowerCase() === 'lido';
+      
       if (isMorpho) {
         currentApy = currentApy * 100;
       }

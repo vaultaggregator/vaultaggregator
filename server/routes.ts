@@ -694,6 +694,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Pool not found" });
       }
       
+      // For Lido pools, ensure historical data is collected first
+      if (pool.platform.slug === 'lido' || pool.platform.name.toLowerCase() === 'lido') {
+        const { LidoHistoricalService } = await import('./services/lidoHistoricalService');
+        const lidoService = new LidoHistoricalService();
+        
+        // Check if we have historical data
+        const existingData = await lidoService.getHistoricalData(req.params.id, 7);
+        
+        // If no data exists, collect it first
+        if (existingData.length === 0) {
+          console.log('📊 No Lido historical data found, collecting now...');
+          await lidoService.storeHistoricalData(req.params.id);
+          console.log('✅ Lido historical data collected and stored');
+        }
+      }
+      
       const averages = await service.calculateRealHistoricalAverages(req.params.id, pool.platform.name);
       
       res.json(averages);
