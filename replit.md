@@ -4,6 +4,17 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # User Preferences
 
+**CRITICAL RULE - NO HARDCODED VALUES (ABSOLUTE REQUIREMENT):**
+- NEVER hardcode values such as contract addresses, API responses, APY percentages, risk scores, or text labels
+- Always fetch live data from database, APIs, or environment variables
+- Use config files or .env variables for anything that can change (API URLs, contract addresses, keys)
+- If a value or data source is missing, stop and ask for the correct source before proceeding
+- Never create placeholder or mock values unless explicitly requested
+- Ask questions first if more details about data sources are needed
+- Every number, label, or address shown on the website must be dynamic from verified sources
+- Before finishing any task, validate that each value comes from the correct source, not hardcoded
+- This is an unbreakable rule that supersedes all other considerations
+
 **Morpho APY Data Format Handling - AUTO-DETECTION IMPLEMENTED:**
 - Fixed critical issue where Morpho pools on Base showed 600% instead of 6% APY
 - Root cause: Some Morpho pools (especially Base) store APY as percentages, others as decimals
