@@ -4,6 +4,17 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # User Preferences
 
+**Morpho APY Data Format Handling - AUTO-DETECTION IMPLEMENTED:**
+- Fixed critical issue where Morpho pools on Base showed 600% instead of 6% APY
+- Root cause: Some Morpho pools (especially Base) store APY as percentages, others as decimals
+- Solution: Smart auto-detection system that analyzes recent data values
+- Detection logic: If average APY < 0.5, treats as decimal and multiplies by 100
+- If average APY > 1, treats as percentage and uses as-is
+- This handles all edge cases and future Morpho pools automatically
+- Applies to both current APY display and historical averages calculation
+
+# User Preferences
+
 **Token Holders Tracking System - COMPLETED & ENHANCED:**
 - Implemented comprehensive token holders tracking system displaying top 20 holders per page
 - Shows holder addresses, wallet balances in USD, pool amounts, and pool share percentages  

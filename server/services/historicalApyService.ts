@@ -38,17 +38,30 @@ export class HistoricalApyService {
         };
       }
 
-      // APY handling depends on platform - Morpho stores decimals, Lido stores percentages
+      // APY handling depends on platform and data format
       let currentApy = parseFloat(latestData[0].apy || '0');
       
-      // Determine if we need to convert decimals to percentages for current APY
+      // Determine platform type
       const isMorpho = platformName?.toLowerCase() === 'morpho' || platformName?.toLowerCase() === 'morpho-blue';
       const isLido = platformName?.toLowerCase() === 'lido';
       
-      // Only multiply by 100 if the value looks like a decimal (< 1)
-      // Some Morpho pools (like Spark USDC) already store percentages
-      if (isMorpho && currentApy < 1) {
-        currentApy = currentApy * 100;
+      // Smart detection for Morpho pools:
+      // - Most Morpho pools store as decimals (0.0456 = 4.56%)
+      // - Some pools (especially on Base) store as percentages (6.09 = 6.09%)
+      // - Check if the majority of recent values suggest decimal format
+      if (isMorpho) {
+        const recentValues = latestData.slice(0, 10).map(d => parseFloat(d.apy || '0')).filter(v => v > 0);
+        const avgRecent = recentValues.length > 0 ? recentValues.reduce((a, b) => a + b, 0) / recentValues.length : currentApy;
+        
+        // If average is < 0.5, it's likely decimals (0.05 = 5%)
+        // If average is > 1, it's likely already percentages (5.0 = 5%)
+        // This handles edge cases better than just checking < 1
+        if (avgRecent < 0.5) {
+          currentApy = currentApy * 100;
+          console.log(`📊 Morpho pool APY detected as decimal format, converting ${currentApy / 100} to ${currentApy}%`);
+        } else {
+          console.log(`📊 Morpho pool APY detected as percentage format, using ${currentApy}% as-is`);
+        }
       }
       
       // Calculate date thresholds
@@ -125,12 +138,17 @@ export class HistoricalApyService {
     const sum = validApyValues.reduce((acc, apy) => acc + apy, 0);
     let average = sum / validApyValues.length;
     
-    // Morpho normally stores APY as decimals (0.0456 = 4.56%), convert to percentage
-    // But some pools (like Spark USDC) already have percentages
-    // Only multiply if the average looks like a decimal (< 1)
-    // Lido stores APY as percentages (2.648 = 2.648%), use as-is
-    if (isMorpho && average < 1) {
+    // Smart detection for Morpho pools:
+    // - Most Morpho pools store as decimals (0.0456 = 4.56%)
+    // - Some pools (especially on Base) store as percentages (6.09 = 6.09%)
+    // - If average is < 0.5, it's very likely decimals
+    // - If average is > 1, it's very likely already percentages
+    // Lido always stores as percentages, use as-is
+    if (isMorpho && average < 0.5) {
       average = average * 100;
+      console.log(`📊 Morpho historical average detected as decimal, converting to percentage: ${average}%`);
+    } else if (isMorpho) {
+      console.log(`📊 Morpho historical average detected as percentage, using as-is: ${average}%`);
     }
     
     console.log(`📊 Calculated average from ${validApyValues.length} authentic data points: ${average.toFixed(4)}%`);
