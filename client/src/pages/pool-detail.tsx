@@ -24,27 +24,14 @@ import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import { WebSocketStatus } from "@/components/websocket-status";
 import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
+import { formatTvl, formatHolders } from "@/lib/format";
 
 
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { YieldOpportunity } from "@/types";
 
-// Utility function to format TVL values
-function formatTvl(value: string): string {
-  const num = parseFloat(value);
-  if (isNaN(num)) return "N/A";
-  
-  if (num >= 1e9) {
-    return `$${(num / 1e9).toFixed(2)}B`;
-  } else if (num >= 1e6) {
-    return `$${(num / 1e6).toFixed(2)}M`;
-  } else if (num >= 1e3) {
-    return `$${(num / 1e3).toFixed(2)}K`;
-  } else {
-    return `$${num.toFixed(2)}`;
-  }
-}
+
 
 
 
@@ -111,7 +98,7 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
                 </div>
                 <div className="mt-3 flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">
-                    TVL: {pool.tvl ? formatTvl(pool.tvl) : 'N/A'}
+                    TVL: {pool.tvl ? formatTvl(parseFloat(pool.tvl)) : 'N/A'}
                   </span>
                   <span className="text-gray-600 dark:text-gray-400">
                     Risk: {pool.riskLevel}
@@ -681,11 +668,7 @@ export default function PoolDetail() {
                 {pool.holdersCount ? (
                   <AnimatedNumber 
                     value={pool.holdersCount} 
-                    formatter={(val) => {
-                      if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
-                      if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
-                      return val.toString();
-                    }}
+                    formatter={(val) => formatHolders(val)}
                     precision={0}
                   />
                 ) : 'N/A'}

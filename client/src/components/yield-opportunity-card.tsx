@@ -15,6 +15,7 @@ import { getPlatformIcon } from "@/components/platform-icons";
 import { getCategoryIcon } from "@/components/category-icons";
 
 import { generateYieldUrl } from "@/lib/seo-urls";
+import { formatTvl, formatHolders } from "@/lib/format";
 
 interface YieldOpportunityCardProps {
   opportunity: YieldOpportunity;
@@ -23,24 +24,9 @@ interface YieldOpportunityCardProps {
 }
 
 export default function YieldOpportunityCard({ opportunity, showHeaders = true, showNetworkName = true }: YieldOpportunityCardProps) {
-  const formatTvl = (tvl: string): string => {
-    const num = parseFloat(tvl);
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
-    return `$${num.toFixed(0)}`;
-  };
-
   const formatApy = (apy: string): string => {
     const num = parseFloat(apy);
     return `${num.toFixed(2)}%`;
-  };
-
-  const formatHolders = (holders: number | null | undefined): string => {
-    if (!holders) return 'N/A';
-    if (holders >= 1000000) return `${(holders / 1000000).toFixed(1)}M`;
-    if (holders >= 1000) return `${(holders / 1000).toFixed(1)}K`;
-    return holders.toString();
   };
 
 

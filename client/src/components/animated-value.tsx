@@ -240,9 +240,9 @@ export function AnimatedCurrency({
 }: AnimatedCurrencyProps) {
   const formatValue = (val: number) => {
     if (compact) {
-      if (val >= 1e9) return `${currency}${(val / 1e9).toFixed(2)}B`;
-      if (val >= 1e6) return `${currency}${(val / 1e6).toFixed(2)}M`;
-      if (val >= 1e3) return `${currency}${(val / 1e3).toFixed(2)}K`;
+      if (val >= 1e9) return `${currency}${(val / 1e9).toFixed(1)}B`;
+      if (val >= 1e6) return `${currency}${(val / 1e6).toFixed(1)}M`;
+      if (val >= 1e3) return `${currency}${(val / 1e3).toFixed(1)}K`;
     }
     return `${currency}${val.toLocaleString()}`;
   };

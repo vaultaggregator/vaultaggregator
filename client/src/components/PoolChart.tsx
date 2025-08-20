@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
+import { formatTvl } from '@/lib/format';
 
 interface ChartDataPoint {
   timestamp: number;
@@ -169,13 +170,6 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
       } : null
     };
   }, [displayData]);
-
-  const formatTvl = (value: number): string => {
-    if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-    if (value >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-    if (value >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
-    return `$${value.toFixed(2)}`;
-  };
 
   const formatApy = (value: number): string => `${value.toFixed(2)}%`;
 
