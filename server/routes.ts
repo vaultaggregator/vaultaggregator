@@ -8,6 +8,7 @@ import { db } from "./db";
 import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull, isNull, inArray } from "drizzle-orm";
 import { morphoService } from "./services/morphoService";
 import { WebSocketServer, WebSocket } from 'ws';
+import { smartWebSocketService } from './services/smartWebSocketService';
 
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -48,6 +49,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register webhook routes for real-time updates
   const webhookRoutes = (await import("./routes/webhooks")).default;
   app.use(webhookRoutes);
+
+  // Import and register enhanced Alchemy API routes
+  const alchemyEnhancedRoutes = (await import("./routes/alchemy-enhanced")).default;
+  app.use(alchemyEnhancedRoutes);
 
   // Session configuration
   app.use(session({
@@ -3539,6 +3544,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set up WebSocket server for real-time APY updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Initialize Smart WebSocket service with the WebSocket server
+  smartWebSocketService.initializeWebSocketServer(wss);
+  
+  // Start real-time monitoring
+  smartWebSocketService.startRealTimeMonitoring().catch(error => {
+    console.error('Failed to start Smart WebSocket monitoring:', error);
+  });
   
   // Store WebSocket connections
   const wsConnections = new Set<WebSocket>();
