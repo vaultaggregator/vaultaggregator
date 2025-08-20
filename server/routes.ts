@@ -698,7 +698,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Special handling for Lido stETH pool with massive holder count
+      // Special handling for Lido stETH pool - use correct total count from metrics
       const LIDO_POOL_ID = '31e292ba-a842-490b-8688-3868e18bd615';
       
       if (poolId === LIDO_POOL_ID) {
@@ -710,19 +710,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const actualHolderCount = metricsResult?.holdersCount || 547477;
         
-        // For Lido, return special response indicating massive holder count
+        // Get the sample holders we have
+        const result = await storage.getPoolHolders(poolId, page, limit);
+        
+        // Format holder data for frontend
+        const formattedHolders = result.holders.map(holder => ({
+          address: holder.holderAddress,
+          tokenBalance: holder.tokenBalanceFormatted,
+          usdValue: parseFloat(holder.usdValue || '0'),
+          walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
+          walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
+          poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
+          rank: holder.rank
+        }));
+        
+        // Return holders with the correct total count
         return res.json({
-          holders: [],
+          holders: formattedHolders,
           pagination: {
-            page: 1,
+            page,
             limit,
-            total: actualHolderCount,
-            pages: Math.ceil(actualHolderCount / limit)
+            total: actualHolderCount,  // Use the real total from Etherscan
+            pages: Math.ceil(result.total / limit)  // Pages based on available sample
           },
-          specialCase: {
+          lidoNote: {
             isLido: true,
-            message: "Individual holder details not available due to massive holder count",
-            totalHolders: actualHolderCount
+            actualTotal: actualHolderCount,
+            sampleSize: result.total
           }
         });
       }

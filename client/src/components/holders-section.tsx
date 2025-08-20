@@ -30,6 +30,11 @@ interface HoldersResponse {
     message: string;
     totalHolders: number;
   };
+  lidoNote?: {
+    isLido: boolean;
+    actualTotal: number;
+    sampleSize: number;
+  };
 }
 
 interface HoldersSectionProps {
@@ -154,7 +159,7 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
     );
   }
 
-  const { holders, pagination, specialCase } = holdersData;
+  const { holders, pagination, specialCase, lidoNote } = holdersData;
 
   // Special handling for Lido stETH with massive holder count
   if (specialCase?.isLido) {
@@ -232,11 +237,15 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
             <CardTitle>All Holders</CardTitle>
           </div>
           <Badge variant="secondary" className="text-xs">
-            {pagination.total} Total Holders
+            {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
           </Badge>
         </div>
         <CardDescription>
-          Showing holders {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, pagination.total)} • Real-time blockchain data from Etherscan
+          {lidoNote?.isLido ? (
+            <>Showing top {lidoNote.sampleSize} of {lidoNote.actualTotal.toLocaleString()} holders • Lido stETH • Data from Etherscan</>
+          ) : (
+            <>Showing holders {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, pagination.total)} • Real-time blockchain data from Etherscan</>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
