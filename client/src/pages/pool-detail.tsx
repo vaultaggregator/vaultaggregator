@@ -315,12 +315,6 @@ export default function PoolDetail() {
         <Header onAdminClick={() => {}} />
         <div className="py-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/">
-            <Button variant="ghost" className="mb-6">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Pools
-            </Button>
-          </Link>
           <Card>
             <CardContent className="p-8 text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Pool Not Found</h2>
@@ -340,16 +334,6 @@ export default function PoolDetail() {
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
       <div className="py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header with back button */}
-        <div className="mb-8">
-          <Link href="/">
-            <Button variant="ghost" className="mb-4" data-testid="button-back-to-pools">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Pools
-            </Button>
-          </Link>
-        </div>
-
         {/* Pool Header */}
         <Card className="mb-6">
           <CardContent className="p-6 sm:p-8">
