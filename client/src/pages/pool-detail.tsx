@@ -435,7 +435,7 @@ export default function PoolDetail() {
                     <Button 
                       variant="outline" 
                       size="default" 
-                      className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6 w-full lg:w-auto"
+                      className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-xs sm:text-sm px-4 sm:px-6 w-full lg:w-auto"
                       data-testid="button-etherscan-link"
                       onClick={() => window.open(`https://etherscan.io/token/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
                     >
@@ -451,7 +451,7 @@ export default function PoolDetail() {
                       <Button 
                         variant="outline" 
                         size="default" 
-                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6 w-full lg:w-auto"
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs sm:text-sm px-4 sm:px-6 w-full lg:w-auto"
                         data-testid="button-external-link"
                         onClick={() => window.open(linkData.url, '_blank', 'noopener,noreferrer')}
                       >
@@ -462,7 +462,7 @@ export default function PoolDetail() {
                       <Button 
                         variant="outline" 
                         size="default" 
-                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6 w-full lg:w-auto"
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs sm:text-sm px-4 sm:px-6 w-full lg:w-auto"
                         data-testid="button-external-link"
                         disabled
                       >
