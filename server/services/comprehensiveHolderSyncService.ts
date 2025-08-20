@@ -28,7 +28,7 @@ class ComprehensiveHolderSyncService {
     }
   }
   private isRunning = false;
-  private syncInterval: NodeJS.Timer | null = null;
+  private syncInterval: NodeJS.Timeout | null = null;
 
   /**
    * Start the comprehensive holder sync service

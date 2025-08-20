@@ -108,7 +108,9 @@ export class AlchemyService {
         const uniqueAddresses = new Set<string>();
         let pageKey: string | undefined;
         let iterations = 0;
-        const maxIterations = 100; // Even more iterations to ensure complete coverage
+        // For Base network, limit iterations to prevent timeout with large holder counts
+        const isBase = network?.toUpperCase() === 'BASE';
+        const maxIterations = isBase ? 10 : 100; // Limit Base iterations to prevent timeout
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
@@ -149,8 +151,9 @@ export class AlchemyService {
             break;
           }
           
-          // Don't stop early - get ALL holders up to the limit
-          if (uniqueAddresses.size >= limit * 3) {
+          // For Base network, limit addresses to prevent timeout
+          const maxAddresses = isBase ? 500 : limit * 3;
+          if (uniqueAddresses.size >= maxAddresses) {
             console.log(`📊 Reached ${uniqueAddresses.size} addresses, stopping iteration`);
             break;
           }
@@ -195,10 +198,12 @@ export class AlchemyService {
             // Skip addresses that fail
           }
           
-          // Progress update and rate limiting
+          // Progress update and rate limiting (faster for Base network)
           if (checkedCount % 50 === 0) {
             console.log(`📊 Checked ${checkedCount}/${addressArray.length} addresses, found ${holders.length} holders`);
-            await new Promise(resolve => setTimeout(resolve, 200));
+            // Shorter delay for Base network to prevent timeout
+            const delay = network?.toUpperCase() === 'BASE' ? 50 : 200;
+            await new Promise(resolve => setTimeout(resolve, delay));
           }
           
           // Stop if we have enough holders

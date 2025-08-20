@@ -67,9 +67,42 @@ export class HolderService {
 
       // Get the network name from the pool's chain
       const networkName = pool.chain?.name;
+      
+      // Special handling for Base network pools - use timeout wrapper
+      const isBase = networkName?.toLowerCase() === 'base';
+      const timeoutMs = isBase ? 30000 : 60000; // 30s for Base, 60s for others
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise<any[]>((_, reject) => {
+        setTimeout(() => reject(new Error('timeout')), timeoutMs);
+      });
 
       // Get token holders from appropriate service based on network
-      const holders = await this.fetchTokenHolders(pool.poolAddress, networkName);
+      let holders: any[];
+      try {
+        holders = await Promise.race([
+          this.fetchTokenHolders(pool.poolAddress, networkName),
+          timeoutPromise
+        ]);
+      } catch (error) {
+        if (error instanceof Error && error.message === 'timeout') {
+          console.log(`⏱️ Timeout fetching holders for ${pool.tokenPair} - using partial data`);
+          // For Base network timeouts, try to get at least some holders
+          if (isBase && this.alchemy) {
+            try {
+              holders = await this.alchemy.getTopTokenHolders(pool.poolAddress, 100, networkName);
+              console.log(`✅ Retrieved ${holders.length} holders using quick fetch`);
+            } catch {
+              holders = [];
+            }
+          } else {
+            holders = [];
+          }
+        } else {
+          throw error;
+        }
+      }
+      
       if (!holders || holders.length === 0) {
         console.log(`⚠️ No holders found for pool ${poolId}`);
         await this.logError(

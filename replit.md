@@ -36,6 +36,11 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - Manual triggering capability through admin API endpoints
 - Complete frontend integration in pool detail pages below charts
 - Successfully retrieves all holders matching Etherscan exactly (tested with 48 holders for Steakhouse infiniFi USDC)
+- **Base Network Optimization:** Implemented special handling for Base network pools to prevent timeouts:
+  - Limited iterations to 10 (vs 100 for Ethereum) to reduce API calls
+  - Capped maximum addresses at 500 (vs 3000+ for Ethereum) to prevent timeout
+  - Reduced rate limiting delay to 50ms (vs 200ms) for faster processing
+  - These optimizations ensure Base network pools like Spark USDC Vault sync successfully
 
 **VAULT TOKEN PRICING SYSTEM - CRITICAL PORTFOLIO FIX:**
 - Fixed critical portfolio calculation bug for vault tokens (TAC USDC was showing $27,768 instead of expected $99,960)
