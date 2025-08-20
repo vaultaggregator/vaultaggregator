@@ -405,7 +405,7 @@ export default function PoolDetail() {
                       <span className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">Live APY</span>
                     </div>
                   </div>
-                  <div className="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">
+                  <div className="text-4xl font-bold text-green-600 dark:text-green-400 mt-1">
                     <AnimatedPercentage 
                       value={parseFloat(pool.apy || '0')} 
                       precision={2}
