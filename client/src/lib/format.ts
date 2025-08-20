@@ -13,16 +13,24 @@ export function formatNumber(
     forceDecimals?: boolean;
   } = {}
 ): string {
-  const { currency = '', maxDecimals = 1, forceDecimals = false } = options;
+  const { currency = '', maxDecimals = 2, forceDecimals = false } = options;
   
   if (value < 1000) {
     return `${currency}${value.toString()}`;
   }
   
   const formatWithSuffix = (num: number, suffix: string): string => {
-    const hasDecimals = num % 1 !== 0;
-    const decimals = forceDecimals ? maxDecimals : (hasDecimals ? maxDecimals : 0);
-    return `${currency}${num.toFixed(decimals)}${suffix}`;
+    // For whole numbers or when they're very close to whole numbers, don't show decimals
+    const roundedNum = Math.round(num * 100) / 100;
+    const isWholeOrNearWhole = Math.abs(roundedNum - Math.round(roundedNum)) < 0.01;
+    
+    if (!forceDecimals && (isWholeOrNearWhole || maxDecimals === 0)) {
+      return `${currency}${Math.round(roundedNum)}${suffix}`;
+    }
+    
+    // Show decimals only when meaningful
+    const decimals = forceDecimals ? maxDecimals : Math.min(maxDecimals, 2);
+    return `${currency}${roundedNum.toFixed(decimals).replace(/\.?0+$/, '')}${suffix}`;
   };
   
   if (value >= 1e9) {
@@ -58,7 +66,7 @@ export function formatHolders(value: number): string {
  * Format TVL values consistently across the platform
  */
 export function formatTvl(value: number): string {
-  return formatNumber(value, { currency: '$', maxDecimals: 1 });
+  return formatNumber(value, { currency: '$', maxDecimals: 2 });
 }
 
 /**

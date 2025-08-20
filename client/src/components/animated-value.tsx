@@ -241,7 +241,7 @@ export function AnimatedCurrency({
 }: AnimatedCurrencyProps) {
   const formatValue = (val: number) => {
     if (compact) {
-      return formatNumber(val, { currency, maxDecimals: 1 });
+      return formatNumber(val, { currency, maxDecimals: 2 });
     }
     return `${currency}${val.toLocaleString()}`;
   };
