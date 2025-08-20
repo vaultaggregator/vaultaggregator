@@ -475,7 +475,7 @@ export default function PoolDetail() {
         </Card>
 
         {/* Metrics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* 7-Day Average APY Card */}
           <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 border-emerald-200 dark:border-emerald-700">
             <CardHeader className="pb-3">
@@ -671,6 +671,17 @@ export default function PoolDetail() {
               <p className="text-xs text-orange-600/70 dark:text-orange-300/70 font-medium">DeFi Platform</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Interactive Chart - CoinGecko Style */}
+        <div className="mb-8">
+          <PoolChart
+            poolId={pool.id}
+            currentApy={parseFloat(pool.apy) || 0}
+            currentTvl={parseFloat(pool.tvl) || 0}
+            tokenPair={pool.tokenPair}
+            className="w-full"
+          />
         </div>
 
         {/* Platform Info Cards */}
