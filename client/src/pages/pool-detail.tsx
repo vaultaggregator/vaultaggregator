@@ -728,6 +728,7 @@ export default function PoolDetail() {
           <HoldersSection 
             poolId={pool.id} 
             tokenSymbol={pool.tokenPair.split('/')[0] || 'Token'}
+            chainName={pool.chain?.name}
           />
         </div>
 

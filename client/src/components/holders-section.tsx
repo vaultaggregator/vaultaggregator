@@ -41,9 +41,10 @@ interface HoldersResponse {
 interface HoldersSectionProps {
   poolId: string;
   tokenSymbol?: string;
+  chainName?: string;
 }
 
-export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSectionProps) {
+export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: HoldersSectionProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState("");
   const limit = 20;
@@ -91,7 +92,11 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
   };
 
   const openEtherscan = (address: string) => {
-    window.open(`https://etherscan.io/address/${address}`, '_blank');
+    // Use Basescan for Base network, Etherscan for others
+    const explorerUrl = chainName?.toLowerCase() === 'base' 
+      ? `https://basescan.org/address/${address}`
+      : `https://etherscan.io/address/${address}`;
+    window.open(explorerUrl, '_blank');
   };
 
   const handleGoToPage = () => {
