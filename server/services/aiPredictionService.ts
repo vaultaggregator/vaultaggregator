@@ -102,7 +102,7 @@ export class AIPredictionService {
       const { pool, platform, chain } = poolData[0];
 
       // Create a prompt for GPT-4o (note: this is the latest model)
-      const prompt = `You are a DeFi analyst providing insights for yield farming opportunities. Analyze this pool and provide a market outlook in exactly 150 words:
+      const prompt = `You are a DeFi analyst providing insights for yield farming opportunities. Analyze this pool and provide a market outlook in exactly 180 words:
 
 Pool: ${pool.tokenPair}
 Platform: ${platform?.displayName || 'Unknown'}
@@ -119,7 +119,7 @@ Consider these factors:
 5. Smart contract risks
 
 Provide:
-- A 150-word outlook (be concise and specific)
+- A 180-word outlook (be concise and specific)
 - Sentiment: bullish, bearish, or neutral
 - Confidence score: 1-100
 - Top 3 market factors affecting this pool

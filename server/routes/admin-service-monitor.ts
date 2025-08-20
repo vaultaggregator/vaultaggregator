@@ -8,7 +8,7 @@ const router = express.Router();
 interface ServiceStatus {
   id: string;
   name: string;
-  type: 'scraper' | 'sync' | 'metrics' | 'healing';
+  type: 'scraper' | 'sync' | 'metrics' | 'healing' | 'ai';
   status: 'active' | 'error' | 'disabled' | 'unknown';
   lastRun: string | null;
   nextRun: string | null;
@@ -80,6 +80,14 @@ const SERVICE_DEFINITIONS = [
     description: 'Automatically retries failed data collection operations',
     defaultInterval: 15,
     poolsAffected: 12
+  },
+  {
+    id: 'ai-scheduler',
+    name: 'AI Market Insights Generator',
+    type: 'ai' as const,
+    description: 'Generates AI-powered market insights and predictions for all pools',
+    defaultInterval: 1440, // 24 hours in minutes
+    poolsAffected: 34
   }
 ];
 
@@ -115,7 +123,18 @@ async function getServiceStatus(serviceId: string): Promise<Partial<ServiceStatu
     let status: 'active' | 'error' | 'disabled' | 'unknown' = 'unknown';
 
     // Check specific service status based on service type
-    if (serviceId === 'pool-scraper') {
+    if (serviceId === 'ai-scheduler') {
+      // Check AI insights generation status
+      const aiResult = await db.execute(sql`
+        SELECT MAX(generated_at) as last_run, COUNT(*) as total_insights
+        FROM ai_outlooks 
+        WHERE generated_at > NOW() - INTERVAL '48 hours'
+      `);
+      
+      lastRun = aiResult.rows[0]?.last_run as string || null;
+      totalRuns = Number(aiResult.rows[0]?.total_insights || 0);
+      status = totalRuns > 0 ? 'active' : 'unknown';
+    } else if (serviceId === 'pool-scraper') {
       // Check pool last_updated timestamps
       const poolResult = await db.execute(sql`
         SELECT MAX(last_updated) as last_run, COUNT(*) as total_pools
@@ -505,6 +524,98 @@ router.get('/:serviceId/config', async (req, res) => {
   } catch (error) {
     console.error('Error fetching service configuration:', error);
     res.status(500).json({ error: 'Failed to fetch service configuration' });
+  }
+});
+
+// AI Scheduler Management Endpoints
+router.get('/ai-scheduler/status', async (req, res) => {
+  try {
+    const { aiScheduler } = await import("../services/aiSchedulerService");
+    const status = aiScheduler.getStatus();
+    const config = aiScheduler.getConfig();
+    
+    res.json({
+      success: true,
+      status,
+      config
+    });
+  } catch (error) {
+    console.error("Error getting AI scheduler status:", error);
+    res.status(500).json({ error: "Failed to get AI scheduler status" });
+  }
+});
+
+router.post('/ai-scheduler/configure', async (req, res) => {
+  try {
+    const { enabled, intervalHours } = req.body;
+    
+    if (typeof enabled !== 'boolean' || typeof intervalHours !== 'number') {
+      return res.status(400).json({ error: "Invalid configuration parameters" });
+    }
+    
+    if (intervalHours < 1 || intervalHours > 168) { // 1 hour to 1 week
+      return res.status(400).json({ error: "Interval must be between 1 and 168 hours" });
+    }
+    
+    const { aiScheduler } = await import("../services/aiSchedulerService");
+    const newConfig = await aiScheduler.updateConfig({ enabled, intervalHours });
+    
+    res.json({
+      success: true,
+      message: `AI scheduler ${enabled ? 'enabled' : 'disabled'} with ${intervalHours}h interval`,
+      config: newConfig
+    });
+  } catch (error) {
+    console.error("Error configuring AI scheduler:", error);
+    res.status(500).json({ error: "Failed to configure AI scheduler" });
+  }
+});
+
+router.post('/ai-scheduler/trigger', async (req, res) => {
+  try {
+    const { aiScheduler } = await import("../services/aiSchedulerService");
+    
+    // Start the generation process
+    const result = await aiScheduler.manualTrigger();
+    
+    res.json({
+      success: true,
+      message: "AI insights generation completed",
+      result
+    });
+  } catch (error) {
+    console.error("Error triggering AI scheduler:", error);
+    res.status(500).json({ error: "Failed to trigger AI insights generation" });
+  }
+});
+
+router.post('/ai-scheduler/start', async (req, res) => {
+  try {
+    const { aiScheduler } = await import("../services/aiSchedulerService");
+    await aiScheduler.start();
+    
+    res.json({
+      success: true,
+      message: "AI scheduler started successfully"
+    });
+  } catch (error) {
+    console.error("Error starting AI scheduler:", error);
+    res.status(500).json({ error: "Failed to start AI scheduler" });
+  }
+});
+
+router.post('/ai-scheduler/stop', async (req, res) => {
+  try {
+    const { aiScheduler } = await import("../services/aiSchedulerService");
+    aiScheduler.stop();
+    
+    res.json({
+      success: true,
+      message: "AI scheduler stopped successfully"
+    });
+  } catch (error) {
+    console.error("Error stopping AI scheduler:", error);
+    res.status(500).json({ error: "Failed to stop AI scheduler" });
   }
 });
 

@@ -115,3 +115,4 @@ The application prioritizes a consistent UI with standardized header/footer layo
 - **Alchemy API**: Used for direct analysis of Ethereum transfers.
 - **Etherscan**: Used for accurate holder count data and contract creation dates.
 - **Lido API**: Integrated for data fetching for Lido pools.
+- **OpenAI Integration**: AI Market Insights generate 180-word comprehensive analyses with market predictions, sentiment analysis, and investment insights using GPT-4o model.
