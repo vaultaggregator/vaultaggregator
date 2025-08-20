@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -26,6 +26,10 @@ interface ChartDataPoint {
 
 export default function Analytics() {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Fetch analytics data
   const { data: pools = [], isLoading: poolsLoading } = useQuery<YieldOpportunity[]>({

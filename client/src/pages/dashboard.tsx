@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,10 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ['/api/dashboard/stats'],
     staleTime: 5 * 60 * 1000, // 5 minutes
