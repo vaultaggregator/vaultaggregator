@@ -100,6 +100,7 @@ export interface IStorage {
   getAllPoolsWithRelations(): Promise<PoolWithRelations[]>;
   getPoolById(id: string): Promise<PoolWithRelations | undefined>;
   getPoolByDefiLlamaId(defiLlamaId: string): Promise<Pool | undefined>;
+  getPoolByAddress(address: string): Promise<Pool | undefined>;
   getPoolByTokenAndPlatform(tokenPair: string, platformId: string): Promise<Pool | undefined>;
   createPool(pool: InsertPool): Promise<Pool>;
   updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined>;
@@ -355,6 +356,11 @@ export class DatabaseStorage implements IStorage {
 
   async getPoolByDefiLlamaId(defiLlamaId: string): Promise<Pool | undefined> {
     const [pool] = await db.select().from(pools).where(eq(pools.defiLlamaId, defiLlamaId));
+    return pool || undefined;
+  }
+
+  async getPoolByAddress(address: string): Promise<Pool | undefined> {
+    const [pool] = await db.select().from(pools).where(eq(pools.poolAddress, address));
     return pool || undefined;
   }
 
