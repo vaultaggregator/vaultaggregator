@@ -85,7 +85,7 @@ export class AlchemyService {
         const uniqueAddresses = new Set<string>();
         let pageKey: string | undefined;
         let iterations = 0;
-        const maxIterations = 50; // Increased to get more holders
+        const maxIterations = 100; // Even more iterations to ensure complete coverage
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
@@ -153,7 +153,7 @@ export class AlchemyService {
                 const balanceBigInt = BigInt(rawBalance);
                 const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
                 
-                if (formattedBalance > 0.000001) { // Even lower threshold to capture dust holders
+                if (formattedBalance > 0) { // Zero threshold to capture all holders
                   holders.push({
                     address,
                     balance: balanceBigInt.toString(),
