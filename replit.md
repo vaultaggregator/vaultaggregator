@@ -19,6 +19,7 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - New pools will automatically show Etherscan links when pool_address is populated
 - Uses standard token URL format: `https://etherscan.io/token/{contract_address}`
 - **CRITICAL UI RULE**: Both Etherscan and Visit Platform buttons must remain on the left side, with Etherscan on top - do not change position or remove without explicit user request
+- **Data Sync Status Positioning**: "Data synced just now" text must remain at bottom left of pool detail pages, positioned just before the footer - do not move unless explicitly requested
 
 **Critical Data Methodology - DO NOT CHANGE:**
 - Morpho STEAKUSDC APY: Live data from Morpho API (database-first system fetches real-time values)

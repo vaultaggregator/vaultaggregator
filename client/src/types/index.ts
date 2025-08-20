@@ -20,7 +20,7 @@ export interface YieldOpportunity {
   apy: string;
   tvl: string;
   riskLevel: 'low' | 'medium' | 'high';
-  pool_address?: string;
+  poolAddress?: string;
   notes: Array<{
     id: string;
     content: string;

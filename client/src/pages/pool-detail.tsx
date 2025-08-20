@@ -374,20 +374,8 @@ export default function PoolDetail() {
                     {pool.platform.displayName}
                   </p>
                   
-                  {/* Badges */}
+                  {/* Risk Badge */}
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <Badge 
-                      variant="outline"
-                      className="text-xs sm:text-sm px-2 sm:px-3 py-1"
-                      style={{ 
-                        backgroundColor: `${pool.chain.color}20`, 
-                        color: pool.chain.color,
-                        borderColor: `${pool.chain.color}40`
-                      }}
-                      data-testid="badge-network"
-                    >
-                      {pool.chain.displayName}
-                    </Badge>
                     <MetricTooltip metric="risk-level" variant="icon" side="bottom">
                       <div className="flex items-center gap-1">
                         <Shield className="w-3 h-3" />
@@ -407,8 +395,24 @@ export default function PoolDetail() {
                 </div>
               </div>
 
-              {/* Right Section - Live APY Card and Action Buttons */}
+              {/* Right Section - Protocol Badge, Live APY Card and Action Buttons */}
               <div className="flex flex-col lg:flex-row gap-3 w-full lg:w-auto">
+                {/* Protocol Badge */}
+                <div className="flex items-center">
+                  <Badge 
+                    variant="outline"
+                    className="text-xs sm:text-sm px-2 sm:px-3 py-1"
+                    style={{ 
+                      backgroundColor: `${pool.chain.color}20`, 
+                      color: pool.chain.color,
+                      borderColor: `${pool.chain.color}40`
+                    }}
+                    data-testid="badge-network"
+                  >
+                    {pool.chain.displayName}
+                  </Badge>
+                </div>
+                
                 {/* Live APY Card - Beautiful Compact Display */}
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-700 rounded-lg px-4 py-3 shadow-sm">
                   <div className="flex items-center gap-2">
