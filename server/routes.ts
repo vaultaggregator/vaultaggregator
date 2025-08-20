@@ -46,9 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const metricsRoutes = (await import("./routes/metrics-routes")).default;
   app.use('/api', metricsRoutes);
   
-  // Import and register webhook routes for real-time updates
-  const webhookRoutes = (await import("./routes/webhooks")).default;
-  app.use(webhookRoutes);
+  // DISABLED: Webhook routes due to serious issue
+  // const webhookRoutes = (await import("./routes/webhooks")).default;
+  // app.use(webhookRoutes);
 
   // Import and register enhanced Alchemy API routes
   const alchemyEnhancedRoutes = (await import("./routes/alchemy-enhanced")).default;
@@ -3568,11 +3568,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
-  // Set up WebSocket server for real-time APY updates
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  // DISABLED: WebSocket server due to serious connection issues
+  // const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
-  // Initialize Smart WebSocket service with the WebSocket server
-  smartWebSocketService.initializeWebSocketServer(wss);
+  // DISABLED: Smart WebSocket service initialization
+  // smartWebSocketService.initializeWebSocketServer(wss);
   
   // DISABLED: Real-time blockchain monitoring to prevent millions of Alchemy API requests
   // This was monitoring EVERY block on Ethereum (~7,200/day) and Base (~43,200/day)
@@ -3581,30 +3581,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //   console.error('Failed to start Smart WebSocket monitoring:', error);
   // });
   
-  // Store WebSocket connections
+  // DISABLED: WebSocket connections handling
   const wsConnections = new Set<WebSocket>();
   
-  wss.on('connection', (ws: WebSocket) => {
-    console.log('📡 WebSocket connection established');
-    wsConnections.add(ws);
-    
-    // Send initial connection confirmation
-    ws.send(JSON.stringify({
-      type: 'connection',
-      status: 'connected',
-      timestamp: Date.now()
-    }));
-    
-    ws.on('close', () => {
-      console.log('📡 WebSocket connection closed');
-      wsConnections.delete(ws);
-    });
-    
-    ws.on('error', (error) => {
-      console.error('📡 WebSocket error:', error);
-      wsConnections.delete(ws);
-    });
-  });
+  // DISABLED: WebSocket connection handler
+  // wss.on('connection', (ws: WebSocket) => {
+  //   console.log('📡 WebSocket connection established');
+  //   wsConnections.add(ws);
+  //   
+  //   // Send initial connection confirmation
+  //   ws.send(JSON.stringify({
+  //     type: 'connection',
+  //     status: 'connected',
+  //     timestamp: Date.now()
+  //   }));
+  //   
+  //   ws.on('close', () => {
+  //     console.log('📡 WebSocket connection closed');
+  //     wsConnections.delete(ws);
+  //   });
+  //   
+  //   ws.on('error', (error) => {
+  //     console.error('📡 WebSocket error:', error);
+  //     wsConnections.delete(ws);
+  //   });
+  // });
+  
+  console.log('⚠️ WebSocket server DISABLED due to serious connection issues');
   
   // Real-time APY update service
   const broadcastApyUpdate = (poolId: string, apy: string, timestamp: number) => {
