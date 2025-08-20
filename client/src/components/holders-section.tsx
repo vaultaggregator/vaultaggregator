@@ -235,6 +235,7 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             <CardTitle>All Holders</CardTitle>
+            <span className="text-xs text-muted-foreground ml-2">(Limited to top 1,000)</span>
           </div>
           <Badge variant="secondary" className="text-xs">
             {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders

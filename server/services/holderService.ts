@@ -130,9 +130,8 @@ export class HolderService {
       // Use Alchemy if available
       if (this.alchemy) {
         try {
-          // Special handling for Lido stETH - fetch more holders
-          const LIDO_STETH_ADDRESS = '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
-          const holderLimit = tokenAddress.toLowerCase() === LIDO_STETH_ADDRESS.toLowerCase() ? 500 : 100;
+          // Fetch up to 1000 holders for all pools
+          const holderLimit = 1000;
           
           console.log(`📊 Fetching top ${holderLimit} holders for ${tokenAddress}`);
           const holders = await this.alchemy.getTopTokenHolders(tokenAddress, holderLimit);

@@ -116,7 +116,7 @@ export class AlchemyService {
           iterations++;
           
           // Stop if we have enough addresses or no more pages
-          if (!pageKey || uniqueAddresses.size >= limit * 2) {
+          if (!pageKey || uniqueAddresses.size >= Math.max(limit * 2, 2000)) {
             break;
           }
         }
