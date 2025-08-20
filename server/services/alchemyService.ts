@@ -16,22 +16,26 @@ export class AlchemyService {
   private alchemyBase: Alchemy;
   
   constructor() {
-    const apiKey = process.env.ALCHEMY_API_KEY;
-    if (!apiKey) {
-      throw new Error('ALCHEMY_API_KEY is required for holder data');
-    }
+    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
+    console.log('⚠️ ALCHEMY API DISABLED - All Alchemy connections temporarily stopped');
     
-    // Initialize Ethereum mainnet client
-    this.alchemy = new Alchemy({
-      apiKey,
-      network: Network.ETH_MAINNET,
-    });
+    // Disabled initialization to stop all API calls
+    // const apiKey = process.env.ALCHEMY_API_KEY;
+    // if (!apiKey) {
+    //   throw new Error('ALCHEMY_API_KEY is required for holder data');
+    // }
     
-    // Initialize Base network client
-    this.alchemyBase = new Alchemy({
-      apiKey,
-      network: Network.BASE_MAINNET,
-    });
+    // // Initialize Ethereum mainnet client
+    // this.alchemy = new Alchemy({
+    //   apiKey,
+    //   network: Network.ETH_MAINNET,
+    // });
+    
+    // // Initialize Base network client
+    // this.alchemyBase = new Alchemy({
+    //   apiKey,
+    //   network: Network.BASE_MAINNET,
+    // });
   }
   
   /**
@@ -48,6 +52,10 @@ export class AlchemyService {
    * Get top token holders for a specific token contract
    */
   async getTopTokenHolders(tokenAddress: string, limit: number = 100, network?: string): Promise<TokenHolder[]> {
+    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
+    console.log('⚠️ ALCHEMY API DISABLED - Skipping holder fetch');
+    return [];
+    
     try {
       const client = this.getAlchemyClient(network);
       console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress} on ${network || 'Ethereum'}`);
@@ -241,6 +249,10 @@ export class AlchemyService {
    * Get token metadata using Alchemy API
    */
   async getTokenMetadata(tokenAddress: string, network?: string) {
+    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
+    console.log('⚠️ ALCHEMY API DISABLED - Skipping metadata fetch');
+    return { name: 'Disabled', symbol: 'N/A', decimals: 18 };
+    
     try {
       const client = this.getAlchemyClient(network);
       return await client.core.getTokenMetadata(tokenAddress);
@@ -254,6 +266,10 @@ export class AlchemyService {
    * Get ETH balance for an address
    */
   async getEthBalance(address: string): Promise<number> {
+    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
+    console.log('⚠️ ALCHEMY API DISABLED - Skipping ETH balance fetch');
+    return 0;
+    
     try {
       const balance = await this.alchemy.core.getBalance(address);
       return parseFloat(balance.toString()) / Math.pow(10, 18);
@@ -267,6 +283,10 @@ export class AlchemyService {
    * Get token price in USD using Alchemy's enhanced token metadata
    */
   async getTokenPrice(tokenAddress: string, network?: string): Promise<number> {
+    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
+    console.log('⚠️ ALCHEMY API DISABLED - Skipping token price fetch');
+    return 1.0;
+    
     try {
       const client = this.getAlchemyClient(network);
       
