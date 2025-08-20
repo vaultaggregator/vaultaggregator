@@ -208,23 +208,7 @@ html, body {
 }
 
 /* Custom animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
-}
+/* Animations disabled for pool data updates */
 
 /* Enhanced color extensions with new accent system */
 .text-success-400 { color: hsl(var(--success-400)); }
@@ -260,15 +244,12 @@ html, body {
 /* Enhanced hover states with smooth transitions */
 .hover\:bg-primary-600:hover { 
   background-color: hsl(var(--primary-600)); 
-  transition: background-color 0.2s ease-in-out;
 }
 .hover\:bg-primary-700:hover { 
   background-color: hsl(var(--primary-700)); 
-  transition: background-color 0.2s ease-in-out;
 }
 .hover\:text-primary-600:hover { 
   color: hsl(var(--primary-600)); 
-  transition: color 0.2s ease-in-out;
 }
 
 /* Dark mode input and form improvements */
@@ -305,14 +286,12 @@ html, body {
 .shadow-medium { box-shadow: var(--shadow-md); }
 .shadow-large { box-shadow: var(--shadow-lg); }
 
-/* Modern interactive states */
+/* Modern interactive states - transitions disabled */
 .hover\:shadow-md:hover { 
   box-shadow: var(--shadow-md); 
-  transition: box-shadow 0.2s ease-in-out;
 }
 .hover\:shadow-lg:hover { 
   box-shadow: var(--shadow-lg); 
-  transition: box-shadow 0.2s ease-in-out;
 }
 
 /* Improved focus states for accessibility */
