@@ -45,6 +45,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const metricsRoutes = (await import("./routes/metrics-routes")).default;
   app.use('/api', metricsRoutes);
   
+  // Import and register webhook routes for real-time updates
+  const webhookRoutes = (await import("./routes/webhooks")).default;
+  app.use(webhookRoutes);
 
   // Session configuration
   app.use(session({

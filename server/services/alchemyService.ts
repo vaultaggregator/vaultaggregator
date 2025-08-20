@@ -52,8 +52,8 @@ export class AlchemyService {
       const client = this.getAlchemyClient(network);
       console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress} on ${network || 'Ethereum'}`);
       
-      // Set a maximum time limit for fetching to prevent timeouts
-      const MAX_FETCH_TIME = 25000; // 25 seconds max for fetching
+      // With 300 req/s, we can afford longer fetch times for complete data
+      const MAX_FETCH_TIME = 60000; // 60 seconds with high-speed API
       const startTime = Date.now();
       
       // Get token metadata first
@@ -108,9 +108,8 @@ export class AlchemyService {
         const uniqueAddresses = new Set<string>();
         let pageKey: string | undefined;
         let iterations = 0;
-        // For Base network, limit iterations to prevent timeout with large holder counts
-        const isBase = network?.toUpperCase() === 'BASE';
-        const maxIterations = isBase ? 10 : 100; // Limit Base iterations to prevent timeout
+        // With 300 req/s, no need to limit iterations for any network
+        const maxIterations = 200; // Can handle much more with high-speed API
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
@@ -151,8 +150,8 @@ export class AlchemyService {
             break;
           }
           
-          // For Base network, limit addresses to prevent timeout
-          const maxAddresses = isBase ? 500 : limit * 3;
+          // With 300 req/s, no need to limit addresses
+          const maxAddresses = 10000; // Can handle many more addresses now
           if (uniqueAddresses.size >= maxAddresses) {
             console.log(`📊 Reached ${uniqueAddresses.size} addresses, stopping iteration`);
             break;
@@ -161,50 +160,61 @@ export class AlchemyService {
         
         console.log(`🎯 Found ${uniqueAddresses.size} unique addresses from transfers`);
         
-        // Now get balances for all unique addresses
+        // Now get balances for all unique addresses with parallel processing
         const addressArray = Array.from(uniqueAddresses);
-        let checkedCount = 0;
+        console.log(`📊 Checking balances for ${addressArray.length} addresses with parallel processing...`);
         
-        console.log(`📊 Checking balances for ${addressArray.length} addresses...`);
+        // Process in batches of 50 for maximum speed with 300 req/s
+        const BATCH_SIZE = 50;
+        const batches = [];
         
-        for (const address of addressArray) {
-          if (processedAddresses.has(address)) {
-            continue;
-          }
-          
-          processedAddresses.add(address);
-          checkedCount++;
-          
-          try {
-            const balance = await client.core.getTokenBalances(address, [tokenAddress]);
-            if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
-              const rawBalance = balance.tokenBalances[0].tokenBalance;
-              const decimals = metadata.decimals || 18;
-              
-              if (rawBalance !== '0x0') {
-                const balanceBigInt = BigInt(rawBalance);
-                const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
+        for (let i = 0; i < addressArray.length; i += BATCH_SIZE) {
+          const batch = addressArray.slice(i, Math.min(i + BATCH_SIZE, addressArray.length));
+          batches.push(batch);
+        }
+        
+        console.log(`⚡ Processing ${batches.length} batches of up to ${BATCH_SIZE} addresses in parallel`);
+        
+        // Process batches in parallel
+        for (const batch of batches) {
+          const batchPromises = batch.map(async (address) => {
+            if (processedAddresses.has(address)) {
+              return null;
+            }
+            
+            processedAddresses.add(address);
+            
+            try {
+              const balance = await client.core.getTokenBalances(address, [tokenAddress]);
+              if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
+                const rawBalance = balance.tokenBalances[0].tokenBalance;
+                const decimals = metadata.decimals || 18;
                 
-                if (formattedBalance > 0) { // Zero threshold to capture all holders
-                  holders.push({
-                    address,
-                    balance: balanceBigInt.toString(),
-                    formattedBalance,
-                  });
+                if (rawBalance !== '0x0') {
+                  const balanceBigInt = BigInt(rawBalance);
+                  const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
+                  
+                  if (formattedBalance > 0) {
+                    return {
+                      address,
+                      balance: balanceBigInt.toString(),
+                      formattedBalance,
+                    };
+                  }
                 }
               }
+            } catch (error) {
+              // Skip addresses that fail
             }
-          } catch (error) {
-            // Skip addresses that fail
-          }
+            return null;
+          });
           
-          // Progress update and rate limiting (faster for Base network)
-          if (checkedCount % 50 === 0) {
-            console.log(`📊 Checked ${checkedCount}/${addressArray.length} addresses, found ${holders.length} holders`);
-            // Shorter delay for Base network to prevent timeout
-            const delay = network?.toUpperCase() === 'BASE' ? 50 : 200;
-            await new Promise(resolve => setTimeout(resolve, delay));
-          }
+          // Wait for batch to complete
+          const batchResults = await Promise.all(batchPromises);
+          const validHolders = batchResults.filter(h => h !== null) as TokenHolder[];
+          holders.push(...validHolders);
+          
+          console.log(`⚡ Batch processed: ${holders.length} holders found so far`);
           
           // Stop if we have enough holders
           if (holders.length >= limit) {
