@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatNumber } from "@/lib/format";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
     queryKey: [`/api/pools/${poolId}/token-info`],
     retry: 1,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    cacheTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
   });
 
   const copyToClipboard = (text: string) => {
@@ -50,7 +51,7 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatNumber = (num: string | number) => {
+  const formatTokenNumber = (num: string | number) => {
     const value = typeof num === 'string' ? parseFloat(num) : num;
     if (isNaN(value)) return "0";
     
@@ -65,7 +66,7 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
       const value = BigInt(amount);
       const divisor = BigInt(Math.pow(10, parseInt(decimals)));
       const result = value / divisor;
-      return formatNumber(result.toString());
+      return formatTokenNumber(result.toString());
     } catch {
       return "0";
     }
@@ -172,7 +173,7 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
                     Loading...
                   </span>
                 ) : holders?.count > 0 ? (
-                  holders.count.toLocaleString()
+                  formatNumber(holders.count)
                 ) : (
                   "N/A"
                 )}
@@ -187,7 +188,7 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
                     Loading...
                   </span>
                 ) : transfers?.analytics?.transferCount24h > 0 ? (
-                  transfers.analytics.transferCount24h.toLocaleString()
+                  formatNumber(transfers.analytics.transferCount24h)
                 ) : (
                   "N/A"
                 )}

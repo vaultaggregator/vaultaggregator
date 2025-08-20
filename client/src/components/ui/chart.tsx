@@ -241,7 +241,7 @@ const ChartTooltipContent = React.forwardRef<
                       </div>
                       {item.value && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {typeof item.value === 'number' && item.value > 1000 ? formatNumber(item.value) : item.value.toLocaleString()}
+                          {typeof item.value === 'number' && item.value > 1000 ? formatNumber(item.value, { maxDecimals: 2 }) : formatNumber(typeof item.value === 'number' ? item.value : 0, { maxDecimals: 2 })}
                         </span>
                       )}
                     </div>

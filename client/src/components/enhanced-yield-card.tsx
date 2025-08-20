@@ -243,7 +243,7 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
               <span>Holders</span>
             </div>
             <div className="text-xl font-bold">
-              {pool.holdersCount ? pool.holdersCount.toLocaleString() : 'N/A'}
+              {pool.holdersCount ? formatNumber(pool.holdersCount, { maxDecimals: 0 }) : 'N/A'}
             </div>
           </div>
           
@@ -264,7 +264,7 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">Your Position:</span>
-              <span className="font-medium">${portfolioItem.amount.toLocaleString()}</span>
+              <span className="font-medium">{formatNumber(portfolioItem.amount, { currency: '$', maxDecimals: 0 })}</span>
             </div>
             <div className="flex items-center justify-between text-sm mt-1">
               <span className="text-gray-600 dark:text-gray-400">Daily Yield:</span>

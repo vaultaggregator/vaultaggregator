@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { formatNumber } from '@/lib/format';
 
@@ -239,16 +239,16 @@ export function AnimatedCurrency({
   className,
   compact = true
 }: AnimatedCurrencyProps) {
-  const formatValue = (val: number) => {
+  const formattedValue = useMemo(() => {
     if (compact) {
-      return formatNumber(val, { currency, maxDecimals: 2 });
+      return formatNumber(value, { currency, maxDecimals: 2 });
     }
-    return `${currency}${val.toLocaleString()}`;
-  };
+    return `${currency}${value.toLocaleString()}`;
+  }, [value, currency, compact]);
   
   return (
     <AnimatedValue
-      value={formatValue(value)}
+      value={formattedValue}
       compareValue={value}
       className={className}
       animationType="flash"

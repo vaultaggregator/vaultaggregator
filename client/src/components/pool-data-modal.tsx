@@ -136,7 +136,7 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
       return `${value.slice(0, 2).join(', ')} +${value.length - 2} more`;
     }
     if (typeof value === 'object') return JSON.stringify(value, null, 2);
-    if (typeof value === 'number') return value.toLocaleString();
+    if (typeof value === 'number') return formatNumber(value, { maxDecimals: 2 });
     return String(value);
   };
 
