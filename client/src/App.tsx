@@ -70,10 +70,13 @@ function Router() {
       <Route path="/admin-errors" component={AdminErrors} />
 
       {/* Pool detail routes - these must come AFTER admin routes */}
+      {/* Primary SEO-friendly URL patterns for pool details */}
       <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
-      <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} /> {/* SEO-friendly pools URLs */}
-      <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy UUID support */}
-      <Route path="/pools/:poolId" component={PoolDetail} /> {/* Legacy pools support */}
+      <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} />
+      
+      {/* Legacy UUID-based routes for backward compatibility */}
+      <Route path="/pool/:poolId" component={PoolDetail} />
+      <Route path="/pools/:poolId" component={PoolDetail} />
       <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support - MUST be last */}
       <Route component={NotFound} />
     </Switch>

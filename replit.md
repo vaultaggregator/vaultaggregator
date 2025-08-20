@@ -4,6 +4,14 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # User Preferences
 
+**URL Routing & Pool Matching - CRITICAL FIXES APPLIED:**
+- Fixed pool token matching logic to handle special characters (hyphens, spaces) consistently
+- Server-side normalization removes both spaces and hyphens for comparison: "OEV-boosted USDC" → "oevboostedusdc"
+- URL parsing converts hyphens to spaces: "oev-boosted-usdc" → "oev boosted usdc" → "oevboostedusdc"  
+- Frontend routing supports both `/yield/` and `/pools/` URL patterns for SEO-friendly URLs
+- Token matching uses three comparison methods: exact normalized match, cleaned comparison, space-to-hyphen conversion
+- All pool detail pages now accessible via `/pools/:network/:protocol/:tokenPair` format
+
 **Critical Data Methodology - DO NOT CHANGE:**
 - Morpho STEAKUSDC APY: Live data from Morpho API (database-first system fetches real-time values)
 - Morpho STEAKUSDC TVL: Use current calculation methodology - displays $314.8M matching Morpho website (user confirmed correct)
