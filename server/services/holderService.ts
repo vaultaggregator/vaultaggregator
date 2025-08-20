@@ -97,15 +97,14 @@ export class HolderService {
       // Clear existing holders for this pool
       await storage.clearPoolHolders(poolId);
 
-      // Store new holder data
-      for (const holder of processedHolders) {
-        await storage.insertTokenHolder(holder);
-      }
+      // Use batch insert for better performance and to prevent timeouts
+      console.log(`💾 Batch inserting ${processedHolders.length} holders...`);
+      const insertedCount = await storage.batchInsertTokenHolders(processedHolders);
 
       // Update pool's holder count with actual synced data
       // Note: holdersCount is handled by the comprehensive holder sync service
 
-      console.log(`✅ Successfully synced ${processedHolders.length} holders for pool ${poolId}`);
+      console.log(`✅ Successfully synced ${insertedCount} holders for pool ${poolId}`);
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);

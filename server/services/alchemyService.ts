@@ -52,6 +52,10 @@ export class AlchemyService {
       const client = this.getAlchemyClient(network);
       console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress} on ${network || 'Ethereum'}`);
       
+      // Set a maximum time limit for fetching to prevent timeouts
+      const MAX_FETCH_TIME = 25000; // 25 seconds max for fetching
+      const startTime = Date.now();
+      
       // Get token metadata first
       const metadata = await client.core.getTokenMetadata(tokenAddress);
       console.log(`📊 Token: ${metadata.name} (${metadata.symbol}), Decimals: ${metadata.decimals}`);
@@ -108,6 +112,12 @@ export class AlchemyService {
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
+          // Check if we've exceeded the time limit
+          if (Date.now() - startTime > MAX_FETCH_TIME) {
+            console.log(`⏱️ Fetch time limit reached, proceeding with ${uniqueAddresses.size} addresses found so far`);
+            break;
+          }
+          
           const transfers = await client.core.getAssetTransfers({
             fromBlock: '0x0', // Start from genesis
             toBlock: 'latest',

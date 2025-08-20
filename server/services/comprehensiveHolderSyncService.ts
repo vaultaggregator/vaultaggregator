@@ -100,7 +100,15 @@ class ComprehensiveHolderSyncService {
           const storedCount = currentCount[0]?.count || 0;
           console.log(`🔄 Syncing holders for "${pool.tokenPair}" (currently ${storedCount} holders stored)...`);
           
-          await holderService.syncPoolHolders(pool.id);
+          // Add timeout wrapper to prevent hanging on any single pool
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Sync timeout after 30 seconds')), 30000);
+          });
+          
+          const syncPromise = holderService.syncPoolHolders(pool.id);
+          
+          // Race between sync and timeout
+          await Promise.race([syncPromise, timeoutPromise]);
           
           // Verify new count
           const newCount = await db
@@ -116,7 +124,11 @@ class ComprehensiveHolderSyncService {
           await new Promise(resolve => setTimeout(resolve, 2000));
         } catch (error) {
           errorCount++;
-          console.error(`❌ Failed to sync holders for "${pool.tokenPair}":`, error);
+          if (error instanceof Error && error.message.includes('timeout')) {
+            console.error(`⏱️ Timeout syncing holders for "${pool.tokenPair}" - skipping to next pool`);
+          } else {
+            console.error(`❌ Failed to sync holders for "${pool.tokenPair}":`, error);
+          }
         }
       }
 

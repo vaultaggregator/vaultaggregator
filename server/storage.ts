@@ -2127,6 +2127,37 @@ export class DatabaseStorage implements IStorage {
     return newHolder;
   }
 
+  /**
+   * Batch insert multiple token holders for better performance
+   * Splits into chunks to avoid database limits
+   */
+  async batchInsertTokenHolders(holders: InsertTokenHolder[]): Promise<number> {
+    if (holders.length === 0) return 0;
+    
+    const BATCH_SIZE = 100; // Insert 100 holders at a time to avoid timeouts
+    let totalInserted = 0;
+    
+    // Process in chunks
+    for (let i = 0; i < holders.length; i += BATCH_SIZE) {
+      const chunk = holders.slice(i, i + BATCH_SIZE);
+      
+      try {
+        await db.insert(tokenHolders).values(chunk);
+        totalInserted += chunk.length;
+        
+        // Log progress for large batches
+        if (holders.length > 200 && (i + BATCH_SIZE) % 200 === 0) {
+          console.log(`📊 Inserted ${Math.min(i + BATCH_SIZE, holders.length)}/${holders.length} holders...`);
+        }
+      } catch (error) {
+        console.error(`❌ Failed to insert batch at index ${i}:`, error);
+        // Continue with next batch even if one fails
+      }
+    }
+    
+    return totalInserted;
+  }
+
   async clearPoolHolders(poolId: string): Promise<void> {
     await db
       .delete(tokenHolders)
