@@ -698,56 +698,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Special handling for Lido stETH pool - use correct total count from metrics
-      const LIDO_POOL_ID = '31e292ba-a842-490b-8688-3868e18bd615';
-      
-      if (poolId === LIDO_POOL_ID) {
-        // Get the correct holder count from pool_metrics_current
-        const [metricsResult] = await db
-          .select({ holdersCount: poolMetricsCurrent.holdersCount })
-          .from(poolMetricsCurrent)
-          .where(eq(poolMetricsCurrent.poolId, poolId));
-        
-        const actualHolderCount = metricsResult?.holdersCount || 547477;
-        
-        // Get the sample holders we have
-        const result = await storage.getPoolHolders(poolId, page, limit);
-        
-        // Format holder data for frontend
-        const formattedHolders = result.holders.map(holder => ({
-          address: holder.holderAddress,
-          tokenBalance: holder.tokenBalanceFormatted,
-          usdValue: parseFloat(holder.usdValue || '0'),
-          walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
-          walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
-          poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
-          rank: holder.rank
-        }));
-        
-        // Return holders with the correct total count
-        return res.json({
-          holders: formattedHolders,
-          pagination: {
-            page,
-            limit,
-            total: actualHolderCount,  // Use the real total from Etherscan
-            pages: Math.ceil(result.total / limit)  // Pages based on available sample
-          },
-          lidoNote: {
-            isLido: true,
-            actualTotal: actualHolderCount,
-            sampleSize: result.total
-          }
-        });
-      }
-
-      // Regular handling for other pools
+      // Get holders from database (all pools uniformly show up to 1000 holders)
       const result = await storage.getPoolHolders(poolId, page, limit);
       
-      // Format holder data for frontend
+      // Format holder data for frontend with proper number conversion
       const formattedHolders = result.holders.map(holder => ({
         address: holder.holderAddress,
-        tokenBalance: holder.tokenBalanceFormatted,
+        tokenBalance: holder.tokenBalanceFormatted || holder.tokenBalance,
         usdValue: parseFloat(holder.usdValue || '0'),
         walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
         walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
