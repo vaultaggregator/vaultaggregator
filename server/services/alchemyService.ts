@@ -85,7 +85,7 @@ export class AlchemyService {
         const uniqueAddresses = new Set<string>();
         let pageKey: string | undefined;
         let iterations = 0;
-        const maxIterations = 10; // Limit iterations to avoid infinite loops
+        const maxIterations = 50; // Increased to get more holders
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
@@ -115,8 +115,14 @@ export class AlchemyService {
           pageKey = transfers.pageKey;
           iterations++;
           
-          // Stop if we have enough addresses or no more pages
-          if (!pageKey || uniqueAddresses.size >= Math.max(limit * 2, 2000)) {
+          // Continue until we have ALL holders or no more pages
+          if (!pageKey) {
+            break;
+          }
+          
+          // Don't stop early - get ALL holders up to the limit
+          if (uniqueAddresses.size >= limit * 3) {
+            console.log(`📊 Reached ${uniqueAddresses.size} addresses, stopping iteration`);
             break;
           }
         }
@@ -125,14 +131,17 @@ export class AlchemyService {
         
         // Now get balances for all unique addresses
         const addressArray = Array.from(uniqueAddresses);
-        let validHolders = 0;
+        let checkedCount = 0;
+        
+        console.log(`📊 Checking balances for ${addressArray.length} addresses...`);
         
         for (const address of addressArray) {
-          if (processedAddresses.has(address) || validHolders >= limit) {
+          if (processedAddresses.has(address)) {
             continue;
           }
           
           processedAddresses.add(address);
+          checkedCount++;
           
           try {
             const balance = await this.alchemy.core.getTokenBalances(address, [tokenAddress]);
@@ -144,13 +153,12 @@ export class AlchemyService {
                 const balanceBigInt = BigInt(rawBalance);
                 const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
                 
-                if (formattedBalance > 0.001) { // Filter out dust amounts
+                if (formattedBalance > 0.00001) { // Lower threshold to capture more holders
                   holders.push({
                     address,
                     balance: balanceBigInt.toString(),
                     formattedBalance,
                   });
-                  validHolders++;
                 }
               }
             }
@@ -158,9 +166,16 @@ export class AlchemyService {
             // Skip addresses that fail
           }
           
-          // Add small delay to avoid rate limits
-          if (validHolders % 10 === 0) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+          // Progress update and rate limiting
+          if (checkedCount % 50 === 0) {
+            console.log(`📊 Checked ${checkedCount}/${addressArray.length} addresses, found ${holders.length} holders`);
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+          
+          // Stop if we have enough holders
+          if (holders.length >= limit) {
+            console.log(`✅ Reached limit of ${limit} holders`);
+            break;
           }
         }
       }

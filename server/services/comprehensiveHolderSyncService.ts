@@ -59,49 +59,35 @@ class ComprehensiveHolderSyncService {
 
       console.log(`📊 Found ${allPools.length} pools with contract addresses`);
 
-      // Check which pools need holder sync
-      const poolsNeedingSync: typeof allPools = [];
-      
-      for (const pool of allPools) {
-        // Check if pool has any holders
-        const holderCount = await db
-          .select({ count: sql<number>`COUNT(*)` })
-          .from(tokenHolders)
-          .where(eq(tokenHolders.poolId, pool.id));
+      // Sync ALL pools to ensure we have up to 1000 holders for each
+      console.log(`🎯 Syncing holders for ALL ${allPools.length} pools to ensure complete data...`);
 
-        // Also check pool metrics
-        const metrics = await db
-          .select({ holdersCount: poolMetricsCurrent.holdersCount })
-          .from(poolMetricsCurrent)
-          .where(eq(poolMetricsCurrent.poolId, pool.id));
-
-        const hasHolders = holderCount[0]?.count > 0;
-        const hasMetrics = metrics[0]?.holdersCount && metrics[0].holdersCount > 0;
-
-        if (!hasHolders || !hasMetrics) {
-          poolsNeedingSync.push(pool);
-          console.log(`📝 Pool "${pool.tokenPair}" (${pool.id}) needs holder sync`);
-        }
-      }
-
-      if (poolsNeedingSync.length === 0) {
-        console.log('✅ All pools have holder data, no sync needed');
-        this.isRunning = false;
-        return;
-      }
-
-      console.log(`🎯 Syncing holders for ${poolsNeedingSync.length} pools...`);
-
-      // Sync each pool that needs it
+      // Sync each pool
       let successCount = 0;
       let errorCount = 0;
 
-      for (const pool of poolsNeedingSync) {
+      for (const pool of allPools) {
         try {
-          console.log(`🔄 Syncing holders for "${pool.tokenPair}"...`);
+          // Check current holder count
+          const currentCount = await db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(tokenHolders)
+            .where(eq(tokenHolders.poolId, pool.id));
+          
+          const storedCount = currentCount[0]?.count || 0;
+          console.log(`🔄 Syncing holders for "${pool.tokenPair}" (currently ${storedCount} holders stored)...`);
+          
           await holderService.syncPoolHolders(pool.id);
+          
+          // Verify new count
+          const newCount = await db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(tokenHolders)
+            .where(eq(tokenHolders.poolId, pool.id));
+          
+          const updatedCount = newCount[0]?.count || 0;
           successCount++;
-          console.log(`✅ Successfully synced holders for "${pool.tokenPair}"`);
+          console.log(`✅ Successfully synced "${pool.tokenPair}": ${storedCount} → ${updatedCount} holders`);
           
           // Small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 2000));
