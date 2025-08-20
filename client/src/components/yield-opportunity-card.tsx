@@ -191,7 +191,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Holders */}
             <div className="col-span-2 text-center">
-              <p className="text-sm font-medium text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+              <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                 {opportunity.holdersCount ? (
                   <AnimatedNumber 
                     value={opportunity.holdersCount} 
@@ -288,7 +288,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">Holders</p>
                   </div>
-                  <p className="text-sm font-medium text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+                  <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                     {opportunity.holdersCount ? (
                       <AnimatedNumber 
                         value={opportunity.holdersCount} 

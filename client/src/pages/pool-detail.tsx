@@ -677,7 +677,7 @@ export default function PoolDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-semibold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
+              <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
                 {pool.holdersCount ? (
                   <AnimatedNumber 
                     value={pool.holdersCount} 
