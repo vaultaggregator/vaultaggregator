@@ -98,7 +98,7 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
                 </div>
                 <div className="mt-3 flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">
-                    TVL: {pool.tvl ? formatTvl(parseFloat(pool.tvl)) : 'N/A'}
+                    TVL: {pool.tvl ? formatNumber(parseFloat(pool.tvl), { currency: '$', maxDecimals: 2 }) : 'N/A'}
                   </span>
                   <span className="text-gray-600 dark:text-gray-400">
                     Risk: {pool.riskLevel}
@@ -247,12 +247,7 @@ export default function PoolDetail() {
 
 
 
-  const formatTvl = (tvl: string): string => {
-    if (!tvl || tvl === '') return 'N/A';
-    const num = parseFloat(tvl);
-    if (isNaN(num)) return 'N/A';
-    return formatCurrency(num);
-  };
+
 
   const formatApy = (apy: string): string => {
     if (!apy || apy === '') return 'N/A';
@@ -481,13 +476,13 @@ export default function PoolDetail() {
                 })()}
                 
                 {/* Etherscan Link */}
-                {pool.poolAddress && (
+                {pool.pool_address && (
                   <Button 
                     variant="outline" 
                     size="default" 
                     className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
                     data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/address/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(`https://etherscan.io/address/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
                   >
                     <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     View on Etherscan

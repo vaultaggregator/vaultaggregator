@@ -35,6 +35,7 @@ import {
 import { Link } from "wouter";
 import type { YieldOpportunity } from "@/types";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format";
 
 interface EnhancedYieldCardProps {
   pool: YieldOpportunity;
@@ -58,13 +59,7 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
   
   // Parse TVL
   const tvl = parseFloat(pool.tvl) || 0;
-  const tvlFormatted = tvl >= 1e9 
-    ? `$${(tvl / 1e9).toFixed(2)}B`
-    : tvl >= 1e6 
-    ? `$${(tvl / 1e6).toFixed(2)}M`
-    : tvl >= 1e3
-    ? `$${(tvl / 1e3).toFixed(2)}K`
-    : `$${tvl.toFixed(2)}`;
+  const tvlFormatted = formatNumber(tvl, { currency: '$', maxDecimals: 2 });
     
   // Risk colors
   const riskColors = {

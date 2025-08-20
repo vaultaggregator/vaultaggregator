@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, BarChart3, Activity, Calendar, DollarSign, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatTvl } from '@/lib/format';
+import { formatNumber } from '@/lib/format';
 
 interface ChartDataPoint {
   date: string;
@@ -237,7 +237,7 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
             </div>
             <div className="flex justify-between items-center gap-4">
               <span className="text-gray-400">Volume:</span>
-              <span className="font-mono">{formatTvl(data.volume)}</span>
+              <span className="font-mono">{formatNumber(data.volume, { currency: '$', maxDecimals: 2 })}</span>
             </div>
             {data.changePercent !== 0 && (
               <div className="flex justify-between items-center gap-4 pt-1 border-t border-gray-700">
@@ -366,7 +366,7 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
             </div>
             <div>
               <span className="text-gray-400">24h Volume</span>
-              <div className="text-gray-300 font-mono">{formatTvl(stats.volume24h)}</div>
+              <div className="text-gray-300 font-mono">{formatNumber(stats.volume24h, { currency: '$', maxDecimals: 2 })}</div>
             </div>
             <div>
               <span className="text-gray-400">Change</span>
@@ -522,10 +522,10 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                 tick={{ fontSize: 9, fill: '#9CA3AF' }}
                 axisLine={{ stroke: '#374151' }}
                 tickLine={{ stroke: '#374151' }}
-                tickFormatter={(value) => formatTvl(value)}
+                tickFormatter={(value) => formatNumber(value, { currency: '$', maxDecimals: 1 })}
               />
               <Tooltip 
-                formatter={(value: any) => [formatTvl(value), 'Volume']}
+                formatter={(value: any) => [formatNumber(value, { currency: '$', maxDecimals: 2 }), 'Volume']}
                 labelStyle={{ color: '#9CA3AF' }}
                 contentStyle={{ 
                   backgroundColor: '#1f2937', 

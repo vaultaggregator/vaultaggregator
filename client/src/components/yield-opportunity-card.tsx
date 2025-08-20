@@ -15,7 +15,7 @@ import { getPlatformIcon } from "@/components/platform-icons";
 import { getCategoryIcon } from "@/components/category-icons";
 
 import { generateYieldUrl } from "@/lib/seo-urls";
-import { formatTvl, formatHolders } from "@/lib/format";
+import { formatHolders } from "@/lib/format";
 
 interface YieldOpportunityCardProps {
   opportunity: YieldOpportunity;
