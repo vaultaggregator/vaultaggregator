@@ -665,26 +665,10 @@ export default function PoolDetail() {
 
 
 
-        {/* Network, Risk Cards and APY Calculator Side by Side */}
+        {/* Risk Cards and APY Calculator Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Left Column: Network and Risk Cards */}
+          {/* Left Column: Risk Cards */}
           <div className="space-y-4">
-            {/* Network Card - Smaller */}
-            <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/20 border-sky-200 dark:border-sky-700">
-              <CardHeader className="pb-2 pt-4">
-                <CardTitle className="text-xs font-semibold text-sky-700 dark:text-sky-300 flex items-center">
-                  <Globe className="w-4 h-4 mr-1.5 text-sky-600" />
-                  <span>Network</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0 pb-4">
-                <p className="text-lg font-bold text-sky-600 dark:text-sky-400" data-testid="text-network">
-                  {pool.chain.displayName}
-                </p>
-                <p className="text-xs text-sky-600/70 dark:text-sky-300/70">Blockchain</p>
-              </CardContent>
-            </Card>
-
             {/* Risk Card - Smaller */}
             <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/20 border-rose-200 dark:border-rose-700">
               <CardHeader className="pb-2 pt-4">
