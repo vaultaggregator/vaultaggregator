@@ -165,6 +165,22 @@ export const tokenHolders = pgTable("token_holders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Webhook configuration for automatic monitoring
+export const webhookConfigs = pgTable("webhook_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").references(() => pools.id, { onDelete: "cascade" }),
+  contractAddress: text("contract_address").notNull().unique(),
+  network: text("network").notNull(), // ethereum, base, polygon, etc.
+  eventTypes: text("event_types").array(), // ['transfer', 'approval', 'mint', 'burn']
+  isActive: boolean("is_active").default(true),
+  webhookUrl: text("webhook_url"), // Optional custom webhook URL
+  metadata: jsonb("metadata"), // Additional configuration data
+  lastTriggered: timestamp("last_triggered"),
+  triggerCount: integer("trigger_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // 🎯 Standardized Pool Metrics Historical Tracking System
 // Core 4 metrics: APY, DAYS, TVL, HOLDERS - collected from platform-specific APIs
 

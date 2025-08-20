@@ -5,9 +5,10 @@
 
 import { Router } from 'express';
 import { db } from '../db';
-import { tokenHolders, pools } from '@shared/schema';
+import { tokenHolders, pools, webhookConfigs } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { alchemyService } from '../services/alchemyService';
+import { webhookManager } from '../services/webhookManager';
 
 const router = Router();
 
@@ -145,6 +146,70 @@ router.get('/api/webhooks/status', async (req, res) => {
     ],
     message: '✅ Webhooks are active with 100 webhook allowance'
   });
+});
+
+/**
+ * Get all monitored contract addresses
+ * Returns all pool addresses that should be configured in Alchemy
+ */
+router.get('/api/webhooks/monitored-addresses', async (req, res) => {
+  try {
+    const addresses = await webhookManager.getMonitoredAddresses();
+    res.json(addresses);
+  } catch (error) {
+    console.error('❌ Error getting monitored addresses:', error);
+    res.status(500).json({ error: 'Failed to get monitored addresses' });
+  }
+});
+
+/**
+ * Get new pools added since a specific date
+ * Useful for identifying pools that need webhook configuration
+ */
+router.get('/api/webhooks/new-pools', async (req, res) => {
+  try {
+    const { since } = req.query;
+    const sinceDate = since ? new Date(since as string) : new Date(Date.now() - 24 * 60 * 60 * 1000); // Default: last 24 hours
+    
+    const newPools = await webhookManager.getNewPoolsSince(sinceDate);
+    res.json(newPools);
+  } catch (error) {
+    console.error('❌ Error getting new pools:', error);
+    res.status(500).json({ error: 'Failed to get new pools' });
+  }
+});
+
+/**
+ * Register a pool for webhook monitoring
+ * Automatically called when new pools are added
+ */
+router.post('/api/webhooks/register-pool', async (req, res) => {
+  try {
+    const { poolId } = req.body;
+    
+    if (!poolId) {
+      return res.status(400).json({ error: 'Pool ID required' });
+    }
+    
+    const result = await webhookManager.registerNewPool(poolId);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Error registering pool:', error);
+    res.status(500).json({ error: 'Failed to register pool' });
+  }
+});
+
+/**
+ * Get webhook configuration status
+ */
+router.get('/api/webhooks/config-status', async (req, res) => {
+  try {
+    const status = await webhookManager.getWebhookStatus();
+    res.json(status);
+  } catch (error) {
+    console.error('❌ Error getting webhook status:', error);
+    res.status(500).json({ error: 'Failed to get webhook status' });
+  }
 });
 
 export default router;
