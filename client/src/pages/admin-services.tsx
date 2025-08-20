@@ -43,6 +43,7 @@ interface ServiceStatus {
 
 export default function AdminServices() {
   const [selectedTab, setSelectedTab] = useState("active");
+  const [refreshingServices, setRefreshingServices] = useState<Set<string>>(new Set());
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -67,8 +68,9 @@ export default function AdminServices() {
         title: "Services Refreshed",
         description: "All service statuses have been updated",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/services"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/system"] });
+      // Invalidate the correct query keys
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
     },
     onError: () => {
       toast({
@@ -90,7 +92,9 @@ export default function AdminServices() {
         title: "Service Updated",
         description: `${service} has been ${action}ed successfully`,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/services"] });
+      // Invalidate all service-related queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
     },
     onError: (_, { service, action }) => {
       toast({
@@ -355,9 +359,31 @@ export default function AdminServices() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => toggleServiceMutation.mutate({ service: service.name, action: 'restart' })}
+                          onClick={async () => {
+                            // Add service to refreshing set
+                            setRefreshingServices(prev => new Set(prev).add(service.name));
+                            
+                            // For refresh action, just invalidate queries to get fresh data
+                            await queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
+                            await queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
+                            
+                            toast({
+                              title: "Refreshed",
+                              description: `Updated status for ${service.displayName}`,
+                            });
+                            
+                            // Remove from refreshing set after a short delay
+                            setTimeout(() => {
+                              setRefreshingServices(prev => {
+                                const newSet = new Set(prev);
+                                newSet.delete(service.name);
+                                return newSet;
+                              });
+                            }, 1000);
+                          }}
+                          disabled={refreshingServices.has(service.name)}
                         >
-                          <RefreshCw className="h-4 w-4" />
+                          <RefreshCw className={`h-4 w-4 ${refreshingServices.has(service.name) ? 'animate-spin' : ''}`} />
                         </Button>
                       </div>
                     </div>
