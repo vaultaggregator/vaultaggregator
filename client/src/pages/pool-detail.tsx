@@ -338,9 +338,10 @@ export default function PoolDetail() {
 
         {/* Pool Header */}
         <Card className="mb-6">
-          <CardContent className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              {/* Left Section - Logo, Title, Badges */}
+              <div className="flex items-start gap-4 sm:gap-6">
                 {/* Platform Logo */}
                 <div 
                   className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center overflow-hidden shadow-lg flex-shrink-0"
@@ -364,34 +365,17 @@ export default function PoolDetail() {
                   )}
                 </div>
 
-                {/* Pool Info */}
-                <div className="text-center sm:text-left">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2" data-testid="text-pool-title">
+                {/* Pool Title & Badges */}
+                <div className="flex-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1" data-testid="text-pool-title">
                     {pool.tokenPair}
                   </h1>
-                  <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
+                  <p className="text-lg text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
                     {pool.platform.displayName}
                   </p>
                   
-                  {/* Large Live APY Display */}
-                  <div className="mb-3">
-                    <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                      <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                      <span className="text-sm font-semibold text-green-700 dark:text-green-300">Live APY</span>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-xs text-green-600 dark:text-green-400">LIVE</span>
-                      </div>
-                    </div>
-                    <div className="text-center sm:text-left">
-                      <AnimatedPercentage 
-                        value={parseFloat(pool.apy || '0')} 
-                        className="text-4xl sm:text-5xl font-black text-green-600 dark:text-green-400" 
-                        data-testid="text-large-apy"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap justify-center sm:justify-start items-center gap-2">
+                  {/* Badges */}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     <Badge 
                       variant="outline"
                       className="text-xs sm:text-sm px-2 sm:px-3 py-1"
@@ -419,11 +403,76 @@ export default function PoolDetail() {
                       </div>
                     </MetricTooltip>
                   </div>
+                  
                   {/* Last Synced Info */}
-                  <div className="flex items-center justify-center sm:justify-start mt-3 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                     <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     <span>Data synced {formatTimeAgo(pool.lastUpdated)}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* Center/Right Section - Live APY Display */}
+              <div className="flex flex-col items-center lg:items-end gap-4">
+                {/* Live APY Display */}
+                <div className="text-center lg:text-right">
+                  <div className="flex items-center justify-center lg:justify-end gap-2 mb-2">
+                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <span className="text-sm font-semibold text-green-700 dark:text-green-300">Live APY</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-xs text-green-600 dark:text-green-400 font-medium">LIVE</span>
+                    </div>
+                  </div>
+                  <AnimatedPercentage 
+                    value={parseFloat(pool.apy || '0')} 
+                    className="text-5xl sm:text-6xl font-black text-green-600 dark:text-green-400" 
+                    data-testid="text-large-apy"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                  {(() => {
+                    const linkData = generatePlatformVisitUrl(pool);
+                    return linkData ? (
+                      <Button 
+                        variant="outline" 
+                        size="default" 
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6"
+                        data-testid="button-external-link"
+                        onClick={() => window.open(linkData.url, '_blank', 'noopener,noreferrer')}
+                      >
+                        <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        Visit Platform
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="outline" 
+                        size="default" 
+                        className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6"
+                        data-testid="button-external-link"
+                        disabled
+                      >
+                        <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                        Visit Platform
+                      </Button>
+                    );
+                  })()}
+                  
+                  {/* Etherscan Link */}
+                  {pool.pool_address && (
+                    <Button 
+                      variant="outline" 
+                      size="default" 
+                      className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
+                      data-testid="button-etherscan-link"
+                      onClick={() => window.open(`https://etherscan.io/token/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
+                    >
+                      <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      View on Etherscan
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -457,13 +506,13 @@ export default function PoolDetail() {
                 })()}
                 
                 {/* Etherscan Link */}
-                {pool.poolAddress && (
+                {pool.pool_address && (
                   <Button 
                     variant="outline" 
                     size="default" 
                     className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
                     data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/token/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(`https://etherscan.io/token/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
                   >
                     <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     View on Etherscan
@@ -729,7 +778,12 @@ export default function PoolDetail() {
 
         {/* Pool Chart */}
         <div className="mb-8">
-          <PoolChart poolId={pool.id} />
+          <PoolChart 
+            poolId={pool.id} 
+            currentApy={parseFloat(pool.apy || '0')}
+            currentTvl={parseFloat(pool.tvl || '0')}
+            tokenPair={pool.tokenPair}
+          />
         </div>
 
         {/* Related Pools from Website */}
