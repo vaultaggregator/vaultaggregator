@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Calculator, TrendingUp, Users, Clock, DollarSign, AlertTriangle, CheckCircle } from "lucide-react";
 
 export default function RiskCalculation() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header onAdminClick={() => {}} />
