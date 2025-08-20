@@ -530,6 +530,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Format with actual data from database joins
       const formattedPools = poolsResults.map(result => ({
         ...result.pools,
+        pool_address: result.pools.poolAddress || null, // Include pool address for Etherscan links
         platform: {
           id: result.platforms?.id || null,
           name: result.platforms?.name || "Unknown",
@@ -609,6 +610,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categories: [],
         holdersCount: result.pool_metrics_current?.holdersCount || null,
         operatingDays: result.pool_metrics_current?.operatingDays || null,
+        pool_address: pool.poolAddress || null, // Include the pool address for Etherscan links
       };
       
       res.json(formattedPool);
