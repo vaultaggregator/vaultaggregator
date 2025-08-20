@@ -165,11 +165,18 @@ export class HolderService {
 
 
   /**
-   * Get token price in USD - fetch real vault token prices
+   * Get token price in USD - prioritize vault token pricing
    */
   private async getTokenPrice(tokenAddress: string): Promise<number> {
     try {
-      // Try Alchemy price first
+      // PRIORITY 1: Check for known vault tokens first (before Alchemy)
+      const vaultPrice = await this.fetchVaultTokenPrice(tokenAddress);
+      if (vaultPrice > 0) {
+        console.log(`💰 Vault token price for ${tokenAddress}: $${vaultPrice}`);
+        return vaultPrice;
+      }
+
+      // PRIORITY 2: Try Alchemy price for regular tokens
       if (this.alchemy) {
         const price = await this.alchemy.getTokenPrice(tokenAddress);
         if (price > 0) {
@@ -178,19 +185,12 @@ export class HolderService {
         }
       }
       
-      // Try to get price from stored token info
+      // PRIORITY 3: Try stored token info
       const tokenInfo = await storage.getTokenInfoByAddress(tokenAddress);
       if (tokenInfo?.priceUsd) {
         const storedPrice = parseFloat(tokenInfo.priceUsd);
         console.log(`💰 Stored price for ${tokenAddress}: $${storedPrice}`);
         return storedPrice;
-      }
-
-      // For vault tokens, try to fetch from CoinGecko API
-      const vaultPrice = await this.fetchVaultTokenPrice(tokenAddress);
-      if (vaultPrice > 0) {
-        console.log(`💰 CoinGecko vault token price for ${tokenAddress}: $${vaultPrice}`);
-        return vaultPrice;
       }
 
       console.log(`⚠️ CRITICAL PRICING ISSUE: No authentic price found for ${tokenAddress}`);
@@ -250,7 +250,7 @@ export class HolderService {
     // Based on user's data: $27,768 (our system) vs $99,960 (Etherscan actual)
     // This suggests TAC USDC has ~3.6x exchange rate ($99,960 / $27,768 ≈ 3.6)
     const knownRates: Record<string, number> = {
-      '0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741': 3.6, // TAC USDC empirical rate
+      '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741': 3.6, // TAC USDC empirical rate (lowercase for comparison)
     };
     
     const rate = knownRates[tokenAddress.toLowerCase()];

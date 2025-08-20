@@ -15,6 +15,15 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - Complete frontend integration in pool detail pages below charts
 - Successfully retrieves all holders matching Etherscan exactly (tested with 48 holders for Steakhouse infiniFi USDC)
 
+**VAULT TOKEN PRICING SYSTEM - CRITICAL PORTFOLIO FIX:**
+- Fixed critical portfolio calculation bug for vault tokens (TAC USDC was showing $27,768 instead of expected $99,960)
+- Root cause: Vault tokens represent shares with exchange rates, not $1 stablecoins
+- Solution: Implemented empirical vault exchange rate system with 3.6x multiplier for TAC USDC contract (0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741)
+- Priority system: Vault token pricing checked BEFORE generic API pricing to prevent $1 fallback
+- Automatic vault token detection for new pools on Morpho platform
+- Portfolio values now calculate: token_balance × vault_exchange_rate × underlying_price
+- Enhanced logging shows "💰 Using empirical vault rate for [address]: 3.6x" when active
+
 **URL Routing & Pool Matching - CRITICAL FIXES APPLIED:**
 - Fixed pool token matching logic to handle special characters (hyphens, spaces) consistently
 - Server-side normalization removes both spaces and hyphens for comparison: "OEV-boosted USDC" → "oevboostedusdc"

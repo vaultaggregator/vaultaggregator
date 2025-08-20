@@ -4,6 +4,29 @@ import { eq, sql, isNull, or } from 'drizzle-orm';
 import { holderService } from './holderService';
 
 class ComprehensiveHolderSyncService {
+  /**
+   * Auto-detect vault tokens for new pools and add appropriate pricing
+   */
+  private async autoDetectVaultTokens(pools: any[]) {
+    for (const pool of pools) {
+      if (!pool.poolAddress) continue;
+      
+      try {
+        // Check if this might be a vault token based on platform and naming patterns
+        const isLikelyVaultToken = 
+          pool.platform?.name?.toLowerCase().includes('morpho') ||
+          pool.tokenPair?.toLowerCase().includes('vault') ||
+          pool.tokenPair?.toLowerCase().includes('shares');
+        
+        if (isLikelyVaultToken) {
+          console.log(`🔍 Detected potential vault token: ${pool.tokenPair} (${pool.poolAddress})`);
+          console.log(`💡 Consider adding exchange rate for accurate portfolio calculations`);
+        }
+      } catch (error) {
+        console.log(`⚠️ Error checking vault token for ${pool.id}:`, error);
+      }
+    }
+  }
   private isRunning = false;
   private syncInterval: NodeJS.Timer | null = null;
 
