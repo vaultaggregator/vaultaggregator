@@ -99,6 +99,11 @@ export class HolderService {
         await storage.insertTokenHolder(holder);
       }
 
+      // Update pool's holder count with actual synced data
+      await storage.updatePool(poolId, {
+        holdersCount: processedHolders.length
+      });
+
       console.log(`✅ Successfully synced ${processedHolders.length} holders for pool ${poolId}`);
 
     } catch (error) {

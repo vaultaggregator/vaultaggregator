@@ -194,6 +194,18 @@ export default function PoolDetail() {
     gcTime: 0, // Remove from cache immediately (renamed from cacheTime in v5)
   });
 
+  // Fetch actual holder count from holders API for accuracy
+  const { data: actualHoldersData } = useQuery<{ holders: any[], pagination: { total: number } }>({
+    queryKey: [`/api/pools/${pool?.id}/holders`, 'count'],
+    queryFn: async () => {
+      const response = await fetch(`/api/pools/${pool?.id}/holders?page=1&limit=1`);
+      if (!response.ok) return { holders: [], pagination: { total: 0 } };
+      return response.json();
+    },
+    enabled: !!pool?.id,
+    refetchInterval: 60000, // Refresh every minute
+  });
+
   // Fetch real historical APY averages (100% authentic data)
   const { data: historicalAverages, isLoading: averagesLoading } = useQuery<{
     sevenDay: number;
@@ -648,7 +660,13 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
-                {pool.holdersCount ? (
+                {actualHoldersData?.pagination?.total ? (
+                  <AnimatedNumber 
+                    value={actualHoldersData.pagination.total} 
+                    formatter={(val) => formatHolders(val)}
+                    precision={0}
+                  />
+                ) : pool.holdersCount ? (
                   <AnimatedNumber 
                     value={pool.holdersCount} 
                     formatter={(val) => formatHolders(val)}
