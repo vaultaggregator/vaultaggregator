@@ -403,12 +403,7 @@ export default function PoolDetail() {
                       </div>
                     </MetricTooltip>
                   </div>
-                  
-                  {/* Last Synced Info */}
-                  <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                    <span>Data synced {formatTimeAgo(pool.lastUpdated)}</span>
-                  </div>
+
                 </div>
               </div>
 
@@ -744,6 +739,15 @@ export default function PoolDetail() {
         </div>
       </div>
       </main>
+      
+      {/* Data Sync Status - Bottom Left */}
+      <div className="px-4 sm:px-6 lg:px-8 pb-4">
+        <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+          <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+          <span>Data synced {formatTimeAgo(pool.lastUpdated)}</span>
+        </div>
+      </div>
+      
       <Footer />
     </div>
   );
