@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Brain, TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Brain, TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AIInsights {
@@ -21,35 +22,18 @@ interface AIInsightsCardProps {
 }
 
 export function AIInsightsCard({ poolId }: AIInsightsCardProps) {
-  const [insights, setInsights] = useState<AIInsights | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  
+  const { data: insights, isLoading: loading, error, refetch, isFetching } = useQuery<AIInsights>({
+    queryKey: [`/api/pools/${poolId}/ai-prediction`],
+    enabled: !!poolId,
+    staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
+    refetchInterval: 10 * 60 * 1000, // Auto-refetch every 10 minutes
+  });
 
-  useEffect(() => {
-    const fetchInsights = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/pools/${poolId}/ai-prediction`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch AI insights');
-        }
-        
-        const data = await response.json();
-        setInsights(data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching AI insights:', err);
-        setError('Unable to load AI insights');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (poolId) {
-      fetchInsights();
-    }
-  }, [poolId]);
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
@@ -101,15 +85,26 @@ export function AIInsightsCard({ poolId }: AIInsightsCardProps) {
     return (
       <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
         <CardHeader className="pb-2 pt-4">
-          <CardTitle className="text-xs font-semibold text-purple-700 dark:text-purple-300 flex items-center">
-            <Brain className="w-4 h-4 mr-1.5 text-purple-600" />
-            <span>AI Market Insights</span>
+          <CardTitle className="text-xs font-semibold text-purple-700 dark:text-purple-300 flex items-center justify-between">
+            <div className="flex items-center">
+              <Brain className="w-4 h-4 mr-1.5 text-purple-600" />
+              <span>AI Market Insights</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isFetching}
+              className="text-purple-600 hover:text-purple-700 h-6 w-6 p-0"
+            >
+              <RefreshCw className={cn("w-3 h-3", isFetching && "animate-spin")} />
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0 pb-4">
           <div className="flex items-center text-xs text-muted-foreground">
             <AlertCircle className="w-3 h-3 mr-1" />
-            <span>{error || 'Insights unavailable'}</span>
+            <span>{error ? (error instanceof Error ? error.message : String(error)) : 'Insights unavailable'}</span>
           </div>
         </CardContent>
       </Card>
@@ -123,8 +118,18 @@ export function AIInsightsCard({ poolId }: AIInsightsCardProps) {
           <div className="flex items-center">
             <Brain className="w-4 h-4 mr-1.5 text-purple-600" />
             <span>AI Market Insights</span>
+            <Sparkles className="w-3 h-3 ml-1 text-purple-500 animate-pulse" />
           </div>
-          <Sparkles className="w-3 h-3 text-purple-500 animate-pulse" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isFetching}
+            className="text-purple-600 hover:text-purple-700 h-6 w-6 p-0"
+            title="Refresh AI insights"
+          >
+            <RefreshCw className={cn("w-3 h-3", isFetching && "animate-spin")} />
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 pb-4 space-y-3">

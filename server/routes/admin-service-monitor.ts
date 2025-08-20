@@ -481,6 +481,22 @@ router.post('/:serviceId/trigger', async (req, res) => {
           }
           break;
           
+        case 'ai-scheduler':
+          try {
+            console.log('🤖 Running AI insights generation for all pools...');
+            const { aiScheduler } = await import('../services/aiSchedulerService');
+            const triggerResult = await aiScheduler.manualTrigger();
+            
+            result = { 
+              success: true, 
+              message: `AI insights generated: ${triggerResult.success} successful, ${triggerResult.errors} errors out of ${triggerResult.total} pools` 
+            };
+          } catch (err) {
+            console.error('AI scheduler service error:', err);
+            result = { success: false, message: 'AI scheduler service failed: ' + (err as Error).message };
+          }
+          break;
+          
         default:
           result = { success: false, message: 'Service trigger not implemented' };
       }

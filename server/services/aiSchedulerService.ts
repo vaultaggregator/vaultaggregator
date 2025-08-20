@@ -112,11 +112,13 @@ export class AISchedulerService {
       // Generate insights for each pool (with some rate limiting)
       for (const pool of allPools) {
         try {
-          await this.predictionService.generatePrediction(pool.id);
+          // Force new prediction generation by calling generatePrediction directly
+          const newPrediction = await this.predictionService.generatePrediction(pool.id);
+          console.log(`✅ Generated new AI insight for pool ${pool.id}`);
           successCount++;
           
           // Small delay to avoid overwhelming the API
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 2000));
         } catch (error) {
           console.error(`❌ Failed to generate insight for pool ${pool.id}:`, error);
           errorCount++;
