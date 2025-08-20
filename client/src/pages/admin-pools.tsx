@@ -927,9 +927,12 @@ export default function AdminPools() {
                               checked={formData.categories.includes(category.id)}
                               onChange={(e) => {
                                 if (e.target.checked) {
+                                  // Auto-select "Show USD in Flow" for non-Stables categories
+                                  const isStables = category.name.toLowerCase() === 'stables';
                                   setFormData(prev => ({
                                     ...prev,
-                                    categories: [...prev.categories, category.id]
+                                    categories: [...prev.categories, category.id],
+                                    showUsdInFlow: !isStables ? true : prev.showUsdInFlow
                                   }));
                                 } else {
                                   setFormData(prev => ({
@@ -974,9 +977,13 @@ export default function AdminPools() {
                                         checked={formData.categories.includes(subcategory.id)}
                                         onChange={(e) => {
                                           if (e.target.checked) {
+                                            // Auto-select "Show USD in Flow" for non-Stables subcategories
+                                            const parentCategory = categories.find(cat => cat.id === selectedCategoryId);
+                                            const isStables = parentCategory?.name.toLowerCase() === 'stables' || subcategory.name.toLowerCase().includes('stable');
                                             setFormData(prev => ({
                                               ...prev,
-                                              categories: [...prev.categories, subcategory.id]
+                                              categories: [...prev.categories, subcategory.id],
+                                              showUsdInFlow: !isStables ? true : prev.showUsdInFlow
                                             }));
                                           } else {
                                             setFormData(prev => ({
