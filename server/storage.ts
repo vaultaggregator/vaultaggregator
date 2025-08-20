@@ -2070,10 +2070,44 @@ export class DatabaseStorage implements IStorage {
       .limit(limit)
       .offset(offset);
 
+    // Process holders to convert hex balances if needed
+    const processedHolders = holders.map(holder => {
+      let formattedBalance = holder.tokenBalanceFormatted;
+      
+      // Check if tokenBalance is a hex string and needs conversion
+      if (holder.tokenBalance && holder.tokenBalance.startsWith('0x')) {
+        try {
+          // Convert hex to BigInt then to decimal string
+          const bigIntValue = BigInt(holder.tokenBalance);
+          // Assuming 18 decimals for stETH
+          const divisor = BigInt(10 ** 18);
+          const wholePart = bigIntValue / divisor;
+          const fractionalPart = bigIntValue % divisor;
+          
+          // Format with 8 decimal places
+          const fractionalStr = fractionalPart.toString().padStart(18, '0');
+          formattedBalance = `${wholePart}.${fractionalStr.slice(0, 8)}`;
+          
+          // Recalculate USD value if needed
+          const tokenPrice = 3200; // Approximate ETH/stETH price
+          const numericBalance = parseFloat(formattedBalance);
+          holder.usdValue = (numericBalance * tokenPrice).toFixed(2);
+          
+        } catch (error) {
+          console.log(`Error converting hex balance for holder ${holder.holderAddress}:`, error);
+        }
+      }
+      
+      return {
+        ...holder,
+        tokenBalanceFormatted: formattedBalance
+      };
+    });
+
     const total = Number(count);
     const pages = Math.ceil(total / limit);
 
-    return { holders, total, pages };
+    return { holders: processedHolders, total, pages };
   }
 
   async insertTokenHolder(holder: InsertTokenHolder): Promise<TokenHolder> {

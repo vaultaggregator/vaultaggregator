@@ -357,6 +357,35 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                     Previous
                   </Button>
                   
+                  {/* Go to Page Input */}
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min="1"
+                      max={pagination.pages}
+                      value={pageInput}
+                      onChange={(e) => setPageInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleGoToPage();
+                        }
+                      }}
+                      className="w-16 h-8"
+                      placeholder={`1-${pagination.pages}`}
+                      data-testid="input-go-to-page"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGoToPage}
+                      disabled={!pageInput || parseInt(pageInput) < 1 || parseInt(pageInput) > pagination.pages}
+                      data-testid="button-go-to-page"
+                      className="h-8 px-2"
+                    >
+                      Go
+                    </Button>
+                  </div>
+                  
                   {/* Page Numbers */}
                   <div className="flex items-center gap-1">
                     {(() => {
@@ -448,35 +477,6 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                     <ChevronsRight className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-              
-              {/* Go to Page */}
-              <div className="flex items-center justify-center gap-2">
-                <span className="text-sm text-muted-foreground">Go to page:</span>
-                <Input
-                  type="number"
-                  min="1"
-                  max={pagination.pages}
-                  value={pageInput}
-                  onChange={(e) => setPageInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleGoToPage();
-                    }
-                  }}
-                  className="w-20 h-8"
-                  placeholder={`1-${pagination.pages}`}
-                  data-testid="input-go-to-page"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleGoToPage}
-                  disabled={!pageInput || parseInt(pageInput) < 1 || parseInt(pageInput) > pagination.pages}
-                  data-testid="button-go-to-page"
-                >
-                  Go
-                </Button>
               </div>
             </div>
           )}
