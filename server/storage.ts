@@ -951,6 +951,17 @@ export class DatabaseStorage implements IStorage {
         isVisible: false, // All new pools start hidden
         lastUpdated: new Date(),
       }).returning();
+      
+      // Trigger holder sync for new pool if it has a contract address
+      if (newPool.poolAddress) {
+        console.log(`🔄 Triggering holder sync for new pool ${newPool.tokenPair}`);
+        import('./services/holderService.js').then(({ holderService }) => {
+          holderService.syncPoolHolders(newPool.id).catch(error => {
+            console.error(`❌ Failed to sync holders for new pool ${newPool.id}:`, error);
+          });
+        });
+      }
+      
       return newPool;
     }
   }

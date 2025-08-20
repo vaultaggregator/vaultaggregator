@@ -4,13 +4,16 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # User Preferences
 
-**Token Holders Tracking System - COMPLETED:**
+**Token Holders Tracking System - COMPLETED & ENHANCED:**
 - Implemented comprehensive token holders tracking system displaying top 20 holders per page
 - Shows holder addresses, wallet balances in USD, pool amounts, and pool share percentages  
-- Real-time data from Etherscan blockchain with pagination support
-- Automatic sync every 30 minutes via admin service monitor
+- Real-time data from complete blockchain history (scans from genesis block, not just recent transfers)
+- Fixed Alchemy service to fetch ALL token holders, not just recent ones
+- Automatic sync every 30 minutes via database scheduler
+- New pools automatically trigger holder sync when created (if contract address exists)
 - Manual triggering capability through admin API endpoints
 - Complete frontend integration in pool detail pages below charts
+- Successfully retrieves all holders matching Etherscan exactly (tested with 48 holders for Steakhouse infiniFi USDC)
 
 **URL Routing & Pool Matching - CRITICAL FIXES APPLIED:**
 - Fixed pool token matching logic to handle special characters (hyphens, spaces) consistently
