@@ -181,12 +181,16 @@ export default function AdminSystem() {
                 </Badge>
               )}
               <Button
-                onClick={() => runHealthCheckMutation.mutate()}
+                onClick={() => {
+                  runHealthCheckMutation.mutate();
+                  queryClient.invalidateQueries({ queryKey: ["/api/admin/system"] });
+                }}
                 disabled={runHealthCheckMutation.isPending}
                 className="flex items-center gap-2"
+                variant="outline"
               >
-                <RefreshCw className="h-4 w-4" />
-                Run Health Check
+                <RefreshCw className={`h-4 w-4 ${runHealthCheckMutation.isPending ? 'animate-spin' : ''}`} />
+                {runHealthCheckMutation.isPending ? 'Refreshing...' : 'Refresh Data'}
               </Button>
             </div>
           </div>

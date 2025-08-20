@@ -238,12 +238,21 @@ export function registerAdminSystemRoutes(app: Express) {
       // This will trigger all health checks
       const health = await systemMonitor.getSystemHealth();
       
+      // Count total checks performed
+      const apiChecks = Object.keys(health.apiHealth || {}).length;
+      const jobChecks = Object.keys(health.scheduledJobs || {}).length;
+      const totalChecks = apiChecks + jobChecks;
+      
       res.json({
         success: true,
         message: "System health check completed",
         timestamp: new Date().toISOString(),
         overall: health.overall,
-        checksCompleted: health.checks.length
+        checksCompleted: totalChecks,
+        details: {
+          apiChecks,
+          jobChecks
+        }
       });
     } catch (error) {
       console.error("Error running system check:", error);

@@ -31,17 +31,20 @@ export function AdminHeader() {
   ];
 
   return (
-    <header className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-950 dark:to-gray-900 border-b border-gray-700 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
           <div className="flex items-center space-x-4">
             <Link href="/admin">
-              <a className="flex items-center space-x-2 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">VA</span>
+              <a className="flex items-center space-x-2 text-white hover:text-blue-300 transition-colors">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center shadow-md">
+                  <span className="text-white font-bold text-lg">VA</span>
                 </div>
-                <span className="font-semibold text-lg">Admin Panel</span>
+                <div>
+                  <span className="font-bold text-xl text-white">Admin Panel</span>
+                  <p className="text-xs text-gray-300">System Management</p>
+                </div>
               </a>
             </Link>
           </div>
@@ -56,20 +59,20 @@ export function AdminHeader() {
               const getHighlightColors = (type: string | boolean | undefined, active: boolean) => {
                 if (type === "error") {
                   return active
-                    ? "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300"
-                    : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300";
+                    ? "bg-red-600/20 text-red-200 border border-red-500/30"
+                    : "text-red-300 hover:bg-red-600/10 hover:text-red-200";
                 } else if (type === "system") {
                   return active
-                    ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
-                    : "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-300";
+                    ? "bg-green-600/20 text-green-200 border border-green-500/30"
+                    : "text-green-300 hover:bg-green-600/10 hover:text-green-200";
                 } else if (type === "service") {
                   return active
-                    ? "bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300"
-                    : "text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300";
+                    ? "bg-purple-600/20 text-purple-200 border border-purple-500/30"
+                    : "text-purple-300 hover:bg-purple-600/10 hover:text-purple-200";
                 }
                 return active
-                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white";
+                  ? "bg-white/10 text-white border border-white/20"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white";
               };
               
               return (
@@ -90,7 +93,7 @@ export function AdminHeader() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" className="flex items-center space-x-2 bg-white/10 text-white border-white/20 hover:bg-white/20">
                 <Home className="w-4 h-4" />
                 <span className="hidden sm:inline">View Site</span>
               </Button>
@@ -98,16 +101,16 @@ export function AdminHeader() {
             
             <div className="flex items-center space-x-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-white">
                   {user ? (user as User)?.username || 'Admin' : 'Admin'}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Administrator</p>
+                <p className="text-xs text-gray-300">Administrator</p>
               </div>
               <Button
                 onClick={handleLogout}
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="flex items-center space-x-2 text-red-300 border-red-500/50 hover:bg-red-500/20 hover:text-red-200"
               >
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Logout</span>

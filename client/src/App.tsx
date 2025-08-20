@@ -30,7 +30,7 @@ import AdminErrors from "@/pages/admin-errors";
 import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
 import AdminPools from "@/pages/admin-pools";
-import ServiceMonitor from "@/pages/admin/service-monitor";
+import AdminServices from "@/pages/admin-services";
 
 
 
@@ -57,7 +57,7 @@ function Router() {
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/system" component={AdminSystem} />
-      <Route path="/admin/services" component={ServiceMonitor} />
+      <Route path="/admin/services" component={AdminServices} />
       <Route path="/admin/panel" component={AdminPanel} />
       <Route path="/admin/pools" component={AdminPools} />
       <Route path="/admin-pools" component={AdminPools} />
