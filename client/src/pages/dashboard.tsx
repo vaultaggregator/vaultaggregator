@@ -132,7 +132,16 @@ export default function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis tickFormatter={(value) => `${value.toFixed(1)}%`} />
-                  <Tooltip formatter={(value: any) => [`${Number(value).toFixed(2)}%`, 'Average APY']} />
+                  <Tooltip 
+                    formatter={(value: any) => [`${Number(value).toFixed(2)}%`, 'Average APY']} 
+                    contentStyle={{
+                      backgroundColor: 'rgb(17, 24, 39)',
+                      border: '1px solid rgb(55, 65, 81)',
+                      borderRadius: '0.5rem',
+                      color: 'white'
+                    }}
+                    labelStyle={{ color: 'rgb(156, 163, 175)' }}
+                  />
                   <Line type="monotone" dataKey="avgApy" stroke="#3b82f6" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
