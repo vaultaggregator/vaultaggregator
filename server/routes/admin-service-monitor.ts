@@ -39,7 +39,7 @@ const SERVICE_DEFINITIONS = [
     type: 'scraper' as const,
     description: 'Collects APY, TVL, and pool data from Morpho and Lido APIs',
     defaultInterval: 5,
-    poolsAffected: 12
+    poolsAffected: 35
   },
   {
     id: 'holder-sync',
@@ -47,7 +47,15 @@ const SERVICE_DEFINITIONS = [
     type: 'sync' as const,
     description: 'Synchronizes holder counts from Etherscan',
     defaultInterval: 30,
-    poolsAffected: 12
+    poolsAffected: 35
+  },
+  {
+    id: 'comprehensive-holder-sync',
+    name: 'Comprehensive Holder Sync',
+    type: 'sync' as const,
+    description: 'Fetches complete holder data from blockchain using Alchemy API (all holders from genesis block)',
+    defaultInterval: 30,
+    poolsAffected: 35
   },
   {
     id: 'token-info-sync',
@@ -55,7 +63,7 @@ const SERVICE_DEFINITIONS = [
     type: 'sync' as const,
     description: 'Updates token metadata and pricing information',
     defaultInterval: 60,
-    poolsAffected: 12
+    poolsAffected: 35
   },
   {
     id: 'standardized-metrics',
@@ -63,7 +71,7 @@ const SERVICE_DEFINITIONS = [
     type: 'metrics' as const,
     description: 'Collects and standardizes APY, TVL, Days, and Holders metrics',
     defaultInterval: 10,
-    poolsAffected: 12
+    poolsAffected: 35
   },
   {
     id: 'historical-apy',
@@ -71,7 +79,7 @@ const SERVICE_DEFINITIONS = [
     type: 'metrics' as const,
     description: 'Calculates historical APY averages (7d, 30d, 90d, all-time)',
     defaultInterval: 30,
-    poolsAffected: 12
+    poolsAffected: 35
   },
   {
     id: 'error-healing',
@@ -79,7 +87,7 @@ const SERVICE_DEFINITIONS = [
     type: 'healing' as const,
     description: 'Automatically retries failed data collection operations',
     defaultInterval: 15,
-    poolsAffected: 12
+    poolsAffected: 35
   },
   {
     id: 'ai-scheduler',
@@ -157,6 +165,19 @@ async function getServiceStatus(serviceId: string): Promise<Partial<ServiceStatu
       lastRun = holderResult.rows[0]?.last_run as string || null;
       totalRuns = Number(holderResult.rows[0]?.addresses_updated || 0);
       status = totalRuns > 0 ? 'active' : (errorCount > 0 ? 'error' : 'unknown');
+      
+    } else if (serviceId === 'comprehensive-holder-sync') {
+      // Check token_holders table for recent comprehensive sync
+      const comprehensiveResult = await db.execute(sql`
+        SELECT MAX(last_updated) as last_run, COUNT(DISTINCT pool_id) as pools_synced, COUNT(*) as total_holders
+        FROM token_holders 
+        WHERE last_updated > NOW() - INTERVAL '2 hours'
+      `);
+      
+      lastRun = comprehensiveResult.rows[0]?.last_run as string || null;
+      totalRuns = Number(comprehensiveResult.rows[0]?.total_holders || 0);
+      const poolsSynced = Number(comprehensiveResult.rows[0]?.pools_synced || 0);
+      status = poolsSynced > 0 ? 'active' : (errorCount > 0 ? 'error' : 'unknown');
       
     } else if (serviceId === 'standardized-metrics') {
       // Check pool_metrics_current for recent updates
