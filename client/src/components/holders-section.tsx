@@ -51,7 +51,8 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | null | undefined) => {
+    if (num == null || isNaN(num)) return '0';
     if (num >= 1000000) {
       return `${(num / 1000000).toFixed(1)}M`;
     }
@@ -61,7 +62,8 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
     return num.toLocaleString();
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount == null || isNaN(amount)) return '$0';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -70,7 +72,8 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
     }).format(amount);
   };
 
-  const formatPercentage = (percentage: number) => {
+  const formatPercentage = (percentage: number | null | undefined) => {
+    if (percentage == null || isNaN(percentage)) return '0.00%';
     return `${percentage.toFixed(2)}%`;
   };
 
@@ -236,7 +239,7 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                   <div className="space-y-1">
                     <div className="text-sm font-medium flex items-center gap-1">
                       <Wallet className="h-3 w-3" />
-                      {holder.walletBalanceEth.toFixed(2)} ETH
+                      {holder.walletBalanceEth != null ? holder.walletBalanceEth.toFixed(2) : '0.00'} ETH
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {formatCurrency(holder.walletBalanceUsd)}

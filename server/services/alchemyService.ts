@@ -87,12 +87,21 @@ export class AlchemyService {
             if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
               const rawBalance = balance.tokenBalances[0].tokenBalance;
               const decimals = metadata.decimals || 18;
-              const formattedBalance = parseInt(rawBalance, 16) / Math.pow(10, decimals);
+              
+              // Convert hex string to BigInt for accurate calculation
+              let formattedBalance = 0;
+              let balanceString = '0';
+              
+              if (rawBalance !== '0x0') {
+                const balanceBigInt = BigInt(rawBalance);
+                formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
+                balanceString = balanceBigInt.toString();
+              }
               
               if (formattedBalance > 0) {
                 holders.push({
                   address,
-                  balance: rawBalance,
+                  balance: balanceString,
                   formattedBalance,
                 });
               }

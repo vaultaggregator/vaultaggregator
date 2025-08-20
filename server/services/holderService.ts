@@ -198,10 +198,22 @@ export class HolderService {
 
     for (let i = 0; i < holders.length; i++) {
       const holder = holders[i];
-      const balance = parseFloat(holder.balance);
-      const formattedBalance = balance / Math.pow(10, 18); // Assuming 18 decimals
+      // Handle balance properly - it may already be formatted from Alchemy
+      let formattedBalance: number;
+      let balance: number;
+      
+      if (holder.formattedBalance !== undefined) {
+        // If Alchemy provided formatted balance, use it
+        formattedBalance = holder.formattedBalance;
+        balance = formattedBalance * Math.pow(10, 18); // Convert back for percentage calc
+      } else {
+        // Otherwise parse the raw balance
+        balance = parseFloat(holder.balance) || 0;
+        formattedBalance = balance / Math.pow(10, 18); // Assuming 18 decimals
+      }
+      
       const usdValue = formattedBalance * tokenPrice;
-      const poolSharePercentage = (balance / totalSupply) * 100;
+      const poolSharePercentage = totalSupply > 0 ? (balance / totalSupply) * 100 : 0;
 
       // Get wallet ETH balance
       let walletBalanceEth = 0;
