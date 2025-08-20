@@ -233,12 +233,7 @@ export default function PrivacyPolicy() {
                 ))}
               </div>
 
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
-                To exercise any of these rights, please contact us at{" "}
-                <a href="mailto:privacy@vault-aggregator.com" className="text-blue-600 dark:text-blue-400 hover:underline">
-                  privacy@vault-aggregator.com
-                </a>
-              </p>
+              
             </CardContent>
           </Card>
 

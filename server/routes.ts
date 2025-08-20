@@ -2333,6 +2333,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Predictions route
+  app.get("/api/pools/:poolId/ai-prediction", async (req, res) => {
+    try {
+      const { AIPredictionService } = await import("./services/aiPredictionService");
+      const aiService = AIPredictionService.getInstance();
+      const prediction = await aiService.getPrediction(req.params.poolId);
+      
+      if (!prediction) {
+        return res.status(404).json({ message: "Prediction not available" });
+      }
+      
+      res.json(prediction);
+    } catch (error) {
+      console.error("Error fetching AI prediction:", error);
+      res.status(500).json({ message: "Failed to fetch AI prediction" });
+    }
+  });
+
   // Manual sync removed for security - sync runs automatically via scheduler
 
   // API Key management endpoints (admin only)

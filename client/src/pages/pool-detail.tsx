@@ -20,6 +20,7 @@ import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
 import { APYCalculator } from '@/components/apy-calculator';
 import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
+import { AIInsightsCard } from "@/components/ai-insights-card";
 
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
