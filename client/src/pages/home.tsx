@@ -57,6 +57,7 @@ export default function Home() {
     },
     staleTime: 1000, // Consider data stale after 1 second to allow frequent updates
     refetchOnWindowFocus: true, // Refetch when window regains focus
+    placeholderData: (previousData) => previousData, // Keep showing old data while new data loads
   });
 
   const handleFilterChange = (newFilters: FilterOptions) => {
@@ -77,7 +78,7 @@ export default function Home() {
     }
   };
 
-  const sortedPools = pools.sort((a, b) => {
+  const sortedPools = [...pools].sort((a: YieldOpportunity, b: YieldOpportunity) => {
     if (!sortBy) return 0;
     
     let aValue: any, bValue: any;
@@ -104,7 +105,7 @@ export default function Home() {
         bValue = b.rawData?.count || 0;
         break;
       case 'risk':
-        const riskOrder = { low: 3, medium: 2, high: 1 };
+        const riskOrder: { [key: string]: number } = { low: 3, medium: 2, high: 1 };
         aValue = riskOrder[a.riskLevel];
         bValue = riskOrder[b.riskLevel];
         break;
@@ -256,11 +257,7 @@ export default function Home() {
           </div>
         </div>
 
-        {isLoading && page === 0 ? (
-          <div className="bg-card border border-border border-t-0 rounded-b-xl p-12">
-            <CryptoLoader message="Discovering yield opportunities across DeFi protocols..." />
-          </div>
-        ) : pools.length === 0 ? (
+        {pools.length === 0 && !isLoading ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -284,6 +281,12 @@ export default function Home() {
               )}
             </div>
           </div>
+        ) : pools.length === 0 && isLoading ? (
+          <div className="bg-card border border-border border-t-0 rounded-b-xl p-12">
+            <div className="text-center">
+              <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Discovering yield opportunities across DeFi protocols...</p>
+            </div>
+          </div>
         ) : (
           <>
             <div className="bg-card border border-border border-t-0 sm:rounded-b-xl rounded-b-lg overflow-hidden space-y-2 sm:space-y-0">
@@ -302,7 +305,7 @@ export default function Home() {
               <div className="text-center mt-12">
                 <Button 
                   onClick={loadMore}
-                  className="bg-primary-500 text-white px-8 py-3 rounded-lg hover:bg-primary-600 transition-colors duration-200 font-medium"
+                  className="bg-primary-500 text-white px-8 py-3 rounded-lg hover:bg-primary-600 font-medium"
                   disabled={isLoading}
                   data-testid="button-load-more"
                 >
