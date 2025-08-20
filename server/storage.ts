@@ -23,6 +23,9 @@ import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc, lte } from "drizzle-orm";
 import { HistoricalHolderAnalysisService } from "./services/historicalHolderAnalysisService";
 
+// Re-export types that scrapers need
+export type { PoolWithRelations };
+
 export interface IStorage {
   // User methods (existing)
   getUser(id: string): Promise<User | undefined>;
