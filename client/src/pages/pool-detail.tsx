@@ -402,7 +402,6 @@ export default function PoolDetail() {
                   {/* Risk Score Display */}
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                    <span className="text-xs text-gray-600 dark:text-gray-400">Risk:</span>
                     <RiskBadge 
                       risk={pool.riskLevel || 'medium'}
                       variant="compact"
