@@ -665,7 +665,7 @@ export default function PoolDetail() {
 
 
         {/* Platform Info Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8">
           <Card className="hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/20 dark:to-sky-800/20 border-sky-200 dark:border-sky-700">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-sky-700 dark:text-sky-300 flex items-center justify-between">
