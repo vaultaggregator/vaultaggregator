@@ -229,31 +229,72 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
 
       console.log(`🔍 Collecting operating days for ${pool.tokenPair} (${pool.poolAddress})`);
 
-      // Use authentic Etherscan service for operating days calculation
-      const { etherscanService } = await import("./etherscanService");
+      // Get chain information from database
+      const { db } = await import("../db");
+      const { chains } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
       
-      if (!etherscanService.isAvailable()) {
-        return { value: null, error: "Etherscan service not available" };
-      }
+      const [chainInfo] = await db
+        .select()
+        .from(chains)
+        .where(eq(chains.id, pool.chainId));
+      
+      const chainName = chainInfo?.name?.toLowerCase() || 'ethereum';
+      console.log(`🔗 Pool is on ${chainName} network`);
+      
+      // Use Basescan for Base network, Etherscan for Ethereum
+      if (chainName === 'base') {
+        console.log(`🔗 Using Basescan for Base network pool`);
+        
+        // Use Basescan API for Base network
+        const basescanUrl = `https://api.basescan.org/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc&apikey=demo`;
+        
+        try {
+          const response = await fetch(basescanUrl);
+          const data = await response.json();
+          
+          if (data.status === "1" && data.result && data.result.length > 0) {
+            const firstTx = data.result[0];
+            const creationDate = new Date(parseInt(firstTx.timeStamp) * 1000);
+            const currentDate = new Date();
+            const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+            
+            console.log(`📊 Contract ${pool.poolAddress} on Base has been operating for ${daysDiff} days`);
+            return { value: daysDiff };
+          }
+          
+          return { value: null, error: "No transaction history found on Basescan" };
+        } catch (error) {
+          console.error(`❌ Error fetching from Basescan:`, error);
+          return { value: null, error: "Failed to fetch data from Basescan" };
+        }
+      } else {
+        // Use Etherscan for Ethereum mainnet
+        const { etherscanService } = await import("./etherscanService");
+        
+        if (!etherscanService.isAvailable()) {
+          return { value: null, error: "Etherscan service not available" };
+        }
 
-      // Add delay before Etherscan API call to avoid rate limits
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
-      
-      if (operatingDays !== null && operatingDays > 0) {
-        console.log(`📊 Contract ${pool.poolAddress} has been operating for ${operatingDays} days`);
-        return { value: operatingDays };
-      }
+        // Add delay before Etherscan API call to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const operatingDays = await etherscanService.getContractOperatingDays(pool.poolAddress);
+        
+        if (operatingDays !== null && operatingDays > 0) {
+          console.log(`📊 Contract ${pool.poolAddress} has been operating for ${operatingDays} days`);
+          return { value: operatingDays };
+        }
 
-      return { value: null, error: "Could not calculate operating days from Etherscan data" };
+        return { value: null, error: "Could not calculate operating days from Etherscan data" };
+      }
     } catch (error) {
       console.error(`❌ Error calculating operating days for ${pool.poolAddress}:`, error);
       
       // Enhanced error handling with manual fallback for known contracts
       if (error instanceof Error && error.message.includes('rate limit')) {
         console.log(`⚠️ Rate limit hit for ${pool.poolAddress}, will retry on next collection cycle`);
-        return { value: null, error: "Etherscan rate limit - will retry automatically" };
+        return { value: null, error: "Rate limit - will retry automatically" };
       }
       
       return { value: null, error: error instanceof Error ? error.message : "Days calculation failed" };
