@@ -443,7 +443,7 @@ export default function PoolDetail() {
                     etherscanUrl = 'https://etherscan.io/token/0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
                   } else if (pool.tokenPair?.toLowerCase() === 'steakhouse usdc' || pool.tokenPair?.toLowerCase() === 'steakhouse-usdc') {
                     // Steakhouse USDC Morpho vault
-                    etherscanUrl = 'https://etherscan.io/address/0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
+                    etherscanUrl = 'https://etherscan.io/token/0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
                   }
                   
                   return etherscanUrl ? (
