@@ -363,23 +363,48 @@ export default function AdminServices() {
                             // Add service to refreshing set
                             setRefreshingServices(prev => new Set(prev).add(service.name));
                             
-                            // For refresh action, just invalidate queries to get fresh data
-                            await queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
-                            await queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
+                            // Special handling for Holder Data Sync
+                            if (service.name === 'holderDataSync') {
+                              try {
+                                const response = await fetch("/api/admin/services/refresh", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ service: 'holderDataSync' })
+                                });
+                                const data = await response.json();
+                                
+                                toast({
+                                  title: "Holder Sync Started",
+                                  description: data.message || "Syncing all 44 pools - this may take several minutes",
+                                  duration: 5000,
+                                });
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to start holder sync",
+                                  variant: "destructive",
+                                });
+                              }
+                            } else {
+                              // For other services, just invalidate queries
+                              await queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
+                              await queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
+                              
+                              toast({
+                                title: "Refreshed",
+                                description: `Updated status for ${service.displayName}`,
+                              });
+                            }
                             
-                            toast({
-                              title: "Refreshed",
-                              description: `Updated status for ${service.displayName}`,
-                            });
-                            
-                            // Remove from refreshing set after a short delay
+                            // Remove from refreshing set after a longer delay for holder sync
+                            const delay = service.name === 'holderDataSync' ? 10000 : 1000;
                             setTimeout(() => {
                               setRefreshingServices(prev => {
                                 const newSet = new Set(prev);
                                 newSet.delete(service.name);
                                 return newSet;
                               });
-                            }, 1000);
+                            }, delay);
                           }}
                           disabled={refreshingServices.has(service.name)}
                         >
@@ -422,6 +447,19 @@ export default function AdminServices() {
                             <p className="font-bold text-yellow-600">{service.stats.pending || 0}</p>
                           </div>
                         </div>
+                      </div>
+                    )}
+                    
+                    {/* Special status for Holder Data Sync */}
+                    {service.name === 'holderDataSync' && refreshingServices.has(service.name) && (
+                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                        <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
+                          <Activity className="h-4 w-4 animate-pulse" />
+                          <span className="font-medium">Actively Syncing</span>
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          Syncing holders for all 44 pools. Check server logs for detailed progress.
+                        </p>
                       </div>
                     )}
                     

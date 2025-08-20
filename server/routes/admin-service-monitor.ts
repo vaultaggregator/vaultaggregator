@@ -53,12 +53,29 @@ router.post("/refresh", requireAuth, async (req, res) => {
     // Trigger a fresh health check
     const health = await systemMonitor.getSystemHealth();
     
-    res.json({
-      success: true,
-      message: "Services refreshed successfully",
-      timestamp: new Date().toISOString(),
-      servicesChecked: Object.keys(health.scheduledJobs || {}).length
-    });
+    // For holder sync, trigger immediate sync
+    if (req.body?.service === 'holderDataSync') {
+      console.log("🔄 Manual holder sync triggered from admin panel");
+      // Import and trigger the sync
+      const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
+      comprehensiveHolderSyncService.syncAllPools().catch(err => {
+        console.error("Error in manual holder sync:", err);
+      });
+      
+      res.json({
+        success: true,
+        message: "Holder Data Sync started - syncing all 44 pools",
+        timestamp: new Date().toISOString(),
+        details: "Check the logs for progress. This may take several minutes."
+      });
+    } else {
+      res.json({
+        success: true,
+        message: "Services refreshed successfully",
+        timestamp: new Date().toISOString(),
+        servicesChecked: Object.keys(health.scheduledJobs || {}).length
+      });
+    }
   } catch (error) {
     console.error("Error refreshing services:", error);
     res.status(500).json({ error: "Failed to refresh services" });
