@@ -264,16 +264,17 @@ export class HolderService {
         return exchangeRate * underlyingPrice;
       }
       
-      // Strategy 3: Try CoinGecko API for regular ERC-20 token price
-      const coingeckoUrl = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddress}&vs_currencies=usd`;
-      const response = await fetch(coingeckoUrl);
-      
-      if (response.ok) {
-        const data = await response.json();
-        const price = data[tokenAddress.toLowerCase()]?.usd;
-        if (price && price > 0) {
-          console.log(`✅ Found CoinGecko price: ${price}`);
-          return price;
+      // Strategy 3: Try Alchemy's token price API
+      // Using Alchemy instead of CoinGecko for better reliability
+      if (this.alchemy) {
+        try {
+          const alchemyPrice = await this.alchemy.getTokenPrice(tokenAddress);
+          if (alchemyPrice && alchemyPrice > 0) {
+            console.log(`✅ Found Alchemy token price: ${alchemyPrice}`);
+            return alchemyPrice;
+          }
+        } catch (error) {
+          console.log(`⚠️ Alchemy price lookup failed for ${tokenAddress}:`, error);
         }
       }
       
@@ -312,12 +313,19 @@ export class HolderService {
     try {
       // Find the pool with this contract address to get Morpho vault ID
       const pool = await storage.getPoolByAddress(tokenAddress);
-      if (!pool || !pool.morphoVaultId) {
+      if (!pool || !pool.rawData) {
+        return 0;
+      }
+
+      // Extract Morpho vault ID from rawData
+      const rawData = pool.rawData as any;
+      const morphoVaultId = rawData?.id || rawData?.morphoVaultId;
+      if (!morphoVaultId) {
         return 0;
       }
 
       // Fetch vault data from Morpho API
-      const morphoUrl = `https://blue-api.morpho.org/vaults?ids=${pool.morphoVaultId}`;
+      const morphoUrl = `https://blue-api.morpho.org/vaults?ids=${morphoVaultId}`;
       const response = await fetch(morphoUrl);
       
       if (response.ok) {

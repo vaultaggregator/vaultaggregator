@@ -1441,32 +1441,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`✅ Found Morpho contract via API: ${contractInfo.tokenPair}`);
           } else {
             // No hardcoded fallbacks - only use authentic API sources
-            // Try Etherscan as secondary authentic data source
+            // Try Alchemy as secondary authentic data source (better reliability than Etherscan)
             try {
-              const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
-              const etherscanResponse = await fetch(
-                `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
-              );
+              const { alchemyService } = await import("./services/alchemyService");
               
-              if (etherscanResponse.ok) {
-                const etherscanData = await etherscanResponse.json();
-                if (etherscanData.result && etherscanData.result[0] && etherscanData.result[0].ContractName) {
-                  contractInfo = {
-                    tokenPair: etherscanData.result[0].ContractName,
-                    symbol: etherscanData.result[0].ContractName,
-                    name: etherscanData.result[0].ContractName,
-                    address: address,
-                    platform: 'Morpho'
-                  };
-                  console.log(`✅ Found contract via Etherscan API: ${contractInfo.tokenPair}`);
-                } else {
-                  return res.status(404).json({ error: "Contract not found on Morpho API or Etherscan API" });
+              // Determine network for Alchemy
+              let network = 'ethereum'; // Default
+              if (chainId) {
+                const chain = await storage.getChainById(chainId);
+                if (chain && chain.name.toLowerCase() === 'base') {
+                  network = 'base';
                 }
-              } else {
-                return res.status(404).json({ error: "Contract not found on Morpho API, Etherscan API unavailable" });
               }
-            } catch (etherscanError) {
-              console.error("Etherscan API lookup failed:", etherscanError);
+              
+              // Get token metadata from Alchemy
+              const metadata = await alchemyService.getTokenMetadata(address, network);
+              
+              if (metadata && metadata.symbol) {
+                contractInfo = {
+                  tokenPair: metadata.name || metadata.symbol || 'Unknown',
+                  symbol: metadata.symbol,
+                  name: metadata.name || metadata.symbol,
+                  address: address,
+                  platform: 'Morpho'
+                };
+                console.log(`✅ Found contract via Alchemy API: ${contractInfo.tokenPair}`);
+              } else {
+                // Fallback to Etherscan as last resort
+                const etherscanApiKey = process.env.ETHERSCAN_API_KEY;
+                const etherscanResponse = await fetch(
+                  `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address}&apikey=${etherscanApiKey}`
+                );
+                
+                if (etherscanResponse.ok) {
+                  const etherscanData = await etherscanResponse.json();
+                  if (etherscanData.result && etherscanData.result[0] && etherscanData.result[0].ContractName) {
+                    contractInfo = {
+                      tokenPair: etherscanData.result[0].ContractName,
+                      symbol: etherscanData.result[0].ContractName,
+                      name: etherscanData.result[0].ContractName,
+                      address: address,
+                      platform: 'Morpho'
+                    };
+                    console.log(`✅ Found contract via Etherscan API: ${contractInfo.tokenPair}`);
+                  } else {
+                    return res.status(404).json({ error: "Contract not found on Morpho API, Alchemy API, or Etherscan API" });
+                  }
+                } else {
+                  return res.status(404).json({ error: "Contract not found - all API sources unavailable" });
+                }
+              }
+            } catch (lookupError) {
+              console.error("Contract lookup failed:", lookupError);
               return res.status(404).json({ error: "Contract not found - all API sources failed" });
             }
           }

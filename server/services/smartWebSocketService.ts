@@ -280,17 +280,20 @@ export class SmartWebSocketService {
    */
   private async updateHolderBalance(poolId: string, from: string, to: string) {
     try {
-      // Update sender balance
-      if (from && from !== '0x0000000000000000000000000000000000000000') {
-        await alchemyService.updateSingleHolder(poolId, from);
-      }
-
-      // Update receiver balance
-      if (to && to !== '0x0000000000000000000000000000000000000000') {
-        await alchemyService.updateSingleHolder(poolId, to);
-      }
+      // Real-time holder updates disabled - we rely on scheduled sync
+      // The comprehensive holder sync runs every 30 minutes to update all holders
+      // This prevents excessive API calls and ensures consistent data
+      
+      // Broadcast transfer event to WebSocket clients instead
+      this.broadcast({
+        type: 'transfer',
+        poolId,
+        from,
+        to,
+        timestamp: Date.now()
+      });
     } catch (error) {
-      console.error('Error updating holder balances:', error);
+      console.error('Error processing transfer event:', error);
     }
   }
 

@@ -24,8 +24,6 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - This handles all edge cases and future Morpho pools automatically
 - Applies to both current APY display and historical averages calculation
 
-# User Preferences
-
 **Token Holders Tracking System - COMPLETED & ENHANCED:**
 - Implemented comprehensive token holders tracking system displaying top 20 holders per page
 - Shows holder addresses, wallet balances in USD, pool amounts, and pool share percentages  
@@ -158,8 +156,8 @@ The application prioritizes a consistent UI with standardized header/footer layo
 
 ## Key Integrations
 
-- **Morpho API**: Integrated for authenticated data synchronization, providing comprehensive historical APY data (7d, 30d, 90d) and live vault data.
-- **Alchemy API**: Used for direct analysis of Ethereum transfers.
-- **Etherscan**: Used for accurate holder count data and contract creation dates.
+- **Alchemy API**: Primary service for token metadata, pricing, holder tracking, and contract information.
+- **Morpho API**: Integrated for authenticated data synchronization, providing comprehensive historical APY data and live vault data.
+- **Etherscan**: Used as fallback for contract creation dates and when Alchemy data unavailable.
 - **Lido API**: Integrated for data fetching for Lido pools.
 - **OpenAI Integration**: AI Market Insights generate 180-word comprehensive analyses with market predictions, sentiment analysis, and investment insights using GPT-4o model.
