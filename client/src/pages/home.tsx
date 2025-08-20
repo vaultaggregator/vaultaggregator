@@ -25,6 +25,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<'name' | 'apy' | 'operatingDays' | 'tvl' | 'operatingSince' | 'risk' | 'holders' | null>('tvl');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const limit = 12;
   
   // Initialize WebSocket connection for real-time updates
@@ -78,7 +79,22 @@ export default function Home() {
     }
   };
 
-  const sortedPools = [...pools].sort((a: YieldOpportunity, b: YieldOpportunity) => {
+  // Filter pools based on search term
+  const filteredPools = pools.filter((pool: YieldOpportunity) => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const poolName = pool.tokenPair?.toLowerCase() || '';
+    const platformName = pool.platform?.displayName?.toLowerCase() || '';
+    const chainName = pool.chain?.displayName?.toLowerCase() || '';
+    
+    return poolName.includes(searchLower) || 
+           platformName.includes(searchLower) ||
+           chainName.includes(searchLower) ||
+           `${platformName} ${poolName}`.includes(searchLower);
+  });
+
+  const sortedPools = [...filteredPools].sort((a: YieldOpportunity, b: YieldOpportunity) => {
     if (!sortBy) return 0;
     
     let aValue: any, bValue: any;
@@ -166,6 +182,36 @@ export default function Home() {
       <NetworkSelector filters={filters} onFilterChange={handleFilterChange} />
       
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
+        {/* Search Box */}
+        <div className="mb-6">
+          <div className="relative max-w-xl mx-auto">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search pools by name, protocol, or network..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="block w-full pl-10 pr-3 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              data-testid="search-pools"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                data-testid="clear-search"
+              >
+                <span className="text-muted-foreground hover:text-foreground">✕</span>
+              </button>
+            )}
+          </div>
+          {searchTerm && (
+            <div className="text-center mt-2 text-sm text-muted-foreground">
+              Found {filteredPools.length} {filteredPools.length === 1 ? 'pool' : 'pools'} matching "{searchTerm}"
+            </div>
+          )}
+        </div>
 
         {/* Table Header - Hidden on mobile */}
         <div className="bg-card rounded-t-xl shadow-sm border border-border border-b-0 hidden sm:block">
