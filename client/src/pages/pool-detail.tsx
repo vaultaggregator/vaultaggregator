@@ -374,7 +374,7 @@ export default function PoolDetail() {
                   </p>
                   
                   {/* Large Live APY Display */}
-                  <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-3">
+                  <div className="mb-3">
                     <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                       <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
                       <span className="text-sm font-semibold text-green-700 dark:text-green-300">Live APY</span>
