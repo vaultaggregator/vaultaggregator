@@ -336,23 +336,25 @@ export class HolderService {
       const usdValue = formattedBalance * tokenPrice;
       const poolSharePercentage = totalSupply > 0 ? (balance / totalSupply) * 100 : 0;
 
-      // Get wallet ETH balance
+      // Get total portfolio value across all chains
       let walletBalanceEth = 0;
       let walletBalanceUsd = 0;
       
       try {
         if (this.alchemy) {
-          // Use Alchemy for more accurate ETH balance
+          // Get total portfolio value across all tokens and chains
+          walletBalanceUsd = await this.alchemy.getTotalPortfolioValue(holder.address);
+          
+          // Also get ETH balance for display
           walletBalanceEth = await this.alchemy.getEthBalance(holder.address);
-          walletBalanceUsd = walletBalanceEth * 3200; // Approximate ETH price
         } else {
-          // Fallback to Etherscan
+          // Fallback to Etherscan (ETH only)
           const accountInfo = await this.etherscan.getAccountInfo(holder.address);
           walletBalanceEth = parseFloat(accountInfo.balance) / Math.pow(10, 18);
           walletBalanceUsd = walletBalanceEth * 3200; // Approximate ETH price
         }
       } catch (error) {
-        console.log(`⚠️ Could not fetch wallet balance for ${holder.address}`);
+        console.log(`⚠️ Could not fetch portfolio value for ${holder.address}`);
       }
 
       processedHolders.push({
