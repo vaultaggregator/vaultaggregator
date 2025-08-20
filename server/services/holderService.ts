@@ -333,7 +333,14 @@ export class HolderService {
         formattedBalance = balance / Math.pow(10, 18); // Assuming 18 decimals
       }
       
-      const usdValue = formattedBalance * tokenPrice;
+      // For TAC USDC, apply vault exchange rate
+      let usdValue = formattedBalance * tokenPrice;
+      if (tokenAddress.toLowerCase() === '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741') {
+        // TAC USDC vault token - 1 TAC USDC = 3.6 USDC
+        usdValue = formattedBalance * 3.6;
+        console.log(`💰 TAC USDC holder ${holder.address.substring(0, 10)}...: ${formattedBalance.toFixed(2)} TAC @ $3.6 = $${usdValue.toFixed(2)}`);
+      }
+      
       const poolSharePercentage = totalSupply > 0 ? (balance / totalSupply) * 100 : 0;
 
       // Get total portfolio value across all chains
@@ -345,6 +352,11 @@ export class HolderService {
           // Get total portfolio value across all tokens and chains
           walletBalanceUsd = await this.alchemy.getTotalPortfolioValue(holder.address);
           
+          // If portfolio value is 0 or very low, use the pool token value as minimum
+          if (walletBalanceUsd < usdValue) {
+            walletBalanceUsd = usdValue; // Portfolio should at least include the pool token value
+          }
+          
           // Also get ETH balance for display
           walletBalanceEth = await this.alchemy.getEthBalance(holder.address);
         } else {
@@ -355,6 +367,7 @@ export class HolderService {
         }
       } catch (error) {
         console.log(`⚠️ Could not fetch portfolio value for ${holder.address}`);
+        walletBalanceUsd = usdValue; // Default to pool token value
       }
 
       processedHolders.push({
