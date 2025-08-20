@@ -363,41 +363,49 @@ export default function AdminServices() {
                             // Add service to refreshing set
                             setRefreshingServices(prev => new Set(prev).add(service.name));
                             
-                            // Special handling for Holder Data Sync
-                            if (service.name === 'holderDataSync') {
-                              try {
-                                const response = await fetch("/api/admin/services/refresh", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ service: 'holderDataSync' })
-                                });
-                                const data = await response.json();
-                                
-                                toast({
-                                  title: "Holder Sync Started",
-                                  description: data.message || "Syncing all 44 pools - this may take several minutes",
-                                  duration: 5000,
-                                });
-                              } catch (error) {
-                                toast({
-                                  title: "Error",
-                                  description: "Failed to start holder sync",
-                                  variant: "destructive",
-                                });
-                              }
-                            } else {
-                              // For other services, just invalidate queries
-                              await queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
-                              await queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
+                            // Handle service refresh based on service type
+                            try {
+                              const response = await fetch("/api/admin/services/refresh", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ service: service.name })
+                              });
+                              const data = await response.json();
+                              
+                              // Show appropriate toast message based on service
+                              const toastMessages: Record<string, string> = {
+                                holderDataSync: "Syncing holders for all 44 pools - this may take several minutes",
+                                defiLlamaSync: "Refreshing APY and TVL data from DeFi Llama",
+                                aiOutlookGeneration: "Starting AI market insights generation",
+                                cleanup: "Running database cleanup process"
+                              };
                               
                               toast({
-                                title: "Refreshed",
-                                description: `Updated status for ${service.displayName}`,
+                                title: `${service.displayName} Started`,
+                                description: data.message || toastMessages[service.name] || `Processing ${service.displayName}`,
+                                duration: 5000,
+                              });
+                              
+                              // Also invalidate queries to refresh the display
+                              await queryClient.invalidateQueries({ queryKey: ["/api/admin/services/status"] });
+                              await queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: `Failed to start ${service.displayName}`,
+                                variant: "destructive",
                               });
                             }
                             
-                            // Remove from refreshing set after a longer delay for holder sync
-                            const delay = service.name === 'holderDataSync' ? 10000 : 1000;
+                            // Remove from refreshing set after appropriate delay
+                            const delays: Record<string, number> = {
+                              holderDataSync: 10000,
+                              defiLlamaSync: 5000,
+                              aiOutlookGeneration: 8000,
+                              cleanup: 3000
+                            };
+                            const delay = delays[service.name] || 3000;
+                            
                             setTimeout(() => {
                               setRefreshingServices(prev => {
                                 const newSet = new Set(prev);
@@ -450,15 +458,18 @@ export default function AdminServices() {
                       </div>
                     )}
                     
-                    {/* Special status for Holder Data Sync */}
-                    {service.name === 'holderDataSync' && refreshingServices.has(service.name) && (
+                    {/* Visual status indicator for active services */}
+                    {refreshingServices.has(service.name) && (
                       <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
                         <div className="flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
                           <Activity className="h-4 w-4 animate-pulse" />
-                          <span className="font-medium">Actively Syncing</span>
+                          <span className="font-medium">Actively Working</span>
                         </div>
                         <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                          Syncing holders for all 44 pools. Check server logs for detailed progress.
+                          {service.name === 'holderDataSync' && 'Syncing holders for all 44 pools. Check server logs for detailed progress.'}
+                          {service.name === 'defiLlamaSync' && 'Fetching latest APY and TVL data from DeFi Llama for all pools.'}
+                          {service.name === 'aiOutlookGeneration' && 'Generating AI market insights for pools using OpenAI.'}
+                          {service.name === 'cleanup' && 'Cleaning up old data from the database.'}
                         </p>
                       </div>
                     )}
