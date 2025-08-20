@@ -71,6 +71,7 @@ function Router() {
 
       {/* Pool detail routes - these must come AFTER admin routes */}
       <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
+      <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} /> {/* SEO-friendly pools URLs */}
       <Route path="/pool/:poolId" component={PoolDetail} /> {/* Legacy UUID support */}
       <Route path="/pools/:poolId" component={PoolDetail} /> {/* Legacy pools support */}
       <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support - MUST be last */}

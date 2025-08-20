@@ -640,14 +640,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const platformMatch = pool.platform.name.toLowerCase().includes(protocolName.toLowerCase()) ||
                              pool.platform.displayName.toLowerCase().includes(protocolName.toLowerCase());
         
-        // More flexible token matching
+        // More flexible token matching - normalize both sides consistently
         const poolTokenNormalized = pool.tokenPair.toLowerCase().replace(/\s+/g, '-');
         const urlTokenNormalized = tokenPairName.toLowerCase();
-        const poolTokenNoSpaces = pool.tokenPair.toLowerCase().replace(/\s+/g, '');
-        const urlTokenNoSpaces = urlTokenNormalized.replace(/-/g, '');
+        
+        // Remove all spaces, hyphens, and special characters for comparison
+        const poolTokenClean = pool.tokenPair.toLowerCase().replace(/[\s\-]+/g, '');
+        const urlTokenClean = tokenPairName.toLowerCase().replace(/[\s\-]+/g, '');
         
         const tokenMatch = poolTokenNormalized === urlTokenNormalized ||
-                          poolTokenNoSpaces === urlTokenNoSpaces ||
+                          poolTokenClean === urlTokenClean ||
                           pool.tokenPair.toLowerCase() === urlTokenNormalized.replace(/-/g, ' ');
         
         console.log("🔎 Checking pool:", pool.tokenPair, "Chain match:", chainMatch, "Platform match:", platformMatch, "Token match:", tokenMatch);
@@ -656,8 +658,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           poolNormalized: poolTokenNormalized,
           urlToken: tokenPairName,
           urlNormalized: urlTokenNormalized,
-          poolNoSpaces: poolTokenNoSpaces,
-          urlNoSpaces: urlTokenNoSpaces
+          poolClean: poolTokenClean,
+          urlClean: urlTokenClean
         });
         
         return chainMatch && platformMatch && tokenMatch;
