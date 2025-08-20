@@ -21,6 +21,7 @@ import { APYCalculator } from '@/components/apy-calculator';
 import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
 import { AIInsightsCard } from "@/components/ai-insights-card";
+import { HoldersSection } from "@/components/holders-section";
 
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
@@ -702,6 +703,14 @@ export default function PoolDetail() {
             currentApy={parseFloat(pool.apy || '0')}
             currentTvl={parseFloat(pool.tvl || '0')}
             tokenPair={pool.tokenPair}
+          />
+        </div>
+
+        {/* Holders Section */}
+        <div className="mb-8">
+          <HoldersSection 
+            poolId={pool.id} 
+            tokenSymbol={pool.tokenPair.split('/')[0] || 'Token'}
           />
         </div>
 

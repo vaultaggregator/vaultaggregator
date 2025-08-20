@@ -4,6 +4,14 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # User Preferences
 
+**Token Holders Tracking System - COMPLETED:**
+- Implemented comprehensive token holders tracking system displaying top 20 holders per page
+- Shows holder addresses, wallet balances in USD, pool amounts, and pool share percentages  
+- Real-time data from Etherscan blockchain with pagination support
+- Automatic sync every 30 minutes via admin service monitor
+- Manual triggering capability through admin API endpoints
+- Complete frontend integration in pool detail pages below charts
+
 **URL Routing & Pool Matching - CRITICAL FIXES APPLIED:**
 - Fixed pool token matching logic to handle special characters (hyphens, spaces) consistently
 - Server-side normalization removes both spaces and hyphens for comparison: "OEV-boosted USDC" → "oevboostedusdc"

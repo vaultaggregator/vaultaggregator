@@ -1,4 +1,7 @@
 import { storage } from "../storage";
+import { db } from "../db";
+import { pools } from "@shared/schema";
+import { and, eq, isNull } from "drizzle-orm";
 import type { InsertHolderHistory } from "@shared/schema";
 
 export class HolderDataSyncService {
@@ -30,65 +33,24 @@ export class HolderDataSyncService {
   }
 
   /**
-   * Sync holder data for all active tokens
+   * Sync holder data for all active pools using the new holderService
    */
   async syncAllHolderData(): Promise<void> {
-    console.log("Starting holder data sync for all active tokens...");
+    console.log("Starting holder data sync for all active pools...");
     
     try {
-      // Get all active pools with token addresses
-      const pools = await storage.getPools({ limit: 1000 });
-      const activeTokens = new Set<string>();
-
-      // Extract unique token addresses from pools
-      for (const pool of pools) {
-        if (!pool.isVisible) continue;
-        
-        const rawData: any = pool.rawData || {};
-        let underlyingToken = rawData.underlyingToken || rawData.underlyingTokens?.[0];
-        
-        // Handle special cases - use actual vault contract addresses for holder data
-        if (pool.id === 'd6a1f6b8-a970-4cc0-9f02-14da0152738e') {
-          underlyingToken = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB'; // steakUSDC vault contract
-        } else if (pool.poolAddress) {
-          // For new pools, use the poolAddress if available
-          underlyingToken = pool.poolAddress;
-        }
-        
-        if (underlyingToken && this.isValidTokenAddress(underlyingToken)) {
-          activeTokens.add(underlyingToken);
-        }
-      }
-
-      console.log(`Found ${activeTokens.size} unique tokens to sync holder data for`);
-
-      // Sync holder data for each token
-      const syncPromises = Array.from(activeTokens).map(tokenAddress => 
-        this.syncTokenHolderData(tokenAddress)
-      );
-
-      const results = await Promise.allSettled(syncPromises);
+      // Use the newer holderService for comprehensive sync
+      const { holderService } = await import('./holderService');
+      await holderService.syncAllPoolHolders();
       
-      const successful = results.filter(r => r.status === 'fulfilled').length;
-      const failed = results.filter(r => r.status === 'rejected').length;
-      
-      console.log(`Holder data sync completed. Successful: ${successful}, Failed: ${failed}`);
-      
-      // Log failed syncs for debugging
-      results.forEach((result, index) => {
-        if (result.status === 'rejected') {
-          const tokenAddress = Array.from(activeTokens)[index];
-          console.error(`Failed to sync holder data for ${tokenAddress}:`, result.reason);
-        }
-      });
-
+      console.log('✅ Holder data sync completed using holderService');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error("Error during holder data sync:", errorMsg);
       
       await this.logError(
         'Holder Data Sync Failed',
-        'Failed to synchronize holder data for all active tokens. This affects holder analytics, growth tracking, and statistical displays across the platform.',
+        'Failed to synchronize holder data for all active pools. This affects holder analytics, growth tracking, and statistical displays across the platform.',
         errorMsg,
         undefined,
         'high'
@@ -97,146 +59,19 @@ export class HolderDataSyncService {
   }
 
   /**
-   * Sync holder data for a specific token
+   * Sync holder data for a specific pool using the new holderService
    */
-  async syncTokenHolderData(tokenAddress: string): Promise<void> {
+  async syncPoolHolderData(poolId: string): Promise<void> {
     try {
-      console.log(`Syncing holder data for token: ${tokenAddress}`);
-
-      // Check if we already have recent holder data (within last 4 hours)
-      const recentData = await storage.getHolderHistory(tokenAddress, 1);
-      if (recentData.length > 0) {
-        const lastUpdate = recentData[0].timestamp ? new Date(recentData[0].timestamp) : new Date(0);
-        const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
-        
-        if (lastUpdate > fourHoursAgo) {
-          console.log(`Holder data for ${tokenAddress} is recent, skipping`);
-          return;
-        }
-      }
-
-      // Restore Etherscan holder sync functionality
-      const { etherscanService } = await import('./etherscanService');
+      console.log(`Syncing holder data for pool: ${poolId}`);
       
-      if (!etherscanService.isAvailable()) {
-        console.warn(`Etherscan service not available for ${tokenAddress}`);
-        return;
-      }
-
-      // Fetch token info and holder count from Etherscan
-      const tokenInfo = await etherscanService.getTokenInfo(tokenAddress);
-      const holdersCount = await etherscanService.getTokenHoldersCount(tokenAddress);
-
-      if (!tokenInfo && !holdersCount) {
-        console.warn(`Could not fetch token info or holder count for ${tokenAddress}`);
-        return;
-      }
-
-      // Use the fetched or scraped holder count
-      let finalHoldersCount = 0;
-      if (holdersCount && holdersCount > 0) {
-        finalHoldersCount = holdersCount;
-      } else if (tokenInfo?.holdersCount && tokenInfo.holdersCount > 0) {
-        finalHoldersCount = tokenInfo.holdersCount;
-      }
-
-      // Calculate market metrics if token info is available
-      let priceUsd: string | null = null;
-      let marketCapUsd: string | null = null;
-      let totalSupply: string | null = null;
-      let decimals = 18;
-
-      if (tokenInfo) {
-        totalSupply = tokenInfo.totalSupply;
-        decimals = parseInt(tokenInfo.divisor || '18');
-        priceUsd = tokenInfo.tokenPriceUSD || null;
-        
-        // Calculate market cap if we have price and supply
-        if (priceUsd && totalSupply) {
-          const totalSupplyNum = parseFloat(totalSupply);
-          const adjustedSupply = totalSupplyNum / Math.pow(10, decimals);
-          marketCapUsd = (parseFloat(priceUsd) * adjustedSupply).toString();
-        }
-      }
-
-      // Store holder history data
-      const holderData = {
-        tokenAddress: tokenAddress.toLowerCase(),
-        holdersCount: finalHoldersCount,
-        priceUsd,
-        marketCapUsd,
-        timestamp: new Date(),
-        totalSupply: totalSupply,
-        circulatingSupply: null, // Not available from Etherscan
-        uniqueAddresses24h: null,
-        uniqueAddresses7d: null,
-        uniqueAddresses30d: null,
-        transferCount24h: null,
-        transferCount7d: null,
-        transferCount30d: null,
-        volume24h: null,
-        volume7d: null,
-        volume30d: null
-      };
-
-      await storage.storeHolderHistory(holderData);
+      // Use the newer holderService for individual pool sync
+      const { holderService } = await import('./holderService');
+      await holderService.syncPoolHolders(poolId);
       
-      // Also update or create tokenInfo with the holder count
-      try {
-        const existingTokenInfo = await storage.getTokenInfoByAddress(tokenAddress);
-        if (existingTokenInfo) {
-          // Update existing tokenInfo with new holder count
-          await storage.updateTokenInfo(tokenAddress, {
-            holdersCount: finalHoldersCount,
-            lastUpdated: new Date()
-          });
-          console.log(`Updated tokenInfo holder count for ${tokenAddress}: ${finalHoldersCount} holders`);
-        } else {
-          // Create new tokenInfo record
-          await storage.upsertTokenInfo(tokenAddress, {
-            address: tokenAddress,
-            holdersCount: finalHoldersCount,
-            lastUpdated: new Date(),
-            createdAt: new Date()
-          });
-          console.log(`Created tokenInfo with holder count for ${tokenAddress}: ${finalHoldersCount} holders`);
-        }
-        
-        // Also update any pools that use this token address to link to the tokenInfo
-        try {
-          const poolsToUpdate = await db
-            .select()
-            .from(pools)
-            .where(and(
-              eq(pools.poolAddress, tokenAddress),
-              isNull(pools.tokenInfoId)
-            ));
-          
-          if (poolsToUpdate.length > 0) {
-            const tokenInfoRecord = await storage.getTokenInfoByAddress(tokenAddress);
-            if (tokenInfoRecord) {
-              for (const pool of poolsToUpdate) {
-                await db
-                  .update(pools)
-                  .set({ tokenInfoId: tokenInfoRecord.id })
-                  .where(eq(pools.id, pool.id));
-                console.log(`🔗 Linked pool ${pool.tokenPair} to tokenInfo for immediate holder data display`);
-              }
-            }
-          }
-        } catch (linkError) {
-          console.error(`Failed to link pools to tokenInfo for ${tokenAddress}:`, linkError);
-        }
-        
-      } catch (tokenInfoError) {
-        console.error(`Failed to update tokenInfo for ${tokenAddress}:`, tokenInfoError);
-        // Don't fail the entire sync if tokenInfo update fails
-      }
-      
-      console.log(`Successfully synced holder data for ${tokenAddress}: ${finalHoldersCount} holders`);
-
+      console.log(`✅ Successfully synced holder data for pool ${poolId}`);
     } catch (error) {
-      console.error(`Error syncing holder data for ${tokenAddress}:`, error);
+      console.error(`Error syncing holder data for pool ${poolId}:`, error);
       throw error;
     }
   }

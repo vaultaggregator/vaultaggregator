@@ -682,6 +682,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Holder data endpoints
+  app.get("/api/pools/:id/holders", async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+
+      // Validate pagination parameters
+      if (page < 1 || limit < 1 || limit > 100) {
+        return res.status(400).json({ 
+          message: "Invalid pagination parameters. Page must be >= 1, limit must be between 1 and 100." 
+        });
+      }
+
+      console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
+
+      const result = await storage.getPoolHolders(poolId, page, limit);
+      
+      // Format holder data for frontend
+      const formattedHolders = result.holders.map(holder => ({
+        address: holder.holderAddress,
+        tokenBalance: holder.tokenBalanceFormatted,
+        usdValue: parseFloat(holder.usdValue || '0'),
+        walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
+        walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
+        poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
+        rank: holder.rank
+      }));
+
+      res.json({
+        holders: formattedHolders,
+        pagination: {
+          page,
+          limit,
+          total: result.total,
+          pages: result.pages
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching pool holders:", error);
+      res.status(500).json({ message: "Failed to fetch pool holders" });
+    }
+  });
+
+  app.post("/api/pools/:id/sync-holders", requireAuth, async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      console.log(`🔄 Manual holder sync triggered for pool ${poolId}`);
+
+      // Import holder service dynamically to avoid circular dependencies
+      const { holderService } = await import("./services/holderService.js");
+      
+      // Trigger sync in background
+      holderService.syncPoolHolders(poolId).catch(error => {
+        console.error(`❌ Background holder sync failed for pool ${poolId}:`, error);
+      });
+
+      res.json({ 
+        message: "Holder sync triggered successfully", 
+        poolId,
+        status: "started" 
+      });
+    } catch (error) {
+      console.error("Error triggering holder sync:", error);
+      res.status(500).json({ message: "Failed to trigger holder sync" });
+    }
+  });
+
+  app.post("/api/admin/pools/sync-all-holders", requireAuth, async (req, res) => {
+    try {
+      console.log(`🔄 Manual holder sync triggered for all pools`);
+
+      // Import holder service dynamically
+      const { holderService } = await import("./services/holderService.js");
+      
+      // Trigger sync in background
+      holderService.syncAllPoolHolders().catch(error => {
+        console.error(`❌ Background holder sync failed for all pools:`, error);
+      });
+
+      res.json({ 
+        message: "Holder sync triggered for all pools successfully", 
+        status: "started" 
+      });
+    } catch (error) {
+      console.error("Error triggering holder sync for all pools:", error);
+      res.status(500).json({ message: "Failed to trigger holder sync" });
+    }
+  });
+
   // New endpoint for real historical APY averages (100% authentic data)
   app.get("/api/pools/:id/historical-averages", async (req, res) => {
     try {

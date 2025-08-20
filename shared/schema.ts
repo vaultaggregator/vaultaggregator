@@ -148,6 +148,23 @@ export const holderHistory = pgTable("holder_history", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Individual token holders data for detailed analysis
+export const tokenHolders = pgTable("token_holders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  tokenAddress: text("token_address").notNull(),
+  holderAddress: text("holder_address").notNull(),
+  tokenBalance: text("token_balance").notNull(), // Raw token balance (in wei)
+  tokenBalanceFormatted: decimal("token_balance_formatted", { precision: 20, scale: 8 }), // Human readable balance
+  usdValue: decimal("usd_value", { precision: 20, scale: 2 }), // USD value of token holding
+  walletBalanceEth: decimal("wallet_balance_eth", { precision: 20, scale: 8 }), // Total ETH balance in wallet
+  walletBalanceUsd: decimal("wallet_balance_usd", { precision: 20, scale: 2 }), // Total wallet value in USD
+  poolSharePercentage: decimal("pool_share_percentage", { precision: 10, scale: 6 }), // Percentage of pool owned
+  rank: integer("rank").notNull(), // Holder rank by balance
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // 🎯 Standardized Pool Metrics Historical Tracking System
 // Core 4 metrics: APY, DAYS, TVL, HOLDERS - collected from platform-specific APIs
 
@@ -469,6 +486,7 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
   watchlistPools: many(watchlistPools),
   metricsHistory: many(poolMetricsHistory),
   metricsCurrent: one(poolMetricsCurrent),
+  tokenHolders: many(tokenHolders),
 }));
 
 export const notesRelations = relations(notes, ({ one }) => ({
@@ -766,6 +784,12 @@ export const insertPoolMetricsCurrentSchema = createInsertSchema(poolMetricsCurr
   createdAt: true,
 });
 
+export const insertTokenHolderSchema = createInsertSchema(tokenHolders).omit({
+  id: true,
+  lastUpdated: true,
+  createdAt: true,
+});
+
 export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
   id: true,
   createdAt: true,
@@ -796,6 +820,14 @@ export const insertErrorLogSchema = createInsertSchema(errorLogs).omit({
   count: true,
 });
 
+// Token Holders relation
+export const tokenHoldersRelations = relations(tokenHolders, ({ one }) => ({
+  pool: one(pools, {
+    fields: [tokenHolders.poolId],
+    references: [pools.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -817,6 +849,9 @@ export type InsertTokenInfo = typeof tokenInfo.$inferInsert;
 
 export type HolderHistory = typeof holderHistory.$inferSelect;
 export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
+
+export type TokenHolder = typeof tokenHolders.$inferSelect;
+export type InsertTokenHolder = z.infer<typeof insertTokenHolderSchema>;
 
 export type Platform = typeof platforms.$inferSelect;
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;

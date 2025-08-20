@@ -2,7 +2,7 @@ import {
   pools, platforms, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
-  poolMetricsHistory, poolMetricsCurrent,
+  poolMetricsHistory, poolMetricsCurrent, tokenHolders,
   type Pool, type Platform, type Chain, type Token, type TokenInfo, type Note,
   type InsertPool, type InsertPlatform, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
@@ -16,7 +16,8 @@ import {
   type Watchlist, type InsertWatchlist, type WatchlistWithPools, type WatchlistPool, type InsertWatchlistPool,
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
   type HolderHistory, type InsertHolderHistory,
-  type PoolMetricsHistory, type InsertPoolMetricsHistory, type PoolMetricsCurrent, type InsertPoolMetricsCurrent
+  type PoolMetricsHistory, type InsertPoolMetricsHistory, type PoolMetricsCurrent, type InsertPoolMetricsCurrent,
+  type TokenHolder, type InsertTokenHolder
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc, lte } from "drizzle-orm";
@@ -71,6 +72,12 @@ export interface IStorage {
     firstRecordDate: Date | null;
   }>;
   getLatestHolderHistory(tokenAddress: string): Promise<HolderHistory | undefined>;
+
+  // Token Holders methods
+  getPoolHolders(poolId: string, page: number, limit: number): Promise<{ holders: TokenHolder[], total: number, pages: number }>;
+  insertTokenHolder(holder: InsertTokenHolder): Promise<TokenHolder>;
+  clearPoolHolders(poolId: string): Promise<void>;
+  getActivePools(): Promise<Pool[]>;
 
   // Pool methods
   getPools(options?: {
@@ -2031,6 +2038,59 @@ export class DatabaseStorage implements IStorage {
     await this.upsertPoolMetricsCurrent(poolId, {
       nextCollectionAt: nextCollection
     });
+  }
+
+  // Token Holders methods
+  async getPoolHolders(poolId: string, page: number = 1, limit: number = 20): Promise<{ holders: TokenHolder[], total: number, pages: number }> {
+    const offset = (page - 1) * limit;
+    
+    // Get total count
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(tokenHolders)
+      .where(eq(tokenHolders.poolId, poolId));
+
+    // Get paginated holders
+    const holders = await db
+      .select()
+      .from(tokenHolders)
+      .where(eq(tokenHolders.poolId, poolId))
+      .orderBy(asc(tokenHolders.rank))
+      .limit(limit)
+      .offset(offset);
+
+    const total = Number(count);
+    const pages = Math.ceil(total / limit);
+
+    return { holders, total, pages };
+  }
+
+  async insertTokenHolder(holder: InsertTokenHolder): Promise<TokenHolder> {
+    const [newHolder] = await db
+      .insert(tokenHolders)
+      .values(holder)
+      .returning();
+    return newHolder;
+  }
+
+  async clearPoolHolders(poolId: string): Promise<void> {
+    await db
+      .delete(tokenHolders)
+      .where(eq(tokenHolders.poolId, poolId));
+  }
+
+  async getActivePools(): Promise<Pool[]> {
+    return await db
+      .select()
+      .from(pools)
+      .where(
+        and(
+          eq(pools.isActive, true),
+          eq(pools.isVisible, true),
+          isNull(pools.deletedAt)
+        )
+      )
+      .orderBy(pools.tokenPair);
   }
 }
 
