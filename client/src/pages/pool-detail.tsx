@@ -430,7 +430,7 @@ export default function PoolDetail() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-center sm:justify-end mt-4 sm:mt-0">
+              <div className="flex flex-col items-center sm:items-end justify-center sm:justify-end mt-4 sm:mt-0 gap-2">
                 {(() => {
                   const linkData = generatePlatformVisitUrl(pool);
                   return linkData ? (
@@ -457,6 +457,20 @@ export default function PoolDetail() {
                     </Button>
                   );
                 })()}
+                
+                {/* Etherscan Link */}
+                {pool.poolAddress && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800/20 text-xs sm:text-sm px-3 sm:px-4 text-gray-600 dark:text-gray-400"
+                    data-testid="button-etherscan-link"
+                    onClick={() => window.open(`https://etherscan.io/address/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
+                  >
+                    <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    View on Etherscan
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
@@ -469,7 +483,7 @@ export default function PoolDetail() {
               <CardTitle className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center justify-between">
                 <div className="flex items-center">
                   <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-                  <span>Current APY</span>
+                  <span>Live APY</span>
                 </div>
                 <MetricTooltip metric="24h-apy" variant="icon" side="bottom">
                   <AlertCircle className="w-4 h-4 text-green-500 hover:text-green-600 cursor-help" />
@@ -485,7 +499,7 @@ export default function PoolDetail() {
                   />
                 ) : 'N/A'}
               </p>
-              <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Current APY</p>
+              <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Real-time Rate</p>
             </CardContent>
           </Card>
 
