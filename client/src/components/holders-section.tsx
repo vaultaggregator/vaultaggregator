@@ -304,9 +304,6 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                       <Wallet className="h-3 w-3" />
                       {formatCurrency(holder.walletBalanceUsd)}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Multichain Portfolio
-                    </div>
                   </div>
                 </div>
 
