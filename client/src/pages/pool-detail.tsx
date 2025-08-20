@@ -459,13 +459,13 @@ export default function PoolDetail() {
                 })()}
                 
                 {/* Etherscan Link */}
-                {pool.poolAddress && (
+                {pool.pool_address && (
                   <Button 
                     variant="outline" 
                     size="default"
                     className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
                     data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/token/${pool.poolAddress}`, '_blank', 'noopener,noreferrer')}
+                    onClick={() => window.open(`https://etherscan.io/token/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
                   >
                     <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     View on Etherscan
@@ -677,7 +677,7 @@ export default function PoolDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
+              <p className="text-2xl font-semibold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
                 {pool.holdersCount ? (
                   <AnimatedNumber 
                     value={pool.holdersCount} 

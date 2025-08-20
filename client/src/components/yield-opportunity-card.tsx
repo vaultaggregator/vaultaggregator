@@ -25,9 +25,9 @@ interface YieldOpportunityCardProps {
 export default function YieldOpportunityCard({ opportunity, showHeaders = true, showNetworkName = true }: YieldOpportunityCardProps) {
   const formatTvl = (tvl: string): string => {
     const num = parseFloat(tvl);
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(1)}M`;
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(1)}K`;
+    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
     return `$${num.toFixed(0)}`;
   };
 
@@ -191,7 +191,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Holders */}
             <div className="col-span-2 text-center">
-              <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+              <p className="text-sm font-medium text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                 {opportunity.holdersCount ? (
                   <AnimatedNumber 
                     value={opportunity.holdersCount} 
@@ -288,7 +288,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">Holders</p>
                   </div>
-                  <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
+                  <p className="text-sm font-medium text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
                     {opportunity.holdersCount ? (
                       <AnimatedNumber 
                         value={opportunity.holdersCount} 
