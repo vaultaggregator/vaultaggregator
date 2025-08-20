@@ -172,6 +172,12 @@ export default function AdminSystem() {
               <p className="text-gray-600 dark:text-gray-400">
                 Monitor system health, performance, and operational status
               </p>
+              {health?.serverTime && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Clock className="h-4 w-4" />
+                  <span>Server Time: {health.serverTime.formatted}</span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-3">
               {health && (
@@ -195,6 +201,42 @@ export default function AdminSystem() {
             </div>
           </div>
         </div>
+
+        {/* Server Time Card */}
+        <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              Server Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Current Time</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {health?.serverTime ? new Date(health.serverTime.current).toLocaleTimeString() : 'Loading...'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Date</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {health?.serverTime ? new Date(health.serverTime.current).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  }) : 'Loading...'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Timezone</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {health?.serverTime?.timezone || 'Loading...'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">

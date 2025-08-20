@@ -96,7 +96,23 @@ export function registerAdminSystemRoutes(app: Express) {
   app.get("/api/admin/system/health", requireAuth, async (req, res) => {
     try {
       const health = await systemMonitor.getSystemHealth();
-      res.json(health);
+      // Add server time information
+      const serverTime = {
+        current: new Date().toISOString(),
+        timestamp: Date.now(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        formatted: new Date().toLocaleString('en-US', { 
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: 'short'
+        })
+      };
+      res.json({ ...health, serverTime });
     } catch (error) {
       console.error("Error fetching system health:", error);
       res.status(500).json({ error: "Failed to fetch system health" });
