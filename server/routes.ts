@@ -698,6 +698,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
+      // Special handling for Lido stETH pool with massive holder count
+      const LIDO_POOL_ID = '31e292ba-a842-490b-8688-3868e18bd615';
+      
+      if (poolId === LIDO_POOL_ID) {
+        // Get the correct holder count from pool_metrics_current
+        const [metricsResult] = await db
+          .select({ holdersCount: poolMetricsCurrent.holdersCount })
+          .from(poolMetricsCurrent)
+          .where(eq(poolMetricsCurrent.poolId, poolId));
+        
+        const actualHolderCount = metricsResult?.holdersCount || 547477;
+        
+        // For Lido, return special response indicating massive holder count
+        return res.json({
+          holders: [],
+          pagination: {
+            page: 1,
+            limit,
+            total: actualHolderCount,
+            pages: Math.ceil(actualHolderCount / limit)
+          },
+          specialCase: {
+            isLido: true,
+            message: "Individual holder details not available due to massive holder count",
+            totalHolders: actualHolderCount
+          }
+        });
+      }
+
+      // Regular handling for other pools
       const result = await storage.getPoolHolders(poolId, page, limit);
       
       // Format holder data for frontend

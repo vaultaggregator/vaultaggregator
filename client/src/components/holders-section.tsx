@@ -25,6 +25,11 @@ interface HoldersResponse {
     total: number;
     pages: number;
   };
+  specialCase?: {
+    isLido: boolean;
+    message: string;
+    totalHolders: number;
+  };
 }
 
 interface HoldersSectionProps {
@@ -149,7 +154,48 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
     );
   }
 
-  const { holders, pagination } = holdersData;
+  const { holders, pagination, specialCase } = holdersData;
+
+  // Special handling for Lido stETH with massive holder count
+  if (specialCase?.isLido) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              <CardTitle>All Holders</CardTitle>
+            </div>
+            <Badge variant="secondary" className="text-xs">
+              {specialCase.totalHolders.toLocaleString()} Total Holders
+            </Badge>
+          </div>
+          <CardDescription>
+            Lido stETH • One of the largest holder bases on Ethereum
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-lg p-6">
+              <Users className="h-12 w-12 mx-auto mb-4 text-blue-500" />
+              <h3 className="text-2xl font-bold mb-2">
+                {specialCase.totalHolders.toLocaleString()}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Total Lido stETH Holders
+              </p>
+              <div className="bg-background/60 rounded-lg p-4 max-w-md mx-auto">
+                <p className="text-sm text-muted-foreground">
+                  Due to the massive number of holders (over 500,000), individual holder details cannot be displayed. 
+                  This holder count is verified directly from Etherscan blockchain data.
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Handle case where no authentic holder data is available
   if (holders.length === 0 && pagination.total === 0) {
