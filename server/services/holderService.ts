@@ -163,8 +163,8 @@ export class HolderService {
       // Use Alchemy if available
       if (this.alchemy) {
         try {
-          // Fetch up to 1000 holders for all pools
-          const holderLimit = 1000;
+          // Fetch up to 2000 holders for all pools to ensure complete data
+          const holderLimit = 2000;
           
           console.log(`📊 Fetching top ${holderLimit} holders for ${tokenAddress}`);
           const holders = await this.alchemy.getTopTokenHolders(tokenAddress, holderLimit, networkName);
