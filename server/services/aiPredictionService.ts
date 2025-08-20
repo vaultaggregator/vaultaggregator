@@ -9,6 +9,15 @@ const openai = new OpenAI({
 
 export class AIPredictionService {
   private static instance: AIPredictionService;
+  private isConfigured: boolean = false;
+
+  constructor() {
+    // Check if OpenAI API key is configured
+    this.isConfigured = !!process.env.OPENAI_API_KEY;
+    if (!this.isConfigured) {
+      console.warn('⚠️ OpenAI API key not configured. AI predictions will be unavailable.');
+    }
+  }
 
   static getInstance(): AIPredictionService {
     if (!AIPredictionService.instance) {
@@ -19,6 +28,11 @@ export class AIPredictionService {
 
   async getPrediction(poolId: string): Promise<any> {
     try {
+      // Check if OpenAI is configured
+      if (!this.isConfigured) {
+        return this.getFallbackPrediction(poolId);
+      }
+
       // Check if we have a valid cached prediction (less than 24 hours old)
       const existingPrediction = await db
         .select()
@@ -42,12 +56,32 @@ export class AIPredictionService {
       return await this.generatePrediction(poolId);
     } catch (error) {
       console.error('Error getting AI prediction:', error);
-      return null;
+      return this.getFallbackPrediction(poolId);
     }
+  }
+
+  private getFallbackPrediction(poolId: string): any {
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // Shorter expiry for fallback
+
+    return {
+      id: 'fallback',
+      poolId,
+      outlook: 'AI analysis is temporarily unavailable. Please check back later for detailed market insights and predictions.',
+      sentiment: 'neutral',
+      confidence: 0,
+      marketFactors: ['Analysis pending'],
+      generatedAt: new Date(),
+      expiresAt,
+    };
   }
 
   async generatePrediction(poolId: string): Promise<any> {
     try {
+      if (!this.isConfigured) {
+        return this.getFallbackPrediction(poolId);
+      }
+
       // Fetch pool data with relations
       const poolData = await db
         .select({
@@ -62,12 +96,12 @@ export class AIPredictionService {
         .limit(1);
 
       if (!poolData[0]) {
-        throw new Error('Pool not found');
+        return this.getFallbackPrediction(poolId);
       }
 
       const { pool, platform, chain } = poolData[0];
 
-      // Create a prompt for GPT-4
+      // Create a prompt for GPT-4o (note: this is the latest model)
       const prompt = `You are a DeFi analyst providing insights for yield farming opportunities. Analyze this pool and provide a market outlook in exactly 100 words:
 
 Pool: ${pool.tokenPair}
@@ -92,6 +126,7 @@ Provide:
 
 Format response as JSON with: outlook, sentiment, confidence, marketFactors (array of 3 strings)`;
 
+      // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
@@ -129,22 +164,9 @@ Format response as JSON with: outlook, sentiment, confidence, marketFactors (arr
 
       console.log(`✅ AI prediction generated and saved for pool ${poolId}`);
       return savedPrediction;
-    } catch (error) {
-      console.error('Error generating AI prediction:', error);
-      
-      // Return a fallback prediction if OpenAI fails
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 2); // Shorter expiry for fallback
-
-      return {
-        poolId,
-        outlook: 'AI analysis temporarily unavailable. Please check back later for detailed market insights.',
-        sentiment: 'neutral',
-        confidence: 0,
-        marketFactors: ['Service temporarily unavailable'],
-        generatedAt: new Date(),
-        expiresAt,
-      };
+    } catch (error: any) {
+      console.error('Error generating AI prediction:', error.message || error);
+      return this.getFallbackPrediction(poolId);
     }
   }
 
