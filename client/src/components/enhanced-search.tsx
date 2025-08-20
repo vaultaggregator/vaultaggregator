@@ -12,6 +12,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { debounce } from "lodash";
+import { formatNumber } from "@/lib/format";
 
 interface SearchResult {
   id: string;
@@ -293,7 +294,7 @@ export function EnhancedSearch({
                     )}
                     {result.tvl && (
                       <span className="text-sm text-blue-600 dark:text-blue-400">
-                        ${parseFloat(result.tvl).toLocaleString()} TVL
+                        {formatNumber(parseFloat(result.tvl), { currency: '$', maxDecimals: 2 })} TVL
                       </span>
                     )}
                   </div>

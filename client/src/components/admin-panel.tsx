@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { formatNumber } from "@/lib/format";
 import type { YieldOpportunity, AppStats } from "@/types";
 
 interface AdminPanelProps {
@@ -126,13 +127,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
     },
   });
 
-  const formatTvl = (tvl: string): string => {
-    const num = parseFloat(tvl);
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(1)}M`;
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(1)}K`;
-    return `$${num.toFixed(0)}`;
-  };
+
 
   const handleToggleVisibility = (poolId: string, currentVisibility: boolean) => {
     toggleVisibilityMutation.mutate({ poolId, isVisible: !currentVisibility });
@@ -371,7 +366,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                                   {parseFloat(pool.apy).toFixed(2)}%
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-testid={`admin-tvl-${pool.id}`}>
-                                  {formatTvl(pool.tvl)}
+                                  {formatNumber(parseFloat(pool.tvl))}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <Badge 

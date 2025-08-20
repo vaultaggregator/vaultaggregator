@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
 import { Save, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { formatNumber } from "@/lib/format";
 
 interface PoolDataModalProps {
   isOpen: boolean;
@@ -226,7 +227,7 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
                       <span>{poolData?.apy ? `${parseFloat(poolData.apy).toFixed(2)}%` : 'N/A'}</span>
                       
                       <span className="font-medium">TVL:</span>
-                      <span>{poolData?.tvl ? `$${parseFloat(poolData.tvl).toLocaleString()}` : 'N/A'}</span>
+                      <span>{poolData?.tvl ? formatNumber(parseFloat(poolData.tvl), { currency: '$', maxDecimals: 2 }) : 'N/A'}</span>
                       
                       <span className="font-medium">Risk Level:</span>
                       <span className="capitalize">{poolData?.riskLevel || 'N/A'}</span>

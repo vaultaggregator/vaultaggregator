@@ -634,6 +634,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all pools and filter by network, protocol, and token pair
       const pools = await storage.getPools({ onlyVisible: true, limit: 1000 });
       
+
+      
       const matchingPool = pools.find(pool => {
         const chainMatch = pool.chain.name.toLowerCase() === networkName.toLowerCase() ||
                           pool.chain.displayName.toLowerCase() === networkName.toLowerCase();
@@ -644,9 +646,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const poolTokenNormalized = pool.tokenPair.toLowerCase().replace(/\s+/g, '-');
         const urlTokenNormalized = tokenPairName.toLowerCase();
         
-        // Remove all spaces, hyphens, and special characters for comparison
-        const poolTokenClean = pool.tokenPair.toLowerCase().replace(/[\s\-]+/g, '');
-        const urlTokenClean = tokenPairName.toLowerCase().replace(/[\s\-]+/g, '');
+        // Remove all spaces, hyphens, and special characters (including parentheses) for comparison
+        const poolTokenClean = pool.tokenPair.toLowerCase().replace(/[\s\-\(\)]+/g, '').replace(/[^a-z0-9]/g, '');
+        const urlTokenClean = tokenPairName.toLowerCase().replace(/[\s\-\(\)]+/g, '').replace(/[^a-z0-9]/g, '');
         
         const tokenMatch = poolTokenNormalized === urlTokenNormalized ||
                           poolTokenClean === urlTokenClean ||

@@ -241,9 +241,7 @@ export function AnimatedCurrency({
 }: AnimatedCurrencyProps) {
   const formatValue = (val: number) => {
     if (compact) {
-      const formatted = formatNumber(val, { currency, maxDecimals: 2 });
-      console.log(`💰 Formatting TVL: ${val} -> ${formatted}`);
-      return formatted;
+      return formatNumber(val, { currency, maxDecimals: 2 });
     }
     return `${currency}${val.toLocaleString()}`;
   };
