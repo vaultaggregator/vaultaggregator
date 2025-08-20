@@ -40,6 +40,11 @@ app.use((req, res, next) => {
   // Initialize AI scheduler service
   const { aiScheduler } = await import("./services/aiSchedulerService");
   
+  // Initialize comprehensive holder sync service
+  const { comprehensiveHolderSyncService } = await import("./services/comprehensiveHolderSyncService");
+  comprehensiveHolderSyncService.startService(30); // Run every 30 minutes
+  console.log("✅ Comprehensive Holder Sync Service initialized");
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

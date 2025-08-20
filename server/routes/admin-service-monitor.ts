@@ -177,7 +177,18 @@ async function getServiceStatus(serviceId: string): Promise<Partial<ServiceStatu
       lastRun = comprehensiveResult.rows[0]?.last_run as string || null;
       totalRuns = Number(comprehensiveResult.rows[0]?.total_holders || 0);
       const poolsSynced = Number(comprehensiveResult.rows[0]?.pools_synced || 0);
-      status = poolsSynced > 0 ? 'active' : (errorCount > 0 ? 'error' : 'unknown');
+      
+      // Also check service status
+      const { comprehensiveHolderSyncService } = await import('../services/comprehensiveHolderSyncService');
+      const serviceStatus = comprehensiveHolderSyncService.getStatus();
+      
+      if (serviceStatus.isRunning) {
+        status = 'active';
+      } else if (poolsSynced > 0) {
+        status = 'active';
+      } else {
+        status = errorCount > 0 ? 'error' : 'unknown';
+      }
       
     } else if (serviceId === 'standardized-metrics') {
       // Check pool_metrics_current for recent updates
@@ -406,6 +417,16 @@ router.post('/:serviceId/trigger', async (req, res) => {
           const holderService = new HolderDataSyncService();
           await holderService.syncAllHolderData();
           result = { success: true, message: 'Holder data sync triggered successfully' };
+          break;
+          
+        case 'comprehensive-holder-sync':
+          // Import and trigger comprehensive holder sync
+          const { comprehensiveHolderSyncService } = await import('../services/comprehensiveHolderSyncService');
+          // Run sync in background
+          comprehensiveHolderSyncService.syncAllPools().catch(err => {
+            console.error('Comprehensive holder sync error:', err);
+          });
+          result = { success: true, message: 'Comprehensive holder sync triggered successfully (running in background)' };
           break;
           
         case 'token-info-sync':
