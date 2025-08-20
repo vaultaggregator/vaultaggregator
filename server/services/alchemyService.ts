@@ -37,85 +37,138 @@ export class AlchemyService {
       const metadata = await this.alchemy.core.getTokenMetadata(tokenAddress);
       console.log(`📊 Token: ${metadata.name} (${metadata.symbol}), Decimals: ${metadata.decimals}`);
       
-      // Get owners of the token (for ERC-20 tokens)
-      // Note: This requires the Enhanced API tier for some tokens
       const holders: TokenHolder[] = [];
+      const processedAddresses = new Set<string>();
       
-      // Alternative approach: Get transfer events and derive holders
-      const latestBlock = await this.alchemy.core.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 10000); // Look back ~1.5 days
-      
-      // Get recent transfer events
-      const transfers = await this.alchemy.core.getAssetTransfers({
-        fromBlock: `0x${fromBlock.toString(16)}`,
-        toBlock: 'latest',
-        contractAddresses: [tokenAddress],
-        category: [AssetTransfersCategory.ERC20],
-        maxCount: 1000,
-        excludeZeroValue: true,
-        order: SortingOrder.DESCENDING,
-      });
-      
-      // Aggregate balances from transfers
-      const balanceMap = new Map<string, number>();
-      
-      for (const transfer of transfers.transfers) {
-        if (transfer.to && transfer.value) {
-          const current = balanceMap.get(transfer.to) || 0;
-          balanceMap.set(transfer.to, current + (transfer.value || 0));
+      // Strategy 1: Try to get owners directly (works for NFTs and some ERC-20s)
+      try {
+        const ownersResponse = await this.alchemy.nft.getOwnersForContract(tokenAddress);
+        console.log(`📈 Found ${ownersResponse.owners.length} owners via NFT API`);
+        
+        for (const owner of ownersResponse.owners.slice(0, limit)) {
+          if (!processedAddresses.has(owner.toLowerCase())) {
+            processedAddresses.add(owner.toLowerCase());
+            
+            try {
+              const balance = await this.alchemy.core.getTokenBalances(owner, [tokenAddress]);
+              if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
+                const rawBalance = balance.tokenBalances[0].tokenBalance;
+                const decimals = metadata.decimals || 18;
+                
+                if (rawBalance !== '0x0') {
+                  const balanceBigInt = BigInt(rawBalance);
+                  const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
+                  
+                  if (formattedBalance > 0) {
+                    holders.push({
+                      address: owner,
+                      balance: balanceBigInt.toString(),
+                      formattedBalance,
+                    });
+                  }
+                }
+              }
+            } catch (error) {
+              console.log(`⚠️ Could not fetch balance for ${owner}`);
+            }
+          }
         }
-        if (transfer.from && transfer.value) {
-          const current = balanceMap.get(transfer.from) || 0;
-          balanceMap.set(transfer.from, Math.max(0, current - (transfer.value || 0)));
-        }
+      } catch (error) {
+        console.log(`📌 NFT API approach failed, trying transfer events...`);
       }
       
-      // Get current balances for top addresses
-      const topAddresses = Array.from(balanceMap.keys()).slice(0, limit);
-      
-      if (topAddresses.length > 0) {
-        // Batch get token balances
-        const balances = await this.alchemy.core.getTokenBalances(
-          topAddresses[0], // Use first address as owner
-          [tokenAddress]
-        );
+      // Strategy 2: Get ALL transfer events to find all holders
+      if (holders.length < 20) {
+        console.log(`🔄 Fetching all transfer events to find holders...`);
         
-        // For each top address, get their actual balance
-        for (const address of topAddresses) {
+        const latestBlock = await this.alchemy.core.getBlockNumber();
+        const uniqueAddresses = new Set<string>();
+        let pageKey: string | undefined;
+        let iterations = 0;
+        const maxIterations = 10; // Limit iterations to avoid infinite loops
+        
+        // Get transfers in multiple batches going further back in time
+        while (iterations < maxIterations) {
+          const transfers = await this.alchemy.core.getAssetTransfers({
+            fromBlock: '0x0', // Start from genesis
+            toBlock: 'latest',
+            contractAddresses: [tokenAddress],
+            category: [AssetTransfersCategory.ERC20],
+            maxCount: 1000,
+            excludeZeroValue: false, // Include all transfers
+            order: SortingOrder.DESCENDING,
+            pageKey,
+          });
+          
+          // Collect all unique addresses
+          for (const transfer of transfers.transfers) {
+            if (transfer.to && !uniqueAddresses.has(transfer.to.toLowerCase())) {
+              uniqueAddresses.add(transfer.to.toLowerCase());
+            }
+            if (transfer.from && !uniqueAddresses.has(transfer.from.toLowerCase())) {
+              uniqueAddresses.add(transfer.from.toLowerCase());
+            }
+          }
+          
+          console.log(`📊 Iteration ${iterations + 1}: Found ${uniqueAddresses.size} unique addresses`);
+          
+          pageKey = transfers.pageKey;
+          iterations++;
+          
+          // Stop if we have enough addresses or no more pages
+          if (!pageKey || uniqueAddresses.size >= limit * 2) {
+            break;
+          }
+        }
+        
+        console.log(`🎯 Found ${uniqueAddresses.size} unique addresses from transfers`);
+        
+        // Now get balances for all unique addresses
+        const addressArray = Array.from(uniqueAddresses);
+        let validHolders = 0;
+        
+        for (const address of addressArray) {
+          if (processedAddresses.has(address) || validHolders >= limit) {
+            continue;
+          }
+          
+          processedAddresses.add(address);
+          
           try {
             const balance = await this.alchemy.core.getTokenBalances(address, [tokenAddress]);
             if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
               const rawBalance = balance.tokenBalances[0].tokenBalance;
               const decimals = metadata.decimals || 18;
               
-              // Convert hex string to BigInt for accurate calculation
-              let formattedBalance = 0;
-              let balanceString = '0';
-              
               if (rawBalance !== '0x0') {
                 const balanceBigInt = BigInt(rawBalance);
-                formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
-                balanceString = balanceBigInt.toString();
-              }
-              
-              if (formattedBalance > 0) {
-                holders.push({
-                  address,
-                  balance: balanceString,
-                  formattedBalance,
-                });
+                const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
+                
+                if (formattedBalance > 0.001) { // Filter out dust amounts
+                  holders.push({
+                    address,
+                    balance: balanceBigInt.toString(),
+                    formattedBalance,
+                  });
+                  validHolders++;
+                }
               }
             }
           } catch (error) {
-            console.log(`⚠️ Could not fetch balance for ${address}`);
+            // Skip addresses that fail
+          }
+          
+          // Add small delay to avoid rate limits
+          if (validHolders % 10 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
         }
       }
       
-      // Sort by balance
+      // Sort by balance descending
       holders.sort((a, b) => b.formattedBalance - a.formattedBalance);
       
-      console.log(`✅ Found ${holders.length} token holders`);
+      console.log(`✅ Found ${holders.length} token holders with non-zero balances`);
       return holders.slice(0, limit);
       
     } catch (error) {

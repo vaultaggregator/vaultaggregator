@@ -1,52 +1,39 @@
-// Test Etherscan data directly
-import fetch from 'node-fetch';
-
-async function testEtherscanDirect() {
-  console.log('Testing Etherscan web scraping directly...');
+async function testEtherscan() {
+  const tokenAddress = '0xBEeF1f5Bd88285E5B239B6AAcb991d38ccA23Ac9';
+  const apiKey = process.env.ETHERSCAN_API_KEY || '';
   
-  const steakUSDC = '0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB';
-  const etherscanUrl = `https://etherscan.io/token/${steakUSDC}`;
+  if (!apiKey) {
+    console.log('❌ ETHERSCAN_API_KEY not found');
+    return;
+  }
+  
+  console.log('Testing direct Etherscan API call for token holders...\n');
+  
+  // Try to get token holder list
+  const url = `https://api.etherscan.io/api?module=token&action=tokenholderlist&contractaddress=${tokenAddress}&page=1&offset=100&apikey=${apiKey}`;
   
   try {
-    const response = await fetch(etherscanUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    console.log('Response status:', data.status);
+    console.log('Response message:', data.message);
+    
+    if (data.result && Array.isArray(data.result)) {
+      console.log(`\n✅ Found ${data.result.length} holders`);
+      console.log('\nFirst 5 holders:');
+      for (let i = 0; i < Math.min(5, data.result.length); i++) {
+        const holder = data.result[i];
+        const balance = parseFloat(holder.TokenHolderQuantity) / 1e18;
+        console.log(`${i + 1}. ${holder.TokenHolderAddress}: ${balance.toFixed(4)} tokens`);
       }
-    });
-    
-    if (!response.ok) {
-      console.log(`HTTP ${response.status}: ${response.statusText}`);
-      return;
-    }
-    
-    const html = await response.text();
-    
-    // Extract holders count from HTML
-    const holdersMatch = html.match(/Holders[^>]*?(\d{1,3}(?:,\d{3})*)/);
-    if (holdersMatch) {
-      const holdersCount = parseInt(holdersMatch[1].replace(/,/g, ''));
-      console.log(`🥩 steakUSDC current Etherscan holders: ${holdersCount}`);
     } else {
-      console.log('❌ Could not extract holders count from Etherscan page');
-      
-      // Debug: Look for holders pattern
-      const holdersPatterns = [
-        /Holders[^>]*?(\d{1,3}(?:,\d{3})*)/,
-        /"holders"[^>]*?(\d{1,3}(?:,\d{3})*)/i,
-        /token holder[s]?[^>]*?(\d{1,3}(?:,\d{3})*)/i
-      ];
-      
-      for (let i = 0; i < holdersPatterns.length; i++) {
-        const match = html.match(holdersPatterns[i]);
-        if (match) {
-          console.log(`Pattern ${i+1} match: ${match[1]}`);
-        }
-      }
+      console.log('❌ No holder data in response');
+      console.log('Full response:', JSON.stringify(data, null, 2));
     }
-    
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
   }
 }
 
-testEtherscanDirect();
+testEtherscan();
