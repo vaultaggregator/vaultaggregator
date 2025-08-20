@@ -17,6 +17,18 @@ export class MorphoScraper extends BaseScraper {
         return null;
       }
 
+      // Map chain names to Morpho API chain IDs
+      const chainIdMap: Record<string, number> = {
+        'Ethereum': 1,
+        'ETHEREUM': 1,
+        'Base': 8453,
+        'BASE': 8453
+      };
+
+      const chainId = chainIdMap[pool.chain.name] || 1; // Default to Ethereum if not found
+      
+      console.log(`🔍 Scraping Morpho pool ${pool.tokenPair} on ${pool.chain.name} (chainId: ${chainId})`);
+
       const response = await this.rateLimitedFetch(this.dataSource.baseUrl, {
         method: 'POST',
         headers: {
@@ -35,7 +47,7 @@ export class MorphoScraper extends BaseScraper {
             }
           `,
           variables: {
-            chainId: 1, // Ethereum mainnet
+            chainId: chainId,
             address: pool.poolAddress
           }
         })
