@@ -138,6 +138,32 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
 
   const { holders, pagination } = holdersData;
 
+  // Handle case where no authentic holder data is available
+  if (holders.length === 0 && pagination.total === 0) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            <CardTitle>Top Holders</CardTitle>
+          </div>
+          <CardDescription>
+            Token holder data not currently available
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="mb-2">Holder data requires specialized API integration</p>
+            <p className="text-sm">
+              Professional token analytics services are needed to provide authentic holder information
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>

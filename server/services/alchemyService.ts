@@ -1,222 +1,144 @@
-// No external config needed - using environment variables directly
+/**
+ * Alchemy API Service for Token Analytics
+ * Provides token holder data and on-chain analytics
+ */
 
-export interface AlchemyTransfer {
-  from: string;
-  to: string;
-  value: string;
-  tokenId?: string;
-  asset: string;
-  category: 'token' | 'internal' | 'external';
-  rawContract: {
-    address: string;
-    decimal: string;
-  };
-  metadata: {
-    blockTimestamp: string;
-    blockNumber: string;
-    transactionHash: string;
-  };
-}
+import { Alchemy, Network, AssetTransfersCategory, SortingOrder } from 'alchemy-sdk';
 
-export interface AlchemyTransferResponse {
-  transfers: AlchemyTransfer[];
-  pageKey?: string;
+export interface TokenHolder {
+  address: string;
+  balance: string;
+  formattedBalance: number;
 }
 
 export class AlchemyService {
-  private apiKey: string;
-  private baseUrl: string = 'https://eth-mainnet.g.alchemy.com/v2';
-
+  private alchemy: Alchemy;
+  
   constructor() {
-    this.apiKey = process.env.ALCHEMY_API_KEY || '';
-    if (!this.apiKey) {
-      console.warn('ALCHEMY_API_KEY not found - Alchemy service will not be available');
+    const apiKey = process.env.ALCHEMY_API_KEY;
+    if (!apiKey) {
+      throw new Error('ALCHEMY_API_KEY is required for holder data');
     }
-  }
-
-  /**
-   * Check if Alchemy API is available
-   */
-  isAvailable(): boolean {
-    return !!this.apiKey;
-  }
-
-  /**
-   * Get token transfers for a contract address using Alchemy API
-   * Much higher rate limits than Etherscan (300 req/sec on paid plans)
-   */
-  async getTokenTransfers(
-    contractAddress: string,
-    fromBlock?: string,
-    toBlock?: string,
-    maxCount: number = 1000,
-    pageKey?: string
-  ): Promise<AlchemyTransferResponse> {
-    if (!this.isAvailable()) {
-      throw new Error('Alchemy API key not configured');
-    }
-
-    try {
-      const requestBody = {
-        id: 1,
-        jsonrpc: '2.0',
-        method: 'alchemy_getAssetTransfers',
-        params: [{
-          category: ['erc20'],
-          contractAddresses: [contractAddress],
-          fromBlock: fromBlock || '0x0',
-          toBlock: toBlock || 'latest',
-          maxCount: `0x${maxCount.toString(16)}`,
-          order: 'desc',
-          withMetadata: true,
-          ...(pageKey && { pageKey })
-        }]
-      };
-
-      const url = `${this.baseUrl}/${this.apiKey}`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Alchemy API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(`Alchemy API error: ${data.error.message}`);
-      }
-
-      // Token symbol mapping for common tokens
-      const getTokenSymbol = (contractAddress: string): string => {
-        const addr = contractAddress.toLowerCase();
-        const tokenMap: Record<string, string> = {
-          '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': 'stETH',
-          '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': 'USDC',
-          '0xdac17f958d2ee523a2206206994597c13d831ec7': 'USDT',
-          '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': 'WBTC',
-          '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': 'WETH'
-        };
-        return tokenMap[addr] || 'TOKEN';
-      };
-
-      // Convert Alchemy format to our expected format
-      const transfers = data.result.transfers.map((transfer: AlchemyTransfer) => ({
-        from: transfer.from,
-        to: transfer.to,
-        value: transfer.value,
-        timeStamp: Math.floor(new Date(transfer.metadata.blockTimestamp).getTime() / 1000).toString(),
-        hash: transfer.metadata.transactionHash,
-        blockNumber: transfer.metadata.blockNumber,
-        tokenDecimal: transfer.rawContract.decimal,
-        tokenSymbol: getTokenSymbol(contractAddress)
-      }));
-
-      return {
-        transfers,
-        pageKey: data.result.pageKey
-      };
-    } catch (error) {
-      console.error('Alchemy API error:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get historical token transfers with automatic pagination
-   * Can fetch much more historical data than Etherscan
-   */
-  async getHistoricalTransfers(
-    contractAddress: string,
-    daysBack: number = 90,
-    maxTransfers: number = 15000
-  ): Promise<any[]> {
-    if (!this.isAvailable()) {
-      throw new Error('Alchemy API key not configured');
-    }
-
-    const allTransfers: any[] = [];
-    let pageKey: string | undefined;
     
-    // For comprehensive holder analysis, get ALL transfers since token creation
-    let startBlock: string;
-    if (daysBack > 180) {
-      startBlock = '0x0'; // Get ALL transfers from the beginning
-      console.log(`🔍 Fetching ALL transfers since token creation for ${contractAddress} using Alchemy...`);
-    } else {
-      const startTime = Date.now() - (daysBack * 24 * 60 * 60 * 1000);
-      startBlock = await this.getBlockByTimestamp(startTime);
-      console.log(`Fetching ${daysBack} days of transfers for ${contractAddress} using Alchemy (targeting historical coverage)...`);
-    }
-
-    try {
-      while (allTransfers.length < maxTransfers) {
-        const response = await this.getTokenTransfers(
-          contractAddress,
-          startBlock,
-          'latest',
-          Math.min(1000, maxTransfers - allTransfers.length),
-          pageKey
-        );
-
-        if (response.transfers.length === 0) {
-          break;
-        }
-
-        allTransfers.push(...response.transfers);
-        console.log(`Alchemy: Fetched ${response.transfers.length} transfers, total: ${allTransfers.length}`);
-
-        // Check if we have more pages
-        if (!response.pageKey) {
-          break;
-        }
-
-        pageKey = response.pageKey;
-
-        // Rate limiting - Alchemy allows 300 req/sec on paid plans
-        await new Promise(resolve => setTimeout(resolve, 10)); // Small delay
-      }
-
-      console.log(`Alchemy: Successfully fetched ${allTransfers.length} transfers over ${daysBack} days`);
-      return allTransfers;
-
-    } catch (error) {
-      console.error('Error fetching historical transfers from Alchemy:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get block number by timestamp (approximate)
-   */
-  private async getBlockByTimestamp(timestamp: number): Promise<string> {
-    // Ethereum blocks are roughly 12 seconds apart
-    const currentTime = Date.now();
-    const secondsBack = Math.floor((currentTime - timestamp) / 1000);
-    const blocksBack = Math.floor(secondsBack / 12);
-    
-    // Get current block number
-    const response = await fetch(`${this.baseUrl}/${this.apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: 1,
-        jsonrpc: '2.0',
-        method: 'eth_blockNumber',
-        params: []
-      })
+    this.alchemy = new Alchemy({
+      apiKey,
+      network: Network.ETH_MAINNET,
     });
+  }
 
-    const data = await response.json();
-    const currentBlock = parseInt(data.result, 16);
-    const targetBlock = Math.max(0, currentBlock - blocksBack);
+  /**
+   * Get top token holders for a specific token contract
+   */
+  async getTopTokenHolders(tokenAddress: string, limit: number = 100): Promise<TokenHolder[]> {
+    try {
+      console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress}`);
+      
+      // Get token metadata first
+      const metadata = await this.alchemy.core.getTokenMetadata(tokenAddress);
+      console.log(`📊 Token: ${metadata.name} (${metadata.symbol}), Decimals: ${metadata.decimals}`);
+      
+      // Get owners of the token (for ERC-20 tokens)
+      // Note: This requires the Enhanced API tier for some tokens
+      const holders: TokenHolder[] = [];
+      
+      // Alternative approach: Get transfer events and derive holders
+      const latestBlock = await this.alchemy.core.getBlockNumber();
+      const fromBlock = Math.max(0, latestBlock - 10000); // Look back ~1.5 days
+      
+      // Get recent transfer events
+      const transfers = await this.alchemy.core.getAssetTransfers({
+        fromBlock: `0x${fromBlock.toString(16)}`,
+        toBlock: 'latest',
+        contractAddresses: [tokenAddress],
+        category: [AssetTransfersCategory.ERC20],
+        maxCount: 1000,
+        excludeZeroValue: true,
+        order: SortingOrder.DESCENDING,
+      });
+      
+      // Aggregate balances from transfers
+      const balanceMap = new Map<string, number>();
+      
+      for (const transfer of transfers.transfers) {
+        if (transfer.to && transfer.value) {
+          const current = balanceMap.get(transfer.to) || 0;
+          balanceMap.set(transfer.to, current + (transfer.value || 0));
+        }
+        if (transfer.from && transfer.value) {
+          const current = balanceMap.get(transfer.from) || 0;
+          balanceMap.set(transfer.from, Math.max(0, current - (transfer.value || 0)));
+        }
+      }
+      
+      // Get current balances for top addresses
+      const topAddresses = Array.from(balanceMap.keys()).slice(0, limit);
+      
+      if (topAddresses.length > 0) {
+        // Batch get token balances
+        const balances = await this.alchemy.core.getTokenBalances(
+          topAddresses[0], // Use first address as owner
+          [tokenAddress]
+        );
+        
+        // For each top address, get their actual balance
+        for (const address of topAddresses) {
+          try {
+            const balance = await this.alchemy.core.getTokenBalances(address, [tokenAddress]);
+            if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
+              const rawBalance = balance.tokenBalances[0].tokenBalance;
+              const decimals = metadata.decimals || 18;
+              const formattedBalance = parseInt(rawBalance, 16) / Math.pow(10, decimals);
+              
+              if (formattedBalance > 0) {
+                holders.push({
+                  address,
+                  balance: rawBalance,
+                  formattedBalance,
+                });
+              }
+            }
+          } catch (error) {
+            console.log(`⚠️ Could not fetch balance for ${address}`);
+          }
+        }
+      }
+      
+      // Sort by balance
+      holders.sort((a, b) => b.formattedBalance - a.formattedBalance);
+      
+      console.log(`✅ Found ${holders.length} token holders`);
+      return holders.slice(0, limit);
+      
+    } catch (error) {
+      console.error('❌ Error fetching token holders from Alchemy:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get ETH balance for an address
+   */
+  async getEthBalance(address: string): Promise<number> {
+    try {
+      const balance = await this.alchemy.core.getBalance(address);
+      return parseFloat(balance.toString()) / Math.pow(10, 18);
+    } catch (error) {
+      console.error(`Error fetching ETH balance for ${address}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Get token price in USD (requires additional price oracle integration)
+   */
+  async getTokenPrice(tokenAddress: string): Promise<number> {
+    // For now, return estimated prices for known tokens
+    const knownPrices: Record<string, number> = {
+      '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84': 3200, // stETH
+      '0xBEeF1f5Bd88285E5B239B6AAcb991d38ccA23Ac9': 1.0, // USDC variant
+    };
     
-    return `0x${targetBlock.toString(16)}`;
+    return knownPrices[tokenAddress.toLowerCase()] || 1.0;
   }
 }
 

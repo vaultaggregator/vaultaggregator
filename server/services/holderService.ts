@@ -1,4 +1,5 @@
 import { EtherscanService } from './etherscanService.js';
+import { AlchemyService } from './alchemyService.js';
 import { storage } from '../storage.js';
 import type { Pool, InsertTokenHolder } from '@shared/schema.js';
 
@@ -15,9 +16,16 @@ export interface HolderData {
 
 export class HolderService {
   private etherscan: EtherscanService;
+  private alchemy: AlchemyService | null = null;
 
   constructor() {
     this.etherscan = new EtherscanService();
+    try {
+      this.alchemy = new AlchemyService();
+      console.log('✅ Alchemy service initialized for holder data');
+    } catch (error) {
+      console.log('⚠️ Alchemy service not available:', error);
+    }
   }
 
   private async logError(title: string, description: string, error: string, poolId?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
@@ -108,60 +116,67 @@ export class HolderService {
   }
 
   /**
-   * Fetch token holders from Etherscan
+   * Fetch token holders using Alchemy API
    */
   private async fetchTokenHolders(tokenAddress: string): Promise<any[]> {
     try {
-      // Use Etherscan API to get token holders (top 100)
-      // Note: Etherscan doesn't provide a direct "token holders" endpoint
-      // We'll use the token transfers to derive holder information
-      const transfers = await this.etherscan.getTokenBalances(tokenAddress);
+      console.log(`🔍 Fetching token holders for ${tokenAddress}`);
       
-      // Group transfers by holder address to calculate balances
-      const holderBalances = new Map<string, number>();
-      
-      for (const transfer of transfers) {
-        const { from, to, value } = transfer;
-        const amount = parseFloat(value) || 0;
-        
-        // Update balances
-        if (from && from !== '0x0000000000000000000000000000000000000000') {
-          holderBalances.set(from, (holderBalances.get(from) || 0) - amount);
-        }
-        if (to && to !== '0x0000000000000000000000000000000000000000') {
-          holderBalances.set(to, (holderBalances.get(to) || 0) + amount);
+      // Use Alchemy if available
+      if (this.alchemy) {
+        try {
+          const holders = await this.alchemy.getTopTokenHolders(tokenAddress, 100);
+          console.log(`✅ Fetched ${holders.length} holders from Alchemy`);
+          
+          // Convert to expected format
+          return holders.map(holder => ({
+            address: holder.address,
+            balance: holder.balance
+          }));
+        } catch (alchemyError) {
+          console.error('❌ Alchemy fetch failed:', alchemyError);
         }
       }
-
-      // Convert to array and filter positive balances
-      const holders = Array.from(holderBalances.entries())
-        .filter(([_, balance]) => balance > 0)
-        .map(([address, balance]) => ({
-          address,
-          balance: balance.toString()
-        }))
-        .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
-        .slice(0, 100); // Top 100 holders
-
-      return holders;
+      
+      // Fallback to Etherscan token info (no detailed holder data)
+      const tokenInfo = await this.etherscan.getTokenInfo(tokenAddress);
+      if (!tokenInfo) {
+        console.log(`❌ Token info not found for ${tokenAddress}`);
+        return [];
+      }
+      
+      console.log(`✅ Token found: ${tokenInfo.tokenName} (${tokenInfo.symbol})`);
+      console.log(`⚠️ Detailed holder data not available - Alchemy API error`);
+      return [];
+      
     } catch (error) {
       console.error('Error fetching token holders:', error);
       return [];
     }
   }
 
+
+
   /**
    * Get token price in USD
    */
   private async getTokenPrice(tokenAddress: string): Promise<number> {
     try {
+      // Try Alchemy price first
+      if (this.alchemy) {
+        const price = await this.alchemy.getTokenPrice(tokenAddress);
+        if (price > 0) {
+          return price;
+        }
+      }
+      
       // Try to get price from stored token info
       const tokenInfo = await storage.getTokenInfoByAddress(tokenAddress);
       if (tokenInfo?.priceUsd) {
         return parseFloat(tokenInfo.priceUsd);
       }
 
-      // Fallback to a default price (could integrate with price APIs later)
+      // Fallback to a default price
       return 1.0; // Default $1 for stablecoins
     } catch (error) {
       console.error('Error getting token price:', error);
@@ -193,9 +208,16 @@ export class HolderService {
       let walletBalanceUsd = 0;
       
       try {
-        const accountInfo = await this.etherscan.getAccountInfo(holder.address);
-        walletBalanceEth = parseFloat(accountInfo.balance) / Math.pow(10, 18);
-        walletBalanceUsd = walletBalanceEth * 3000; // Approximate ETH price
+        if (this.alchemy) {
+          // Use Alchemy for more accurate ETH balance
+          walletBalanceEth = await this.alchemy.getEthBalance(holder.address);
+          walletBalanceUsd = walletBalanceEth * 3200; // Approximate ETH price
+        } else {
+          // Fallback to Etherscan
+          const accountInfo = await this.etherscan.getAccountInfo(holder.address);
+          walletBalanceEth = parseFloat(accountInfo.balance) / Math.pow(10, 18);
+          walletBalanceUsd = walletBalanceEth * 3200; // Approximate ETH price
+        }
       } catch (error) {
         console.log(`⚠️ Could not fetch wallet balance for ${holder.address}`);
       }
