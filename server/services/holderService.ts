@@ -208,16 +208,14 @@ export class HolderService {
    */
   private async fetchVaultTokenPrice(tokenAddress: string): Promise<number> {
     try {
-      // Strategy 1: Try CoinGecko API for regular ERC-20 token price
-      const coingeckoUrl = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddress}&vs_currencies=usd`;
-      const response = await fetch(coingeckoUrl);
+      console.log(`🔍 fetchVaultTokenPrice called for ${tokenAddress}`);
       
-      if (response.ok) {
-        const data = await response.json();
-        const price = data[tokenAddress.toLowerCase()]?.usd;
-        if (price && price > 0) {
-          return price;
-        }
+      // Strategy 1: For known vault tokens, use empirical exchange rates FIRST
+      // This is the most reliable strategy for TAC USDC
+      const knownVaultRates = await this.getKnownVaultExchangeRates(tokenAddress);
+      if (knownVaultRates > 0) {
+        console.log(`✅ Found empirical vault rate: ${knownVaultRates}`);
+        return knownVaultRates;
       }
       
       // Strategy 2: For Morpho vault tokens, try to get exchange rate from pool data
@@ -225,16 +223,24 @@ export class HolderService {
       if (exchangeRate > 0) {
         // Morpho vault tokens are typically backed by USDC ($1)
         const underlyingPrice = 1.0; // USDC price
+        console.log(`✅ Found Morpho vault exchange rate: ${exchangeRate}`);
         return exchangeRate * underlyingPrice;
       }
       
-      // Strategy 3: For known vault tokens, use empirical exchange rates
-      // This is a temporary solution while we implement proper on-chain pricing
-      const knownVaultRates = await this.getKnownVaultExchangeRates(tokenAddress);
-      if (knownVaultRates > 0) {
-        return knownVaultRates;
+      // Strategy 3: Try CoinGecko API for regular ERC-20 token price
+      const coingeckoUrl = `https://api.coingecko.com/api/v3/simple/token_price/ethereum?contract_addresses=${tokenAddress}&vs_currencies=usd`;
+      const response = await fetch(coingeckoUrl);
+      
+      if (response.ok) {
+        const data = await response.json();
+        const price = data[tokenAddress.toLowerCase()]?.usd;
+        if (price && price > 0) {
+          console.log(`✅ Found CoinGecko price: ${price}`);
+          return price;
+        }
       }
       
+      console.log(`❌ No vault token price found for ${tokenAddress}`);
       return 0; // No price found
     } catch (error) {
       console.log(`⚠️ Could not fetch vault token price for ${tokenAddress}:`, error);
