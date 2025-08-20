@@ -45,7 +45,9 @@ export class HistoricalApyService {
       const isMorpho = platformName?.toLowerCase() === 'morpho' || platformName?.toLowerCase() === 'morpho-blue';
       const isLido = platformName?.toLowerCase() === 'lido';
       
-      if (isMorpho) {
+      // Only multiply by 100 if the value looks like a decimal (< 1)
+      // Some Morpho pools (like Spark USDC) already store percentages
+      if (isMorpho && currentApy < 1) {
         currentApy = currentApy * 100;
       }
       
@@ -123,9 +125,11 @@ export class HistoricalApyService {
     const sum = validApyValues.reduce((acc, apy) => acc + apy, 0);
     let average = sum / validApyValues.length;
     
-    // Morpho stores APY as decimals (0.0456 = 4.56%), convert to percentage
+    // Morpho normally stores APY as decimals (0.0456 = 4.56%), convert to percentage
+    // But some pools (like Spark USDC) already have percentages
+    // Only multiply if the average looks like a decimal (< 1)
     // Lido stores APY as percentages (2.648 = 2.648%), use as-is
-    if (isMorpho) {
+    if (isMorpho && average < 1) {
       average = average * 100;
     }
     
