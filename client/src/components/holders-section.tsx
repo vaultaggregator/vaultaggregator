@@ -289,9 +289,6 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                     <div className="text-sm font-medium">
                       {formatNumber(parseFloat(holder.tokenBalance))}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {tokenSymbol}
-                    </div>
                   </div>
                 </div>
 
