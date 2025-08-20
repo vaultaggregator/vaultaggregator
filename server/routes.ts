@@ -1382,7 +1382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contract lookup endpoint for automatic pool information detection
   app.post("/api/admin/pools/lookup-contract", requireAuth, async (req, res) => {
     try {
-      const { address, platformId } = req.body;
+      const { address, platformId, chainId } = req.body;
       
       if (!address || !platformId) {
         return res.status(400).json({ error: "Address and platform ID are required" });
@@ -1402,10 +1402,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log(`🔍 Looking up Morpho contract: ${address}`);
           
+          // Determine the blockchain chain ID based on the chainId from the request
+          let blockchainChainId = 1; // Default to Ethereum mainnet
+          if (chainId) {
+            // Get chain information to determine the blockchain chain ID
+            const chain = await storage.getChainById(chainId);
+            if (chain && chain.name.toLowerCase() === 'base') {
+              blockchainChainId = 8453; // Base mainnet chain ID
+            }
+            console.log(`🔗 Using chain: ${chain?.name || 'Ethereum'} (chainId: ${blockchainChainId})`);
+          }
+          
           // First try the Morpho API
           let vault = null;
           try {
-            const vaults = await morphoService.getAllVaults(1); // Ethereum mainnet
+            const vaults = await morphoService.getAllVaults(blockchainChainId);
             vault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
           } catch (apiError) {
             console.log("⚠️ Morpho API unavailable, will try Etherscan API");

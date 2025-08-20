@@ -158,7 +158,7 @@ export default function AdminPools() {
   }, [editingPool, existingPoolCategories]);
 
   // Automatic contract lookup function
-  const lookupContract = async (address: string, platformId: string) => {
+  const lookupContract = async (address: string, platformId: string, chainId?: string) => {
     if (!address || !platformId) return;
     
     setContractInfo({ isLoading: true });
@@ -167,7 +167,7 @@ export default function AdminPools() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ address, platformId }),
+        body: JSON.stringify({ address, platformId, chainId }),
       });
       
       if (response.ok) {
@@ -883,7 +883,7 @@ export default function AdminPools() {
                           // Auto-lookup contract when address is entered and platform is selected
                           if (address.length === 42 && address.startsWith('0x') && formData.platformId) {
                             console.log(`Attempting contract lookup for: ${address} on platform: ${formData.platformId}`);
-                            lookupContract(address, formData.platformId);
+                            lookupContract(address, formData.platformId, formData.chainId);
                           } else if (address.length < 42) {
                             setContractInfo({ isLoading: false });
                           }
