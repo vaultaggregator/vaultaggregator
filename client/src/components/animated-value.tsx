@@ -18,67 +18,15 @@ export function AnimatedValue({
   duration = 0.5,
   children 
 }: AnimatedValueProps) {
-  const [displayValue, setDisplayValue] = useState(value);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    if (value !== displayValue) {
-      setIsAnimating(true);
-      
-      // Start the transition after a brief delay
-      const timer = setTimeout(() => {
-        setDisplayValue(value);
-        
-        // Reset animation state
-        setTimeout(() => setIsAnimating(false), duration * 1000);
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-  }, [value, displayValue, duration]);
+  // Immediately update display value without animation
+  const displayValue = value;
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={displayValue}
-          initial={{ 
-            y: isAnimating ? 20 : 0, 
-            opacity: isAnimating ? 0 : 1,
-            scale: isAnimating ? 0.95 : 1
-          }}
-          animate={{ 
-            y: 0, 
-            opacity: 1,
-            scale: 1
-          }}
-          exit={{ 
-            y: -20, 
-            opacity: 0,
-            scale: 1.05
-          }}
-          transition={{ 
-            duration,
-            ease: "easeInOut"
-          }}
-          className={`${isAnimating ? 'animate-pulse' : ''}`}
-        >
-          {children ? children : (
-            <span>
-              {prefix}{displayValue}{suffix}
-            </span>
-          )}
-        </motion.div>
-      </AnimatePresence>
-      
-      {/* Subtle glow effect during animation */}
-      {isAnimating && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.3, 0] }}
-          transition={{ duration: duration * 2, ease: "easeInOut" }}
-          className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-green-400/20 to-purple-400/10 rounded-lg pointer-events-none"
-        />
+    <div className={className}>
+      {children ? children : (
+        <span>
+          {prefix}{displayValue}{suffix}
+        </span>
       )}
     </div>
   );
