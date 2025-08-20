@@ -169,6 +169,8 @@ export class HolderService {
    */
   private async getTokenPrice(tokenAddress: string): Promise<number> {
     try {
+      console.log(`🔍 getTokenPrice called for ${tokenAddress}`);
+      
       // PRIORITY 1: Check for known vault tokens first (before Alchemy)
       const vaultPrice = await this.fetchVaultTokenPrice(tokenAddress);
       if (vaultPrice > 0) {
