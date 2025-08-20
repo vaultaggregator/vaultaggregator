@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
 import { RiskBadge } from "@/components/risk-badge";
-import { AnimatedValue, ShimmerEffect } from "@/components/animated-value";
+import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import { WebSocketStatus } from "@/components/websocket-status";
 import type { YieldOpportunity } from "@/types";
@@ -160,14 +160,14 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
           <div className="hidden sm:grid sm:grid-cols-9 sm:gap-4 sm:items-center sm:flex-1 sm:max-w-2xl">
             {/* APY */}
             <div className="col-span-2 text-center">
-              <AnimatedValue
-                value={opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-                className="text-lg font-bold text-green-600"
-              >
-                <p data-testid={`text-apy-${opportunity.id}`}>
-                  {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-                </p>
-              </AnimatedValue>
+              <p data-testid={`text-apy-${opportunity.id}`} className="text-lg font-bold text-green-600">
+                {opportunity.apy ? (
+                  <AnimatedPercentage 
+                    value={parseFloat(opportunity.apy)} 
+                    precision={2}
+                  />
+                ) : 'N/A'}
+              </p>
             </div>
             
             {/* Days */}
@@ -180,14 +180,25 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             {/* TVL */}
             <div className="col-span-2 text-center">
               <p className="text-base font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
-                {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
+                {opportunity.tvl ? (
+                  <AnimatedCurrency 
+                    value={parseFloat(opportunity.tvl)} 
+                    compact={true}
+                  />
+                ) : 'N/A'}
               </p>
             </div>
             
             {/* Holders */}
             <div className="col-span-2 text-center">
               <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
-                {formatHolders(opportunity.holdersCount)}
+                {opportunity.holdersCount ? (
+                  <AnimatedNumber 
+                    value={opportunity.holdersCount} 
+                    formatter={(val) => formatHolders(val)}
+                    precision={0}
+                  />
+                ) : 'N/A'}
               </p>
             </div>
             
@@ -214,14 +225,14 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   <div className="h-4 mb-0.5 flex items-center justify-center">
                     <p className="text-xs text-muted-foreground font-medium">24h APY</p>
                   </div>
-                  <AnimatedValue
-                    value={opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-                    className="text-lg font-bold text-green-600"
-                  >
-                    <p data-testid={`text-apy-${opportunity.id}`}>
-                      {opportunity.apy ? formatApy(opportunity.apy) : 'N/A'}
-                    </p>
-                  </AnimatedValue>
+                  <p data-testid={`text-apy-${opportunity.id}`} className="text-lg font-bold text-green-600">
+                    {opportunity.apy ? (
+                      <AnimatedPercentage 
+                        value={parseFloat(opportunity.apy)} 
+                        precision={2}
+                      />
+                    ) : 'N/A'}
+                  </p>
                 </div>
                 <div className="text-center">
                   <div className="h-4 mb-0.5 flex items-center justify-center">
@@ -236,7 +247,12 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">TVL</p>
                   </div>
                   <p className="text-base font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
-                    {opportunity.tvl ? formatTvl(opportunity.tvl) : 'N/A'}
+                    {opportunity.tvl ? (
+                      <AnimatedCurrency 
+                        value={parseFloat(opportunity.tvl)} 
+                        compact={true}
+                      />
+                    ) : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -273,7 +289,13 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     <p className="text-xs text-muted-foreground font-medium">Holders</p>
                   </div>
                   <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
-                    {formatHolders(opportunity.holdersCount)}
+                    {opportunity.holdersCount ? (
+                      <AnimatedNumber 
+                        value={opportunity.holdersCount} 
+                        formatter={(val) => formatHolders(val)}
+                        precision={0}
+                      />
+                    ) : 'N/A'}
                   </p>
                 </div>
                 <div className="text-center">

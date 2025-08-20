@@ -23,6 +23,7 @@ import { PoolChart } from "@/components/PoolChart";
 import { formatTimeAgo } from "@/lib/utils";
 import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import { WebSocketStatus } from "@/components/websocket-status";
+import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
 
 
 
@@ -477,7 +478,12 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1" data-testid="text-apy-current">
-                {formatApy(pool.apy)}
+                {pool.apy ? (
+                  <AnimatedPercentage 
+                    value={parseFloat(pool.apy)} 
+                    precision={2}
+                  />
+                ) : 'N/A'}
               </p>
               <p className="text-xs text-green-600/70 dark:text-green-300/70 font-medium">Current APY</p>
             </CardContent>
@@ -497,7 +503,12 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-1" data-testid="text-apy-7d">
-                {averagesLoading ? 'Loading...' : (historicalAverages?.sevenDay ? `${historicalAverages.sevenDay.toFixed(2)}%` : 'N/A')}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.sevenDay ? (
+                  <AnimatedPercentage 
+                    value={historicalAverages.sevenDay} 
+                    precision={2}
+                  />
+                ) : 'N/A')}
               </p>
               <p className="text-xs text-emerald-600/70 dark:text-emerald-300/70 font-medium">Weekly Average (Real Data)</p>
             </CardContent>
@@ -517,7 +528,12 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1" data-testid="text-apy-30d">
-                {averagesLoading ? 'Loading...' : (historicalAverages?.thirtyDay ? `${historicalAverages.thirtyDay.toFixed(2)}%` : 'N/A')}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.thirtyDay ? (
+                  <AnimatedPercentage 
+                    value={historicalAverages.thirtyDay} 
+                    precision={2}
+                  />
+                ) : 'N/A')}
               </p>
               <p className="text-xs text-blue-600/70 dark:text-blue-300/70 font-medium">Monthly Average (Real Data)</p>
             </CardContent>
@@ -537,7 +553,12 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1" data-testid="text-apy-90d">
-                {averagesLoading ? 'Loading...' : (historicalAverages?.ninetyDay ? `${historicalAverages.ninetyDay.toFixed(2)}%` : 'N/A')}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.ninetyDay ? (
+                  <AnimatedPercentage 
+                    value={historicalAverages.ninetyDay} 
+                    precision={2}
+                  />
+                ) : 'N/A')}
               </p>
               <p className="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium">Quarterly Average (Real Data)</p>
             </CardContent>
@@ -558,7 +579,12 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1" data-testid="text-apy-all-time">
-                {averagesLoading ? 'Loading...' : (historicalAverages?.allTime ? `${historicalAverages.allTime.toFixed(2)}%` : 'N/A')}
+                {averagesLoading ? 'Loading...' : (historicalAverages?.allTime ? (
+                  <AnimatedPercentage 
+                    value={historicalAverages.allTime} 
+                    precision={2}
+                  />
+                ) : 'N/A')}
               </p>
               <p className="text-xs text-indigo-600/70 dark:text-indigo-300/70 font-medium">All-Time Average (Real Data)</p>
             </CardContent>
@@ -593,7 +619,12 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-cyan-600 dark:text-cyan-400 mb-1" data-testid="text-tvl">
-                {formatTvl(pool.tvl)}
+                {pool.tvl ? (
+                  <AnimatedCurrency 
+                    value={parseFloat(pool.tvl)} 
+                    compact={true}
+                  />
+                ) : 'N/A'}
               </p>
               <p className="text-xs text-cyan-600/70 dark:text-cyan-300/70 font-medium">Assets Under Management</p>
             </CardContent>
@@ -633,7 +664,17 @@ export default function PoolDetail() {
             </CardHeader>
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-1" data-testid="text-holders-count">
-                {pool.holdersCount ? formatHolders(pool.holdersCount) : 'N/A'}
+                {pool.holdersCount ? (
+                  <AnimatedNumber 
+                    value={pool.holdersCount} 
+                    formatter={(val) => {
+                      if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+                      if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+                      return val.toString();
+                    }}
+                    precision={0}
+                  />
+                ) : 'N/A'}
               </p>
               <p className="text-xs text-violet-600/70 dark:text-violet-300/70 font-medium">Active Participants</p>
             </CardContent>
