@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 import { TrendingUp, TrendingDown, Activity, Shield, Users, DollarSign, BarChart3, PieChart as PieChartIcon, Calendar } from "lucide-react";
+import { formatNumber } from "@/lib/format";
 import type { YieldOpportunity, AppStats } from "@/types";
 
 interface AnalyticsData {
@@ -197,7 +198,7 @@ export default function Analytics() {
                   <DollarSign className="h-5 w-5 text-green-600" />
                   <div>
                     <div className="text-2xl font-bold text-foreground" data-testid="stat-total-tvl">
-                      ${stats?.totalTvl || '0'}
+                      {formatNumber(parseFloat(stats?.totalTvl || '0'), { currency: '$', maxDecimals: 1 })}
                     </div>
                     <div className="text-sm text-muted-foreground">Total TVL</div>
                   </div>

@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, DollarSign, Shield, Activity, BarChart3 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { formatNumber } from "@/lib/format";
+import type { YieldOpportunity } from "@/types";
 
 interface DashboardStats {
   totalPools: number;
@@ -29,10 +32,57 @@ export default function Dashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const { data: pools } = useQuery({
+  const { data: pools = [] } = useQuery<YieldOpportunity[]>({
     queryKey: ['/api/pools'],
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
+
+  // Calculate top chains and platforms from real data
+  const { topChains, topPlatforms } = useMemo(() => {
+    if (!pools || pools.length === 0) {
+      return { topChains: [], topPlatforms: [] };
+    }
+
+    // Aggregate by chain
+    const chainMap = new Map<string, { count: number; tvl: number }>();
+    pools.forEach(pool => {
+      const chain = pool.chain.displayName;
+      const existing = chainMap.get(chain) || { count: 0, tvl: 0 };
+      chainMap.set(chain, {
+        count: existing.count + 1,
+        tvl: existing.tvl + parseFloat(pool.tvl || '0')
+      });
+    });
+
+    // Aggregate by platform
+    const platformMap = new Map<string, { count: number; totalApy: number }>();
+    pools.forEach(pool => {
+      const platform = pool.platform.displayName;
+      const existing = platformMap.get(platform) || { count: 0, totalApy: 0 };
+      platformMap.set(platform, {
+        count: existing.count + 1,
+        totalApy: existing.totalApy + parseFloat(pool.apy || '0')
+      });
+    });
+
+    // Sort and get top 3 chains by TVL
+    const topChains = Array.from(chainMap.entries())
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.tvl - a.tvl)
+      .slice(0, 3);
+
+    // Sort and get top 3 platforms by average APY
+    const topPlatforms = Array.from(platformMap.entries())
+      .map(([name, data]) => ({ 
+        name, 
+        count: data.count,
+        avgApy: data.totalApy / data.count 
+      }))
+      .sort((a, b) => b.avgApy - a.avgApy)
+      .slice(0, 3);
+
+    return { topChains, topPlatforms };
+  }, [pools]);
 
   // Generate mock chart data for APY trends
   const chartData = Array.from({ length: 30 }, (_, i) => ({
@@ -159,36 +209,51 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Ethereum</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300">127 pools</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-green-600">$1.2B</p>
-                  <Badge variant="secondary" className="text-xs">+8.3%</Badge>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Polygon</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300">89 pools</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-green-600">$520M</p>
-                  <Badge variant="secondary" className="text-xs">+12.1%</Badge>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Arbitrum</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300">64 pools</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-green-600">$380M</p>
-                  <Badge variant="secondary" className="text-xs">+6.7%</Badge>
-                </div>
-              </div>
+              {topChains.length > 0 ? (
+                topChains.map((chain, index) => (
+                  <div key={chain.name} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{chain.name}</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-300">{chain.count} pools</p>
+                      {chain.name === 'Ethereum' && (
+                        <a 
+                          href="https://etherscan.io" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+                        >
+                          View on Etherscan →
+                        </a>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">
+                        {formatNumber(chain.tvl, { currency: '$', maxDecimals: 1 })}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">Ethereum</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-300">32 pools</p>
+                      <a 
+                        href="https://etherscan.io" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+                      >
+                        View on Etherscan →
+                      </a>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">$39.1B</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -200,36 +265,45 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Aave V3</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300">32 pools</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-blue-600">12.4%</p>
-                  <Badge variant="default" className="text-xs bg-green-600">High Yield</Badge>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Compound V3</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300">28 pools</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-blue-600">9.8%</p>
-                  <Badge variant="secondary" className="text-xs">Stable</Badge>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Uniswap V3</p>
-                  <p className="text-sm text-gray-800 dark:text-gray-300">45 pools</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-blue-600">8.2%</p>
-                  <Badge variant="outline" className="text-xs">LP Rewards</Badge>
-                </div>
-              </div>
+              {topPlatforms.length > 0 ? (
+                topPlatforms.map((platform, index) => (
+                  <div key={platform.name} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{platform.name}</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-300">{platform.count} pools</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-blue-600">{platform.avgApy.toFixed(1)}%</p>
+                      <Badge variant={index === 0 ? "default" : "secondary"} className={`text-xs ${index === 0 ? 'bg-green-600' : ''}`}>
+                        {index === 0 ? 'Top APY' : 'Stable'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">Morpho</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-300">30 pools</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-blue-600">7.8%</p>
+                      <Badge variant="default" className="text-xs bg-green-600">Top APY</Badge>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">Lido</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-300">2 pools</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-blue-600">2.6%</p>
+                      <Badge variant="secondary" className="text-xs">Stable</Badge>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
