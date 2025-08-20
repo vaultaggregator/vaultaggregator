@@ -242,46 +242,132 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
       const chainName = chainInfo?.name?.toLowerCase() || 'ethereum';
       console.log(`🔗 Pool is on ${chainName} network`);
       
-      // Use Basescan for Base network, Etherscan for Ethereum
-      if (chainName === 'base') {
-        console.log(`🔗 Using Basescan for Base network pool`);
+      // Map of supported networks to chain IDs for Etherscan V2 API
+      // This supports 60+ EVM networks with a single API key
+      const chainIdMap: { [key: string]: number } = {
+        'ethereum': 1,
+        'base': 8453,
+        'optimism': 10,
+        'polygon': 137,
+        'arbitrum': 42161,
+        'bsc': 56,
+        'bnb': 56,
+        'binance': 56,
+        'avalanche': 43114,
+        'fantom': 250,
+        'scroll': 534352,
+        'blast': 81457,
+        'linea': 59144,
+        'zksync': 324,
+        'mantle': 5000,
+        'celo': 42220,
+        'gnosis': 100,
+        'moonbeam': 1284,
+        'moonriver': 1285,
+        'cronos': 25,
+        'aurora': 1313161554,
+        'harmony': 1666600000,
+        'metis': 1088,
+        'boba': 288,
+        'okc': 66,
+        'heco': 128,
+        'kava': 2222,
+        'iotex': 4689,
+        'rsk': 30,
+        'fusion': 32659,
+        'telos': 40,
+        'wanchain': 888,
+        'oasis': 42262,
+        'velas': 106,
+        'meter': 82,
+        'godwoken': 71402,
+        'klaytn': 8217,
+        'milkomeda': 2001,
+        'kcc': 321,
+        'shiden': 336,
+        'palm': 11297108109,
+        'curio': 836542336838601,
+        'evmos': 9001,
+        'kardia': 24,
+        'fuse': 122,
+        'smartbch': 10000,
+        'rei': 47805,
+        'callisto': 820,
+        'wemix': 1111,
+        'exosama': 2109,
+        'step': 1234,
+        'ubiq': 8,
+        'syscoin': 57,
+        'nova': 42170,
+        'canto': 7700,
+        'dogechain': 2000,
+        'tombchain': 6969,
+        'ronin': 2020,
+        'flare': 14,
+        'songbird': 19,
+        'core': 1116,
+        'bitgert': 32520,
+        'dexalot': 432204,
+        'kroma': 255,
+        'manta': 169,
+        'mode': 34443,
+        'fraxtal': 252,
+        'katana': 747474,
+      };
+      
+      const etherscanApiKey = process.env.ETHERSCAN_API_KEY || '';
+      const chainId = chainIdMap[chainName];
+      
+      // Check if chain is supported by Etherscan V2 API
+      if (chainId && chainId !== 1) {
+        console.log(`🔗 Using Etherscan V2 multi-chain API for ${chainName} network (Chain ID: ${chainId})`);
         
-        // For Base network, try to get the contract creation block from Basescan
-        // Using the proxy API endpoint which sometimes works without API key
-        const basescanUrl = `https://api.basescan.org/api?module=proxy&action=eth_getCode&address=${pool.poolAddress}&tag=earliest`;
+        if (!etherscanApiKey) {
+          console.log(`⚠️ Etherscan API key required for ${chainName} network data`);
+          return { value: null, error: `Please provide ETHERSCAN_API_KEY for ${chainName} network pools` };
+        }
         
         try {
-          // First, try to get when the contract was deployed by checking its code
-          const codeResponse = await fetch(basescanUrl);
-          const codeData = await codeResponse.json();
+          // Use Etherscan V2 unified API with chain ID
+          const apiUrl = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=contract&action=getcontractcreation&contractaddresses=${pool.poolAddress}&apikey=${etherscanApiKey}`;
           
-          // If we can't get the code, try transaction history
-          const txUrl = `https://api.basescan.org/api?module=account&action=txlist&address=${pool.poolAddress}&startblock=0&endblock=99999999&page=1&offset=1&sort=asc`;
+          const response = await fetch(apiUrl);
+          const data = await response.json();
           
-          const txResponse = await fetch(txUrl);
-          const txData = await txResponse.json();
-          
-          if (txData.status === "1" && txData.result && txData.result.length > 0) {
-            const firstTx = txData.result[0];
-            const creationDate = new Date(parseInt(firstTx.timeStamp) * 1000);
-            const currentDate = new Date();
-            const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (data.status === "1" && data.result && data.result.length > 0) {
+            // Contract creation API returns transaction hash and creator
+            const txHash = data.result[0].txHash;
             
-            console.log(`📊 Contract ${pool.poolAddress} on Base has been operating for ${daysDiff} days`);
-            return { value: daysDiff };
+            // Get transaction details to find block timestamp
+            const txUrl = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=proxy&action=eth_getTransactionByHash&txhash=${txHash}&apikey=${etherscanApiKey}`;
+            
+            const txResponse = await fetch(txUrl);
+            const txData = await txResponse.json();
+            
+            if (txData.result && txData.result.blockNumber) {
+              // Get block details for timestamp
+              const blockUrl = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=block&action=getblockreward&blockno=${parseInt(txData.result.blockNumber, 16)}&apikey=${etherscanApiKey}`;
+              
+              const blockResponse = await fetch(blockUrl);
+              const blockData = await blockResponse.json();
+              
+              if (blockData.result && blockData.result.timeStamp) {
+                const creationDate = new Date(parseInt(blockData.result.timeStamp) * 1000);
+                const currentDate = new Date();
+                const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+                
+                console.log(`📊 Contract ${pool.poolAddress} on ${chainName} has been operating for ${daysDiff} days`);
+                return { value: daysDiff };
+              }
+            }
           }
           
-          // If Basescan API doesn't work, calculate based on known Base launch date
-          // Base mainnet launched on July 31, 2023
-          // For Spark USDC Vault, we know it launched around Jan 31, 2024 (about 232 days ago)
-          // But we won't hardcode - instead return error for user to provide API key
-          console.log(`⚠️ Basescan API requires authentication. Please provide a Basescan API key.`);
-          return { value: null, error: "Basescan API key required for Base network pools" };
+          return { value: null, error: `Unable to fetch contract creation date from ${chainName} network` };
         } catch (error) {
-          console.error(`❌ Error fetching from Basescan:`, error);
-          return { value: null, error: "Basescan API key required - please configure BASESCAN_API_KEY" };
+          console.error(`❌ Error fetching from ${chainName} network API:`, error);
+          return { value: null, error: `Error fetching ${chainName} data` };
         }
-      } else {
+      } else if (chainId === 1 || chainName === 'ethereum') {
         // Use Etherscan for Ethereum mainnet
         const { etherscanService } = await import("./etherscanService");
         
