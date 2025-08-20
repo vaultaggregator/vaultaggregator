@@ -374,23 +374,7 @@ export default function PoolDetail() {
                     {pool.platform.displayName}
                   </p>
                   
-                  {/* Risk Badge */}
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <MetricTooltip metric="risk-level" variant="icon" side="bottom">
-                      <div className="flex items-center gap-1">
-                        <Shield className="w-3 h-3" />
-                        <RiskBadge 
-                          vault={pool}
-                          risk={pool.riskLevel || 'medium'}
-                          variant="compact"
-                          showScore={true}
-                          showLabel={true}
-                          useDynamic={true}
-                          data-testid="badge-risk"
-                        />
-                      </div>
-                    </MetricTooltip>
-                  </div>
+
 
                 </div>
               </div>
