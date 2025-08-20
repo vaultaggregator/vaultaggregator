@@ -257,7 +257,7 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
             <div className="col-span-3">Address</div>
             <div className="col-span-2">Balance</div>
             <div className="col-span-2">USD Value</div>
-            <div className="col-span-2">Wallet ETH</div>
+            <div className="col-span-2">Portfolio Value</div>
             <div className="col-span-2">Pool Share</div>
           </div>
 
@@ -302,10 +302,10 @@ export function HoldersSection({ poolId, tokenSymbol = "Token" }: HoldersSection
                   <div className="space-y-1">
                     <div className="text-sm font-medium flex items-center gap-1">
                       <Wallet className="h-3 w-3" />
-                      {holder.walletBalanceEth != null ? holder.walletBalanceEth.toFixed(2) : '0.00'} ETH
+                      {formatCurrency(holder.walletBalanceUsd)}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {formatCurrency(holder.walletBalanceUsd)}
+                      Multichain Portfolio
                     </div>
                   </div>
                 </div>
