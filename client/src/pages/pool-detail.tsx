@@ -704,6 +704,9 @@ export default function PoolDetail() {
                 <p className="text-xs text-rose-600/70 dark:text-rose-300/70 mt-1">Security Rating</p>
               </CardContent>
             </Card>
+
+            {/* AI Insights Card */}
+            <AIInsightsCard poolId={pool.id} />
           </div>
 
           {/* Right Column: APY Calculator */}
