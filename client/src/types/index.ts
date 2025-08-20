@@ -51,7 +51,7 @@ export interface AppStats {
   activePools: number;
   hiddenPools: number;
   avgApy: number;
-  totalTvl: string;
+  totalTvl: number;
 }
 
 export interface Chain {

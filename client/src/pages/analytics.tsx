@@ -202,7 +202,7 @@ export default function Analytics() {
                   <DollarSign className="h-5 w-5 text-green-600" />
                   <div>
                     <div className="text-2xl font-bold text-foreground" data-testid="stat-total-tvl">
-                      {formatNumber(parseFloat(stats?.totalTvl || '0'), { currency: '$', maxDecimals: 1 })}
+                      {formatNumber(stats?.totalTvl || 0, { currency: '$', maxDecimals: 1 })}
                     </div>
                     <div className="text-sm text-muted-foreground">Total TVL</div>
                   </div>

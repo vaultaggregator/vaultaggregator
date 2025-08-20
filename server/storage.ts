@@ -1117,7 +1117,7 @@ export class DatabaseStorage implements IStorage {
     activePools: number;
     hiddenPools: number;
     avgApy: number;
-    totalTvl: string;
+    totalTvl: number;
   }> {
     // Get stats for visible pools only
     const visibleResult = await db.execute(`
@@ -1144,7 +1144,7 @@ export class DatabaseStorage implements IStorage {
       activePools: Number(visibleStats.visible_pools) || 0,
       hiddenPools: Number(hiddenStats.hidden_pools) || 0,
       avgApy: Number(visibleStats.avg_apy) || 0,
-      totalTvl: (Number(visibleStats.total_tvl) || 0).toLocaleString(),
+      totalTvl: Number(visibleStats.total_tvl) || 0,
     };
   }
 
