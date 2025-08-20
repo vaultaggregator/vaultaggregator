@@ -475,50 +475,6 @@ export default function PoolDetail() {
                   )}
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col items-center sm:items-end justify-center sm:justify-end mt-4 sm:mt-0 gap-2">
-                {(() => {
-                  const linkData = generatePlatformVisitUrl(pool);
-                  return linkData ? (
-                    <Button 
-                      variant="outline" 
-                      size="default" 
-                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm sm:text-base px-4 sm:px-6"
-                      data-testid="button-external-link"
-                      onClick={() => window.open(linkData.url, '_blank', 'noopener,noreferrer')}
-                    >
-                      <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                      Visit Platform
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
-                      className="hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                      data-testid="button-external-link"
-                      disabled
-                    >
-                      <ExternalLink className="w-5 h-5 mr-2" />
-                      Visit Platform
-                    </Button>
-                  );
-                })()}
-                
-                {/* Etherscan Link */}
-                {pool.pool_address && (
-                  <Button 
-                    variant="outline" 
-                    size="default" 
-                    className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-sm sm:text-base px-4 sm:px-6"
-                    data-testid="button-etherscan-link"
-                    onClick={() => window.open(`https://etherscan.io/token/${pool.pool_address}`, '_blank', 'noopener,noreferrer')}
-                  >
-                    <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    View on Etherscan
-                  </Button>
-                )}
-              </div>
             </div>
           </CardContent>
         </Card>
