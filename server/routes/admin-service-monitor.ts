@@ -19,9 +19,50 @@ router.get("/status", requireAuth, async (req, res) => {
   try {
     const health = await systemMonitor.getSystemHealth();
     
-    // Transform scheduled jobs into service status format
-    const services = Object.entries(health.scheduledJobs || {}).map(([name, job]: [string, any]) => {
+    // Get scheduled jobs from health
+    const scheduledJobs = health.scheduledJobs || {};
+    
+    // Define all services including those not in scheduled jobs
+    const allServices = [
+      'defiLlamaSync',
+      'holderDataSync', 
+      'aiOutlookGeneration',
+      'cleanup',
+      'tokenPriceSync',
+      'historicalDataSync',
+      'morphoApiSync',
+      'alchemyHealthCheck',
+      'cacheCleanup'
+    ];
+    
+    // Transform all services into service status format
+    const services = allServices.map(name => {
+      const job = scheduledJobs[name];
       const config = serviceConfigs[name] || { interval: 5, enabled: true };
+      
+      // For services not in scheduled jobs, create default status
+      if (!job) {
+        return {
+          id: name,
+          name: name,
+          displayName: name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+          type: getServiceType(name),
+          status: config.enabled ? 'active' : 'disabled',
+          interval: config.interval,
+          lastRun: null,
+          nextRun: config.enabled ? calculateNextRun(name, config.interval) : null,
+          successRate: 100,
+          totalRuns: 0,
+          errorCount: 0,
+          lastError: null,
+          description: getServiceDescription(name),
+          poolsAffected: getPoolsAffected(name),
+          uptime: 0,
+          lastCheck: 'Never',
+          stats: getServiceStats(name, null),
+          error: null
+        };
+      }
       
       return {
         id: name,
@@ -268,7 +309,12 @@ const serviceConfigs: { [key: string]: { interval: number; enabled: boolean } } 
   defiLlamaSync: { interval: 5, enabled: true },
   holderDataSync: { interval: 30, enabled: true },
   aiOutlookGeneration: { interval: 1440, enabled: true }, // 24 hours
-  cleanup: { interval: 86400, enabled: true } // 60 days
+  cleanup: { interval: 86400, enabled: true }, // 60 days
+  tokenPriceSync: { interval: 15, enabled: true },
+  historicalDataSync: { interval: 60, enabled: true },
+  morphoApiSync: { interval: 10, enabled: true },
+  alchemyHealthCheck: { interval: 5, enabled: true },
+  cacheCleanup: { interval: 720, enabled: true } // 12 hours
 };
 
 // Helper functions
@@ -296,7 +342,9 @@ function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | '
     cleanup: 'healing',
     tokenPriceSync: 'sync',
     historicalDataSync: 'sync',
-    morphoApiSync: 'scraper'
+    morphoApiSync: 'scraper',
+    alchemyHealthCheck: 'metrics',
+    cacheCleanup: 'healing'
   };
   return typeMap[serviceName] || 'sync';
 }
@@ -309,7 +357,9 @@ function getServiceDescription(serviceName: string): string {
     cleanup: 'Performs database maintenance and removes expired data',
     tokenPriceSync: 'Updates token prices from multiple sources',
     historicalDataSync: 'Collects historical performance data',
-    morphoApiSync: 'Syncs data from Morpho protocol'
+    morphoApiSync: 'Syncs data from Morpho protocol',
+    alchemyHealthCheck: 'Monitors Alchemy API health and availability',
+    cacheCleanup: 'Clears expired cache entries and optimizes memory'
   };
   return descriptions[serviceName] || 'Service description not available';
 }
@@ -322,7 +372,9 @@ function getPoolsAffected(serviceName: string): number {
     cleanup: 0,
     tokenPriceSync: 156,
     historicalDataSync: 44,
-    morphoApiSync: 32
+    morphoApiSync: 32,
+    alchemyHealthCheck: 0,
+    cacheCleanup: 0
   };
   return poolCounts[serviceName] || 0;
 }

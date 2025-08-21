@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { AlertCircle, CheckCircle, Clock, Settings, RefreshCw, Activity, Database, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import AdminHeader from "@/components/admin-header";
+import Footer from "@/components/footer";
 
 interface ServiceStatus {
   id: string;
@@ -243,31 +245,37 @@ export default function ServiceMonitor() {
 
   if (servicesLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-center items-center py-12">
-          <RefreshCw className="w-6 h-6 animate-spin mr-2" />
-          <span>Loading service status...</span>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <AdminHeader />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-center items-center py-12">
+            <RefreshCw className="w-6 h-6 animate-spin mr-2" />
+            <span>Loading service status...</span>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Service Monitor</h1>
-          <p className="text-muted-foreground">Monitor and configure data collection services</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <AdminHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Service Monitor</h1>
+            <p className="text-muted-foreground">Monitor and configure data collection services</p>
+          </div>
+          <Button
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/services/status'] })}
+            variant="outline"
+            data-testid="button-refresh"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
         </div>
-        <Button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/services/status'] })}
-          variant="outline"
-          data-testid="button-refresh"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
@@ -436,6 +444,8 @@ export default function ServiceMonitor() {
           </div>
         </TabsContent>
       </Tabs>
+      </div>
+      <Footer />
     </div>
   );
 }
