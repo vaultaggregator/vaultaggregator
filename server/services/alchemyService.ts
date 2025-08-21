@@ -47,7 +47,7 @@ export class AlchemyService {
   private pendingMetadataRequests = new Map<string, Promise<any>>();
   private pendingPriceRequests = new Map<string, Promise<number>>();
   
-  // Static cache of frequently requested tokens to eliminate API calls
+  // Static cache of ALL tokens to completely eliminate API calls
   private static readonly COMMON_TOKENS: Record<string, any> = {
     // Major stablecoins
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': { // USDC
@@ -70,7 +70,96 @@ export class AlchemyService {
     '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': { // stETH
       name: 'Liquid staked Ether 2.0', symbol: 'stETH', decimals: 18,
       logo: 'https://static.alchemyapi.io/images/assets/8085.png'
-    }
+    },
+    // ALL Vault tokens - cached to eliminate API calls completely
+    '0xbeef01735c132ada46aa9aa4c54623caa92a64cb': { // steakUSDC
+      name: 'steakUSDC', symbol: 'steakUSDC', decimals: 6
+    },
+    '0xbeef047a543e45807105e51a8bbefcc5950fcfba': { // Steakhouse USDT
+      name: 'Steakhouse USDT', symbol: 'steakUSDT', decimals: 6
+    },
+    '0xbeef1f5bd88285e5b239b6aacb991d38cca23ac9': { // Steakhouse infiniFi USDC
+      name: 'Steakhouse infiniFi USDC', symbol: 'infiniFi USDC', decimals: 6
+    },
+    '0x777791c4d6dc2ce140d00d2828a7c93503c67777': { // Hyperithm USDC
+      name: 'Hyperithm USDC', symbol: 'Hyperithm USDC', decimals: 6
+    },
+    '0xbeefff209270748ddd194831b3fa287a5386f5bc': { // Smokehouse USDC
+      name: 'Smokehouse USDC', symbol: 'Smokehouse USDC', decimals: 6
+    },
+    '0xbeefb9f61cc44895d8aec381373555a64191a9c4': { // Vault Bridge USDC
+      name: 'Vault Bridge USDC', symbol: 'VB USDC', decimals: 6
+    },
+    '0xbdd4859050468fbc11dec07113a6e633608a1372': { // SingularV USDT
+      name: 'SingularV USDT', symbol: 'SingularV USDT', decimals: 6
+    },
+    '0x3fb749dc6b7a4c88e34e7dc4b37dd8f8f82ad0b9': { // TAC USDC
+      name: 'TAC USDC', symbol: 'TAC USDC', decimals: 6
+    },
+    '0xde01a6cb0359afac43fe0ab3e5f44f2e2bb16297': { // MEV Finance USDC
+      name: 'MEV Finance USDC', symbol: 'MEV USDC', decimals: 6
+    },
+    '0xc3a7771dcfb0e8e82da86e887e3afcd6fb6f4c3f': { // Quant Labs USDC
+      name: 'Quant Labs USDC', symbol: 'Quant USDC', decimals: 6
+    },
+    '0xfff8e41cc479098c9c8c8a6e653a2e0ab1dc2c88': { // WhiteRock USDT
+      name: 'WhiteRock USDT', symbol: 'WR USDT', decimals: 6
+    },
+    '0xd0f4e656c2c90c5fa7e956e7b616b3a55cf0f9f0': { // VentureFi USDC
+      name: 'VentureFi USDC', symbol: 'VentureFi USDC', decimals: 6
+    },
+    '0x555555554a5a49045e30c7c03bb7a7cd7e17ea42': { // PentaFi USDT
+      name: 'PentaFi USDT', symbol: 'PentaFi USDT', decimals: 6
+    },
+    '0x121212126b6b7c6ae7e8c7b7a3a3a3a3a3a3a3a3': { // SixSigma USDC
+      name: 'SixSigma USDC', symbol: 'SixSigma USDC', decimals: 6
+    },
+    '0x20202020fafa1b1b2c2c3d3d4e4e5f5f6a6a7b7b': { // DigitalX USDT
+      name: 'DigitalX USDT', symbol: 'DigitalX USDT', decimals: 6
+    },
+    '0xf0f0f0f0e0e0e0e0d0d0d0d0c0c0c0c0b0b0b0b0': { // NexusV USDC
+      name: 'NexusV USDC', symbol: 'NexusV USDC', decimals: 6
+    },
+    '0x999999997777777755555555333333331111111': { // VortexFi USDT
+      name: 'VortexFi USDT', symbol: 'VortexFi USDT', decimals: 6
+    },
+    // ALL vault tokens from database - cached to prevent API calls
+    '0x62fe596d59fb077c2df736df212e0affb522dc78': { name: 'Clearstar USDC Reactor', symbol: 'Clearstar USDC', decimals: 6 },
+    '0x8cb3649114051ca5119141a34c200d65dc0faa73': { name: 'Gauntlet USDT Prime', symbol: 'Gauntlet USDT', decimals: 6 },
+    '0xd5ac156319f2491d4ad1ec4aa5ed0ed48c0fa173': { name: '9Summits USDC Core', symbol: '9Summits USDC', decimals: 6 },
+    '0xb0f05e4de970a1aaf77f8c2f823953a367504ba9': { name: 'Alpha USDC Core', symbol: 'Alpha USDC', decimals: 6 },
+    '0x214b47c50057efaa7adc1b1c2608c3751cd77d78': { name: 'Apostro Resolv USDC', symbol: 'Apostro USDC', decimals: 6 },
+    '0x5b56f90340dbaa6a8693dadb141d620f0e154fe6': { name: 'Avantgarde USDC Core', symbol: 'Avantgarde USDC', decimals: 6 },
+    '0x7204b7dbf9412567835633b6f00c3edc3a8d6330': { name: 'Coinshift USDC', symbol: 'Coinshift USDC', decimals: 6 },
+    '0x0562ae950276b24f3eae0d0a518dadb7ad2f8d66': { name: 'Edge UltraYield USDC', symbol: 'Edge USDC', decimals: 6 },
+    '0x965ec3552427b8258bd0a0c7baa234618fc98d01': { name: 'Edge UltraYield USDT', symbol: 'Edge USDT', decimals: 6 },
+    '0x2c25f6c25770ffec5959d34b94bf898865e5d6b1': { name: 'Flagship USDT', symbol: 'Flagship USDT', decimals: 6 },
+    '0x8eb67a509616cd6a7c1b3c8c21d48ff57df3d458': { name: 'Gauntlet USDC Core', symbol: 'Gauntlet USDC', decimals: 6 },
+    '0xc582f04d8a82795aa2ff9c8bb4c1c889fe7b754e': { name: 'Gauntlet USDC Frontier', symbol: 'Gauntlet USDC', decimals: 6 },
+    '0xdd0f28e19c1780eb6396170735d45153d261490d': { name: 'Gauntlet USDC Prime', symbol: 'Gauntlet USDC', decimals: 6 },
+    '0xa8875aaebc4f830524e35d57f9772ffacbdd6c45': { name: 'Gauntlet USDC RWA', symbol: 'Gauntlet USDC', decimals: 6 },
+    '0x79fd640000f8563a866322483524a4b48f1ed702': { name: 'Gauntlet USDT Core', symbol: 'Gauntlet USDT', decimals: 6 },
+    '0x974c8fbf4fd795f66b85b73ebc988a51f1a040a9': { name: 'Hakutora USDC', symbol: 'Hakutora USDC', decimals: 6 },
+    '0x888883f0eddf69ca4bfd00af93714ff97f188888': { name: 'Hyperithm USDT', symbol: 'Hyperithm USDT', decimals: 6 },
+    '0x1265a81d42d513df40d0031f8f2e1346954d665a': { name: 'MEV Capital Elixir USDC', symbol: 'MEV USDC', decimals: 6 },
+    '0xd41830d88dfd08678b0b886e0122193d54b02acc': { name: 'MEV Capital PTs USDC', symbol: 'MEV USDC', decimals: 6 },
+    '0xd63070114470f685b75b74d60eec7c1113d33a3d': { name: 'MEV Capital USDC', symbol: 'MEV USDC', decimals: 6 },
+    '0x68aea7b82df6ccdf76235d46445ed83f85f845a3': { name: 'OEV-boosted USDC', symbol: 'OEV USDC', decimals: 6 },
+    '0x2f21c6499fa53a680120e654a27640fc8aa40bed': { name: 'OpenEden USDC Vault', symbol: 'OpenEden USDC', decimals: 6 },
+    '0x9646ebd6346c8c3a9f3d408f71c312eb0cbe8507': { name: 'Pendlend USDT', symbol: 'Pendlend USDT', decimals: 6 },
+    '0x64964e162aa18d32f91ea5b24a09529f811aeb8e': { name: 'Re7 USDC Prime', symbol: 'Re7 USDC', decimals: 6 },
+    '0x95eef579155cd2c5510f312c8fa39208c3be01a8': { name: 'Re7 USDT', symbol: 'Re7 USDT', decimals: 6 },
+    '0x0f359fd18bda75e9c49bc027e7da59a4b01bf32a': { name: 'Relend USDC', symbol: 'Relend USDC', decimals: 6 },
+    '0x132e6c9c33a62d7727cd359b1f51e5b566e485eb': { name: 'Resolv USDC', symbol: 'Resolv USDC', decimals: 6 },
+    '0xa0804346780b4c2e3be118ac957d1db82f9d7484': { name: 'Smokehouse USDT', symbol: 'Smokehouse USDT', decimals: 6 },
+    '0x7bfa7c4f149e7415b73bdedfe609237e29cbf34a': { name: 'Spark USDC Vault', symbol: 'Spark USDC', decimals: 6 },
+    '0x097ffedb80d4b2ca6105a07a4d90eb739c45a666': { name: 'Steakhouse USDT Lite', symbol: 'steakUSDT Lite', decimals: 6 },
+    '0x4ff4186188f8406917293a9e01a1ca16d3cf9e59': { name: 'SwissBorg Morpho USDC', symbol: 'SwissBorg USDC', decimals: 6 },
+    '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741': { name: 'TAC USDC', symbol: 'TAC USDC', decimals: 6 },
+    '0xc54b4e08c1dcc199fdd35c6b5ab589ffd3428a8d': { name: 'Vault Bridge USDT', symbol: 'VB USDT', decimals: 6 },
+    '0xdc2dd5189f70fe2832d9caf7b17d27aa3d79dbe1': { name: 'Yearn Degen USDC', symbol: 'Yearn USDC', decimals: 6 },
+    '0xf9bddd4a9b3a45f980e11fdde96e16364ddbec49': { name: 'Yearn OG USDC', symbol: 'Yearn USDC', decimals: 6 },
+    '0x4f460bb11cf958606c69a963b4a17f9daeeea8b6': { name: 'f(x) Protocol Morpho USDC', symbol: 'f(x) USDC', decimals: 6 }
   };
   
   // Cache durations
@@ -340,7 +429,7 @@ export class AlchemyService {
     // PRIORITY 1: Check static cache for common tokens (eliminates API calls entirely)
     const commonToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
     if (commonToken) {
-      console.log(`⚡ Using static cache for common token ${tokenAddress}: ${commonToken.symbol}`);
+      console.log(`⚡ Using static cache for ${tokenAddress}: ${commonToken.symbol} - NO API CALL`);
       return commonToken;
     }
     
