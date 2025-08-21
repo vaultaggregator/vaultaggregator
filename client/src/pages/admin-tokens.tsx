@@ -108,7 +108,7 @@ export default function AdminTokensPage() {
   // Create token mutation
   const createTokenMutation = useMutation({
     mutationFn: async (data: z.infer<typeof createTokenSchema>) => {
-      return await apiRequest("/api/admin/tokens", "POST", data);
+      return await apiRequest("POST", "/api/admin/tokens", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tokens"] });
@@ -131,7 +131,7 @@ export default function AdminTokensPage() {
   // Update token mutation
   const updateTokenMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Token> }) => {
-      return await apiRequest(`/api/admin/tokens/${id}`, "PATCH", updates);
+      return await apiRequest("PATCH", `/api/admin/tokens/${id}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tokens"] });
