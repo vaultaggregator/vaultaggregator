@@ -1,8 +1,33 @@
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Add compression middleware for all responses (improves Vite client loading)
+app.use(compression({
+  filter: (req, res) => {
+    // Compress everything except already compressed formats
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6, // Balanced compression level for speed
+}));
+
+// Add caching headers for static assets
+app.use((req, res, next) => {
+  // Cache Vite client and HMR files for better performance
+  if (req.path.startsWith('/@vite/') || req.path.startsWith('/node_modules/')) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (req.path.startsWith('/src/')) {
+    res.setHeader('Cache-Control', 'no-cache');
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
