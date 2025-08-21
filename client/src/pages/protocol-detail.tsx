@@ -20,6 +20,7 @@ import {
 import { formatCurrency, formatNumber, formatPercentage } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { NetworkLink, AddressLink } from "@/components/entity-links";
 
 interface ProtocolAsset {
   symbol: string;
@@ -152,7 +153,14 @@ export function ProtocolDetailPage() {
                   <div>
                     <h1 className="text-3xl font-bold">{protocol.name}</h1>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary">{protocol.chainName}</Badge>
+                      <NetworkLink
+                        network={{
+                          id: protocol.chainId,
+                          name: protocol.chainName,
+                          displayName: protocol.chainName
+                        }}
+                        className="inline-flex h-6 px-2 py-1 text-xs font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      />
                       {protocol.website && (
                         <a
                           href={protocol.website}
@@ -459,13 +467,14 @@ export function ProtocolDetailPage() {
                               <Badge variant="outline">#{holder.rank}</Badge>
                             </td>
                             <td className="py-3">
-                              <a
-                                href={`/profile/${holder.address}`}
-                                className="font-mono text-sm text-blue-500 hover:text-blue-400 flex items-center gap-1"
-                              >
-                                {formatAddress(holder.address)}
+                              <div className="flex items-center gap-1">
+                                <AddressLink
+                                  address={holder.address}
+                                  showShortened={true}
+                                  className="text-blue-500 hover:text-blue-400 text-sm"
+                                />
                                 <Wallet className="w-3 h-3" />
-                              </a>
+                              </div>
                             </td>
                             <td className="py-3 text-right font-mono">
                               {formatNumber(holder.balance)}

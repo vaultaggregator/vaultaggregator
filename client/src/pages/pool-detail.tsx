@@ -17,6 +17,7 @@ import { RiskBadge } from "@/components/risk-badge";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
+import { ProtocolLink, NetworkLink } from "@/components/entity-links";
 import { APYCalculator } from '@/components/apy-calculator';
 import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
@@ -367,9 +368,20 @@ export default function PoolDetail() {
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1" data-testid="text-pool-title">
                     {pool.tokenPair}
                   </h1>
-                  <p className="text-lg text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
-                    {pool.platform.displayName}
-                  </p>
+                  <div className="text-lg text-gray-600 dark:text-gray-400 mb-3" data-testid="text-platform-name">
+                    <ProtocolLink
+                      protocol={{
+                        id: pool.platform.id,
+                        name: pool.platform.name,
+                        displayName: pool.platform.displayName
+                      }}
+                      chain={{
+                        id: pool.chain.id,
+                        name: pool.chain.name
+                      }}
+                      className="text-lg text-gray-600 dark:text-gray-400 hover:text-blue-500"
+                    />
+                  </div>
                   
 
 
@@ -381,9 +393,8 @@ export default function PoolDetail() {
                 {/* Network Badge and Risk Score */}
                 <div className="flex flex-col gap-2">
                   {/* Network Badge */}
-                  <Badge 
-                    variant="outline"
-                    className="text-xs py-0.5 border pl-[32px] pr-[32px]"
+                  <div 
+                    className="inline-flex items-center px-8 py-1 text-xs font-medium rounded-md border"
                     style={{ 
                       backgroundColor: `${pool.chain.color}15`, 
                       color: pool.chain.color,
@@ -392,8 +403,17 @@ export default function PoolDetail() {
                     }}
                     data-testid="badge-network"
                   >
-                    {pool.chain.displayName}
-                  </Badge>
+                    <NetworkLink
+                      network={{
+                        id: pool.chain.id,
+                        name: pool.chain.name,
+                        displayName: pool.chain.displayName
+                      }}
+                      className="text-xs font-medium"
+                    >
+                      {pool.chain.displayName}
+                    </NetworkLink>
+                  </div>
                   
                   {/* Risk Score Display */}
                   <div className="flex items-center gap-2">
@@ -687,9 +707,20 @@ export default function PoolDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
-              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1" data-testid="text-protocol">
-                {pool.platform.displayName}
-              </p>
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1" data-testid="text-protocol">
+                <ProtocolLink
+                  protocol={{
+                    id: pool.platform.id,
+                    name: pool.platform.name,
+                    displayName: pool.platform.displayName
+                  }}
+                  chain={{
+                    id: pool.chain.id,
+                    name: pool.chain.name
+                  }}
+                  className="text-2xl font-bold text-orange-600 dark:text-orange-400 hover:text-orange-500"
+                />
+              </div>
               <p className="text-xs text-orange-600/70 dark:text-orange-300/70 font-medium">DeFi Platform</p>
             </CardContent>
           </Card>

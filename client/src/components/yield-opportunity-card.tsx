@@ -13,6 +13,7 @@ import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
 import { getCategoryIcon } from "@/components/category-icons";
+import { ProtocolLink, NetworkLink, PoolLink } from "@/components/entity-links";
 
 import { generateYieldUrl } from "@/lib/seo-urls";
 import { formatHolders } from "@/lib/format";
@@ -111,9 +112,8 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             
             {/* Protocol info - center aligned */}
-            <Link 
-              href={`/protocol/${opportunity.chain.id}/${opportunity.platform.id}`}
-              className="flex items-center justify-center space-x-2 flex-shrink-0 hover:text-primary transition-colors"
+            <div 
+              className="flex items-center justify-center space-x-2 flex-shrink-0"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -130,16 +130,24 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </div>
                 )}
               </div>
-              <span className="text-xs font-medium text-muted-foreground text-center hover:text-primary">
-                {opportunity.platform.displayName || opportunity.platform.name}
-              </span>
-            </Link>
+              <ProtocolLink
+                protocol={{
+                  id: opportunity.platform.id,
+                  name: opportunity.platform.name,
+                  displayName: opportunity.platform.displayName
+                }}
+                chain={{
+                  id: opportunity.chain.id,
+                  name: opportunity.chain.name
+                }}
+                className="text-xs font-medium text-muted-foreground text-center hover:text-primary"
+              />
+            </div>
             
             {/* Network info - center aligned */}
             {showNetworkName && (
-              <Link 
-                href={`/network/${opportunity.chain.id}`}
-                className="flex items-center justify-center space-x-2 flex-shrink-0 w-24 hover:text-primary transition-colors"
+              <div 
+                className="flex items-center justify-center space-x-2 flex-shrink-0 w-24"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div 
@@ -151,10 +159,15 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     return <ChainIcon size={16} className="flex-shrink-0" />;
                   })()}
                 </div>
-                <span className="text-xs font-medium text-muted-foreground hover:text-primary">
-                  {opportunity.chain.displayName || opportunity.chain.name}
-                </span>
-              </Link>
+                <NetworkLink
+                  network={{
+                    id: opportunity.chain.id,
+                    name: opportunity.chain.name,
+                    displayName: opportunity.chain.displayName
+                  }}
+                  className="text-xs font-medium text-muted-foreground hover:text-primary"
+                />
+              </div>
             )}
           </div>
 
@@ -283,7 +296,18 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                         })()
                       )}
                     </div>
-                    <span className="text-xs text-foreground leading-none truncate max-w-12">{opportunity.platform.displayName || opportunity.platform.name}</span>
+                    <ProtocolLink
+                      protocol={{
+                        id: opportunity.platform.id,
+                        name: opportunity.platform.name,
+                        displayName: opportunity.platform.displayName
+                      }}
+                      chain={{
+                        id: opportunity.chain.id,
+                        name: opportunity.chain.name
+                      }}
+                      className="text-xs text-foreground leading-none truncate max-w-12"
+                    />
                   </div>
                 </div>
                 <div className="text-center">
