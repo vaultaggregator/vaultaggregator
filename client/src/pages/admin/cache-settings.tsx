@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Trash2, RefreshCw, Save, Clock, Database, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AdminHeader from "@/components/admin-header";
+import Footer from "@/components/footer";
 
 interface CacheSetting {
   id: string;
@@ -148,32 +150,38 @@ export default function CacheSettings() {
 
   if (settingsLoading) {
     return (
-      <div className="space-y-6" data-testid="cache-settings-loading">
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <AdminHeader />
+        <div className="container mx-auto px-4 py-8 space-y-6" data-testid="cache-settings-loading">
+          <Card>
+            <CardContent className="p-6">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="cache-settings-page">
-      {/* Statistics Overview */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card data-testid="stat-total-caches">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Caches</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalCaches || 0}</div>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <AdminHeader />
+      <div className="container mx-auto px-4 py-8 space-y-6" data-testid="cache-settings-page">
+        {/* Statistics Overview */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card data-testid="stat-total-caches">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Caches</CardTitle>
+              <Database className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.totalCaches || 0}</div>
+            </CardContent>
+          </Card>
         
         <Card data-testid="stat-active-caches">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -361,6 +369,8 @@ export default function CacheSettings() {
           </div>
         </CardContent>
       </Card>
+      </div>
+      <Footer />
     </div>
   );
 }
