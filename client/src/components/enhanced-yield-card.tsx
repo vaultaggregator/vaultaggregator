@@ -36,6 +36,7 @@ import { Link } from "wouter";
 import type { YieldOpportunity } from "@/types";
 import { cn } from "@/lib/utils";
 import { formatNumber } from "@/lib/format";
+import { ProtocolLink, NetworkLink, PoolLink } from "@/components/entity-links";
 
 interface EnhancedYieldCardProps {
   pool: YieldOpportunity;
@@ -121,9 +122,27 @@ export function EnhancedYieldCard({ pool, className }: EnhancedYieldCardProps) {
                 )}
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>{pool.platform.displayName}</span>
+                <ProtocolLink
+                  protocol={{
+                    id: pool.platform.id,
+                    name: pool.platform.name,
+                    displayName: pool.platform.displayName
+                  }}
+                  chain={{
+                    id: pool.chain.id,
+                    name: pool.chain.name
+                  }}
+                  className="text-sm text-gray-500 hover:text-blue-500"
+                />
                 <span>•</span>
-                <span>{pool.chain.displayName}</span>
+                <NetworkLink
+                  network={{
+                    id: pool.chain.id,
+                    name: pool.chain.name,
+                    displayName: pool.chain.displayName
+                  }}
+                  className="text-sm text-gray-500 hover:text-blue-500"
+                />
               </div>
             </div>
           </div>
