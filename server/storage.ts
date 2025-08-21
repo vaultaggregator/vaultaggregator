@@ -706,7 +706,7 @@ export class DatabaseStorage implements IStorage {
       if (!poolsMap.has(poolId)) {
         poolsMap.set(poolId, {
           ...result.pools,
-          platform: result.platforms!,
+          platform: result.protocols!,
           chain: result.networks!,
           notes: result.notes ? [result.notes] : [],
         });
@@ -728,8 +728,8 @@ export class DatabaseStorage implements IStorage {
     const results = await db
       .select()
       .from(pools)
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .leftJoin(protocols, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id))
       .leftJoin(notes, eq(pools.id, notes.poolId))
       .leftJoin(poolCategories, eq(pools.id, poolCategories.poolId))
       .leftJoin(categories, eq(poolCategories.categoryId, categories.id))
@@ -745,7 +745,7 @@ export class DatabaseStorage implements IStorage {
       if (!poolsMap.has(poolId)) {
         poolsMap.set(poolId, {
           ...result.pools,
-          platform: result.platforms!,
+          platform: result.protocols!,
           chain: result.networks!,
           notes: result.notes ? [result.notes] : [],
           categories: result.categories ? [result.categories] : [],
@@ -805,17 +805,17 @@ export class DatabaseStorage implements IStorage {
         showUsdInFlow: pools.showUsdInFlow,
         isVisible: pools.isVisible,
         platform: {
-          displayName: platforms.displayName,
+          displayName: protocols.displayName,
         },
         chain: {
-          displayName: chains.displayName,
+          displayName: networks.displayName,
         }
       })
       .from(pools)
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .leftJoin(protocols, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id))
       .where(isNull(pools.deletedAt)) // Exclude soft-deleted pools
-      .orderBy(pools.isVisible ? asc(sql`0`) : asc(sql`1`), platforms.displayName);
+      .orderBy(pools.isVisible ? asc(sql`0`) : asc(sql`1`), protocols.displayName);
   }
 
   async updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined> {
@@ -1598,8 +1598,8 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(strategies.userId, users.id))
       .leftJoin(strategyPools, eq(strategies.id, strategyPools.strategyId))
       .leftJoin(pools, eq(strategyPools.poolId, pools.id))
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id));
+      .leftJoin(protocols, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id));
 
     const conditions = [];
     if (options?.userId) conditions.push(eq(strategies.userId, options.userId));
