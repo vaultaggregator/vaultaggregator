@@ -4,6 +4,22 @@ import adminServiceMonitorRoutes from "./admin-service-monitor";
 import * as os from "os";
 
 export function registerAdminSystemRoutes(app: Express) {
+  // Middleware to check if user is authenticated admin
+  const requireAuth = (req: any, res: any, next: any) => {
+    // During development, bypass authentication for easier testing
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Development mode: Bypassing authentication");
+      next();
+      return;
+    }
+    
+    if (req.session?.userId) {
+      next();
+    } else {
+      res.status(401).json({ error: 'Authentication required', message: 'Please log in to access admin features' });
+    }
+  };
+
   // Register service monitor routes
   app.use('/api/admin/services', adminServiceMonitorRoutes);
   
@@ -17,21 +33,19 @@ export function registerAdminSystemRoutes(app: Express) {
       next(error);
     }
   });
-  // Middleware to check if user is authenticated admin
-  const requireAuth = (req: any, res: any, next: any) => {
-    // During development, bypass authentication for easier testing
-    if (process.env.NODE_ENV === 'development') {
-      console.log("Development mode: Bypassing authentication");
-      next();
-      return;
-    }
-    
-    if (req.session?.userId) {
-      next();
-    } else {
-      res.status(401).json({ message: "Authentication required" });
-    }
-  };
+  
+  // Register analytics routes - will be loaded dynamically
+  app.use('/api/admin/analytics', async (req, res, next) => {
+    requireAuth(req, res, async () => {
+      try {
+        const { default: adminAnalyticsRoutes } = await import("./admin-analytics.js");
+        adminAnalyticsRoutes(req, res, next);
+      } catch (error) {
+        console.error("Failed to load analytics routes:", error);
+        next(error);
+      }
+    });
+  });
 
   /**
    * Fix operating days for Morpho pools

@@ -49,6 +49,14 @@ interface AnalyticsData {
     bounceRate: number;
     conversionRate: number;
     revenue: number;
+    totalPools: number;
+    totalTvl: number;
+    avgApy: number;
+    totalPlatforms: number;
+    totalChains: number;
+    systemHealth: string;
+    errorRate: number;
+    uptime: string;
   };
   userGrowth: Array<{
     date: string;
@@ -56,42 +64,64 @@ interface AnalyticsData {
     newUsers: number;
     returningUsers: number;
   }>;
-  pageViews: Array<{
-    page: string;
-    views: number;
-    uniqueViews: number;
-    avgTime: number;
-    bounceRate: number;
+  poolMetrics: Array<{
+    date: string;
+    totalTvl: number;
+    avgApy: number;
+    activePools: number;
   }>;
-  trafficSources: Array<{
-    source: string;
-    sessions: number;
-    percentage: number;
-    color: string;
-  }>;
-  poolAnalytics: Array<{
-    poolName: string;
-    views: number;
-    interactions: number;
-    favorites: number;
-    conversionRate: number;
-  }>;
-  geographics: Array<{
-    country: string;
-    users: number;
-    sessions: number;
-    percentage: number;
-  }>;
-  devices: Array<{
-    device: string;
-    users: number;
-    percentage: number;
-    color: string;
-  }>;
-  timeMetrics: Array<{
+  performanceData: Array<{
     hour: number;
     sessions: number;
     users: number;
+    errors: number;
+    responseTime: number;
+  }>;
+  platformBreakdown: Array<{
+    name: string;
+    pools: number;
+    tvl: number;
+    avgApy: number;
+    percentage: number;
+    color: string;
+  }>;
+  chainBreakdown: Array<{
+    name: string;
+    pools: number;
+    tvl: number;
+    avgApy: number;
+    percentage: number;
+    color: string;
+  }>;
+  systemMetrics: {
+    memoryUsage?: { percentage: number };
+    cpuLoad?: { current: number; average: number };
+    diskUsage?: { used: number; total: number; percentage: number };
+    cachePerformance?: any;
+    errorRates?: any;
+    apiHealth?: any;
+  };
+  errorSummary: {
+    totalErrors: number;
+    recentErrors: number;
+    errorRate: number;
+    criticalErrors: number;
+    resolvedErrors: number;
+  };
+  topPools: Array<{
+    name: string;
+    platform: string;
+    chain: string;
+    tvl: number;
+    apy: number;
+    views: number;
+    interactions: number;
+  }>;
+  recentActivity: Array<{
+    type: string;
+    message: string;
+    timestamp: string;
+    severity: string;
   }>;
 }
 
@@ -192,15 +222,16 @@ export default function AdminAnalytics() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Users className="h-8 w-8 text-blue-600" />
+                <Activity className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-foreground">
-                    {formatNumber(analytics?.overview.totalUsers || 0)}
+                    {analytics?.overview.totalPools || 0}
                   </p>
-                  <p className="text-sm text-muted-foreground">Total Users</p>
+                  <p className="text-sm text-muted-foreground">Active Pools</p>
                   <div className="flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
-                    <span className="text-xs text-green-600">+12.5%</span>
+                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-600 rounded">
+                      {analytics?.overview.totalPlatforms || 0} platforms
+                    </span>
                   </div>
                 </div>
               </div>
@@ -210,33 +241,36 @@ export default function AdminAnalytics() {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Activity className="h-8 w-8 text-green-600" />
+                <DollarSign className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-2xl font-bold text-foreground">
+                    ${formatNumber(analytics?.overview.totalTvl || 0)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Total TVL</p>
+                  <div className="flex items-center mt-1">
+                    <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+                    <span className="text-xs text-green-600">
+                      {(analytics?.overview.avgApy || 0).toFixed(2)}% avg APY
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-foreground">
                     {formatNumber(analytics?.overview.activeUsers || 0)}
                   </p>
                   <p className="text-sm text-muted-foreground">Active Users</p>
                   <div className="flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
-                    <span className="text-xs text-green-600">+8.2%</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Eye className="h-8 w-8 text-purple-600" />
-                <div className="ml-4">
-                  <p className="text-2xl font-bold text-foreground">
-                    {formatNumber(analytics?.overview.pageViews || 0)}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Page Views</p>
-                  <div className="flex items-center mt-1">
-                    <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
-                    <span className="text-xs text-red-600">-2.1%</span>
+                    <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-600 rounded">
+                      {analytics?.overview.systemHealth || 'Unknown'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -249,12 +283,13 @@ export default function AdminAnalytics() {
                 <Clock className="h-8 w-8 text-orange-600" />
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-foreground">
-                    {formatDuration(analytics?.overview.avgSessionDuration || 0)}
+                    {(analytics?.overview.errorRate || 0).toFixed(2)}%
                   </p>
-                  <p className="text-sm text-muted-foreground">Avg Session</p>
+                  <p className="text-sm text-muted-foreground">Error Rate</p>
                   <div className="flex items-center mt-1">
-                    <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
-                    <span className="text-xs text-green-600">+5.7%</span>
+                    <span className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-600 rounded">
+                      {analytics?.overview.uptime || 'N/A'} uptime
+                    </span>
                   </div>
                 </div>
               </div>
@@ -266,10 +301,10 @@ export default function AdminAnalytics() {
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
-            <TabsTrigger value="traffic">Traffic</TabsTrigger>
             <TabsTrigger value="pools">Pools</TabsTrigger>
+            <TabsTrigger value="platforms">Platforms</TabsTrigger>
+            <TabsTrigger value="system">System</TabsTrigger>
+            <TabsTrigger value="errors">Errors</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -312,12 +347,12 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              {/* Traffic Sources */}
+              {/* Platform Distribution */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <PieChartIcon className="h-5 w-5 text-green-600" />
-                    Traffic Sources
+                    Platform Distribution
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -325,20 +360,23 @@ export default function AdminAnalytics() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={analytics?.trafficSources || []}
+                          data={analytics?.platformBreakdown || []}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ name, percentage }) => `${name}: ${percentage}%`}
+                          label={({ name, percentage }) => `${name}: ${percentage.toFixed(1)}%`}
                           outerRadius={80}
                           fill="#8884d8"
-                          dataKey="sessions"
+                          dataKey="pools"
                         >
-                          {(analytics?.trafficSources || []).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          {(analytics?.platformBreakdown || []).map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip formatter={(value: any, name: any, props: any) => [
+                          `${value} pools ($${formatNumber(props.payload?.tvl || 0)} TVL)`,
+                          props.payload?.name
+                        ]} />
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
@@ -346,227 +384,40 @@ export default function AdminAnalytics() {
               </Card>
             </div>
 
-            {/* Additional Overview Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {formatPercentage(analytics?.overview.bounceRate || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Bounce Rate</div>
-                  <Badge variant="secondary" className="mt-2">
-                    {analytics?.overview.bounceRate && analytics.overview.bounceRate < 40 ? 'Good' : 'Needs Work'}
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">
-                    {formatPercentage(analytics?.overview.conversionRate || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Conversion Rate</div>
-                  <Badge variant="default" className="mt-2">
-                    Excellent
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {formatNumber(analytics?.overview.totalSessions || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Total Sessions</div>
-                  <div className="flex items-center justify-center mt-2">
-                    <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
-                    <span className="text-xs text-green-600">+15.3%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-bold text-orange-600 mb-2">
-                    ${formatNumber(analytics?.overview.revenue || 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Revenue</div>
-                  <div className="flex items-center justify-center mt-2">
-                    <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
-                    <span className="text-xs text-green-600">+22.7%</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* User Activity by Hour */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Activity by Hour</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={analytics?.timeMetrics || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="hour" />
-                        <YAxis />
-                        <Tooltip />
-                        <Area 
-                          type="monotone" 
-                          dataKey="sessions" 
-                          stroke="#3b82f6" 
-                          fill="#3b82f6" 
-                          fillOpacity={0.3}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Device Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Device Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {(analytics?.devices || []).map((device, index) => (
-                      <div key={device.device} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                          />
-                          <span className="font-medium">{device.device}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-bold">{formatNumber(device.users)}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {formatPercentage(device.percentage)}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Geographic Distribution */}
+            {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle>Geographic Distribution</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                  Recent System Activity
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">Country</th>
-                        <th className="text-right py-2">Users</th>
-                        <th className="text-right py-2">Sessions</th>
-                        <th className="text-right py-2">Percentage</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(analytics?.geographics || []).map((geo, index) => (
-                        <tr key={geo.country} className="border-b">
-                          <td className="py-2 font-medium">{geo.country}</td>
-                          <td className="py-2 text-right">{formatNumber(geo.users)}</td>
-                          <td className="py-2 text-right">{formatNumber(geo.sessions)}</td>
-                          <td className="py-2 text-right">{formatPercentage(geo.percentage)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Content Tab */}
-          <TabsContent value="content" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Pages Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">Page</th>
-                        <th className="text-right py-2">Views</th>
-                        <th className="text-right py-2">Unique Views</th>
-                        <th className="text-right py-2">Avg Time</th>
-                        <th className="text-right py-2">Bounce Rate</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(analytics?.pageViews || []).map((page, index) => (
-                        <tr key={page.page} className="border-b">
-                          <td className="py-2 font-medium">{page.page}</td>
-                          <td className="py-2 text-right">{formatNumber(page.views)}</td>
-                          <td className="py-2 text-right">{formatNumber(page.uniqueViews)}</td>
-                          <td className="py-2 text-right">{formatDuration(page.avgTime)}</td>
-                          <td className="py-2 text-right">
-                            <Badge 
-                              variant={page.bounceRate < 40 ? "default" : page.bounceRate < 60 ? "secondary" : "destructive"}
-                            >
-                              {formatPercentage(page.bounceRate)}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Traffic Tab */}
-          <TabsContent value="traffic" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Traffic Sources Detail</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(analytics?.trafficSources || []).map((source, index) => (
-                    <div key={source.source} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium">{source.source}</span>
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        />
+                <div className="space-y-4">
+                  {analytics?.recentActivity?.map((activity, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+                      <div className={`w-2 h-2 rounded-full mt-2 ${
+                        activity.severity === 'error' ? 'bg-red-500' :
+                        activity.severity === 'warning' ? 'bg-yellow-500' :
+                        'bg-green-500'
+                      }`} />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">{activity.message}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(activity.timestamp).toLocaleString()}
+                        </p>
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {formatNumber(source.sessions)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatPercentage(source.percentage)} of total traffic
-                      </div>
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                          <div 
-                            className="h-2 rounded-full" 
-                            style={{ 
-                              width: `${source.percentage}%`,
-                              backgroundColor: COLORS[index % COLORS.length]
-                            }}
-                          />
-                        </div>
-                      </div>
+                      <Badge variant={
+                        activity.severity === 'error' ? 'destructive' :
+                        activity.severity === 'warning' ? 'secondary' :
+                        'default'
+                      }>
+                        {activity.type}
+                      </Badge>
                     </div>
-                  ))}
+                  )) || (
+                    <p className="text-center text-muted-foreground py-4">No recent activity</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -574,40 +425,250 @@ export default function AdminAnalytics() {
 
           {/* Pools Tab */}
           <TabsContent value="pools" className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Top Performing Pools */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-blue-600" />
+                    Top Performing Pools by TVL
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analytics?.topPools?.slice(0, 10).map((pool, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 font-semibold text-sm">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{pool.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {pool.platform} • {pool.chain}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-foreground">
+                            ${formatNumber(pool.tvl)}
+                          </p>
+                          <p className="text-sm text-green-600">
+                            {pool.apy.toFixed(2)}% APY
+                          </p>
+                        </div>
+                      </div>
+                    )) || (
+                      <p className="text-center text-muted-foreground py-8">No pool data available</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Platforms Tab */}
+          <TabsContent value="platforms" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Platform Performance Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform TVL Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={analytics?.platformBreakdown || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip formatter={(value: any) => [`$${formatNumber(value)}`, 'TVL']} />
+                        <Bar dataKey="tvl" fill="#3b82f6" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Platform Details */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Statistics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {analytics?.platformBreakdown?.map((platform, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: platform.color }}
+                          />
+                          <div>
+                            <p className="font-medium text-foreground">{platform.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {platform.pools} pools • {platform.percentage.toFixed(1)}%
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-foreground">${formatNumber(platform.tvl)}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {platform.avgApy.toFixed(2)}% avg APY
+                          </p>
+                        </div>
+                      </div>
+                    )) || (
+                      <p className="text-center text-muted-foreground py-4">No platform data available</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* System Tab */}
+          <TabsContent value="system" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* System Performance */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>System Performance (24h)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analytics?.performanceData || []}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="hour" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line 
+                          type="monotone" 
+                          dataKey="responseTime" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          name="Response Time (ms)"
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* System Metrics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current System Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium">Memory Usage</span>
+                        <span className="text-sm text-muted-foreground">
+                          {analytics?.systemMetrics?.memoryUsage?.percentage?.toFixed(1) || 0}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${analytics?.systemMetrics?.memoryUsage?.percentage || 0}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium">CPU Load</span>
+                        <span className="text-sm text-muted-foreground">
+                          {analytics?.systemMetrics?.cpuLoad?.current?.toFixed(1) || 0}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                        <div 
+                          className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${analytics?.systemMetrics?.cpuLoad?.current || 0}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-green-600">
+                          {analytics?.overview.systemHealth || 'Unknown'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">System Health</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-blue-600">
+                          {analytics?.overview.uptime || 'N/A'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Uptime</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Errors Tab */}
+          <TabsContent value="errors" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-red-600 mb-2">
+                    {analytics?.errorSummary?.totalErrors || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Total Errors</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-orange-600 mb-2">
+                    {analytics?.errorSummary?.criticalErrors || 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Critical Errors</div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    {((analytics?.errorSummary?.resolvedErrors || 0) / Math.max(analytics?.errorSummary?.totalErrors || 1, 1) * 100).toFixed(1)}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">Resolution Rate</div>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card>
               <CardHeader>
-                <CardTitle>Pool Performance Analytics</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-red-600" />
+                  Error Rate Trend (24h)
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">Pool</th>
-                        <th className="text-right py-2">Views</th>
-                        <th className="text-right py-2">Interactions</th>
-                        <th className="text-right py-2">Favorites</th>
-                        <th className="text-right py-2">Conversion</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(analytics?.poolAnalytics || []).map((pool, index) => (
-                        <tr key={pool.poolName} className="border-b">
-                          <td className="py-2 font-medium">{pool.poolName}</td>
-                          <td className="py-2 text-right">{formatNumber(pool.views)}</td>
-                          <td className="py-2 text-right">{formatNumber(pool.interactions)}</td>
-                          <td className="py-2 text-right">{formatNumber(pool.favorites)}</td>
-                          <td className="py-2 text-right">
-                            <Badge 
-                              variant={pool.conversionRate > 5 ? "default" : pool.conversionRate > 2 ? "secondary" : "outline"}
-                            >
-                              {formatPercentage(pool.conversionRate)}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={analytics?.performanceData || []}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="hour" />
+                      <YAxis />
+                      <Tooltip />
+                      <Area 
+                        type="monotone" 
+                        dataKey="errors" 
+                        stroke="#ef4444" 
+                        fill="#ef4444" 
+                        fillOpacity={0.3}
+                        name="Errors per Hour"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
