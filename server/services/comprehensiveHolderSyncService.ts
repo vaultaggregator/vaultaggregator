@@ -119,6 +119,39 @@ class ComprehensiveHolderSyncService {
             .where(eq(tokenHolders.poolId, pool.id));
           
           const updatedCount = newCount[0]?.count || 0;
+          
+          // CRITICAL: Update pool_metrics_current with the new holder count from Moralis
+          // This ensures homepage and single pool page show the same holder count
+          const existingMetrics = await db
+            .select()
+            .from(poolMetricsCurrent)
+            .where(eq(poolMetricsCurrent.poolId, pool.id))
+            .limit(1);
+          
+          if (existingMetrics.length > 0) {
+            // Update existing metrics
+            await db
+              .update(poolMetricsCurrent)
+              .set({
+                holdersCount: updatedCount,
+                holdersStatus: 'success',
+                updatedAt: new Date()
+              })
+              .where(eq(poolMetricsCurrent.poolId, pool.id));
+          } else {
+            // Insert new metrics record
+            await db
+              .insert(poolMetricsCurrent)
+              .values({
+                id: crypto.randomUUID(),
+                poolId: pool.id,
+                holdersCount: updatedCount,
+                holdersStatus: 'success',
+                updatedAt: new Date(),
+                createdAt: new Date()
+              });
+          }
+          
           successCount++;
           console.log(`✅ Successfully synced "${pool.tokenPair}": ${storedCount} → ${updatedCount} holders`);
           
