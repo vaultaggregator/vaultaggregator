@@ -429,7 +429,7 @@ export class AlchemyService {
     // PRIORITY 1: Check static cache for common tokens (eliminates API calls entirely)
     const commonToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
     if (commonToken) {
-      console.log(`⚡ Using static cache for ${tokenAddress}: ${commonToken.symbol} - NO API CALL`);
+      // Don't log every cache hit to reduce noise
       return commonToken;
     }
     
@@ -485,14 +485,21 @@ export class AlchemyService {
   
   private async _fetchTokenMetadata(tokenAddress: string, network?: string, cacheKey?: string) {
     try {
+      // Double-check static cache before making API call
+      const cachedToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
+      if (cachedToken) {
+        console.log(`⚡ Found in static cache on second check: ${cachedToken.symbol}`);
+        return cachedToken;
+      }
+      
       const client = this.getAlchemyClient(network);
       if (!client) {
         console.log('⚠️ Alchemy client not available for network:', network);
         return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
       }
       
-      // Fetch fresh metadata
-      console.log(`🔍 Fetching fresh metadata for ${tokenAddress} on ${network || 'ethereum'}`);
+      // Only fetch from API if truly not in any cache
+      console.log(`🔍 Token ${tokenAddress.slice(0, 8)}... not in any cache, fetching from API`);
       const metadata = await client.core.getTokenMetadata(tokenAddress);
       
       // Cache the result
