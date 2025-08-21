@@ -72,7 +72,7 @@ export default function PoolHoldersPage() {
 
   // Then fetch holders data
   const { data: holdersData, isLoading, error } = useQuery<HoldersResponse>({
-    queryKey: [`/api/pools/${poolData?.id}/holders`, page, limit],
+    queryKey: [`/api/pools/${poolData?.id}/holders/${page}/${limit}`],
     enabled: !!poolData?.id,
   });
 
@@ -117,6 +117,14 @@ export default function PoolHoldersPage() {
       <>
         <Header />
         <div className="container mx-auto px-4 py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => window.history.back()}
+            className="mb-4 gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </Button>
           <Card>
             <CardHeader>
               <Skeleton className="h-8 w-48" />
@@ -139,6 +147,14 @@ export default function PoolHoldersPage() {
       <>
         <Header />
         <div className="container mx-auto px-4 py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => window.history.back()}
+            className="mb-4 gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </Button>
           <Card>
             <CardHeader>
               <CardTitle>Error Loading Holders</CardTitle>
@@ -160,6 +176,14 @@ export default function PoolHoldersPage() {
       <>
         <Header />
         <div className="container mx-auto px-4 py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => window.history.back()}
+            className="mb-4 gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </Button>
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
@@ -194,6 +218,14 @@ export default function PoolHoldersPage() {
     <>
       <Header />
       <div className="container mx-auto px-4 py-8">
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-4 gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back
+        </Button>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -206,18 +238,9 @@ export default function PoolHoldersPage() {
                   {poolData?.name || `${tokenPair} Pool`} on {protocol}
                 </CardDescription>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <Badge variant="secondary">
-                  {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.history.back()}
-                >
-                  Back to Pool
-                </Button>
-              </div>
+              <Badge variant="secondary">
+                {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
+              </Badge>
             </div>
             {lidoNote?.isLido && (
               <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">

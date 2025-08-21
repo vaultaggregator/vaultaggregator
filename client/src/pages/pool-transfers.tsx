@@ -163,6 +163,14 @@ export default function PoolTransfersPage() {
       <>
         <Header />
         <div className="container mx-auto px-4 py-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => window.history.back()}
+            className="mb-4 gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </Button>
           <Card>
             <CardHeader>
               <Skeleton className="h-8 w-48" />
@@ -192,6 +200,14 @@ export default function PoolTransfersPage() {
     <>
       <Header />
       <div className="container mx-auto px-4 py-8">
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-4 gap-2"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back
+        </Button>
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
