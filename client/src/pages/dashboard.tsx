@@ -30,6 +30,7 @@ interface DashboardStats {
 export default function Dashboard() {
   useEffect(() => {
     window.scrollTo(0, 0);
+    document.title = 'Dashboard - Vault Aggregator';
   }, []);
 
   const { data: stats } = useQuery<DashboardStats>({

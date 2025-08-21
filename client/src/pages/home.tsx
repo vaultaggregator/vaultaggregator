@@ -35,6 +35,11 @@ export default function Home() {
   useEffect(() => {
     console.log('🏠 Homepage WebSocket status:', { isConnected, lastUpdate });
   }, [isConnected, lastUpdate]);
+
+  // Set document title when homepage loads
+  useEffect(() => {
+    document.title = 'Vault Aggregator - DeFi Yield Farming Platform';
+  }, []);
   
 
   

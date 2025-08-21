@@ -30,6 +30,7 @@ export default function Analytics() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    document.title = 'Analytics - Vault Aggregator';
   }, []);
 
   // Fetch analytics data
