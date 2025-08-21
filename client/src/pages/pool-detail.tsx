@@ -92,8 +92,38 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
               <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">{pool.tokenPair}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{pool.platform.displayName} on {pool.chain.displayName}</p>
+                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                      <PoolLink
+                        pool={{
+                          id: pool.id,
+                          tokenPair: pool.tokenPair
+                        }}
+                        className="font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-500"
+                      />
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <ProtocolLink
+                        protocol={{
+                          id: pool.platform.id,
+                          name: pool.platform.name,
+                          displayName: pool.platform.displayName
+                        }}
+                        chain={{
+                          id: pool.chain.id,
+                          name: pool.chain.name
+                        }}
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500"
+                      />
+                      {" on "}
+                      <NetworkLink
+                        network={{
+                          id: pool.chain.id,
+                          name: pool.chain.name,
+                          displayName: pool.chain.displayName
+                        }}
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500"
+                      />
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-lg font-bold text-green-600">{parseFloat(pool.apy).toFixed(2)}%</p>

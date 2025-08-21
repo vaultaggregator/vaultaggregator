@@ -24,6 +24,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ProtocolLink, NetworkLink, AddressLink } from "@/components/entity-links";
 
 interface ProtocolPosition {
   protocolName: string;
@@ -176,7 +177,11 @@ export default function ProfilePage() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {formatAddress(address)}
+                  <AddressLink
+                    address={address}
+                    showShortened={true}
+                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-blue-500"
+                  />
                 </h1>
                 <Button
                   variant="ghost"
@@ -197,7 +202,15 @@ export default function ProfilePage() {
                 </a>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Ethereum • Last updated: {portfolio?.lastUpdated || 'Just now'}
+                <NetworkLink
+                  network={{
+                    id: "164641ea-b9e1-49a0-b655-334a73efabec", // Ethereum network ID
+                    name: "ethereum",
+                    displayName: "Ethereum"
+                  }}
+                  className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500"
+                />
+                 • Last updated: {portfolio?.lastUpdated || 'Just now'}
               </p>
             </div>
           </div>
@@ -278,8 +291,12 @@ export default function ProfilePage() {
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500" />
                         )}
                         <div>
-                          <h3 className="font-semibold text-lg">{protocol.protocolName}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {/* For now display as text since we don't have protocol IDs in mock data */}
+                            {protocol.protocolName}
+                          </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {/* For now display as text since we don't have chain IDs in mock data */}
                             {protocol.chain} • Net: {formatCurrency(protocol.netPositionUsd)}
                           </p>
                         </div>
