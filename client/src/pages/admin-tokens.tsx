@@ -140,10 +140,7 @@ export default function AdminTokensPage() {
   // Update token mutation
   const updateTokenMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<Token> }) => {
-      return await apiRequest(`/api/admin/tokens/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify(updates),
-      });
+      return await apiRequest(`/api/admin/tokens/${id}`, "PATCH", updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tokens"] });
@@ -521,7 +518,7 @@ export default function AdminTokensPage() {
                 <Card key={network.id}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-3">
-                      <NetworkLink networkId={network.id} />
+                      <NetworkLink network={network} />
                       <span className="text-sm text-gray-500">
                         ({networkTokens.length} tokens)
                       </span>
