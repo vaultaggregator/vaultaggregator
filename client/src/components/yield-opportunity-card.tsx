@@ -1,4 +1,3 @@
-
 import { ExternalLink } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -69,7 +68,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   const usdcCategory = opportunity.categories.find(cat => cat.name === 'USDC');
                   const usdtCategory = opportunity.categories.find(cat => cat.name === 'USDT');
                   const stethCategory = opportunity.categories.find(cat => cat.name === 'stETH');
-                  
+
                   if (usdcCategory) {
                     return (
                       <img 
@@ -98,20 +97,20 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                       />
                     );
                   }
-                  
+
                   // Fall back to SVG icons for other categories
                   const CategoryIcon = getCategoryIcon(opportunity.categories[0].name);
                   return <CategoryIcon size={24} className="flex-shrink-0" />;
                 })()}
               </div>
-              
+
               <div className="min-w-0 flex-1 flex items-center">
                 <h3 className="font-bold text-base text-foreground truncate m-0 leading-5" data-testid={`text-token-pair-${opportunity.id}`}>
                   {opportunity.tokenPair}
                 </h3>
               </div>
             </div>
-            
+
             {/* Protocol info - center aligned */}
             <div 
               className="flex items-center justify-center space-x-2 flex-shrink-0"
@@ -144,7 +143,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 className="text-xs font-medium text-muted-foreground text-center hover:text-primary"
               />
             </div>
-            
+
             {/* Network info - center aligned */}
             {showNetworkName && (
               <div 
@@ -185,14 +184,14 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 ) : 'N/A'}
               </p>
             </div>
-            
+
             {/* Days */}
             <div className="text-center">
               <p className="text-base font-semibold text-blue-500" data-testid={`text-operating-days-${opportunity.id}`}>
                 {opportunity.operatingDays || opportunity.rawData?.count || 'N/A'}
               </p>
             </div>
-            
+
             {/* TVL */}
             <div className="col-span-2 text-center">
               <p className="text-base font-bold text-blue-600" data-testid={`text-tvl-${opportunity.id}`}>
@@ -204,7 +203,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 ) : 'N/A'}
               </p>
             </div>
-            
+
             {/* Holders */}
             <div className="col-span-2 text-center">
               <p className="text-base font-semibold text-purple-600" data-testid={`text-holders-${opportunity.id}`}>
@@ -217,7 +216,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                 ) : 'N/A'}
               </p>
             </div>
-            
+
             {/* Risk */}
             <div className="text-center">
               <RiskBadge 
@@ -272,7 +271,7 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </p>
                 </div>
               </div>
-              
+
               {/* Second row with Platform, Holders and Risk */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center">
