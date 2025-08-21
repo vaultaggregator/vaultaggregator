@@ -19,7 +19,8 @@ import {
   ArrowUp,
   ArrowDown,
   Info,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatNumber } from "@/lib/format";
@@ -168,6 +169,16 @@ export default function ProfilePage() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         {/* Profile Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">

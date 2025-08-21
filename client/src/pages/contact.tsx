@@ -2,7 +2,8 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MapPin, Phone, Clock, MessageSquare, Twitter, Github, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Mail, MapPin, Phone, Clock, MessageSquare, Twitter, Github, ExternalLink, ArrowLeft } from "lucide-react";
 
 export default function Contact() {
 
@@ -66,6 +67,17 @@ export default function Contact() {
       <Header />
       <div className="p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+        
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900" data-testid="text-contact-title">
             Contact Us

@@ -1,7 +1,8 @@
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Eye, Lock, Database, Globe, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Shield, Eye, Lock, Database, Globe, Users, ArrowLeft } from "lucide-react";
 
 export default function PrivacyPolicy() {
   return (
@@ -9,6 +10,17 @@ export default function PrivacyPolicy() {
       <Header />
       <div className="p-6">
       <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+        
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100" data-testid="text-privacy-title">
             Privacy Policy

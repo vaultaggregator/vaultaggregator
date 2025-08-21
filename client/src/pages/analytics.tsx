@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, Shield, Users, DollarSign, BarChart3, PieChart as PieChartIcon, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, Shield, Users, DollarSign, BarChart3, PieChart as PieChartIcon, Calendar, ArrowLeft } from "lucide-react";
 import { formatNumber } from "@/lib/format";
 import type { YieldOpportunity, AppStats } from "@/types";
 
@@ -169,6 +170,16 @@ export default function Analytics() {
       <Header onAdminClick={() => {}} />
       
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         <div className="space-y-8">
           {/* Page Header */}
           <div className="text-center">
