@@ -46,12 +46,14 @@ export class ScraperManager {
         )
         .orderBy(desc(pools.apy));
 
-      // Format the results to match Pool type with platform/chain
-      const formattedPools = poolsResults.map(result => ({
-        ...result.pools,
-        platform: result.platforms!,
-        chain: result.chains!,
-      }));
+      // Format the results to match Pool type with platform/chain, filtering out pools without platforms
+      const formattedPools = poolsResults
+        .filter(result => result.platforms && result.chains)
+        .map(result => ({
+          ...result.pools,
+          platform: result.platforms!,
+          chain: result.chains!,
+        }));
 
       console.log(`📊 Found ${formattedPools.length} pools to scrape`);
 
@@ -83,6 +85,12 @@ export class ScraperManager {
   }
 
   private async scrapePool(pool: Pool & { platform: Platform; chain: Chain }): Promise<ScrapedData | null> {
+    // Check if platform exists
+    if (!pool.platform || !pool.platform.name) {
+      console.warn(`⚠️ Pool ${pool.id} has no platform or platform name`);
+      return null;
+    }
+    
     const scraper = this.scrapers.get(pool.platform.name);
     
     if (!scraper) {
