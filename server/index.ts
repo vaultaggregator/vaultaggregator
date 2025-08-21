@@ -40,11 +40,10 @@ app.use((req, res, next) => {
   // Initialize AI scheduler service
   const { aiScheduler } = await import("./services/aiSchedulerService");
   
-  // DISABLED: Comprehensive holder sync service (Alchemy API temporarily disabled)
-  // const { comprehensiveHolderSyncService } = await import("./services/comprehensiveHolderSyncService");
-  // comprehensiveHolderSyncService.startService(30); // Run every 30 minutes
-  console.log('⚠️ Alchemy API connections DISABLED - Holder sync service stopped');
-  console.log("✅ Comprehensive Holder Sync Service initialized");
+  // Initialize comprehensive holder sync service (Alchemy API enabled)
+  const { comprehensiveHolderSyncService } = await import("./services/comprehensiveHolderSyncService");
+  comprehensiveHolderSyncService.startService(30); // Run every 30 minutes
+  console.log("✅ Alchemy API enabled - Comprehensive Holder Sync Service initialized");
   
   // Initialize API services from configuration (auto-registration system)
   const { ApiRegistrationService } = await import("./services/apiRegistrationService");
