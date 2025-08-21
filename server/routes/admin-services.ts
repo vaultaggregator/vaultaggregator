@@ -137,6 +137,14 @@ const serviceConfigs = new Map<string, ServiceConfig>([
     description: 'Updates token prices and exchange rates',
     interval: 15,
     enabled: true
+  }],
+  ['etherscan-scraper', {
+    id: 'etherscan-scraper',
+    name: 'Etherscan Holder Scraper',
+    type: 'scraper',
+    description: 'Scrapes token holder counts from Etherscan for accurate holder data',
+    interval: 30,
+    enabled: true
   }]
 ]);
 

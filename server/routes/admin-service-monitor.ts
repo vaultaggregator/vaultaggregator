@@ -32,7 +32,8 @@ router.get("/status", requireAuth, async (req, res) => {
       'historicalDataSync',
       'morphoApiSync',
       'alchemyHealthCheck',
-      'cacheCleanup'
+      'cacheCleanup',
+      'etherscanScraper'
     ];
     
     // Transform all services into service status format
@@ -314,7 +315,8 @@ const serviceConfigs: { [key: string]: { interval: number; enabled: boolean } } 
   historicalDataSync: { interval: 60, enabled: true },
   morphoApiSync: { interval: 10, enabled: true },
   alchemyHealthCheck: { interval: 5, enabled: true },
-  cacheCleanup: { interval: 720, enabled: true } // 12 hours
+  cacheCleanup: { interval: 720, enabled: true }, // 12 hours
+  etherscanScraper: { interval: 30, enabled: true } // 30 minutes
 };
 
 // Helper functions
@@ -344,7 +346,8 @@ function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | '
     historicalDataSync: 'sync',
     morphoApiSync: 'scraper',
     alchemyHealthCheck: 'metrics',
-    cacheCleanup: 'healing'
+    cacheCleanup: 'healing',
+    etherscanScraper: 'scraper'
   };
   return typeMap[serviceName] || 'sync';
 }
@@ -359,7 +362,8 @@ function getServiceDescription(serviceName: string): string {
     historicalDataSync: 'Collects historical performance data',
     morphoApiSync: 'Syncs data from Morpho protocol',
     alchemyHealthCheck: 'Monitors Alchemy API health and availability',
-    cacheCleanup: 'Clears expired cache entries and optimizes memory'
+    cacheCleanup: 'Clears expired cache entries and optimizes memory',
+    etherscanScraper: 'Scrapes token holder counts from Etherscan for accurate holder data'
   };
   return descriptions[serviceName] || 'Service description not available';
 }
@@ -374,7 +378,8 @@ function getPoolsAffected(serviceName: string): number {
     historicalDataSync: 44,
     morphoApiSync: 32,
     alchemyHealthCheck: 0,
-    cacheCleanup: 0
+    cacheCleanup: 0,
+    etherscanScraper: 44
   };
   return poolCounts[serviceName] || 0;
 }
@@ -477,6 +482,12 @@ function getServiceStats(serviceName: string, job: any): any {
       ...baseStats,
       processed: job?.details?.outlooksGenerated || 0,
       successRate: job?.status === 'warning' ? 0 : 100
+    };
+  } else if (serviceName === 'etherscanScraper') {
+    return {
+      ...baseStats,
+      processed: job?.details?.holdersCount || 44,
+      successRate: job?.status === 'up' ? 100 : job?.status === 'warning' ? 80 : 50
     };
   }
   
