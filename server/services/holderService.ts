@@ -168,7 +168,10 @@ export class HolderService {
             '0x777791c4d6dc2ce140d00d2828a7c93503c67777'  // Hyperithm USDC - 129 holders
           ];
           const isProblematicPool = problematicPools.includes(tokenAddress.toLowerCase());
-          const maxHolders = isProblematicPool ? 300 : 1000; // Limit problematic pools
+          
+          // Special handling for stETH which has hundreds of thousands of holders
+          const isStETH = tokenAddress.toLowerCase() === '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
+          const maxHolders = isStETH ? 5000 : (isProblematicPool ? 300 : 1000); // 5000 for stETH, 300 for problematic pools, 1000 default
           
           if (isProblematicPool) {
             console.log(`⚠️ Known problematic pool detected, limiting to ${maxHolders} holders`);
