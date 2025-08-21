@@ -271,8 +271,9 @@ export class AlchemyService {
       const MAX_FETCH_TIME = 60000; // 60 seconds with high-speed API
       const startTime = Date.now();
       
-      // Get token metadata first (using cached version)
-      const metadata = await this.getTokenMetadata(tokenAddress, network);
+      // Get token metadata from static cache (no API call)
+      const metadata = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()] || 
+                       { name: 'Unknown', symbol: 'Unknown', decimals: 18 };
       console.log(`📊 Token: ${metadata.name} (${metadata.symbol}), Decimals: ${metadata.decimals}`);
       
       const holders: TokenHolder[] = [];
@@ -728,13 +729,6 @@ export class AlchemyService {
         return 1.0;
       }
       
-      // Try to get token metadata which may include price data (using cached version)
-      const metadata = await this.getTokenMetadata(tokenAddress, network);
-      
-      // Try to get token balances to compute price from popular stablecoins
-      // This is a workaround since Alchemy doesn't have direct price API
-      // We'll use token balance comparisons and known prices
-      
       // Check if it's a known stablecoin
       const stablecoins = [
         '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
@@ -762,9 +756,9 @@ export class AlchemyService {
         return price;
       }
       
-      // For vault tokens, try to get exchange rate from metadata
-      if (metadata.symbol?.includes('USD')) {
-        // Most USD vault tokens track close to $1
+      // Check static cache for USD vault tokens
+      const cachedMetadata = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
+      if (cachedMetadata && (cachedMetadata.symbol?.includes('USD') || cachedMetadata.name?.includes('USD'))) {
         return 1.0;
       }
       
@@ -832,8 +826,9 @@ export class AlchemyService {
           // Only process tokens we have prices for
           if (tokenPrices[contractAddress]) {
             try {
-              const metadata = await this.alchemy.core.getTokenMetadata(token.contractAddress);
-              const decimals = metadata.decimals || 18;
+              // Get decimals from static cache or use default
+              const cachedToken = AlchemyService.COMMON_TOKENS[contractAddress];
+              const decimals = cachedToken?.decimals || 18;
               
               const balance = BigInt(token.tokenBalance);
               const tokenAmount = Number(balance) / Math.pow(10, decimals);
