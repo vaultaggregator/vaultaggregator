@@ -159,54 +159,18 @@ export class AlchemyService {
       const holders: TokenHolder[] = [];
       const processedAddresses = new Set<string>();
       
-      // Strategy 1: Try to get owners directly (works for NFTs and some ERC-20s)
-      try {
-        const ownersResponse = await client.nft.getOwnersForContract(tokenAddress);
-        console.log(`📈 Found ${ownersResponse.owners.length} owners via NFT API`);
-        
-        for (const owner of ownersResponse.owners.slice(0, limit)) {
-          if (!processedAddresses.has(owner.toLowerCase())) {
-            processedAddresses.add(owner.toLowerCase());
-            
-            try {
-              const balance = await client.core.getTokenBalances(owner, [tokenAddress]);
-              if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
-                const rawBalance = balance.tokenBalances[0].tokenBalance;
-                const decimals = metadata.decimals || 18;
-                
-                if (rawBalance !== '0x0') {
-                  const balanceBigInt = BigInt(rawBalance);
-                  const formattedBalance = Number(balanceBigInt) / Math.pow(10, decimals);
-                  
-                  if (formattedBalance > 0) {
-                    holders.push({
-                      address: owner,
-                      balance: balanceBigInt.toString(),
-                      formattedBalance,
-                    });
-                  }
-                }
-              }
-            } catch (error) {
-              console.log(`⚠️ Could not fetch balance for ${owner}`);
-            }
-          }
-        }
-      } catch (error) {
-        console.log(`📌 NFT API approach failed, trying transfer events...`);
-      }
+      // For ERC-20 tokens, directly use transfer events (no NFT API needed)
+      // This saves unnecessary API calls since NFT API doesn't work for ERC-20s
+      console.log(`🔄 Fetching transfer events to find ERC-20 token holders...`);
       
-      // Strategy 2: Get ALL transfer events to find all holders
       // Always use transfer events for comprehensive holder discovery
-      if (holders.length < limit * 0.8) { // Continue if we haven't found enough holders
-        console.log(`🔄 Fetching all transfer events to find holders...`);
-        
-        const latestBlock = await client.core.getBlockNumber();
-        const uniqueAddresses = new Set<string>();
-        let pageKey: string | undefined;
-        let iterations = 0;
-        // Increase iterations for comprehensive holder discovery
-        const maxIterations = 500; // Increased to ensure we find all holders
+      // (No need to check holder count since we're not using NFT API anymore)
+      const latestBlock = await client.core.getBlockNumber();
+      const uniqueAddresses = new Set<string>();
+      let pageKey: string | undefined;
+      let iterations = 0;
+      // Increase iterations for comprehensive holder discovery
+      const maxIterations = 500; // Increased to ensure we find all holders
         
         // Get transfers in multiple batches going further back in time
         while (iterations < maxIterations) {
@@ -318,8 +282,6 @@ export class AlchemyService {
             console.log(`✅ Reached limit of ${limit} holders`);
             break;
           }
-        }
-      }
       
       // Sort by balance descending
       holders.sort((a, b) => b.formattedBalance - a.formattedBalance);
