@@ -4,6 +4,14 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 ## Recent Changes (August 21, 2025)
 
+- **WebSocket Removal**: Completely removed WebSocket functionality from both server and client per user request
+  - Disabled WebSocket server initialization in `server/routes.ts`
+  - Simplified `useRealtimeApy` hook to return static values
+  - Removed all WebSocket connection and reconnection logic
+- **Alchemy Service Enhancement**: Fixed Alchemy service to properly respect database admin settings
+  - Service now checks database `apiSettings` table before making API calls
+  - Added proper initialization with ALCHEMY_RPC_URL environment variable
+  - Service correctly enables/disables based on admin menu toggle
 - **Fixed Token Creation System**: Resolved foreign key constraint violations by properly separating chains and networks tables in the database schema
 - **Database Architecture Update**: Implemented separate `chains` and `networks` tables with proper foreign key relationships for token management
 - **API Endpoint Enhancement**: Added `/api/admin/chains` endpoint to provide correct chain data for token creation

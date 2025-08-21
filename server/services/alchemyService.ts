@@ -12,36 +12,56 @@ export interface TokenHolder {
 }
 
 export class AlchemyService {
-  private alchemy: Alchemy;
-  private alchemyBase: Alchemy;
+  private alchemy: Alchemy | null = null;
+  private alchemyBase: Alchemy | null = null;
+  private isInitialized: boolean = false;
   
   constructor() {
-    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
-    console.log('⚠️ ALCHEMY API DISABLED - All Alchemy connections temporarily stopped');
+    // Check if we have the ALCHEMY_RPC_URL configured
+    const alchemyRpcUrl = process.env.ALCHEMY_RPC_URL;
     
-    // Disabled initialization to stop all API calls
-    // const apiKey = process.env.ALCHEMY_API_KEY;
-    // if (!apiKey) {
-    //   throw new Error('ALCHEMY_API_KEY is required for holder data');
-    // }
+    if (!alchemyRpcUrl) {
+      console.log('⚠️ ALCHEMY_RPC_URL not configured - Alchemy service disabled');
+      return;
+    }
     
-    // // Initialize Ethereum mainnet client
-    // this.alchemy = new Alchemy({
-    //   apiKey,
-    //   network: Network.ETH_MAINNET,
-    // });
+    // Extract API key from the RPC URL
+    const urlMatch = alchemyRpcUrl.match(/\/v2\/([^/]+)$/);
+    const apiKey = urlMatch ? urlMatch[1] : null;
     
-    // // Initialize Base network client
-    // this.alchemyBase = new Alchemy({
-    //   apiKey,
-    //   network: Network.BASE_MAINNET,
-    // });
+    if (!apiKey) {
+      console.log('⚠️ Invalid ALCHEMY_RPC_URL format - Alchemy service disabled');
+      return;
+    }
+    
+    try {
+      // Initialize Ethereum mainnet client
+      this.alchemy = new Alchemy({
+        apiKey,
+        network: Network.ETH_MAINNET,
+      });
+      
+      // Initialize Base network client
+      this.alchemyBase = new Alchemy({
+        apiKey,
+        network: Network.BASE_MAINNET,
+      });
+      
+      this.isInitialized = true;
+      console.log('✅ Alchemy service initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to initialize Alchemy service:', error);
+      this.isInitialized = false;
+    }
   }
   
   /**
    * Get the appropriate Alchemy client for the given network
    */
-  private getAlchemyClient(network?: string): Alchemy {
+  private getAlchemyClient(network?: string): Alchemy | null {
+    if (!this.isInitialized) {
+      return null;
+    }
     if (network?.toUpperCase() === 'BASE') {
       return this.alchemyBase;
     }
@@ -49,15 +69,50 @@ export class AlchemyService {
   }
 
   /**
+   * Check if Alchemy is enabled in the database
+   */
+  private async isAlchemyEnabled(): Promise<boolean> {
+    try {
+      const { db } = await import('../db');
+      const { apiSettings } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      const [setting] = await db
+        .select()
+        .from(apiSettings)
+        .where(eq(apiSettings.serviceName, 'alchemy_api'));
+      
+      return setting?.isEnabled || false;
+    } catch (error) {
+      console.error('Error checking Alchemy status:', error);
+      return false;
+    }
+  }
+
+  /**
    * Get top token holders for a specific token contract
    */
   async getTopTokenHolders(tokenAddress: string, limit: number = 100, network?: string): Promise<TokenHolder[]> {
-    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
-    console.log('⚠️ ALCHEMY API DISABLED - Skipping holder fetch');
-    return [];
+    // Check if Alchemy is enabled in the database
+    const isEnabled = await this.isAlchemyEnabled();
+    if (!isEnabled) {
+      console.log('⚠️ Alchemy API disabled in admin settings - skipping holder fetch');
+      return [];
+    }
+    
+    // Check if service is initialized
+    if (!this.isInitialized) {
+      console.log('⚠️ Alchemy service not initialized - skipping holder fetch');
+      return [];
+    }
     
     try {
       const client = this.getAlchemyClient(network);
+      if (!client) {
+        console.log('⚠️ Could not get Alchemy client - skipping holder fetch');
+        return [];
+      }
+      
       console.log(`🔍 Fetching token holders from Alchemy for ${tokenAddress} on ${network || 'Ethereum'}`);
       
       // With 300 req/s, we can afford longer fetch times for complete data
@@ -266,9 +321,12 @@ export class AlchemyService {
    * Get ETH balance for an address
    */
   async getEthBalance(address: string): Promise<number> {
-    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
-    console.log('⚠️ ALCHEMY API DISABLED - Skipping ETH balance fetch');
-    return 0;
+    // Check if Alchemy is enabled
+    const isEnabled = await this.isAlchemyEnabled();
+    if (!isEnabled || !this.isInitialized || !this.alchemy) {
+      console.log('⚠️ Alchemy API disabled or not initialized - skipping ETH balance fetch');
+      return 0;
+    }
     
     try {
       const balance = await this.alchemy.core.getBalance(address);
@@ -283,12 +341,19 @@ export class AlchemyService {
    * Get token price in USD using Alchemy's enhanced token metadata
    */
   async getTokenPrice(tokenAddress: string, network?: string): Promise<number> {
-    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
-    console.log('⚠️ ALCHEMY API DISABLED - Skipping token price fetch');
-    return 1.0;
+    // Check if Alchemy is enabled
+    const isEnabled = await this.isAlchemyEnabled();
+    if (!isEnabled || !this.isInitialized) {
+      console.log('⚠️ Alchemy API disabled or not initialized - skipping token price fetch');
+      return 1.0;
+    }
     
     try {
       const client = this.getAlchemyClient(network);
+      if (!client) {
+        console.log('⚠️ Could not get Alchemy client - using default price');
+        return 1.0;
+      }
       
       // First try to get token metadata which may include price data
       const metadata = await client.core.getTokenMetadata(tokenAddress);
@@ -345,6 +410,13 @@ export class AlchemyService {
    * This fetches all token balances and calculates total USD value
    */
   async getTotalPortfolioValue(address: string): Promise<number> {
+    // Check if Alchemy is enabled
+    const isEnabled = await this.isAlchemyEnabled();
+    if (!isEnabled || !this.isInitialized || !this.alchemy) {
+      console.log('⚠️ Alchemy API disabled or not initialized - skipping portfolio value fetch');
+      return 0;
+    }
+    
     try {
       // For the specific holder 0xffd0cb960d0e36a6449b7e2dd2e14db758abeed4
       // They have 27,768 TAC USDC tokens worth $99,964.8 (27,768 * 3.6)
