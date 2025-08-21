@@ -633,8 +633,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use the same joined query as the pools list for consistency
       const poolResult = await db.select()
         .from(pools)
-        .leftJoin(platforms, eq(pools.platformId, platforms.id))
-        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .leftJoin(protocols, eq(pools.platformId, protocols.id))
+        .leftJoin(networks, eq(pools.chainId, networks.id))
         .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
         .where(eq(pools.id, req.params.id))
         .limit(1);
@@ -655,17 +655,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const formattedPool = {
         ...pool,
         platform: {
-          id: result.platforms?.id || null,
-          name: result.platforms?.name || "Unknown",
-          displayName: result.platforms?.displayName || "Unknown",
-          logoUrl: result.platforms?.logoUrl || null,
-          website: result.platforms?.website || null
+          id: result.protocols?.id || null,
+          name: result.protocols?.name || "Unknown",
+          displayName: result.protocols?.displayName || "Unknown",
+          logoUrl: result.protocols?.logoUrl || null,
+          website: result.protocols?.website || null
         },
         chain: {
-          id: result.chains?.id || null,
-          name: result.chains?.name || "ethereum",
-          displayName: result.chains?.displayName || "Ethereum",
-          color: result.chains?.color || "#627EEA"
+          id: result.networks?.id || null,
+          name: result.networks?.name || "ethereum",
+          displayName: result.networks?.displayName || "Ethereum",
+          color: result.networks?.color || "#627EEA"
         },
         notes: [],
         categories: [],

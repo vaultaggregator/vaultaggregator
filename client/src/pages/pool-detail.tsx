@@ -17,7 +17,7 @@ import { RiskBadge } from "@/components/risk-badge";
 import { generatePlatformVisitUrl } from "@/utils/platformUrls";
 
 import { MetricTooltip, DeFiTooltip } from "@/components/metric-tooltip";
-import { ProtocolLink, NetworkLink } from "@/components/entity-links";
+import { ProtocolLink, NetworkLink, PoolLink } from "@/components/entity-links";
 import { APYCalculator } from '@/components/apy-calculator';
 import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
