@@ -5,16 +5,16 @@ interface FeatureFlags {
 }
 
 const flags: FeatureFlags = {
-  // Alchemy endpoints - all disabled by default
-  getBlockNumber: false,
-  getTokenBalances: false,
-  getAssetTransfers: false,
-  getLogs: false,
-  getTokenMetadata: false,
-  getNFTs: false,
-  getOwners: false,
-  getTransactionReceipts: false,
-  getBalance: false,
+  // Alchemy endpoints - essential ones enabled for DeFi functionality
+  getBlockNumber: true,        // Essential for connectivity testing
+  getTokenBalances: true,      // Essential for portfolio tracking
+  getAssetTransfers: false,    // Heavy endpoint - kept disabled
+  getLogs: false,             // Heavy endpoint - kept disabled  
+  getTokenMetadata: true,     // Essential for token information
+  getNFTs: false,             // Not needed for DeFi aggregator
+  getOwners: true,            // Essential for holder tracking
+  getTransactionReceipts: false, // Heavy endpoint - kept disabled
+  getBalance: true,           // Essential for balance checking
   // Add more as needed
 };
 
