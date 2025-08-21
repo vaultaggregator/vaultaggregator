@@ -26,16 +26,6 @@ const defaultCacheSettings = [
     isEnabled: true
   },
   {
-    serviceName: 'moralis_token_holders',
-    displayName: 'Moralis Token Holders',
-    description: 'Cache for token holder data from Moralis API',
-    cacheDurationMs: 30 * 60 * 1000, // 30 minutes
-    cacheType: 'memory',
-    category: 'holders',
-    maxEntries: 100,
-    isEnabled: true
-  },
-  {
     serviceName: 'static_vault_tokens',
     displayName: 'Static Vault Token Cache',
     description: 'Static cache for known vault token metadata and pricing',

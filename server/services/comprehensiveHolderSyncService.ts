@@ -120,7 +120,7 @@ class ComprehensiveHolderSyncService {
           
           const updatedCount = newCount[0]?.count || 0;
           
-          // CRITICAL: Update pool_metrics_current with the new holder count from Moralis
+          // CRITICAL: Update pool_metrics_current with the new holder count from Etherscan
           // This ensures homepage and single pool page show the same holder count
           const existingMetrics = await db
             .select()

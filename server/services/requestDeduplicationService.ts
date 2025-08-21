@@ -20,7 +20,7 @@ export class RequestDeduplicationService {
     'alchemy_price': 5 * 60 * 1000, // 5 minutes  
     'alchemy_balance': 1 * 60 * 1000, // 1 minute
     'alchemy_health': 30 * 1000, // 30 seconds
-    'moralis_holders': 10 * 60 * 1000, // 10 minutes
+
     'token_info': 60 * 60 * 1000, // 1 hour
     'default': 5 * 60 * 1000 // 5 minutes default
   };

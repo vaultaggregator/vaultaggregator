@@ -1,6 +1,6 @@
 import { EtherscanService } from './etherscanService.js';
 import { alchemyService } from './alchemyService.js';
-import { moralisService } from './moralisService.js';
+import { etherscanHolderScraper } from './etherscanHolderScraper.js';
 import { storage } from '../storage.js';
 import type { Pool, InsertTokenHolder } from '@shared/schema.js';
 
@@ -20,7 +20,7 @@ export class HolderService {
 
   constructor() {
     this.etherscan = new EtherscanService();
-    console.log('✅ HolderService initialized with Moralis (primary) + Alchemy (fallback)');
+    console.log('✅ HolderService initialized with Etherscan scraping');
   }
 
   private async logError(title: string, description: string, error: string, poolId?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
@@ -45,11 +45,11 @@ export class HolderService {
   }
 
   /**
-   * Fetch and sync holder data for a specific pool (optimized version)
+   * Fetch and sync holder data for a specific pool using Etherscan
    */
   async syncPoolHolders(poolId: string): Promise<void> {
     try {
-      console.log(`🔍 Starting optimized holder sync for pool ${poolId}`);
+      console.log(`🔍 Starting holder sync for pool ${poolId}`);
       
       // Get pool information
       const pool = await storage.getPoolById(poolId);
@@ -59,79 +59,22 @@ export class HolderService {
       }
 
       console.log(`📊 Syncing holders for ${pool.tokenPair} on ${pool.poolAddress}`);
-
-      // Get the network name from the pool's chain
-      const networkName = pool.chain?.name || 'ethereum';
       
-      // OPTIMIZED: Get total holder count and top 100 holders only
+      // Get total holder count from Etherscan
       let totalHolderCount = 0;
-      let topHolders: any[] = [];
       
       try {
-        if (moralisService.isAvailable()) {
-          // Use optimized method to get count + top 100 holders in 1 API call
-          const optimizedData = await moralisService.getOptimizedHolderData(
-            pool.poolAddress,
-            networkName,
-            100 // Only fetch top 100 holders for details
-          );
-          
-          totalHolderCount = optimizedData.totalCount;
-          topHolders = optimizedData.topHolders.map(holder => ({
-            address: holder.owner_address,
-            balance: holder.balance
-          }));
-          
-          console.log(`✅ Optimized sync: ${totalHolderCount} total holders, storing top ${topHolders.length} holders`);
-        } else if (alchemyService) {
-          // Fallback to Alchemy
-          topHolders = await alchemyService.getTopTokenHolders(pool.poolAddress, 100, networkName);
-          totalHolderCount = topHolders.length; // Alchemy doesn't provide total count easily
-          console.log(`✅ Retrieved ${topHolders.length} holders from Alchemy`);
-        }
+        totalHolderCount = await etherscanHolderScraper.getHolderCount(pool.poolAddress);
+        console.log(`✅ Got holder count from Etherscan: ${totalHolderCount}`);
       } catch (error) {
         console.error(`❌ Failed to fetch holder data:`, error);
-        throw error;
-      }
-      
-      if (!topHolders || topHolders.length === 0) {
-        console.log(`⚠️ No holders found for pool ${poolId}`);
-        await this.logError(
-          'No Holders Found',
-          `No token holders found for pool ${pool.tokenPair} (${pool.poolAddress}). This may indicate an issue with the token contract address or API connectivity.`,
-          `No holders found for ${pool.poolAddress}`,
-          poolId,
-          'medium'
-        );
-        return;
+        totalHolderCount = 0;
       }
 
-      // Get token price for USD calculations
-      const tokenPrice = await this.getTokenPrice(pool.poolAddress);
-      console.log(`💰 Token price: $${tokenPrice}`);
-
-      // Process and store holder data (only top 100)
-      const processedHolders = await this.processHolderData(
-        topHolders,
-        pool.poolAddress,
-        tokenPrice,
-        poolId
-      );
-
-      // Clear existing holders for this pool
-      await storage.clearPoolHolders(poolId);
-
-      // Store top 100 holders only
-      console.log(`💾 Storing top ${processedHolders.length} holders (total: ${totalHolderCount})`);
-      const insertedCount = await storage.batchInsertTokenHolders(processedHolders);
-
-      // Update pool metrics with the TOTAL holder count (not just top 100)
+      // Update pool metrics with the holder count
       await this.updatePoolHolderCount(poolId, totalHolderCount);
 
-      // Fetch and store last 100 transactions
-      await this.syncPoolTransactions(poolId, pool.poolAddress, networkName);
-
-      console.log(`✅ Successfully synced: ${totalHolderCount} total holders, stored top ${insertedCount} for pool ${poolId}`);
+      console.log(`✅ Successfully synced: ${totalHolderCount} total holders for pool ${poolId}`);
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -147,59 +90,7 @@ export class HolderService {
     }
   }
 
-  /**
-   * Sync last 100 transactions for a pool
-   */
-  private async syncPoolTransactions(poolId: string, tokenAddress: string, networkName: string): Promise<void> {
-    try {
-      console.log(`📝 Syncing last 100 transactions for pool ${poolId}`);
-      
-      if (!moralisService.isAvailable()) {
-        console.log(`⚠️ Moralis not available for transaction sync`);
-        return;
-      }
-      
-      // Fetch last 100 transactions
-      const transactions = await moralisService.getTokenTransactions(tokenAddress, networkName, 100);
-      
-      if (!transactions || transactions.length === 0) {
-        console.log(`⚠️ No transactions found for pool ${poolId}`);
-        return;
-      }
-      
-      console.log(`✅ Found ${transactions.length} transactions`);
-      
-      // Clear existing transactions for this pool
-      const { db } = await import('../db');
-      const { tokenTransactions } = await import('@shared/schema');
-      const { eq } = await import('drizzle-orm');
-      
-      await db.delete(tokenTransactions).where(eq(tokenTransactions.poolId, poolId));
-      
-      // Prepare transaction data for insertion
-      const transactionData = transactions.map(tx => ({
-        id: crypto.randomUUID(),
-        poolId: poolId,
-        transactionHash: tx.hash,
-        fromAddress: tx.from,
-        toAddress: tx.to,
-        value: tx.value,
-        valueFormatted: tx.valueFormatted,
-        blockNumber: tx.blockNumber,
-        blockTimestamp: tx.blockTimestamp ? new Date(tx.blockTimestamp) : null,
-        tokenAddress: tx.tokenAddress,
-        tokenSymbol: tx.tokenSymbol,
-        tokenName: tx.tokenName
-      }));
-      
-      // Insert transactions
-      await db.insert(tokenTransactions).values(transactionData);
-      
-      console.log(`💾 Stored ${transactionData.length} transactions for pool ${poolId}`);
-    } catch (error) {
-      console.error(`❌ Error syncing transactions for pool ${poolId}:`, error);
-    }
-  }
+
 
   /**
    * Update pool metrics with holder count
@@ -247,90 +138,7 @@ export class HolderService {
     }
   }
 
-  /**
-   * Fetch token holders using Moralis API (primary) with Alchemy fallback
-   * This reduces API costs by using Moralis as the cost-effective primary source
-   */
-  private async fetchTokenHolders(tokenAddress: string, networkName?: string): Promise<any[]> {
-    try {
-      console.log(`🔍 Fetching token holders for ${tokenAddress}`);
-      
-      // PRIORITY 1: Try Moralis API first (more cost-effective)
-      if (moralisService.isAvailable()) {
-        try {
-          console.log(`🔄 Attempting Moralis fetch for ${tokenAddress} on ${networkName}`);
-          
-          // For known problematic pools with many holders, use smaller batch size
-          const problematicPools = [
-            '0xbeef047a543e45807105e51a8bbefc5950fcfba', // Steakhouse USDT - 290 holders
-            '0x777791c4d6dc2ce140d00d2828a7c93503c67777'  // Hyperithm USDC - 129 holders
-          ];
-          const isProblematicPool = problematicPools.includes(tokenAddress.toLowerCase());
-          
-          // Special handling for stETH which has hundreds of thousands of holders
-          const isStETH = tokenAddress.toLowerCase() === '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
-          const maxHolders = isStETH ? 5000 : (isProblematicPool ? 300 : 1000); // 5000 for stETH, 300 for problematic pools, 1000 default
-          
-          if (isProblematicPool) {
-            console.log(`⚠️ Known problematic pool detected, limiting to ${maxHolders} holders`);
-          }
-          
-          const moralisHolders = await moralisService.getAllTokenHolders(
-            tokenAddress, 
-            networkName || 'ethereum', 
-            maxHolders
-          );
-          
-          if (moralisHolders && moralisHolders.length > 0) {
-            console.log(`✅ Fetched ${moralisHolders.length} holders from Moralis (cost-effective)`);
-            
-            // Convert to expected format
-            return moralisHolders.map(holder => ({
-              address: holder.owner_address,
-              balance: holder.balance
-            }));
-          }
-        } catch (moralisError) {
-          console.warn('⚠️ Moralis fetch failed, falling back to Alchemy:', moralisError);
-        }
-      }
-      
-      // PRIORITY 2: Fallback to Alchemy if Moralis fails
-      if (alchemyService) {
-        try {
-          // Reduced limit to save on Alchemy costs when used as fallback
-          const holderLimit = 500; // Reduced from 2000 to optimize costs
-          
-          console.log(`📊 Fetching top ${holderLimit} holders from Alchemy (fallback)`);
-          const holders = await alchemyService.getTopTokenHolders(tokenAddress, holderLimit, networkName);
-          console.log(`✅ Fetched ${holders.length} holders from Alchemy (fallback)`);
-          
-          // Convert to expected format
-          return holders.map(holder => ({
-            address: holder.address,
-            balance: holder.balance
-          }));
-        } catch (alchemyError) {
-          console.error('❌ Alchemy fallback failed:', alchemyError);
-        }
-      }
-      
-      // PRIORITY 3: Final fallback to Etherscan token info (no detailed holder data)
-      const tokenInfo = await this.etherscan.getTokenInfo(tokenAddress);
-      if (!tokenInfo) {
-        console.log(`❌ Token info not found for ${tokenAddress}`);
-        return [];
-      }
-      
-      console.log(`✅ Token found: ${tokenInfo.tokenName} (${tokenInfo.symbol})`);
-      console.log(`⚠️ Detailed holder data not available - using last resort`);
-      return [];
-      
-    } catch (error) {
-      console.error('Error fetching token holders:', error);
-      return [];
-    }
-  }
+
 
 
 
