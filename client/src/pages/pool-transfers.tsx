@@ -75,6 +75,13 @@ export default function PoolTransfersPage() {
     enabled: !!network && !!protocol && !!tokenPair,
   });
 
+  // Set browser tab title
+  useEffect(() => {
+    if (poolData) {
+      document.title = `${poolData.name || tokenPair} Transfers - ${protocol} on ${network} | Vault Aggregator`;
+    }
+  }, [poolData, tokenPair, protocol, network]);
+
   // Mock data for transfers - in real implementation, this would come from API
   const mockTransfers: Transaction[] = Array.from({ length: 100 }, (_, i) => ({
     id: `tx-${i}`,

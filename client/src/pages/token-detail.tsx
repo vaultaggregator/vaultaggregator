@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, formatNumber, formatPercentage } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Users, Activity, Coins, ExternalLink, ArrowUpRight, ArrowDownRight, Copy, AlertCircle, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
@@ -70,6 +70,17 @@ export default function TokenDetail() {
     staleTime: 60000, // 1 minute
     refetchInterval: 60000, // Refetch every minute
   });
+
+  // Set browser tab title based on token data
+  useEffect(() => {
+    if (tokenData) {
+      document.title = `${tokenData.symbol} - ${tokenData.name} | Vault Aggregator`;
+    } else if (tokenAddress) {
+      // Use address as fallback if token data not loaded yet
+      const shortAddress = `${tokenAddress.slice(0, 6)}...${tokenAddress.slice(-4)}`;
+      document.title = `Token ${shortAddress} | Vault Aggregator`;
+    }
+  }, [tokenData, tokenAddress]);
 
   const copyAddress = () => {
     navigator.clipboard.writeText(tokenAddress);

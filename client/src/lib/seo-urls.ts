@@ -44,11 +44,7 @@ export function parseYieldUrl(params: {
 
 // Generate page title for SEO
 export function generatePageTitle(opportunity: YieldOpportunity): string {
-  const apy = opportunity.rawData?.apyBase 
-    ? `${Math.round(parseFloat(opportunity.rawData.apyBase.toString()))}%` 
-    : '';
-  
-  return `${opportunity.tokenPair} ${apy} APY - ${opportunity.platform.displayName} on ${opportunity.chain.displayName} | Vault Aggregator`;
+  return `${opportunity.tokenPair} - ${opportunity.platform.displayName} on ${opportunity.chain.displayName} | Vault Aggregator`;
 }
 
 // Generate meta description for SEO

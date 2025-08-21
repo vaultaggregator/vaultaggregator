@@ -76,6 +76,13 @@ export default function PoolHoldersPage() {
     enabled: !!poolData?.id,
   });
 
+  // Set browser tab title
+  useEffect(() => {
+    if (poolData) {
+      document.title = `${poolData.name || tokenPair} Holders - ${protocol} on ${network} | Vault Aggregator`;
+    }
+  }, [poolData, tokenPair, protocol, network]);
+
   // Format balance display
   const formatBalance = (balance: string) => {
     const num = parseFloat(balance);

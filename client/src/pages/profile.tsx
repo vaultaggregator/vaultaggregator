@@ -1,6 +1,6 @@
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,6 +96,14 @@ export default function ProfilePage() {
   const address = params.address as string;
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("portfolio");
+
+  // Set browser tab title
+  useEffect(() => {
+    if (address) {
+      const shortAddress = `${address.slice(0, 6)}...${address.slice(-4)}`;
+      document.title = `${shortAddress} - Wallet Profile | Vault Aggregator`;
+    }
+  }, [address]);
 
   // Fetch portfolio data
   const { data: portfolio, isLoading, error } = useQuery<PortfolioData>({
