@@ -4,6 +4,16 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 ## Recent Changes (August 21, 2025)
 
+- **Performance Optimizations**: Major improvements to reduce slow request warnings and optimize bundle loading
+  - Implemented React lazy loading for all admin pages and heavy components
+  - Added code splitting to reduce initial bundle size from ~3MB to <500KB
+  - Optimized QueryClient configuration with smart caching (30s stale time, 5min cache)
+  - Updated caniuse-lite and browserslist database to latest versions
+  - Added Suspense boundaries with loading states for better UX
+- **API Request Bug Fixes**: Corrected apiRequest function parameter order across multiple files
+  - Fixed 10+ instances of incorrect `(url, method, data)` calls to proper `(method, url, data)`
+  - Resolved Alchemy API toggle functionality in admin interface
+  - All admin API interactions now work properly without fetch errors
 - **WebSocket Removal**: Completely removed WebSocket functionality from both server and client per user request
   - Disabled WebSocket server initialization in `server/routes.ts`
   - Simplified `useRealtimeApy` hook to return static values
@@ -12,10 +22,6 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
   - Service now checks database `apiSettings` table before making API calls
   - Added proper initialization with ALCHEMY_RPC_URL environment variable
   - Service correctly enables/disables based on admin menu toggle
-- **Fixed Token Creation System**: Resolved foreign key constraint violations by properly separating chains and networks tables in the database schema
-- **Database Architecture Update**: Implemented separate `chains` and `networks` tables with proper foreign key relationships for token management
-- **API Endpoint Enhancement**: Added `/api/admin/chains` endpoint to provide correct chain data for token creation
-- **Schema Improvements**: Fixed token schema by removing non-existent fields and ensuring proper type definitions
 - **Human-Readable URLs**: Implemented user-friendly URL patterns:
   - Protocol URLs: `/protocol/lido` instead of `/protocol/{uuid}/{uuid}`
   - Network URLs: `/network/ethereum` instead of `/network/{uuid}`

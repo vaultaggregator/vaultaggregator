@@ -4,105 +4,117 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { lazy, Suspense } from "react";
+
+// Core pages - loaded immediately
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard";
 import Analytics from "@/pages/analytics";
-
-
 import Contact from "@/pages/contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Terms from "@/pages/terms";
 import RiskCalculation from "@/pages/risk-calculation";
 
-import AdminLogin from "@/pages/admin-login";
-import AdminDashboard from "@/pages/admin-dashboard";
-import AdminNetworks from "@/pages/admin-networks";
-import AdminPlatforms from "@/pages/admin-platforms";
-import AdminCategories from "@/pages/admin-categories";
-import AdminTokens from "@/pages/admin-tokens";
-import AdminApiKeys from "@/pages/admin-api-keys";
-import AdminChatGPT from "@/pages/admin-chatgpt";
-import PoolDetail from "@/pages/pool-detail";
+// Heavy pages - lazy loaded for better performance
+const PoolDetail = lazy(() => import("@/pages/pool-detail"));
+const ProfilePage = lazy(() => import("@/pages/profile"));
+const ProtocolDetailPage = lazy(() => import("@/pages/protocol-detail").then(m => ({ default: m.ProtocolDetailPage })));
+const TokenDetail = lazy(() => import("@/pages/token-detail"));
+const NetworkDetail = lazy(() => import("@/pages/network-detail"));
+const PoolHoldersPage = lazy(() => import("@/pages/pool-holders"));
+const PoolTransfersPage = lazy(() => import("@/pages/pool-transfers"));
+
+// Admin pages - lazy loaded to reduce initial bundle
+const AdminLogin = lazy(() => import("@/pages/admin-login"));
+const AdminDashboard = lazy(() => import("@/pages/admin-dashboard"));
+const AdminNetworks = lazy(() => import("@/pages/admin-networks"));
+const AdminPlatforms = lazy(() => import("@/pages/admin-platforms"));
+const AdminCategories = lazy(() => import("@/pages/admin-categories"));
+const AdminTokens = lazy(() => import("@/pages/admin-tokens"));
+const AdminApiKeys = lazy(() => import("@/pages/admin-api-keys"));
+const AdminChatGPT = lazy(() => import("@/pages/admin-chatgpt"));
+const AdminLogoManagement = lazy(() => import("@/pages/admin-logo-management"));
+const AdminErrors = lazy(() => import("@/pages/admin-errors"));
+const AdminSystem = lazy(() => import("@/pages/admin-system"));
+const AdminPanel = lazy(() => import("@/pages/admin-panel"));
+const AdminPools = lazy(() => import("@/pages/admin-pools"));
+const AdminServices = lazy(() => import("@/pages/admin-services"));
+const AdminApiSettings = lazy(() => import("@/pages/AdminApiSettings"));
+const AdminAnalytics = lazy(() => import("@/pages/admin-analytics"));
+const AdminErrorManagement = lazy(() => import("@/pages/admin-error-management"));
+const HealingDashboard = lazy(() => import("@/pages/healing-dashboard"));
 
 
-import AdminLogoManagement from "@/pages/admin-logo-management";
-import AdminErrors from "@/pages/admin-errors";
-import AdminSystem from "@/pages/admin-system";
-import AdminPanel from "@/pages/admin-panel";
-import AdminPools from "@/pages/admin-pools";
-import AdminServices from "@/pages/admin-services";
-import AdminApiSettings from "@/pages/AdminApiSettings";
-import AdminAnalytics from "@/pages/admin-analytics";
-import AdminErrorManagement from "@/pages/admin-error-management";
 
-import HealingDashboard from "@/pages/healing-dashboard";
-import ProfilePage from "@/pages/profile";
-import { ProtocolDetailPage } from "@/pages/protocol-detail";
-import TokenDetail from "@/pages/token-detail";
-import NetworkDetail from "@/pages/network-detail";
-import PoolHoldersPage from "@/pages/pool-holders";
-import PoolTransfersPage from "@/pages/pool-transfers";
-
-
+// Loading component for Suspense fallback
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/risk-calculation" component={RiskCalculation} />
-      <Route path="/profile/:address" component={ProfilePage} />
-      <Route path="/protocols/:slug" component={ProtocolDetailPage} />
-      <Route path="/protocol/:slug" component={ProtocolDetailPage} />
-      <Route path="/token/:chainName/:tokenAddress" component={TokenDetail} />
-      <Route path="/network/:name" component={NetworkDetail} />
-      <Route path="/contact" component={Contact} />
-      <Route path="/privacy-policy" component={PrivacyPolicy} />
-      <Route path="/terms" component={Terms} />
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/risk-calculation" component={RiskCalculation} />
+        <Route path="/profile/:address" component={ProfilePage} />
+        <Route path="/protocols/:slug" component={ProtocolDetailPage} />
+        <Route path="/protocol/:slug" component={ProtocolDetailPage} />
+        <Route path="/token/:chainName/:tokenAddress" component={TokenDetail} />
+        <Route path="/network/:name" component={NetworkDetail} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms" component={Terms} />
 
-      {/* Admin routes MUST come before the catch-all pool route */}
-      <Route path="/admin/healing" component={HealingDashboard} />
-      <Route path="/admin/login" component={AdminLogin} />
-      <Route path="/admin-login" component={AdminLogin} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
-      <Route path="/admin-dashboard" component={AdminDashboard} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/system" component={AdminSystem} />
-      <Route path="/admin/services" component={AdminServices} />
-      <Route path="/admin/api-settings" component={AdminApiSettings} />
-      <Route path="/admin/panel" component={AdminPanel} />
-      <Route path="/admin/pools" component={AdminPools} />
-      <Route path="/admin-pools" component={AdminPools} />
-      <Route path="/admin-networks" component={AdminNetworks} />
-      <Route path="/admin-platforms" component={AdminPlatforms} />
-      <Route path="/admin-categories" component={AdminCategories} />
-      <Route path="/admin-tokens" component={AdminTokens} />
-      <Route path="/admin-api-keys" component={AdminApiKeys} />
-      <Route path="/admin-chatgpt" component={AdminChatGPT} />
-      <Route path="/admin-logo-management" component={AdminLogoManagement} />
-      <Route path="/admin-errors" component={AdminErrors} />
-      <Route path="/admin/error-management" component={AdminErrorManagement} />
-      <Route path="/admin-error-management" component={AdminErrorManagement} />
-      <Route path="/admin/analytics" component={AdminAnalytics} />
-      <Route path="/admin-analytics" component={AdminAnalytics} />
+        {/* Admin routes MUST come before the catch-all pool route */}
+        <Route path="/admin/healing" component={HealingDashboard} />
+        <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/admin-login" component={AdminLogin} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin-dashboard" component={AdminDashboard} />
+        <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/system" component={AdminSystem} />
+        <Route path="/admin/services" component={AdminServices} />
+        <Route path="/admin/api-settings" component={AdminApiSettings} />
+        <Route path="/admin/panel" component={AdminPanel} />
+        <Route path="/admin/pools" component={AdminPools} />
+        <Route path="/admin-pools" component={AdminPools} />
+        <Route path="/admin-networks" component={AdminNetworks} />
+        <Route path="/admin-platforms" component={AdminPlatforms} />
+        <Route path="/admin-categories" component={AdminCategories} />
+        <Route path="/admin-tokens" component={AdminTokens} />
+        <Route path="/admin-api-keys" component={AdminApiKeys} />
+        <Route path="/admin-chatgpt" component={AdminChatGPT} />
+        <Route path="/admin-logo-management" component={AdminLogoManagement} />
+        <Route path="/admin-errors" component={AdminErrors} />
+        <Route path="/admin/error-management" component={AdminErrorManagement} />
+        <Route path="/admin-error-management" component={AdminErrorManagement} />
+        <Route path="/admin/analytics" component={AdminAnalytics} />
+        <Route path="/admin-analytics" component={AdminAnalytics} />
 
-      {/* Pool detail routes - these must come AFTER admin routes */}
-      {/* Pool holders and transfers pages - these must come BEFORE the generic pool detail routes */}
-      <Route path="/yield/:network/:protocol/:tokenPair/holders" component={PoolHoldersPage} />
-      <Route path="/yield/:network/:protocol/:tokenPair/transfers" component={PoolTransfersPage} />
-      
-      {/* Primary SEO-friendly URL patterns for pool details */}
-      <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
-      <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} />
-      
-      {/* Legacy UUID-based routes for backward compatibility */}
-      <Route path="/pool/:poolId" component={PoolDetail} />
-      <Route path="/pools/:poolId" component={PoolDetail} />
-      <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support - MUST be last */}
-      <Route component={NotFound} />
-    </Switch>
+        {/* Pool detail routes - these must come AFTER admin routes */}
+        {/* Pool holders and transfers pages - these must come BEFORE the generic pool detail routes */}
+        <Route path="/yield/:network/:protocol/:tokenPair/holders" component={PoolHoldersPage} />
+        <Route path="/yield/:network/:protocol/:tokenPair/transfers" component={PoolTransfersPage} />
+        
+        {/* Primary SEO-friendly URL patterns for pool details */}
+        <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
+        <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} />
+        
+        {/* Legacy UUID-based routes for backward compatibility */}
+        <Route path="/pool/:poolId" component={PoolDetail} />
+        <Route path="/pools/:poolId" component={PoolDetail} />
+        <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support - MUST be last */}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 

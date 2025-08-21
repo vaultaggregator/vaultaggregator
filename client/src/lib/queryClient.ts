@@ -68,9 +68,15 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: 0, // No caching - always fresh
-      cacheTime: 0, // Remove from cache immediately
-      retry: false,
+      staleTime: 30000, // Data stays fresh for 30 seconds
+      gcTime: 300000, // Keep data in cache for 5 minutes (formerly cacheTime)
+      retry: (failureCount, error: any) => {
+        // Don't retry on 4xx errors except 408, 429
+        if (error?.message?.includes('4') && !error?.message?.includes('408') && !error?.message?.includes('429')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
     },
     mutations: {
       retry: false,
