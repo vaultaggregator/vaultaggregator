@@ -26,7 +26,8 @@ import {
   Fuel,
   Users,
   Layers,
-  BarChart3
+  BarChart3,
+  ArrowLeft
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
@@ -195,6 +196,16 @@ export default function NetworkDetail() {
     <>
       <Header />
       <div className="container mx-auto p-6 max-w-7xl">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">

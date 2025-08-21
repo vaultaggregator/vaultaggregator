@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ExternalLink,
-  Coins
+  Coins,
+  ArrowLeft
 } from "lucide-react";
 import { formatCurrency, formatNumber, formatPercentage } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -133,6 +134,16 @@ export function ProtocolDetailPage() {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
         {/* Protocol Header */}
         <div className="mb-8">
           <Card className="overflow-hidden bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-white/10">

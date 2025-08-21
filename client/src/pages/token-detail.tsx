@@ -5,11 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency, formatNumber, formatPercentage } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Users, Activity, Coins, ExternalLink, ArrowUpRight, ArrowDownRight, Copy, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Activity, Coins, ExternalLink, ArrowUpRight, ArrowDownRight, Copy, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import { AddressLink } from '@/components/entity-links';
 
 interface TokenData {
   name: string;
@@ -162,6 +163,17 @@ export default function TokenDetail() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header onAdminClick={() => {}} />
       <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-3">
+        {/* Back Button */}
+        <Button 
+          variant="ghost" 
+          onClick={() => window.history.back()}
+          className="mb-6 gap-2"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </Button>
+        
         <div className="container mx-auto p-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
@@ -305,11 +317,11 @@ export default function TokenDetail() {
                     <td className="py-3 text-gray-400">#{index + 1}</td>
                     <td className="py-3">
                       <div className="flex items-center gap-2">
-                        <Link href={`/profile/${holder.address}`}>
-                          <a className="font-mono text-sm hover:text-blue-400 transition-colors" data-testid={`holder-address-${index}`}>
-                            {formatAddress(holder.address)}
-                          </a>
-                        </Link>
+                        <AddressLink 
+                          address={holder.address}
+                          className="font-mono text-sm hover:text-blue-400 transition-colors"
+                          data-testid={`holder-address-${index}`}
+                        />
                         {holder.label && (
                           <Badge variant="outline" className="text-xs">{holder.label}</Badge>
                         )}
@@ -355,18 +367,18 @@ export default function TokenDetail() {
                 {tokenData.recentTransfers.map((transfer, index) => (
                   <tr key={index} className="border-b border-gray-800 hover:bg-gray-900/50 transition-colors">
                     <td className="py-3">
-                      <Link href={`/profile/${transfer.from}`}>
-                        <a className="font-mono text-sm hover:text-blue-400 transition-colors" data-testid={`transfer-from-${index}`}>
-                          {formatAddress(transfer.from)}
-                        </a>
-                      </Link>
+                      <AddressLink 
+                        address={transfer.from}
+                        className="font-mono text-sm hover:text-blue-400 transition-colors"
+                        data-testid={`transfer-from-${index}`}
+                      />
                     </td>
                     <td className="py-3">
-                      <Link href={`/profile/${transfer.to}`}>
-                        <a className="font-mono text-sm hover:text-blue-400 transition-colors" data-testid={`transfer-to-${index}`}>
-                          {formatAddress(transfer.to)}
-                        </a>
-                      </Link>
+                      <AddressLink 
+                        address={transfer.to}
+                        className="font-mono text-sm hover:text-blue-400 transition-colors"
+                        data-testid={`transfer-to-${index}`}
+                      />
                     </td>
                     <td className="py-3 text-right font-mono">{formatNumber(transfer.amount)}</td>
                     <td className="py-3 text-right">{formatCurrency(transfer.value)}</td>
