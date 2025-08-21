@@ -2368,10 +2368,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chain routes
+  // Chain routes (now Networks)
   app.get("/api/chains", async (req, res) => {
     try {
-      const chains = await storage.getActiveChains();
+      const chains = await storage.getActiveNetworks();
       res.json(chains);
     } catch (error) {
       console.error("Error fetching chains:", error);

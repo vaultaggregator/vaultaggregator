@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../db';
-import { chains } from '@shared/schema';
+import { networks } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 interface NetworkResponse {
@@ -328,22 +328,84 @@ export async function getNetworkDetails(req: Request, res: Response) {
       return res.status(400).json({ error: 'Chain ID is required' });
     }
 
-    // Get chain configuration
-    const chainConfig = CHAIN_CONFIGS[chainId];
+    // Check if it's a UUID (database ID) - UUID has dashes and is 36 characters
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(chainId);
     
-    if (!chainConfig) {
-      // Try to fetch from database as fallback
-      const [chain] = await db.select().from(chains).where(eq(chains.name, chainId));
-      
-      if (!chain) {
-        return res.status(404).json({ error: 'Network not found' });
+    let dbNetwork = null;
+    
+    if (isUUID) {
+      // Look up by database ID
+      const [network] = await db.select().from(networks).where(eq(networks.id, chainId));
+      dbNetwork = network;
+    } else {
+      // Try numeric chainId in CHAIN_CONFIGS first
+      const chainConfig = CHAIN_CONFIGS[chainId];
+      if (chainConfig) {
+        // Handle hardcoded chain config (existing logic)
+        // Fetch real-time data in parallel
+        const [tokenPriceData, tvlData, metricsData] = await Promise.all([
+          chainConfig.nativeToken.coingeckoId ? 
+            fetchTokenPrice(chainConfig.nativeToken.coingeckoId) : null,
+          fetchChainTVL(chainConfig.name),
+          fetchChainMetrics(chainId),
+        ]);
+
+        // Construct response
+        const response: NetworkResponse = {
+          name: chainConfig.name,
+          chainId: chainId,
+          logo: chainConfig.logo,
+          nativeToken: {
+            name: chainConfig.nativeToken.name,
+            symbol: chainConfig.nativeToken.symbol,
+            decimals: chainConfig.nativeToken.decimals,
+            price: tokenPriceData?.price || 0,
+            price24hChange: tokenPriceData?.price24hChange || 0,
+            marketCap: tokenPriceData?.marketCap || 0,
+            volume24h: tokenPriceData?.volume24h || 0,
+          },
+          metrics: {
+            tvl: tvlData?.tvl || 0,
+            tvl24hChange: tvlData?.tvl24hChange || 0,
+            blockTime: metricsData.blockTime,
+            gasPrice: metricsData.gasPrice,
+            activeAddresses: metricsData.activeAddresses,
+            transactionCount24h: metricsData.transactionCount24h,
+            blockHeight: metricsData.blockHeight,
+          },
+          links: {
+            website: chainConfig.website,
+            twitter: chainConfig.twitter,
+            discord: chainConfig.discord,
+            github: chainConfig.github,
+            docs: chainConfig.docs,
+            explorer: chainConfig.explorer,
+          },
+          description: chainConfig.description,
+          rpcUrl: chainConfig.rpcUrl,
+          isTestnet: chainConfig.isTestnet || false,
+          ecosystem: chainConfig.ecosystem,
+          consensusAlgorithm: chainConfig.consensusAlgorithm,
+          launchDate: chainConfig.launchDate,
+        };
+
+        return res.json(response);
       }
+      
+      // Try to fetch from database by name as fallback
+      const [network] = await db.select().from(networks).where(eq(networks.name, chainId));
+      dbNetwork = network;
+    }
+    
+    if (!dbNetwork) {
+      return res.status(404).json({ error: 'Network not found' });
+    }
 
       // Build basic response from database
       const response: NetworkResponse = {
-        name: chain.name,
-        chainId: chainId,
-        logo: chain.iconUrl || '',
+        name: dbNetwork.displayName || dbNetwork.name,
+        chainId: dbNetwork.name, // Use the network name as chainId for compatibility 
+        logo: dbNetwork.iconUrl || '',
         nativeToken: {
           name: 'Unknown',
           symbol: 'UNKNOWN',
@@ -367,57 +429,6 @@ export async function getNetworkDetails(req: Request, res: Response) {
       };
 
       return res.json(response);
-    }
-
-    // Fetch real-time data in parallel
-    const [tokenPriceData, tvlData, metricsData] = await Promise.all([
-      chainConfig.nativeToken.coingeckoId ? 
-        fetchTokenPrice(chainConfig.nativeToken.coingeckoId) : null,
-      fetchChainTVL(chainConfig.name),
-      fetchChainMetrics(chainId),
-    ]);
-
-    // Construct response
-    const response: NetworkResponse = {
-      name: chainConfig.name,
-      chainId: chainId,
-      logo: chainConfig.logo,
-      nativeToken: {
-        name: chainConfig.nativeToken.name,
-        symbol: chainConfig.nativeToken.symbol,
-        decimals: chainConfig.nativeToken.decimals,
-        price: tokenPriceData?.price || 0,
-        price24hChange: tokenPriceData?.price24hChange || 0,
-        marketCap: tokenPriceData?.marketCap || 0,
-        volume24h: tokenPriceData?.volume24h || 0,
-      },
-      metrics: {
-        tvl: tvlData?.tvl || 0,
-        tvl24hChange: tvlData?.tvl24hChange || 0,
-        blockTime: metricsData.blockTime,
-        gasPrice: metricsData.gasPrice,
-        activeAddresses: metricsData.activeAddresses,
-        transactionCount24h: metricsData.transactionCount24h,
-        blockHeight: metricsData.blockHeight,
-        validators: metricsData.validators,
-      },
-      links: {
-        website: chainConfig.website,
-        twitter: chainConfig.twitter,
-        discord: chainConfig.discord,
-        github: chainConfig.github,
-        docs: chainConfig.docs,
-        explorer: chainConfig.explorer,
-      },
-      description: chainConfig.description,
-      rpcUrl: chainConfig.rpcUrl,
-      isTestnet: chainConfig.isTestnet || false,
-      ecosystem: chainConfig.ecosystem,
-      consensusAlgorithm: chainConfig.consensusAlgorithm,
-      launchDate: chainConfig.launchDate,
-    };
-
-    res.json(response);
   } catch (error) {
     console.error('Error fetching network details:', error);
     res.status(500).json({ error: 'Failed to fetch network details' });
