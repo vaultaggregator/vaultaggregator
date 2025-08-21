@@ -1,0 +1,114 @@
+Prompt for Replit:
+
+I want to add a new page to my DeFi aggregator for networks, similar in style to my token and protocol pages.
+
+Requirements:
+
+Route: /network/:chainId
+
+Do not hardcode values. Always fetch from my backend API or public APIs like CoinGecko, Chainlist, or DefiLlama.
+
+The page should display:
+
+Network logo, name, chainId, native token symbol
+
+Native token price, market cap, 24h volume (from CoinGecko)
+
+TVL (from DefiLlama)
+
+Gas fees (gwei), block time, active addresses (from Alchemy or RPC metrics)
+
+Links: official website, Twitter, Discord, GitHub, docs
+
+Layout: same theme as existing pages (Tailwind/shadcn dark cards, rounded corners, responsive).
+
+Include loading and error states.
+
+React Skeleton Example:
+
+// src/pages/NetworkPage.jsx
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+export default function NetworkPage() {
+  const { chainId } = useParams();
+  const [network, setNetwork] = useState(null);
+
+  useEffect(() => {
+    async function fetchNetwork() {
+      try {
+        // Your backend should merge CoinGecko, Chainlist, DefiLlama, Alchemy
+        const res = await fetch(`/api/network/${chainId}`);
+        const data = await res.json();
+        setNetwork(data);
+      } catch (err) {
+        console.error("Failed to fetch network", err);
+      }
+    }
+    fetchNetwork();
+  }, [chainId]);
+
+  if (!network) return <div className="p-6">Loading network data...</div>;
+
+  return (
+    <div className="p-6 text-white">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <img src={network.logo} alt={network.name} className="w-12 h-12 rounded-full" />
+        <div>
+          <h1 className="text-2xl">{network.name}</h1>
+          <p className="text-gray-400">Chain ID: {network.chainId}</p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Native Token</p>
+          <p className="text-lg">{network.nativeToken}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Price</p>
+          <p className="text-lg">${network.price}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Market Cap</p>
+          <p className="text-lg">${network.marketCap}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">24h Volume</p>
+          <p className="text-lg">${network.volume24h}</p>
+        </div>
+      </div>
+
+      {/* Blockchain Metrics */}
+      <h2 className="text-xl mb-3">Blockchain Stats</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">TVL</p>
+          <p className="text-lg">${network.tvl}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Avg Block Time</p>
+          <p className="text-lg">{network.blockTime}s</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Gas Fee</p>
+          <p className="text-lg">{network.gas} gwei</p>
+        </div>
+      </div>
+
+      {/* Social Links */}
+      <h2 className="text-xl mb-3">Socials & Links</h2>
+      <div className="bg-gray-900 rounded-xl p-4">
+        <ul className="space-y-2">
+          <li><a href={network.website} className="text-blue-400" target="_blank" rel="noreferrer">Website</a></li>
+          <li><a href={network.twitter} className="text-blue-400" target="_blank" rel="noreferrer">Twitter</a></li>
+          <li><a href={network.discord} className="text-blue-400" target="_blank" rel="noreferrer">Discord</a></li>
+          <li><a href={network.github} className="text-blue-400" target="_blank" rel="noreferrer">GitHub</a></li>
+          <li><a href={network.docs} className="text-blue-400" target="_blank" rel="noreferrer">Docs</a></li>
+        </ul>
+      </div>
+    </div>
+  );
+}
