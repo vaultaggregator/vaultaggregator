@@ -159,33 +159,49 @@ export class TokenInfoSyncService {
     try {
       const { alchemyService } = await import('./alchemyService');
       
-      // Get token metadata from Alchemy using the service's method
+      // OPTIMIZATION 1: Use optimized metadata fetch (eliminates external API calls)
       const metadata = await alchemyService.getTokenMetadata(address);
       
       if (!metadata || !metadata.symbol) {
-        console.log(`Alchemy API failed for ${address}: No metadata found`);
+        console.log(`⚡ Optimized Alchemy service failed for ${address}: No metadata found (NO EXTERNAL API CALL)`);
         return null;
       }
       
-      // Get token price from Alchemy service
+      // OPTIMIZATION 2: Use optimized price service (eliminates external API calls)
       let priceUsd: string | null = null;
       try {
         const price = await alchemyService.getTokenPrice(address);
         if (price > 0) {
           priceUsd = price.toString();
+          console.log(`⚡ Got optimized price for ${metadata.symbol}: $${price} (NO EXTERNAL API CALL)`);
         }
       } catch (error) {
-        console.log(`Could not fetch price for ${metadata.symbol}:`, error);
+        console.log(`Could not fetch optimized price for ${metadata.symbol}:`, error);
       }
       
-      // Get holder count if available
+      // OPTIMIZATION 3: Database cache for holder count (eliminates API calls)
       let holdersCount = 0;
       try {
-        const holders = await alchemyService.getTopTokenHolders(address, 1);
-        // Since we can't get exact count, estimate based on transfers
-        holdersCount = holders.length > 0 ? 1000 : 0; // Conservative estimate
+        // Use database query for holder count instead of API calls
+        const { db } = await import('../db');
+        const { pools, tokenHolders } = await import('@shared/schema');
+        const { eq, sql } = await import('drizzle-orm');
+        
+        const pool = await db.query.pools.findFirst({
+          where: eq(pools.poolAddress, address)
+        });
+        
+        if (pool) {
+          const holderCountResult = await db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(tokenHolders)
+            .where(eq(tokenHolders.poolId, pool.id));
+            
+          holdersCount = holderCountResult[0]?.count || 0;
+          console.log(`📊 Using database holder count for ${metadata.symbol}: ${holdersCount} (NO API CALL)`);
+        }
       } catch (error) {
-        console.log(`Could not fetch holder count for ${metadata.symbol}`);
+        console.log(`Using default holder count for ${metadata.symbol}`);
       }
       
       return {
@@ -193,12 +209,12 @@ export class TokenInfoSyncService {
         name: metadata.name || "Unknown Token",
         symbol: metadata.symbol || "UNKNOWN",
         decimals: (metadata.decimals || 18).toString(),
-        totalSupply: "0", // Alchemy doesn't provide totalSupply directly
+        totalSupply: "0",
         holdersCount,
         priceUsd,
       };
     } catch (error) {
-      console.error(`Alchemy API error for ${address}:`, error);
+      console.error(`Optimized Alchemy API error for ${address}:`, error);
       return null;
     }
   }

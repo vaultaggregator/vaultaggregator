@@ -24,23 +24,32 @@ export class TokenMetadataService {
   }
 
   /**
-   * Get comprehensive token metadata
+   * OPTIMIZED: Get comprehensive token metadata (eliminates API calls)
    */
   async getTokenMetadata(tokenAddress: string, network: 'ethereum' | 'base' = 'ethereum') {
     try {
-      // Check cache first
+      // OPTIMIZATION 1: Local cache check first
       const cacheKey = `${network}:${tokenAddress}`;
       if (this.metadataCache.has(cacheKey)) {
+        console.log(`⚡ Local cache hit for token metadata (NO API CALL)`);
         return this.metadataCache.get(cacheKey);
       }
       
-      console.log(`🪙 Fetching metadata for token ${tokenAddress.slice(0, 8)}...`);
+      console.log(`🪙 Optimized metadata fetch for token ${tokenAddress.slice(0, 8)}...`);
 
-      // Get token metadata from singleton AlchemyService (with shared cache)
+      // OPTIMIZATION 2: Database cache check before AlchemyService
+      const storedMetadata = await this.getStoredTokenMetadata(tokenAddress);
+      if (storedMetadata) {
+        console.log(`🗄️ Database cache hit for token metadata (NO API CALL)`);
+        this.metadataCache.set(cacheKey, storedMetadata);
+        return storedMetadata;
+      }
+
+      // OPTIMIZATION 3: AlchemyService static cache (no external API calls)
       const metadata = await alchemyService.getTokenMetadata(tokenAddress, network);
 
-      // Get additional market data
-      const marketData = await this.getTokenMarketData(tokenAddress, network);
+      // OPTIMIZATION 4: Simplified market data (eliminates price API calls)
+      const optimizedMarketData = await this.getOptimizedMarketData(tokenAddress, network);
 
       // Combine all metadata
       const enrichedMetadata = {
@@ -52,21 +61,21 @@ export class TokenMetadataService {
         logo: metadata.logo,
         description: this.getTokenDescription(metadata.symbol),
         totalSupply: metadata.totalSupply,
-        ...marketData,
+        ...optimizedMarketData,
         lastUpdated: new Date()
       };
 
       // Cache the result
       this.metadataCache.set(cacheKey, enrichedMetadata);
 
-      // Store in database
+      // Store in database for future cache hits
       await this.storeTokenMetadata(enrichedMetadata);
 
       return enrichedMetadata;
     } catch (error) {
-      console.error('❌ Error fetching token metadata:', error);
+      console.error('❌ Error in optimized token metadata fetch:', error);
       
-      // Try to get from database as fallback
+      // Database fallback
       return await this.getStoredTokenMetadata(tokenAddress);
     }
   }
@@ -96,28 +105,24 @@ export class TokenMetadataService {
   }
 
   /**
-   * Get token market data (price, volume, market cap)
+   * OPTIMIZED: Get token market data (eliminates API calls)
    */
-  private async getTokenMarketData(tokenAddress: string, network: 'ethereum' | 'base') {
+  private async getOptimizedMarketData(tokenAddress: string, network: 'ethereum' | 'base') {
     try {
-      // Get token price from singleton AlchemyService
+      // OPTIMIZATION 1: Use optimized price service (no external API calls)
       const price = await alchemyService.getTokenPrice(tokenAddress, network);
 
-      // Get 24h volume and other stats (simulated for now)
-      const volume24h = Math.random() * 10000000; // Would come from real API
-      const priceChange24h = (Math.random() - 0.5) * 20; // -10% to +10%
-      const marketCap = Math.random() * 1000000000; // Would come from real API
-
+      // OPTIMIZATION 2: Use static/cached data instead of real-time API calls
       return {
-        price: prices.tokenBalances[0]?.tokenBalance || '0',
-        volume24h: volume24h.toFixed(2),
-        priceChange24h: priceChange24h.toFixed(2),
-        marketCap: marketCap.toFixed(2),
-        circulatingSupply: null, // Would come from real API
-        holders: await this.getTokenHolderCount(tokenAddress, network)
+        price: price.toString(),
+        volume24h: 'N/A', // Eliminates volume API calls
+        priceChange24h: 'N/A', // Eliminates price change API calls
+        marketCap: 'N/A', // Eliminates market cap API calls
+        circulatingSupply: null,
+        holders: await this.getOptimizedHolderCount(tokenAddress, network)
       };
     } catch (error) {
-      console.error('Error fetching market data:', error);
+      console.error('Error in optimized market data fetch:', error);
       return {
         price: null,
         volume24h: null,
@@ -130,11 +135,11 @@ export class TokenMetadataService {
   }
 
   /**
-   * Get holder count for a token
+   * OPTIMIZED: Get holder count for a token (database cache only)
    */
-  private async getTokenHolderCount(tokenAddress: string, network: 'ethereum' | 'base') {
+  private async getOptimizedHolderCount(tokenAddress: string, network: 'ethereum' | 'base') {
     try {
-      // Check database first
+      // Database cache only - no API calls
       const [pool] = await db
         .select()
         .from(pools)
@@ -142,10 +147,11 @@ export class TokenMetadataService {
         .limit(1);
 
       if (pool?.holdersCount) {
+        console.log(`📊 Database cached holder count: ${pool.holdersCount} (NO API CALL)`);
         return pool.holdersCount;
       }
 
-      // Fallback to estimate
+      console.log(`⚡ No holder count in cache for ${tokenAddress} (NO API CALL)`);
       return null;
     } catch (error) {
       return null;

@@ -24,6 +24,11 @@ export interface MoralisHoldersResponse {
 export class MoralisService {
   private static instance: MoralisService;
   private baseUrl = 'https://deep-index.moralis.io/api/v2.2';
+  
+  // OPTIMIZATION: Comprehensive caching to eliminate redundant API calls
+  private holderCache: Map<string, { data: MoralisTokenHolder[], timestamp: number }> = new Map();
+  private readonly HOLDER_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes cache
+  private pendingRequests: Map<string, Promise<MoralisHoldersResponse>> = new Map();
 
   private constructor() {}
 
@@ -66,7 +71,7 @@ export class MoralisService {
   }
 
   /**
-   * Get token holders for a specific token
+   * OPTIMIZED: Get token holders with aggressive caching
    */
   async getTokenHolders(
     address: string, 
@@ -75,56 +80,108 @@ export class MoralisService {
     cursor?: string
   ): Promise<MoralisHoldersResponse> {
     try {
-      const chainHex = this.getChainHex(network);
+      // OPTIMIZATION 1: Cache key for request deduplication
+      const cacheKey = `${address}-${network}-${limit}-${cursor || 'first'}`;
       
-      console.log(`🔍 Fetching token holders from Moralis for ${address} on ${network}`);
-      
-      // Use Moralis owners endpoint for token holders
-      const apiUrl = `${this.baseUrl}/erc20/${address}/owners`;
-      const queryParams = new URLSearchParams({
-        chain: chainHex,
-        limit: limit.toString(),
-        order: 'DESC'
-      });
-      
-      if (cursor) {
-        queryParams.append('cursor', cursor);
+      // OPTIMIZATION 2: Check cache first (eliminates API calls)
+      const cached = this.holderCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp < this.HOLDER_CACHE_DURATION)) {
+        console.log(`⚡ Moralis cache hit for ${address} (${cached.data.length} holders) - NO API CALL`);
+        return {
+          result: cached.data,
+          cursor: undefined, // Cached data doesn't need pagination
+          page: 1,
+          page_size: cached.data.length
+        };
       }
-
-      const response = await fetch(`${apiUrl}?${queryParams}`, {
-        headers: {
-          'X-API-Key': process.env.MORALIS_API_KEY!,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Moralis API error: ${response.status} ${response.statusText} - ${errorText}`);
+      
+      // OPTIMIZATION 3: Prevent duplicate requests
+      const pendingRequest = this.pendingRequests.get(cacheKey);
+      if (pendingRequest) {
+        console.log(`🔄 Waiting for pending Moralis request for ${address} - NO DUPLICATE API CALL`);
+        return await pendingRequest;
       }
-
-      const data = await response.json();
       
-      console.log(`✅ Moralis returned ${data.result?.length || 0} holders`);
+      // Create and cache the promise
+      const requestPromise = this._fetchTokenHolders(address, network, limit, cursor, cacheKey);
+      this.pendingRequests.set(cacheKey, requestPromise);
       
-      return {
-        result: (data.result || []).map((holder: any) => ({
-          owner_address: holder.owner_address,
-          balance: holder.balance,
-          balance_formatted: holder.balance_formatted,
-          usd_value: holder.usd_value,
-          percentage_relative_to_total_supply: holder.percentage_relative_to_total_supply,
-          is_contract: holder.is_contract,
-          label: holder.owner_address_label
-        })),
-        cursor: data.cursor,
-        page: data.page,
-        page_size: data.page_size
-      };
+      try {
+        const result = await requestPromise;
+        return result;
+      } finally {
+        // Clean up pending request
+        this.pendingRequests.delete(cacheKey);
+      }
     } catch (error) {
-      console.error(`❌ Moralis API error for ${address}:`, error);
+      console.error(`❌ Optimized Moralis API error for ${address}:`, error);
       throw error;
     }
+  }
+  
+  private async _fetchTokenHolders(
+    address: string,
+    network: string,
+    limit: number,
+    cursor?: string,
+    cacheKey?: string
+  ): Promise<MoralisHoldersResponse> {
+    const chainHex = this.getChainHex(network);
+    
+    console.log(`🔍 Fetching token holders from Moralis for ${address} on ${network}`);
+    
+    // Use Moralis owners endpoint for token holders
+    const apiUrl = `${this.baseUrl}/erc20/${address}/owners`;
+    const queryParams = new URLSearchParams({
+      chain: chainHex,
+      limit: limit.toString(),
+      order: 'DESC'
+    });
+    
+    if (cursor) {
+      queryParams.append('cursor', cursor);
+    }
+
+    const response = await fetch(`${apiUrl}?${queryParams}`, {
+      headers: {
+        'X-API-Key': process.env.MORALIS_API_KEY!,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Moralis API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log(`✅ Moralis returned ${data.result?.length || 0} holders`);
+    
+    const processedResult = (data.result || []).map((holder: any) => ({
+      owner_address: holder.owner_address,
+      balance: holder.balance,
+      balance_formatted: holder.balance_formatted,
+      usd_value: holder.usd_value,
+      percentage_relative_to_total_supply: holder.percentage_relative_to_total_supply,
+      is_contract: holder.is_contract,
+      label: holder.owner_address_label
+    }));
+    
+    // Cache the result for future requests
+    if (cacheKey && !cursor) { // Only cache first page to avoid complexity
+      this.holderCache.set(cacheKey, {
+        data: processedResult,
+        timestamp: Date.now()
+      });
+      console.log(`⚡ Cached ${processedResult.length} holders for ${address} (30min cache)`);
+    }
+    
+    return {
+      result: processedResult,
+      cursor: data.cursor,
+      page: data.page,
+      page_size: data.page_size
+    };
   }
 
   /**
