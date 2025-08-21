@@ -407,15 +407,48 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTokens(): Promise<Token[]> {
-    return await db.select().from(tokens).orderBy(tokens.symbol);
+    // Select specific columns to avoid logoUrl column error
+    return await db.select({
+      id: tokens.id,
+      chainId: tokens.chainId,
+      address: tokens.address,
+      name: tokens.name,
+      symbol: tokens.symbol,
+      decimals: tokens.decimals,
+      isActive: tokens.isActive,
+      createdAt: tokens.createdAt,
+      updatedAt: tokens.updatedAt
+    }).from(tokens).orderBy(tokens.symbol);
   }
 
   async getActiveTokens(): Promise<Token[]> {
-    return await db.select().from(tokens).where(eq(tokens.isActive, true)).orderBy(tokens.symbol);
+    // Select specific columns to avoid logoUrl column error
+    return await db.select({
+      id: tokens.id,
+      chainId: tokens.chainId,
+      address: tokens.address,
+      name: tokens.name,
+      symbol: tokens.symbol,
+      decimals: tokens.decimals,
+      isActive: tokens.isActive,
+      createdAt: tokens.createdAt,
+      updatedAt: tokens.updatedAt
+    }).from(tokens).where(eq(tokens.isActive, true)).orderBy(tokens.symbol);
   }
 
   async getTokensByChain(chainId: string): Promise<Token[]> {
-    return await db.select().from(tokens).where(and(eq(tokens.chainId, chainId), eq(tokens.isActive, true))).orderBy(tokens.symbol);
+    // Select specific columns to avoid logoUrl column error
+    return await db.select({
+      id: tokens.id,
+      chainId: tokens.chainId,
+      address: tokens.address,
+      name: tokens.name,
+      symbol: tokens.symbol,
+      decimals: tokens.decimals,
+      isActive: tokens.isActive,
+      createdAt: tokens.createdAt,
+      updatedAt: tokens.updatedAt
+    }).from(tokens).where(and(eq(tokens.chainId, chainId), eq(tokens.isActive, true))).orderBy(tokens.symbol);
   }
 
   async createToken(token: InsertToken): Promise<Token> {
@@ -424,7 +457,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllTokens(): Promise<Token[]> {
-    return await db.select().from(tokens).orderBy(tokens.symbol);
+    // Select specific columns to avoid logoUrl column error
+    return await db.select({
+      id: tokens.id,
+      chainId: tokens.chainId,
+      address: tokens.address,
+      name: tokens.name,
+      symbol: tokens.symbol,
+      decimals: tokens.decimals,
+      isActive: tokens.isActive,
+      createdAt: tokens.createdAt,
+      updatedAt: tokens.updatedAt
+    }).from(tokens).orderBy(tokens.symbol);
   }
 
   async updateToken(id: string, tokenData: Partial<InsertToken>): Promise<Token | undefined> {
