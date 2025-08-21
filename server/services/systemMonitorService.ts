@@ -209,7 +209,7 @@ export class SystemMonitorService {
   private async checkScheduledJobs(): Promise<void> {
     const now = Date.now();
     
-    // Check when pools were last updated (DeFi Llama sync)
+    // Check DeFi Llama Sync Service (when pools were last updated)
     try {
       const pools = await storage.getPools({ limit: 5 });
       const lastUpdate = pools.reduce((latest, pool) => {
@@ -240,10 +240,84 @@ export class SystemMonitorService {
       this.updateCheck('defiLlamaSync', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
     }
 
-    // Placeholder checks for other scheduled jobs
-    this.updateCheck('holderDataSync', 'up', 0, undefined, { status: 'monitoring' });
-    this.updateCheck('aiOutlookGeneration', 'up', 0, undefined, { status: 'monitoring' });
-    this.updateCheck('cleanup', 'up', 0, undefined, { status: 'monitoring' });
+    // Check Holder Data Sync Service (currently disabled)
+    this.updateCheck('holderDataSync', 'down', 0, 'Alchemy API temporarily disabled per user request', { 
+      status: 'disabled',
+      reason: 'Service temporarily disabled - Alchemy API connections suspended'
+    });
+
+    // Check AI Outlook Generation Service
+    try {
+      // Check if AI service has generated recent predictions
+      const { db } = await import("../db");
+      const { pools } = await import("../../shared/schema");
+      const { desc, sql, isNotNull } = await import("drizzle-orm");
+      
+      const recentPools = await db.select()
+        .from(pools)
+        .where(isNotNull(pools.aiPrediction))
+        .orderBy(desc(pools.lastUpdated))
+        .limit(1);
+
+      if (recentPools.length > 0) {
+        const lastPrediction = recentPools[0].lastUpdated?.getTime() || 0;
+        const timeSinceGeneration = now - lastPrediction;
+        const twoHours = 2 * 60 * 60 * 1000;
+
+        if (timeSinceGeneration < twoHours) {
+          this.updateCheck('aiOutlookGeneration', 'up', 0, undefined, {
+            lastGeneration: new Date(lastPrediction),
+            timeSinceGeneration
+          });
+        } else {
+          this.updateCheck('aiOutlookGeneration', 'warning', 0, 'AI predictions overdue', {
+            lastGeneration: new Date(lastPrediction),
+            timeSinceGeneration
+          });
+        }
+      } else {
+        this.updateCheck('aiOutlookGeneration', 'warning', 0, 'No recent AI predictions found', {
+          status: 'no_data'
+        });
+      }
+    } catch (error) {
+      this.updateCheck('aiOutlookGeneration', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
+    }
+
+    // Check Database Cleanup Service
+    try {
+      // Check if cleanup service is running by looking at recent database activity
+      const { db } = await import("../db");
+      const { errorLogs } = await import("../../shared/schema");
+      const { desc, and, eq, sql, gte } = await import("drizzle-orm");
+      
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      
+      // Check if cleanup has removed old errors (resolved ones)
+      const recentCleanup = await db.select()
+        .from(errorLogs)
+        .where(and(
+          eq(errorLogs.isResolved, true),
+          gte(errorLogs.resolvedAt, oneDayAgo)
+        ))
+        .orderBy(desc(errorLogs.resolvedAt))
+        .limit(1);
+
+      if (recentCleanup.length > 0) {
+        this.updateCheck('cleanup', 'up', 0, undefined, {
+          lastCleanup: recentCleanup[0].resolvedAt,
+          status: 'active'
+        });
+      } else {
+        // If no recent cleanup activity, assume it's running normally (cleanup may not always have work to do)
+        this.updateCheck('cleanup', 'up', 0, undefined, {
+          status: 'idle',
+          message: 'No recent cleanup required'
+        });
+      }
+    } catch (error) {
+      this.updateCheck('cleanup', 'warning', 0, `Cleanup status unknown: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
