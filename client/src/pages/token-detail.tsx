@@ -8,6 +8,8 @@ import { formatCurrency, formatNumber, formatPercentage } from '@/lib/utils';
 import { TrendingUp, TrendingDown, Users, Activity, Coins, ExternalLink, ArrowUpRight, ArrowDownRight, Copy, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 
 interface TokenData {
   name: string;
@@ -97,46 +99,58 @@ export default function TokenDetail() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl">
-        <div className="mb-8">
-          <Skeleton className="h-12 w-64 mb-4" />
-          <Skeleton className="h-6 w-96" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <Skeleton className="h-4 w-20 mb-2" />
-                <Skeleton className="h-8 w-32" />
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header onAdminClick={() => {}} />
+        <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-3">
+          <div className="container mx-auto p-6 max-w-7xl">
+            <div className="mb-8">
+              <Skeleton className="h-12 w-64 mb-4" />
+              <Skeleton className="h-6 w-96" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              {[1, 2, 3, 4].map(i => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-8 w-32" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card className="mb-8">
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-64 w-full" />
               </CardContent>
             </Card>
-          ))}
-        </div>
-        <Card className="mb-8">
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   if (error || !tokenData) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl">
-        <Card className="border-red-500/20">
-          <CardContent className="p-12 text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Failed to Load Token Data</h2>
-            <p className="text-gray-400 mb-6">{error?.message || 'Unable to fetch token information'}</p>
-            <Link href="/">
-              <Button variant="outline">Return to Home</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Header onAdminClick={() => {}} />
+        <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-3">
+          <div className="container mx-auto p-6 max-w-7xl">
+            <Card className="border-red-500/20">
+              <CardContent className="p-12 text-center">
+                <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold mb-2">Failed to Load Token Data</h2>
+                <p className="text-gray-400 mb-6">{error?.message || 'Unable to fetch token information'}</p>
+                <Link href="/">
+                  <Button variant="outline">Return to Home</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
@@ -145,7 +159,10 @@ export default function TokenDetail() {
   const priceChangeIcon = tokenData.price24hChange >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />;
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header onAdminClick={() => {}} />
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2 sm:py-3">
+        <div className="container mx-auto p-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
@@ -427,6 +444,9 @@ export default function TokenDetail() {
           )}
         </CardContent>
       </Card>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -13,7 +13,7 @@ import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";
 import { getCategoryIcon } from "@/components/category-icons";
-import { ProtocolLink, NetworkLink, PoolLink } from "@/components/entity-links";
+import { ProtocolLink, NetworkLink, PoolLink, ClickableContainer } from "@/components/entity-links";
 
 import { generateYieldUrl } from "@/lib/seo-urls";
 import { formatHolders } from "@/lib/format";
@@ -54,9 +54,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
   };
 
   return (
-    <div onClick={handleCardClick} className="block cursor-pointer">
-      <Card className={`bg-card cursor-pointer card-hover ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-soft border border-border hover:shadow-medium hover:border-accent-primary/50 border-l-4 border-l-transparent hover:border-l-accent-primary' : 'rounded-none shadow-none border-0 hover:bg-muted/50'}`}>
-        <CardContent className="p-2 sm:p-3">
+    <ClickableContainer>
+      <div onClick={handleCardClick} className="block cursor-pointer">
+        <Card className={`bg-card cursor-pointer card-hover ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-soft border border-border hover:shadow-medium hover:border-accent-primary/50 border-l-4 border-l-transparent hover:border-l-accent-primary' : 'rounded-none shadow-none border-0 hover:bg-muted/50'}`}>
+          <CardContent className="p-2 sm:p-3">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
           {/* Left section - Token and Platform info */}
           <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -347,8 +348,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </ClickableContainer>
   );
 }

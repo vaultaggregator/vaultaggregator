@@ -1,5 +1,25 @@
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
+import { useContext, createContext } from "react";
+
+// Context to track if we're inside a clickable container
+const ClickableContainerContext = createContext(false);
+
+// Provider component for clickable containers
+export function ClickableContainer({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <ClickableContainerContext.Provider value={true}>
+      <div className={className}>
+        {children}
+      </div>
+    </ClickableContainerContext.Provider>
+  );
+}
+
+// Hook to check if we're inside a clickable container
+function useInClickableContainer() {
+  return useContext(ClickableContainerContext);
+}
 
 // Protocol Link Component
 interface ProtocolLinkProps {
@@ -19,6 +39,15 @@ interface ProtocolLinkProps {
 export function ProtocolLink({ protocol, chain, className, children }: ProtocolLinkProps) {
   const displayText = children || protocol.displayName || protocol.name;
   const href = `/protocol/${chain.id}/${protocol.id}`;
+  const inClickableContainer = useInClickableContainer();
+  
+  if (inClickableContainer) {
+    return (
+      <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted", className)}>
+        {displayText}
+      </span>
+    );
+  }
   
   return (
     <Link href={href}>
@@ -43,6 +72,15 @@ interface NetworkLinkProps {
 export function NetworkLink({ network, className, children }: NetworkLinkProps) {
   const displayText = children || network.displayName || network.name;
   const href = `/network/${network.id}`;
+  const inClickableContainer = useInClickableContainer();
+  
+  if (inClickableContainer) {
+    return (
+      <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted", className)}>
+        {displayText}
+      </span>
+    );
+  }
   
   return (
     <Link href={href}>
@@ -71,6 +109,15 @@ interface TokenLinkProps {
 export function TokenLink({ token, chain, className, children }: TokenLinkProps) {
   const displayText = children || token.symbol || token.name || "Token";
   const href = `/token/${chain.id}/${token.address}`;
+  const inClickableContainer = useInClickableContainer();
+  
+  if (inClickableContainer) {
+    return (
+      <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted", className)}>
+        {displayText}
+      </span>
+    );
+  }
   
   return (
     <Link href={href}>
@@ -94,6 +141,15 @@ interface PoolLinkProps {
 export function PoolLink({ pool, className, children }: PoolLinkProps) {
   const displayText = children || pool.tokenPair;
   const href = `/pool/${pool.id}`;
+  const inClickableContainer = useInClickableContainer();
+  
+  if (inClickableContainer) {
+    return (
+      <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted", className)}>
+        {displayText}
+      </span>
+    );
+  }
   
   return (
     <Link href={href}>
@@ -115,6 +171,15 @@ interface AddressLinkProps {
 export function AddressLink({ address, className, children, showShortened = true }: AddressLinkProps) {
   const displayText = children || (showShortened ? `${address.slice(0, 6)}...${address.slice(-4)}` : address);
   const href = `/profile/${address}`;
+  const inClickableContainer = useInClickableContainer();
+  
+  if (inClickableContainer) {
+    return (
+      <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted font-mono", className)}>
+        {displayText}
+      </span>
+    );
+  }
   
   return (
     <Link href={href}>
