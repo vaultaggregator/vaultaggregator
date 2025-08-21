@@ -439,13 +439,8 @@ export class HolderService {
         formattedBalance = balance / Math.pow(10, 18); // Assuming 18 decimals
       }
       
-      // For TAC USDC, apply vault exchange rate
-      let usdValue = formattedBalance * tokenPrice;
-      if (tokenAddress.toLowerCase() === '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741') {
-        // TAC USDC vault token - 1 TAC USDC = 3.6 USDC
-        usdValue = formattedBalance * 3.6;
-        console.log(`💰 TAC USDC holder ${holder.address.substring(0, 10)}...: ${formattedBalance.toFixed(2)} TAC @ $3.6 = $${usdValue.toFixed(2)}`);
-      }
+      // Calculate USD value using the detected token price
+      const usdValue = formattedBalance * tokenPrice;
       
       const poolSharePercentage = totalSupply > 0 ? (balance / totalSupply) * 100 : 0;
 
