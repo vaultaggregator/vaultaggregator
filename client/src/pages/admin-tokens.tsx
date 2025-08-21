@@ -9,6 +9,7 @@ import { PoolDataLoading } from "@/components/loading-animations";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { AddressLink, NetworkLink } from "@/components/entity-links";
+import AdminHeader from "@/components/admin-header";
 
 interface Token {
   id: string;
@@ -194,28 +195,19 @@ export default function AdminTokensPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
+      <AdminHeader />
+      
+      {/* Page Header */}
+      <div className="bg-white dark:bg-gray-800 shadow border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                onClick={() => navigate("/admin")}
-                variant="ghost"
-                size="sm"
-                data-testid="button-back"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Token Management
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Manage token metadata and information
-                </p>
-              </div>
+          <div className="py-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Token Management
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Manage token metadata and information
+              </p>
             </div>
           </div>
         </div>
