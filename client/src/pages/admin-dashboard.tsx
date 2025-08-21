@@ -606,12 +606,12 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Select value={selectedChains.join(',')} onValueChange={(value) => setSelectedChains(value ? value.split(',') : [])}>
+                  <Select value={selectedChains.length > 0 ? selectedChains.join(',') : 'all'} onValueChange={(value) => setSelectedChains(value === 'all' ? [] : value.split(','))}>
                     <SelectTrigger className="w-40" data-testid="select-chain">
                       <SelectValue placeholder="All Chains" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Chains</SelectItem>
+                      <SelectItem value="all">All Chains</SelectItem>
                       {chains.map((chain) => (
                         <SelectItem key={chain.id} value={chain.id}>
                           {chain.name}
@@ -619,12 +619,12 @@ export default function AdminDashboard() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={selectedPlatforms.join(',')} onValueChange={(value) => setSelectedPlatforms(value ? value.split(',') : [])}>
+                  <Select value={selectedPlatforms.length > 0 ? selectedPlatforms.join(',') : 'all'} onValueChange={(value) => setSelectedPlatforms(value === 'all' ? [] : value.split(','))}>
                     <SelectTrigger className="w-40" data-testid="select-platform">
                       <SelectValue placeholder="All Platforms" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Platforms</SelectItem>
+                      <SelectItem value="all">All Platforms</SelectItem>
                       {platforms.map((platform) => (
                         <SelectItem key={platform.id} value={platform.id}>
                           {platform.name}
@@ -632,12 +632,12 @@ export default function AdminDashboard() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={visibilityFilters.join(',')} onValueChange={(value) => setVisibilityFilters(value ? value.split(',') : [])}>
+                  <Select value={visibilityFilters.length > 0 ? visibilityFilters.join(',') : 'all'} onValueChange={(value) => setVisibilityFilters(value === 'all' ? [] : value.split(','))}>
                     <SelectTrigger className="w-40" data-testid="select-visibility">
                       <SelectValue placeholder="Visibility" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All</SelectItem>
+                      <SelectItem value="all">All</SelectItem>
                       <SelectItem value="true">Visible</SelectItem>
                       <SelectItem value="false">Hidden</SelectItem>
                     </SelectContent>
