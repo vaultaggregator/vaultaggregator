@@ -80,7 +80,7 @@ export default function AdminErrors() {
   // Resolve error mutation
   const resolveErrorMutation = useMutation({
     mutationFn: async (errorId: string) => {
-      return apiRequest(`/api/admin/errors/${errorId}/resolve`, 'POST', { 
+      return apiRequest('POST', `/api/admin/errors/${errorId}/resolve`, { 
         resolvedBy: (user as any)?.username || 'admin' 
       });
     },

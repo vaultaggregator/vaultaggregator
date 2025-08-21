@@ -77,7 +77,7 @@ export default function AdminApiSettings() {
       isEnabled: boolean; 
       disabledReason?: string;
     }) => {
-      return apiRequest(`/api/api-settings/${serviceName}/toggle`, 'PATCH', {
+      return apiRequest('PATCH', `/api/api-settings/${serviceName}/toggle`, {
         isEnabled, 
         disabledReason 
       });
@@ -105,7 +105,7 @@ export default function AdminApiSettings() {
   // Sync APIs mutation
   const syncApisMutation = useMutation({
     mutationFn: ({ removeOrphaned = false }: { removeOrphaned?: boolean } = {}) =>
-      apiRequest("/api/api-settings/sync", 'POST', { removeOrphaned }),
+      apiRequest('POST', "/api/api-settings/sync", { removeOrphaned }),
     onSuccess: (result: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/api-settings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/api-settings/status-summary"] });

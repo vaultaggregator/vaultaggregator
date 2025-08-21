@@ -38,7 +38,7 @@ export default function AdminPanel() {
 
   const updatePoolMutation = useMutation({
     mutationFn: async ({ poolId, updates }: { poolId: string; updates: Partial<Pool> }) => {
-      await apiRequest(`/api/admin/pools/${poolId}`, "PATCH", updates);
+      await apiRequest("PATCH", `/api/admin/pools/${poolId}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });

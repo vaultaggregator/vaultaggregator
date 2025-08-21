@@ -41,7 +41,7 @@ export default function AdminLogoManagement() {
   // Bulk update mutation
   const updateAllMutation = useMutation<LogoUpdateResult>({
     mutationFn: async () => {
-      const response = await apiRequest("/api/admin/logos/update-all", { method: "POST" });
+      const response = await apiRequest("POST", "/api/admin/logos/update-all");
       return response as LogoUpdateResult;
     },
     onSuccess: (data: LogoUpdateResult) => {
@@ -64,7 +64,7 @@ export default function AdminLogoManagement() {
   // Individual platform update mutation
   const updatePlatformMutation = useMutation<any, Error, string>({
     mutationFn: async (platformName: string) => {
-      const response = await apiRequest(`/api/admin/logos/update/${platformName}`, { method: "POST" });
+      const response = await apiRequest("POST", `/api/admin/logos/update/${platformName}`);
       return response;
     },
     onSuccess: (data: any) => {

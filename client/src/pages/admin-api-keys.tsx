@@ -37,7 +37,7 @@ export default function AdminApiKeys() {
 
   const createApiKeyMutation = useMutation({
     mutationFn: async (data: { name: string; tier: string }) => {
-      return await apiRequest("/api/admin/api-keys", "POST", data);
+      return await apiRequest("POST", "/api/admin/api-keys", data);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/api-keys"] });
@@ -61,7 +61,7 @@ export default function AdminApiKeys() {
 
   const deleteApiKeyMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/admin/api-keys/${id}`, "DELETE");
+      return await apiRequest("DELETE", `/api/admin/api-keys/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/api-keys"] });

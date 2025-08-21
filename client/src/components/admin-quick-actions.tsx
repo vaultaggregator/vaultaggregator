@@ -44,7 +44,7 @@ export default function AdminQuickActions() {
   // System maintenance mutations
   const restartServiceMutation = useMutation({
     mutationFn: async (service: string) => {
-      return await apiRequest(`/api/admin/system/restart/${service}`, "POST");
+      return await apiRequest("POST", `/api/admin/system/restart/${service}`);
     },
     onSuccess: (_, service) => {
       toast({
@@ -64,7 +64,7 @@ export default function AdminQuickActions() {
 
   const clearCacheMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/admin/system/clear-cache", "POST");
+      return await apiRequest("POST", "/api/admin/system/clear-cache");
     },
     onSuccess: () => {
       toast({
@@ -83,7 +83,7 @@ export default function AdminQuickActions() {
 
   const runHealthCheckMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/admin/system/health-check", "POST");
+      return await apiRequest("POST", "/api/admin/system/health-check");
     },
     onSuccess: () => {
       toast({
@@ -103,7 +103,7 @@ export default function AdminQuickActions() {
 
   const backupDataMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/admin/system/backup", "POST");
+      return await apiRequest("POST", "/api/admin/system/backup");
     },
     onSuccess: () => {
       toast({
