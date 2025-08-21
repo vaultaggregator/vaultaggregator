@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Settings, AlertTriangle, CheckCircle, XCircle, Clock, RefreshCw, Info } from "lucide-react";
 import { type ApiSettings } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import AdminHeader from "@/components/admin-header";
 
 function getHealthStatusIcon(status: string) {
   switch (status) {
@@ -156,20 +157,25 @@ export default function AdminApiSettings() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Error Loading API Settings</h2>
-          <p className="text-muted-foreground">
-            {error instanceof Error ? error.message : 'An unknown error occurred'}
-          </p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <AdminHeader />
+        <div className="container mx-auto p-6">
+          <div className="text-center">
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold mb-2">Error Loading API Settings</h2>
+            <p className="text-muted-foreground">
+              {error instanceof Error ? error.message : 'An unknown error occurred'}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6" data-testid="admin-api-settings-page">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <AdminHeader />
+      <div className="container mx-auto p-6" data-testid="admin-api-settings-page">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <Settings className="h-6 w-6" />
@@ -348,6 +354,7 @@ export default function AdminApiSettings() {
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }
