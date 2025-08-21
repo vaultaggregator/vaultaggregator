@@ -453,7 +453,7 @@ export function ProtocolDetailPage() {
           <TabsContent value="holders" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Top Protocol Holders</CardTitle>
+                <CardTitle>Top 5 Holders</CardTitle>
                 <CardDescription>
                   Largest holders of {protocol.name} positions
                 </CardDescription>
@@ -472,7 +472,7 @@ export function ProtocolDetailPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {protocol.topHolders.map((holder) => (
+                        {protocol.topHolders.slice(0, 5).map((holder) => (
                           <tr key={holder.address} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50">
                             <td className="py-3">
                               <Badge variant="outline">#{holder.rank}</Badge>
