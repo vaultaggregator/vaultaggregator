@@ -718,7 +718,7 @@ export class AlchemyService {
       // This is a workaround since Alchemy doesn't have direct price API
       // We'll use token balance comparisons and known prices
       
-      // Check if it's a known stablecoin
+      // Check if it's a known stablecoin or vault token
       const stablecoins = [
         '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
         '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
@@ -726,7 +726,14 @@ export class AlchemyService {
         '0x4fabb145d64652a948d72533023f6e7a623c7c53', // BUSD
       ];
       
-      if (stablecoins.includes(tokenAddress.toLowerCase())) {
+      // Check if it's a known vault token that tracks USD
+      const vaultTokens = Object.keys(AlchemyService.COMMON_TOKENS)
+        .filter(addr => {
+          const token = AlchemyService.COMMON_TOKENS[addr];
+          return token.symbol?.includes('USD') || token.name?.includes('USD');
+        });
+      
+      if (stablecoins.includes(tokenAddress.toLowerCase()) || vaultTokens.includes(tokenAddress.toLowerCase())) {
         return 1.0;
       }
       
