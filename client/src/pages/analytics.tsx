@@ -558,7 +558,7 @@ export default function Analytics() {
                           <div className="text-right">
                             <div className="font-bold text-foreground">{formatTvl(risk.tvl)}</div>
                             <div className="text-sm text-muted-foreground">
-                              {((risk.tvl / parseFloat(stats?.totalTvl?.replace(/,/g, '') || '0')) * 100).toFixed(1)}% of total
+                              {((risk.tvl / (stats?.totalTvl || 0)) * 100).toFixed(1)}% of total
                             </div>
                           </div>
                         </div>
