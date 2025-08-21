@@ -11,14 +11,11 @@ export const API_SERVICES_CONFIG: Record<string, Omit<InsertApiSettings, 'id' | 
     displayName: "Alchemy API",
     description: "Blockchain data provider for token holders, metadata, and balances",
     baseUrl: "https://eth-mainnet.g.alchemy.com/v2/",
-    isEnabled: false, // Currently disabled per user request
+    isEnabled: true,
     category: "blockchain",
     priority: 1,
     rateLimitRpm: 300,
-    healthStatus: "down",
-    disabledReason: "Temporarily disabled per user request",
-    disabledBy: "admin",
-    disabledAt: new Date(),
+    healthStatus: "healthy",
   },
   
   etherscan_api: {

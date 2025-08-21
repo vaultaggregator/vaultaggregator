@@ -115,11 +115,52 @@ export class SystemMonitorService {
    */
   private async runAllHealthChecks(): Promise<void> {
     await Promise.allSettled([
+      this.checkAlchemyAPI(),
       this.checkEtherscanAPI(),
       this.checkDefiLlamaAPI(),
       this.checkDatabaseHealth(),
       this.checkScheduledJobs()
     ]);
+  }
+
+  /**
+   * Check Alchemy API health
+   */
+  private async checkAlchemyAPI(): Promise<void> {
+    try {
+      // Test with a simple blockNumber request
+      const response = await fetch('http://localhost:5000/api/test/alchemy/blockNumber');
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.blockNumber && data.blockNumberDecimal) {
+          // Update database health status
+          await fetch('http://localhost:5000/api/api-settings/alchemy_api/health', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ healthStatus: 'healthy', errorCount: 0 })
+          });
+          
+          this.updateCheck('alchemy', 'up', 0, undefined, {
+            blockNumber: data.blockNumberDecimal,
+            status: 'healthy'
+          });
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      // Update database health status  
+      await fetch('http://localhost:5000/api/api-settings/alchemy_api/health', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ healthStatus: 'down', errorCount: 1 })
+      });
+      
+      this.updateCheck('alchemy', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
+    }
   }
 
   /**
