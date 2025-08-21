@@ -35,9 +35,12 @@ export class AISchedulerService {
     // Load configuration from environment or use defaults
     const envEnabled = process.env.AI_SCHEDULER_ENABLED;
     const envInterval = process.env.AI_SCHEDULER_INTERVAL_HOURS;
+    
+    // Check if OpenAI API is available to auto-enable the service
+    const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
 
     this.config = {
-      enabled: envEnabled === 'true',
+      enabled: envEnabled === 'true' || (envEnabled !== 'false' && hasOpenAIKey), // Auto-enable if API key exists
       intervalHours: envInterval ? parseInt(envInterval) : 24,
     };
 
