@@ -714,17 +714,19 @@ export class AlchemyService {
         }
       }
       
-      // OPTIMIZATION 2: Known stablecoin addresses (eliminates API calls)
-      const stablecoins = [
-        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
-        '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
-        '0x6b175474e89094c44da98b954eedeac495271d0f', // DAI
-        '0x4fabb145d64652a948d72533023f6e7a623c7c53', // BUSD
-      ];
+      // OPTIMIZATION 2: Universal stablecoin detection (eliminates API calls for ALL stablecoins)
+      const { StablecoinDetector } = await import('../utils/stablecoinDetector');
       
-      if (stablecoins.includes(tokenAddress.toLowerCase())) {
-        console.log(`💵 Stablecoin detected: $1.00 (NO API CALL)`);
-        return 1.0;
+      // Check if token is a stablecoin by address first
+      if (StablecoinDetector.isStablecoinByAddress(tokenAddress)) {
+        StablecoinDetector.logStablecoinDetection(tokenAddress, 'address', cachedToken?.name, cachedToken?.symbol);
+        return StablecoinDetector.getStablecoinPrice();
+      }
+      
+      // Smart stablecoin detection by name/symbol patterns (works for ANY stablecoin)
+      if (cachedToken && StablecoinDetector.isStablecoinByNameOrSymbol(cachedToken.name, cachedToken.symbol)) {
+        StablecoinDetector.logStablecoinDetection(tokenAddress, 'pattern', cachedToken.name, cachedToken.symbol);
+        return StablecoinDetector.getStablecoinPrice();
       }
       
       // OPTIMIZATION 3: Static pricing for major tokens (eliminates API calls)

@@ -240,9 +240,23 @@ export class HolderService {
     try {
       console.log(`🔍 getTokenPrice called for ${tokenAddress}`);
       
-      // OPTIMIZATION 1: Static cache lookup first (eliminates API calls for vault tokens)
+      // OPTIMIZATION 1: Universal stablecoin detection first (works for ANY stablecoin)
+      const { StablecoinDetector } = await import('../utils/stablecoinDetector');
+      
+      // Check by address first (fastest method)
+      if (StablecoinDetector.isStablecoinByAddress(tokenAddress)) {
+        StablecoinDetector.logStablecoinDetection(tokenAddress, 'address');
+        return StablecoinDetector.getStablecoinPrice();
+      }
+      
       const staticToken = (alchemyService as any).constructor.COMMON_TOKENS?.[tokenAddress.toLowerCase()];
       if (staticToken) {
+        // Smart stablecoin detection by name/symbol
+        if (StablecoinDetector.isStablecoinByNameOrSymbol(staticToken.name, staticToken.symbol)) {
+          StablecoinDetector.logStablecoinDetection(tokenAddress, 'pattern', staticToken.name, staticToken.symbol);
+          return StablecoinDetector.getStablecoinPrice();
+        }
+        
         console.log(`⚡ Using static cache for ${staticToken.symbol}: $1.00 (NO API CALL)`);
         return 1.0;
       }
