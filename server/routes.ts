@@ -69,6 +69,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const protocolRoutes = (await import("./routes/protocols")).default;
   app.use(protocolRoutes);
 
+  // Import and register admin services routes
+  const adminServicesRoutes = (await import("./routes/admin-services")).default;
+  app.use('/api', adminServicesRoutes);
+
   // Add new protocol route for slug-based URLs
   app.get('/api/protocols/:slug', async (req, res) => {
     try {
