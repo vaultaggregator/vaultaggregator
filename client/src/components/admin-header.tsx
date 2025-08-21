@@ -21,6 +21,7 @@ export function AdminHeader() {
     { path: "/admin", icon: BarChart3, label: "Dashboard" },
     { path: "/admin/system", icon: Monitor, label: "System", highlight: "system" },
     { path: "/admin/services", icon: Activity, label: "Service Monitor", highlight: "service" },
+    { path: "/admin/api-settings", icon: Settings, label: "API Settings", highlight: "service" },
     { path: "/admin/pools", icon: Layers, label: "Pool Management" },
 
     { path: "/admin-platforms", icon: Database, label: "Platforms" },

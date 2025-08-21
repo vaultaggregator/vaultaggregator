@@ -24,6 +24,28 @@ export const apiKeys = pgTable("api_keys", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// API Settings table for controlling external data sources
+export const apiSettings = pgTable("api_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceName: varchar("service_name", { length: 100 }).notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  baseUrl: text("base_url"),
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  category: varchar("category", { length: 50 }).notNull().default("data"), // data, ai, blockchain
+  priority: integer("priority").notNull().default(1), // 1=high, 2=medium, 3=low
+  rateLimitRpm: integer("rate_limit_rpm"), // requests per minute
+  healthStatus: varchar("health_status", { length: 50 }).notNull().default("unknown"), // healthy, degraded, down, unknown
+  lastHealthCheck: timestamp("last_health_check"),
+  errorCount: integer("error_count").notNull().default(0),
+  lastErrorAt: timestamp("last_error_at"),
+  disabledReason: text("disabled_reason"),
+  disabledBy: varchar("disabled_by"), 
+  disabledAt: timestamp("disabled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const apiKeyUsage = pgTable("api_key_usage", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   apiKeyId: varchar("api_key_id").references(() => apiKeys.id).notNull(),
@@ -672,6 +694,12 @@ export const insertApiKeyUsageSchema = createInsertSchema(apiKeyUsage).omit({
   timestamp: true,
 });
 
+export const insertApiSettingsSchema = createInsertSchema(apiSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertChainSchema = createInsertSchema(chains).omit({
   id: true,
   createdAt: true,
@@ -853,6 +881,9 @@ export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
 
 export type ApiKeyUsage = typeof apiKeyUsage.$inferSelect;
 export type InsertApiKeyUsage = z.infer<typeof insertApiKeyUsageSchema>;
+
+export type ApiSettings = typeof apiSettings.$inferSelect;
+export type InsertApiSettings = z.infer<typeof insertApiSettingsSchema>;
 
 export type Chain = typeof chains.$inferSelect;
 export type InsertChain = z.infer<typeof insertChainSchema>;

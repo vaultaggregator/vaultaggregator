@@ -31,6 +31,7 @@ import AdminSystem from "@/pages/admin-system";
 import AdminPanel from "@/pages/admin-panel";
 import AdminPools from "@/pages/admin-pools";
 import AdminServices from "@/pages/admin-services";
+import AdminApiSettings from "@/pages/AdminApiSettings";
 
 
 
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/system" component={AdminSystem} />
       <Route path="/admin/services" component={AdminServices} />
+      <Route path="/admin/api-settings" component={AdminApiSettings} />
       <Route path="/admin/panel" component={AdminPanel} />
       <Route path="/admin/pools" component={AdminPools} />
       <Route path="/admin-pools" component={AdminPools} />
