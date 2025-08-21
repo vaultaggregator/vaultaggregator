@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, ComposedChart, Area } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { formatTvl } from '@/lib/format';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface ChartDataPoint {
   timestamp: number;
@@ -23,8 +24,8 @@ interface PoolChartProps {
   className?: string;
 }
 
-type TimeRange = '24H' | '7D' | '1M' | '3M' | '1Y' | 'Max';
-type ChartType = 'apy' | 'tvl' | 'both';
+type TimeRange = '1H' | '1D' | '1W' | '1M' | '3M' | '1Y';
+type ChartType = 'apy' | 'tvl';
 
 // Fetch real historical data from API
 const useHistoricalData = (poolId: string, days: number) => {
@@ -45,7 +46,7 @@ const useHistoricalData = (poolId: string, days: number) => {
 // Dynamic timeRange configs are now created inside the component based on actual pool data
 
 export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className }: PoolChartProps) {
-  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('7D');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('1W');
   const [chartType, setChartType] = useState<ChartType>('apy');
 
   // Fetch pool data to get actual operating days for dynamic "Max" timeframe
@@ -59,21 +60,18 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     staleTime: 5 * 60 * 1000,
   });
 
-  // Create dynamic timeRange configs based on actual pool operating days
-  const dynamicTimeRangeConfigs = useMemo(() => {
-    const operatingDays = poolData?.operatingDays || 730; // fallback if data not loaded
-    return {
-      '24H': { days: 1, label: '24H' },
-      '7D': { days: 7, label: '7D' },
-      '1M': { days: 30, label: '1M' },
-      '3M': { days: 90, label: '3M' },
-      '1Y': { days: 365, label: '1Y' },
-      'Max': { days: Math.max(operatingDays + 10, 400), label: 'Max' } // Use actual operating days + buffer
-    };
-  }, [poolData?.operatingDays]);
+  // Create timeRange configs matching Pendle style
+  const timeRangeConfigs = {
+    '1H': { days: 0.042, label: '1H' }, // 1 hour
+    '1D': { days: 1, label: '1D' },
+    '1W': { days: 7, label: '1W' },
+    '1M': { days: 30, label: '1M' },
+    '3M': { days: 90, label: '3M' },
+    '1Y': { days: 365, label: '1Y' }
+  };
 
   // Fetch real historical data based on selected time range
-  const config = dynamicTimeRangeConfigs[selectedTimeRange];
+  const config = timeRangeConfigs[selectedTimeRange];
   const { data: historicalData, isLoading, error } = useHistoricalData(poolId, config.days);
 
   // Process historical data for display - 100% authentic data only
@@ -284,282 +282,224 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
   }
 
   return (
-    <Card className={cn('w-full', className)}>
-      <CardContent className="p-6">
-        {/* Header with current values and change */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {tokenPair} Performance
-            </h3>
-            
-            {/* Chart Type Toggle */}
-            <div className="flex items-center space-x-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+    <Card className={cn('w-full bg-[#0b1217] border-[#1a2332]', className)}>
+      <CardContent className="p-0">
+        {/* Pendle-style header with large APY display */}
+        <div className="p-6 pb-4 border-b border-[#1a2332]">
+          <div className="flex items-start justify-between mb-4">
+            {/* Left: Large APY display */}
+            <div>
+              <div className="flex items-baseline gap-3">
+                <span className="text-4xl font-bold text-white">
+                  {stats ? formatApy(stats.apy.current) : formatApy(currentApy)}
+                </span>
+                {stats && (
+                  <span className={cn(
+                    'text-sm font-medium flex items-center gap-1',
+                    stats.apy.change > 0 ? 'text-green-400' : stats.apy.change < 0 ? 'text-red-400' : 'text-gray-400'
+                  )}>
+                    {stats.apy.change > 0 && <TrendingUp className="w-3 h-3" />}
+                    {stats.apy.change < 0 && <TrendingDown className="w-3 h-3" />}
+                    {Math.abs(stats.apy.change).toFixed(2)}% (Past {selectedTimeRange})
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-gray-400 mt-1">
+                {tokenPair} APY
+              </p>
+            </div>
+
+            {/* Right: Chart type selector */}
+            <div className="flex items-center gap-2">
               <Button
-                variant={chartType === 'apy' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setChartType('apy')}
-                className="text-xs"
+                className={cn(
+                  "text-xs font-medium px-3 py-1 h-7",
+                  chartType === 'apy' 
+                    ? "bg-[#1a2332] text-cyan-400 hover:bg-[#1a2332]" 
+                    : "text-gray-400 hover:text-white hover:bg-[#1a2332]"
+                )}
               >
                 APY
               </Button>
               <Button
-                variant={chartType === 'tvl' ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setChartType('tvl')}
-                className="text-xs"
+                className={cn(
+                  "text-xs font-medium px-3 py-1 h-7",
+                  chartType === 'tvl' 
+                    ? "bg-[#1a2332] text-cyan-400 hover:bg-[#1a2332]" 
+                    : "text-gray-400 hover:text-white hover:bg-[#1a2332]"
+                )}
               >
                 TVL
               </Button>
-              <Button
-                variant={chartType === 'both' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setChartType('both')}
-                className="text-xs"
-              >
-                Both
-              </Button>
             </div>
           </div>
 
-          {/* Current values and statistics */}
-          {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              {(chartType === 'apy' || chartType === 'both') && (
-                <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-4">
-                  <div className="text-sm text-green-700 dark:text-green-300 mb-1">Current APY</div>
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">
-                    {formatApy(stats.apy.current)}
-                  </div>
-                  <div className={cn('text-sm flex items-center', getChangeColor(stats.apy.change))}>
-                    {getChangeIcon(stats.apy.change)} {Math.abs(stats.apy.change).toFixed(2)}% ({selectedTimeRange})
-                  </div>
-                  <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    Avg: {formatApy(stats.apy.avg)} | Range: {formatApy(stats.apy.min)} - {formatApy(stats.apy.max)}
-                  </div>
-                </div>
-              )}
-
-              {(chartType === 'tvl' || chartType === 'both') && stats.tvl && (
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
-                  <div className="text-sm text-blue-700 dark:text-blue-300 mb-1">Current TVL</div>
-                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                    {formatTvl(stats.tvl.current || 0)}
-                  </div>
-                  <div className={cn('text-sm flex items-center', getChangeColor(stats.tvl.change))}>
-                    {getChangeIcon(stats.tvl.change)} {formatTvl(Math.abs(stats.tvl.change))} ({selectedTimeRange})
-                  </div>
-                  <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    Avg: {formatTvl(stats.tvl.avg)} | Range: {formatTvl(stats.tvl.min)} - {formatTvl(stats.tvl.max)}
-                  </div>
-                </div>
-              )}
-              
-              {(chartType === 'tvl' || chartType === 'both') && !stats.tvl && (
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 rounded-lg p-4">
-                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-1">TVL Data</div>
-                  <div className="text-lg text-gray-500 dark:text-gray-400">
-                    Historical TVL not available for this platform
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Timeline buttons - CoinGecko style */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            {(Object.keys(dynamicTimeRangeConfigs) as TimeRange[]).map((range) => (
+          {/* Time range selector - Pendle style */}
+          <div className="flex items-center gap-1">
+            {(Object.keys(timeRangeConfigs) as TimeRange[]).map((range) => (
               <Button
                 key={range}
-                variant={selectedTimeRange === range ? 'default' : 'ghost'}
+                variant="ghost"
                 size="sm"
                 onClick={() => setSelectedTimeRange(range)}
-                className="text-xs font-medium px-3 py-1"
+                className={cn(
+                  "text-xs font-medium px-2 py-1 h-6",
+                  selectedTimeRange === range 
+                    ? "text-cyan-400 bg-cyan-400/10" 
+                    : "text-gray-500 hover:text-gray-300"
+                )}
               >
-                {dynamicTimeRangeConfigs[range].label}
+                {timeRangeConfigs[range].label}
               </Button>
             ))}
           </div>
-          
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Data: {displayData.length} points
-          </div>
         </div>
 
-        {/* Chart */}
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            {chartType === 'apy' ? (
-              <AreaChart data={displayData}>
-                <defs>
-                  <linearGradient id="apyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.05}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+        {/* Chart area - Pendle style dual chart */}
+        <div className="p-6 pt-4">
+          <div className="h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              {chartType === 'apy' ? (
+                <ComposedChart data={displayData}>
+                  <defs>
+                    <linearGradient id="apyLineGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#00d4ff" stopOpacity={1}/>
+                      <stop offset="100%" stopColor="#00d4ff" stopOpacity={0.8}/>
+                    </linearGradient>
+                  </defs>
+                  
+                  {/* Grid with dark theme */}
+                  <CartesianGrid 
+                    strokeDasharray="1 0" 
+                    stroke="#1a2332"
+                    verticalPoints={[0]}
+                    horizontalPoints={[0, 0.25, 0.5, 0.75, 1]}
+                  />
+                  
+                  {/* X Axis */}
+                  <XAxis 
+                    dataKey="formattedDate" 
+                    stroke="#4a5568"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={{ stroke: '#1a2332' }}
+                  />
+                  
+                  {/* Left Y Axis for APY */}
+                  <YAxis 
+                    yAxisId="apy"
+                    orientation="right"
+                    stroke="#4a5568"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `${value.toFixed(1)}%`}
+                    domain={['dataMin - 0.5', 'dataMax + 0.5']}
+                  />
+                  
+                  {/* Tooltip */}
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#0b1217',
+                      border: '1px solid #1a2332',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                    }}
+                    formatter={(value: number, name: string) => {
+                      if (name === 'apy') return [formatApy(value), 'APY'];
+                      return [value, name];
+                    }}
+                    labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
+                  />
+                  
+                  {/* APY Line */}
+                  <Line
+                    yAxisId="apy"
+                    type="monotone"
+                    dataKey="apy"
+                    stroke="#00d4ff"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  
+                  {/* TVL Bars at bottom if available */}
+                  {stats?.tvl && (
+                    <>
+                      <YAxis 
+                        yAxisId="tvl"
+                        orientation="left"
+                        hide={true}
+                        domain={[0, 'dataMax']}
+                      />
+                      <Bar
+                        yAxisId="tvl"
+                        dataKey="tvl"
+                        fill="#00d4ff"
+                        opacity={0.2}
+                        radius={[2, 2, 0, 0]}
+                      />
+                    </>
+                  )}
+                </ComposedChart>
+            ) : (
+              <BarChart data={displayData}>
+                {/* Grid with dark theme */}
+                <CartesianGrid 
+                  strokeDasharray="1 0" 
+                  stroke="#1a2332"
+                  verticalPoints={[0]}
+                  horizontalPoints={[0, 0.25, 0.5, 0.75, 1]}
+                />
+                
+                {/* X Axis */}
                 <XAxis 
                   dataKey="formattedDate" 
-                  stroke="#6b7280"
-                  fontSize={12}
+                  stroke="#4a5568"
+                  fontSize={10}
                   tickLine={false}
+                  axisLine={{ stroke: '#1a2332' }}
                 />
+                
+                {/* Y Axis for TVL */}
                 <YAxis 
-                  stroke="#6b7280"
-                  fontSize={12}
+                  orientation="right"
+                  stroke="#4a5568"
+                  fontSize={10}
                   tickLine={false}
-                  tickFormatter={formatApy}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'var(--background)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '8px',
-                    color: 'var(--foreground)',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                  }}
-                  formatter={(value: number) => [formatApy(value), 'APY']}
-                  labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="apy"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fill="url(#apyGradient)"
-                />
-              </AreaChart>
-            ) : chartType === 'tvl' ? (
-              <AreaChart data={displayData}>
-                <defs>
-                  <linearGradient id="tvlGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                />
-                <YAxis 
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
+                  axisLine={false}
                   tickFormatter={formatTvl}
                 />
+                
+                {/* Tooltip */}
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'var(--background)', 
-                    border: '1px solid var(--border)', 
+                    backgroundColor: '#0b1217',
+                    border: '1px solid #1a2332',
                     borderRadius: '8px',
-                    color: 'var(--foreground)',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                    color: '#ffffff',
                   }}
                   formatter={(value: number) => [formatTvl(value), 'TVL']}
                   labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
                 />
-                <Area
-                  type="monotone"
+                
+                {/* TVL Bars */}
+                <Bar
                   dataKey="tvl"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  fill="url(#tvlGradient)"
+                  fill="#00d4ff"
+                  opacity={0.6}
+                  radius={[2, 2, 0, 0]}
                 />
-              </AreaChart>
-            ) : (
-              <LineChart data={displayData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                />
-                <YAxis 
-                  yAxisId="apy"
-                  orientation="left"
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                  tickFormatter={formatApy}
-                />
-                <YAxis 
-                  yAxisId="tvl"
-                  orientation="right"
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                  tickFormatter={formatTvl}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'var(--background)', 
-                    border: '1px solid var(--border)', 
-                    borderRadius: '8px',
-                    color: 'var(--foreground)',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                  }}
-                  formatter={(value: number, name: string) => [
-                    name === 'apy' ? formatApy(value) : formatTvl(value),
-                    name === 'apy' ? 'APY' : 'TVL'
-                  ]}
-                  labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
-                />
-                <Line
-                  yAxisId="apy"
-                  type="monotone"
-                  dataKey="apy"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  yAxisId="tvl"
-                  type="monotone"
-                  dataKey="tvl"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
+              </BarChart>
             )}
           </ResponsiveContainer>
         </div>
-
-        {/* Timeline scrubber */}
-        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">Timeline</div>
-          <div className="h-12 bg-gray-50 dark:bg-gray-800 rounded-lg relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
-              {displayData.length > 0 && (
-                <span>
-                  {displayData[0].formattedDate} ← {displayData[displayData.length - 1].formattedDate}
-                </span>
-              )}
-            </div>
-            {/* Timeline visualization */}
-            <div className="absolute bottom-0 left-0 right-0 h-6">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={displayData}>
-                  <Area
-                    type="monotone"
-                    dataKey={chartType === 'tvl' ? 'tvl' : 'apy'}
-                    stroke="none"
-                    fill={chartType === 'tvl' ? '#3b82f6' : '#10b981'}
-                    fillOpacity={0.3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
         </div>
-
-
       </CardContent>
     </Card>
   );
