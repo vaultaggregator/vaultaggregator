@@ -41,7 +41,7 @@ const TIME_PERIODS = [
 type TimePeriod = typeof TIME_PERIODS[number]['key'];
 
 export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl }: InteractivePoolChartProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('30d');
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('all');
   const [chartType, setChartType] = useState<'candlestick' | 'line' | 'area'>('candlestick');
 
   // Fetch historical data

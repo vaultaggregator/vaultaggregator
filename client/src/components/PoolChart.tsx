@@ -46,7 +46,7 @@ const useHistoricalData = (poolId: string, days: number) => {
 // Dynamic timeRange configs are now created inside the component based on actual pool data
 
 export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className }: PoolChartProps) {
-  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('1W');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('1Y');
   const [chartType, setChartType] = useState<ChartType>('apy');
 
   // Fetch pool data to get actual operating days for dynamic "Max" timeframe

@@ -4,6 +4,12 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # Recent Changes (August 21, 2025)
 
+**CHART DEFAULT TIMEFRAME UPDATED:**
+- Changed default chart timeframe to 1 year (1Y) for all chart components
+- InteractivePoolChart now defaults to 'all' (1 year view) instead of 30 days
+- PoolChart now defaults to '1Y' (365 days) instead of 1 week
+- Users see comprehensive long-term data by default on all pool charts
+
 **PROFILE PAGE NFT SECTION REMOVED (COMPLETED):**
 - Removed NFTs tab from wallet profile page per user request
 - Simplified tab navigation to 3 tabs: Portfolio, Wallet, History
