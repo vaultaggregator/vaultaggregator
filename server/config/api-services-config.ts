@@ -68,6 +68,19 @@ export const API_SERVICES_CONFIG: Record<string, Omit<InsertApiSettings, 'id' | 
     healthStatus: "healthy",
   },
 
+  // Token Data APIs
+  moralis_api: {
+    serviceName: "moralis_api",
+    displayName: "Moralis API",
+    description: "Cost-effective blockchain data provider for token holders and on-chain analytics",
+    baseUrl: "https://deep-index.moralis.io/api/v2.2",
+    isEnabled: true,
+    category: "blockchain",
+    priority: 1,
+    rateLimitRpm: 3000, // Moralis has higher rate limits
+    healthStatus: "healthy",
+  },
+
   // Future APIs can be added here:
   // Example:
   // coingecko_api: {
