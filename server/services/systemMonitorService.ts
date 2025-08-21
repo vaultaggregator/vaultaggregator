@@ -250,29 +250,30 @@ export class SystemMonitorService {
     try {
       // Check if AI service has generated recent predictions
       const { db } = await import("../db");
-      const { pools } = await import("../../shared/schema");
-      const { desc, sql, isNotNull } = await import("drizzle-orm");
+      const { aiOutlooks } = await import("../../shared/schema");
+      const { desc } = await import("drizzle-orm");
       
-      const recentPools = await db.select()
-        .from(pools)
-        .where(isNotNull(pools.aiPrediction))
-        .orderBy(desc(pools.lastUpdated))
+      const recentPredictions = await db.select()
+        .from(aiOutlooks)
+        .orderBy(desc(aiOutlooks.generatedAt))
         .limit(1);
 
-      if (recentPools.length > 0) {
-        const lastPrediction = recentPools[0].lastUpdated?.getTime() || 0;
+      if (recentPredictions.length > 0) {
+        const lastPrediction = recentPredictions[0].generatedAt?.getTime() || 0;
         const timeSinceGeneration = now - lastPrediction;
         const twoHours = 2 * 60 * 60 * 1000;
 
         if (timeSinceGeneration < twoHours) {
           this.updateCheck('aiOutlookGeneration', 'up', 0, undefined, {
             lastGeneration: new Date(lastPrediction),
-            timeSinceGeneration
+            timeSinceGeneration,
+            sentiment: recentPredictions[0].sentiment
           });
         } else {
           this.updateCheck('aiOutlookGeneration', 'warning', 0, 'AI predictions overdue', {
             lastGeneration: new Date(lastPrediction),
-            timeSinceGeneration
+            timeSinceGeneration,
+            sentiment: recentPredictions[0].sentiment
           });
         }
       } else {
