@@ -20,6 +20,43 @@ router.get("/api-settings", async (req, res) => {
   }
 });
 
+// SPECIFIC ROUTES MUST COME BEFORE PARAMETERIZED ROUTES
+
+// Get service status summary
+router.get("/api-settings/status-summary", async (req, res) => {
+  try {
+    const { ApiRegistrationService } = await import("../services/apiRegistrationService");
+    const summary = await ApiRegistrationService.getServiceStatusSummary();
+    res.json(summary);
+  } catch (error) {
+    console.error("Error getting service status summary:", error);
+    res.status(500).json({ error: "Failed to get service status summary" });
+  }
+});
+
+// Sync API services from configuration
+router.post("/api-settings/sync", async (req, res) => {
+  try {
+    const { ApiRegistrationService } = await import("../services/apiRegistrationService");
+    const result = await ApiRegistrationService.syncApiServices({
+      removeOrphaned: req.body.removeOrphaned === true
+    });
+
+    res.json({
+      message: "API services synchronized successfully",
+      result: {
+        added: result.added,
+        updated: result.updated,
+        removed: result.removed,
+        errors: result.errors
+      }
+    });
+  } catch (error) {
+    console.error("Error syncing API services:", error);
+    res.status(500).json({ error: "Failed to sync API services" });
+  }
+});
+
 // Get specific API setting by service name
 router.get("/api-settings/:serviceName", async (req, res) => {
   try {
@@ -54,7 +91,7 @@ router.patch("/api-settings/:serviceName/toggle", async (req, res) => {
     if (!isEnabled) {
       updateData.disabledReason = disabledReason;
       updateData.disabledBy = 'admin'; // In a real app, this would be the current user
-      updateData.disabledAt = now;
+      updateData.disabledAt = new Date();
     } else {
       updateData.disabledReason = null;
       updateData.disabledBy = null;
@@ -177,83 +214,15 @@ router.delete("/api-settings/:serviceName", async (req, res) => {
   }
 });
 
-// Initialize default API settings (for setup)
+
+
+
+
+// Legacy initialize endpoint (redirects to sync)
 router.post("/api-settings/initialize", async (req, res) => {
   try {
-    const defaultSettings: InsertApiSettings[] = [
-      {
-        serviceName: "alchemy_api",
-        displayName: "Alchemy API",
-        description: "Blockchain data provider for token holders, metadata, and balances",
-        baseUrl: "https://eth-mainnet.g.alchemy.com/v2/",
-        isEnabled: false, // Currently disabled per user request
-        category: "blockchain",
-        priority: 1,
-        rateLimitRpm: 300,
-        healthStatus: "down",
-        disabledReason: "Temporarily disabled per user request",
-        disabledBy: "admin",
-        disabledAt: new Date(),
-      },
-      {
-        serviceName: "etherscan_api",
-        displayName: "Etherscan API",
-        description: "Ethereum blockchain explorer API for contract info and transaction data",
-        baseUrl: "https://api.etherscan.io/api",
-        isEnabled: true,
-        category: "blockchain",
-        priority: 1,
-        rateLimitRpm: 200,
-        healthStatus: "healthy",
-      },
-      {
-        serviceName: "morpho_api",
-        displayName: "Morpho API",
-        description: "GraphQL API for Morpho pool APY and TVL data",
-        baseUrl: "https://api.morpho.org/graphql",
-        isEnabled: true,
-        category: "data",
-        priority: 1,
-        rateLimitRpm: 30,
-        healthStatus: "healthy",
-      },
-      {
-        serviceName: "lido_api",
-        displayName: "Lido API",
-        description: "Official Lido API for stETH APR data",
-        baseUrl: "https://eth-api.lido.fi/v1",
-        isEnabled: true,
-        category: "data",
-        priority: 1,
-        rateLimitRpm: 60,
-        healthStatus: "healthy",
-      },
-      {
-        serviceName: "openai_api",
-        displayName: "OpenAI API",
-        description: "AI-powered market predictions and insights using GPT models",
-        baseUrl: "https://api.openai.com/v1",
-        isEnabled: true,
-        category: "ai",
-        priority: 2,
-        rateLimitRpm: 60,
-        healthStatus: "healthy",
-      },
-    ];
-
-    // Insert only if not already exists
-    for (const setting of defaultSettings) {
-      const existing = await db
-        .select()
-        .from(apiSettings)
-        .where(eq(apiSettings.serviceName, setting.serviceName));
-
-      if (existing.length === 0) {
-        await db.insert(apiSettings).values(setting);
-        console.log(`✅ Initialized API setting: ${setting.displayName}`);
-      }
-    }
-
+    const { ApiRegistrationService } = await import("../services/apiRegistrationService");
+    await ApiRegistrationService.initializeApiServices();
     res.json({ message: "API settings initialized successfully" });
   } catch (error) {
     console.error("Error initializing API settings:", error);

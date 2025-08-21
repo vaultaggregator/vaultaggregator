@@ -2,7 +2,14 @@
 
 Vault Aggregator is a streamlined DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities across various blockchain networks and protocols. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project's ambition is to provide accurate, reliable DeFi data to empower user investment decisions, focusing on efficiency and a clean architecture by exclusively tracking core yield opportunities for two specific pools (STETH and STEAKUSDC) on two platforms (Lido and Morpho) on the Ethereum chain.
 
-# Recent Changes (August 20, 2025)
+# Recent Changes (August 21, 2025)
+
+**AUTOMATIC API REGISTRATION SYSTEM (NEW):**
+- Created centralized API configuration file (`server/config/api-services-config.ts`) with all external API definitions
+- Built automatic synchronization service (`server/services/apiRegistrationService.ts`) that syncs configs to database
+- Added server startup initialization - new APIs automatically appear in admin panel
+- Enhanced admin interface with manual sync button and real-time status summaries
+- Future-proofing: Developers only need to add APIs to config file, they auto-register on server restart
 
 **Alchemy API Temporarily Disabled:**
 - Disabled all Alchemy API connections per user request

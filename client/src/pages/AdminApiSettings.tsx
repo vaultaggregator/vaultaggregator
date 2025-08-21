@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Settings, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Loader2, Settings, AlertTriangle, CheckCircle, XCircle, Clock, RefreshCw, Info } from "lucide-react";
 import { type ApiSettings } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -64,6 +64,12 @@ export default function AdminApiSettings() {
     queryKey: ['/api/api-settings'],
   });
 
+  // Status summary query
+  const { data: statusSummary } = useQuery({
+    queryKey: ['/api/api-settings/status-summary'],
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
   const toggleMutation = useMutation({
     mutationFn: async ({ serviceName, isEnabled, disabledReason }: { 
       serviceName: string; 
@@ -90,6 +96,27 @@ export default function AdminApiSettings() {
       toast({
         title: "Error",
         description: error.message || "Failed to update API setting",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Sync APIs mutation
+  const syncApisMutation = useMutation({
+    mutationFn: ({ removeOrphaned = false }: { removeOrphaned?: boolean } = {}) =>
+      apiRequest("/api/api-settings/sync", 'POST', { removeOrphaned }),
+    onSuccess: (result: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/api-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/api-settings/status-summary"] });
+      toast({
+        title: "Sync Complete",
+        description: `${result.result.added.length} added, ${result.result.updated.length} updated`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to sync API services",
         variant: "destructive",
       });
     },
@@ -143,14 +170,70 @@ export default function AdminApiSettings() {
 
   return (
     <div className="container mx-auto p-6" data-testid="admin-api-settings-page">
-      <div className="flex items-center gap-2 mb-6">
-        <Settings className="h-6 w-6" />
-        <h1 className="text-3xl font-bold">API Settings Management</h1>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <Settings className="h-6 w-6" />
+          <h1 className="text-3xl font-bold">API Settings Management</h1>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => syncApisMutation.mutate()}
+            disabled={syncApisMutation.isPending}
+            variant="outline"
+            data-testid="button-sync-apis"
+          >
+            {syncApisMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Sync APIs from Config
+          </Button>
+        </div>
       </div>
       
       <p className="text-muted-foreground mb-8">
         Manage external API connections and monitor their health status. Toggle services on/off and track their performance metrics.
       </p>
+
+      {/* Status Summary Card */}
+      {statusSummary && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              API Status Overview
+            </CardTitle>
+            <CardDescription>
+              Real-time status of all external API services. New APIs added to config will automatically appear here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold">{statusSummary.total}</div>
+                <div className="text-sm text-muted-foreground">Total APIs</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-600">{statusSummary.enabled}</div>
+                <div className="text-sm text-muted-foreground">Enabled</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-500">{statusSummary.healthy}</div>
+                <div className="text-sm text-muted-foreground">Healthy</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-yellow-500">{statusSummary.unhealthy}</div>
+                <div className="text-sm text-muted-foreground">Degraded</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-red-500">{statusSummary.down}</div>
+                <div className="text-sm text-muted-foreground">Down</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isLoading && (
         <div className="flex items-center justify-center py-12">

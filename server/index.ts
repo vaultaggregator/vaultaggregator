@@ -46,6 +46,10 @@ app.use((req, res, next) => {
   console.log('⚠️ Alchemy API connections DISABLED - Holder sync service stopped');
   console.log("✅ Comprehensive Holder Sync Service initialized");
   
+  // Initialize API services from configuration (auto-registration system)
+  const { ApiRegistrationService } = await import("./services/apiRegistrationService");
+  await ApiRegistrationService.initializeApiServices();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
