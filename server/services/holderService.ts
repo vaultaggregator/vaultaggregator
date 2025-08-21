@@ -45,11 +45,11 @@ export class HolderService {
   }
 
   /**
-   * Fetch and sync holder data for a specific pool
+   * Fetch and sync holder data for a specific pool (optimized version)
    */
   async syncPoolHolders(poolId: string): Promise<void> {
     try {
-      console.log(`🔍 Starting holder sync for pool ${poolId}`);
+      console.log(`🔍 Starting optimized holder sync for pool ${poolId}`);
       
       // Get pool information
       const pool = await storage.getPoolById(poolId);
@@ -61,45 +61,40 @@ export class HolderService {
       console.log(`📊 Syncing holders for ${pool.tokenPair} on ${pool.poolAddress}`);
 
       // Get the network name from the pool's chain
-      const networkName = pool.chain?.name;
+      const networkName = pool.chain?.name || 'ethereum';
       
-      // Special handling for Base network pools - use timeout wrapper
-      const isBase = networkName?.toLowerCase() === 'base';
-      // Increased timeouts: 60s for Base, 120s for others to handle pools with many holders
-      const timeoutMs = isBase ? 60000 : 120000;
+      // OPTIMIZED: Get total holder count and top 100 holders only
+      let totalHolderCount = 0;
+      let topHolders: any[] = [];
       
-      // Create a timeout promise
-      const timeoutPromise = new Promise<any[]>((_, reject) => {
-        setTimeout(() => reject(new Error('timeout')), timeoutMs);
-      });
-
-      // Get token holders from appropriate service based on network
-      let holders: any[];
       try {
-        holders = await Promise.race([
-          this.fetchTokenHolders(pool.poolAddress, networkName),
-          timeoutPromise
-        ]);
-      } catch (error) {
-        if (error instanceof Error && error.message === 'timeout') {
-          console.log(`⏱️ Timeout fetching holders for ${pool.tokenPair} - using partial data`);
-          // For Base network timeouts, try to get at least some holders
-          if (isBase && alchemyService) {
-            try {
-              holders = await alchemyService.getTopTokenHolders(pool.poolAddress, 100, networkName);
-              console.log(`✅ Retrieved ${holders.length} holders using quick fetch`);
-            } catch {
-              holders = [];
-            }
-          } else {
-            holders = [];
-          }
-        } else {
-          throw error;
+        if (moralisService.isAvailable()) {
+          // Use optimized method to get count + top 100 holders in 1 API call
+          const optimizedData = await moralisService.getOptimizedHolderData(
+            pool.poolAddress,
+            networkName,
+            100 // Only fetch top 100 holders for details
+          );
+          
+          totalHolderCount = optimizedData.totalCount;
+          topHolders = optimizedData.topHolders.map(holder => ({
+            address: holder.owner_address,
+            balance: holder.balance
+          }));
+          
+          console.log(`✅ Optimized sync: ${totalHolderCount} total holders, storing top ${topHolders.length} holders`);
+        } else if (alchemyService) {
+          // Fallback to Alchemy
+          topHolders = await alchemyService.getTopTokenHolders(pool.poolAddress, 100, networkName);
+          totalHolderCount = topHolders.length; // Alchemy doesn't provide total count easily
+          console.log(`✅ Retrieved ${topHolders.length} holders from Alchemy`);
         }
+      } catch (error) {
+        console.error(`❌ Failed to fetch holder data:`, error);
+        throw error;
       }
       
-      if (!holders || holders.length === 0) {
+      if (!topHolders || topHolders.length === 0) {
         console.log(`⚠️ No holders found for pool ${poolId}`);
         await this.logError(
           'No Holders Found',
@@ -115,9 +110,9 @@ export class HolderService {
       const tokenPrice = await this.getTokenPrice(pool.poolAddress);
       console.log(`💰 Token price: $${tokenPrice}`);
 
-      // Process and store holder data
+      // Process and store holder data (only top 100)
       const processedHolders = await this.processHolderData(
-        holders,
+        topHolders,
         pool.poolAddress,
         tokenPrice,
         poolId
@@ -126,14 +121,17 @@ export class HolderService {
       // Clear existing holders for this pool
       await storage.clearPoolHolders(poolId);
 
-      // Use batch insert for better performance and to prevent timeouts
-      console.log(`💾 Batch inserting ${processedHolders.length} holders...`);
+      // Store top 100 holders only
+      console.log(`💾 Storing top ${processedHolders.length} holders (total: ${totalHolderCount})`);
       const insertedCount = await storage.batchInsertTokenHolders(processedHolders);
 
-      // Update pool's holder count with actual synced data
-      // Note: holdersCount is handled by the comprehensive holder sync service
+      // Update pool metrics with the TOTAL holder count (not just top 100)
+      await this.updatePoolHolderCount(poolId, totalHolderCount);
 
-      console.log(`✅ Successfully synced ${insertedCount} holders for pool ${poolId}`);
+      // Fetch and store last 100 transactions
+      await this.syncPoolTransactions(poolId, pool.poolAddress, networkName);
+
+      console.log(`✅ Successfully synced: ${totalHolderCount} total holders, stored top ${insertedCount} for pool ${poolId}`);
 
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -146,6 +144,106 @@ export class HolderService {
         poolId,
         'high'
       );
+    }
+  }
+
+  /**
+   * Sync last 100 transactions for a pool
+   */
+  private async syncPoolTransactions(poolId: string, tokenAddress: string, networkName: string): Promise<void> {
+    try {
+      console.log(`📝 Syncing last 100 transactions for pool ${poolId}`);
+      
+      if (!moralisService.isAvailable()) {
+        console.log(`⚠️ Moralis not available for transaction sync`);
+        return;
+      }
+      
+      // Fetch last 100 transactions
+      const transactions = await moralisService.getTokenTransactions(tokenAddress, networkName, 100);
+      
+      if (!transactions || transactions.length === 0) {
+        console.log(`⚠️ No transactions found for pool ${poolId}`);
+        return;
+      }
+      
+      console.log(`✅ Found ${transactions.length} transactions`);
+      
+      // Clear existing transactions for this pool
+      const { db } = await import('../db');
+      const { tokenTransactions } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      await db.delete(tokenTransactions).where(eq(tokenTransactions.poolId, poolId));
+      
+      // Prepare transaction data for insertion
+      const transactionData = transactions.map(tx => ({
+        id: crypto.randomUUID(),
+        poolId: poolId,
+        transactionHash: tx.hash,
+        fromAddress: tx.from,
+        toAddress: tx.to,
+        value: tx.value,
+        valueFormatted: tx.valueFormatted,
+        blockNumber: tx.blockNumber,
+        blockTimestamp: tx.blockTimestamp ? new Date(tx.blockTimestamp) : null,
+        tokenAddress: tx.tokenAddress,
+        tokenSymbol: tx.tokenSymbol,
+        tokenName: tx.tokenName
+      }));
+      
+      // Insert transactions
+      await db.insert(tokenTransactions).values(transactionData);
+      
+      console.log(`💾 Stored ${transactionData.length} transactions for pool ${poolId}`);
+    } catch (error) {
+      console.error(`❌ Error syncing transactions for pool ${poolId}:`, error);
+    }
+  }
+
+  /**
+   * Update pool metrics with holder count
+   */
+  private async updatePoolHolderCount(poolId: string, holderCount: number): Promise<void> {
+    try {
+      const { db } = await import('../db');
+      const { poolMetricsCurrent } = await import('@shared/schema');
+      const { eq, sql } = await import('drizzle-orm');
+      
+      // Check if metrics record exists
+      const existingMetrics = await db
+        .select()
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .limit(1);
+      
+      if (existingMetrics.length > 0) {
+        // Update existing metrics
+        await db
+          .update(poolMetricsCurrent)
+          .set({
+            holdersCount: holderCount,
+            holdersStatus: 'success',
+            updatedAt: new Date()
+          })
+          .where(eq(poolMetricsCurrent.poolId, poolId));
+      } else {
+        // Insert new metrics record
+        await db
+          .insert(poolMetricsCurrent)
+          .values({
+            id: crypto.randomUUID(),
+            poolId: poolId,
+            holdersCount: holderCount,
+            holdersStatus: 'success',
+            updatedAt: new Date(),
+            createdAt: new Date()
+          });
+      }
+      
+      console.log(`📊 Updated pool_metrics_current for pool ${poolId}: ${holderCount} total holders`);
+    } catch (error) {
+      console.error(`Error updating pool holder count for pool ${poolId}:`, error);
     }
   }
 

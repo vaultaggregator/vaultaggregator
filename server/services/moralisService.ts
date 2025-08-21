@@ -19,6 +19,7 @@ export interface MoralisHoldersResponse {
   cursor?: string;
   page?: number;
   page_size?: number;
+  total?: number; // Total number of holders
 }
 
 export class MoralisService {
@@ -180,8 +181,39 @@ export class MoralisService {
       result: processedResult,
       cursor: data.cursor,
       page: data.page,
-      page_size: data.page_size
+      page_size: data.page_size,
+      total: data.total // Include total count
     };
+  }
+
+  /**
+   * Get holder count and top holders efficiently
+   * Optimized to minimize API calls
+   */
+  async getOptimizedHolderData(
+    address: string,
+    network: string = 'ethereum',
+    topHoldersLimit: number = 100
+  ): Promise<{ totalCount: number; topHolders: MoralisTokenHolder[] }> {
+    try {
+      // Make a single API call to get total count and top holders
+      console.log(`📊 Getting holder count and top ${topHoldersLimit} holders for ${address}`);
+      
+      const response = await this.getTokenHolders(address, network, topHoldersLimit);
+      
+      // The total count is in the response metadata
+      const totalCount = response.total || response.result.length;
+      
+      console.log(`✅ Total holders: ${totalCount}, Retrieved top ${response.result.length} holders`);
+      
+      return {
+        totalCount,
+        topHolders: response.result
+      };
+    } catch (error) {
+      console.error(`❌ Failed to get optimized holder data for ${address}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -262,6 +294,60 @@ export class MoralisService {
       return null;
     } catch (error) {
       console.error(`❌ Moralis metadata error for ${address}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get last 100 transactions for a token
+   */
+  async getTokenTransactions(
+    address: string,
+    network: string = 'ethereum',
+    limit: number = 100
+  ): Promise<any[]> {
+    try {
+      const chainHex = this.getChainHex(network);
+      
+      console.log(`📝 Fetching last ${limit} transactions for ${address} on ${network}`);
+      
+      // Use Moralis ERC20 transfers endpoint
+      const apiUrl = `${this.baseUrl}/erc20/${address}/transfers`;
+      const queryParams = new URLSearchParams({
+        chain: chainHex,
+        limit: limit.toString(),
+        order: 'DESC'
+      });
+
+      const response = await fetch(`${apiUrl}?${queryParams}`, {
+        headers: {
+          'X-API-Key': process.env.MORALIS_API_KEY!,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Moralis API error: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✅ Moralis returned ${data.result?.length || 0} transactions`);
+      
+      return (data.result || []).map((tx: any) => ({
+        hash: tx.transaction_hash,
+        from: tx.from_address,
+        to: tx.to_address,
+        value: tx.value,
+        valueFormatted: tx.value_decimal,
+        blockNumber: tx.block_number,
+        blockTimestamp: tx.block_timestamp,
+        tokenAddress: tx.address,
+        tokenSymbol: tx.token_symbol,
+        tokenName: tx.token_name
+      }));
+    } catch (error) {
+      console.error(`❌ Failed to get transactions for ${address}:`, error);
       throw error;
     }
   }

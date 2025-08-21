@@ -272,6 +272,24 @@ export const tokenHolders = pgTable("token_holders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Token transactions tracking - stores last 100 transactions per pool
+export const tokenTransactions = pgTable("token_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  transactionHash: text("transaction_hash").notNull(),
+  fromAddress: text("from_address").notNull(),
+  toAddress: text("to_address").notNull(),
+  value: text("value").notNull(), // Raw token value
+  valueFormatted: text("value_formatted"), // Human readable value
+  blockNumber: text("block_number"),
+  blockTimestamp: timestamp("block_timestamp"),
+  tokenAddress: text("token_address"),
+  tokenSymbol: text("token_symbol"),
+  tokenName: text("token_name"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Webhook configuration for automatic monitoring
 export const webhookConfigs = pgTable("webhook_configs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -998,6 +1016,12 @@ export const insertTokenHolderSchema = createInsertSchema(tokenHolders).omit({
   createdAt: true,
 });
 
+export const insertTokenTransactionSchema = createInsertSchema(tokenTransactions).omit({
+  id: true,
+  lastUpdated: true,
+  createdAt: true,
+});
+
 export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
   id: true,
   createdAt: true,
@@ -1083,6 +1107,9 @@ export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
 
 export type TokenHolder = typeof tokenHolders.$inferSelect;
 export type InsertTokenHolder = z.infer<typeof insertTokenHolderSchema>;
+
+export type TokenTransaction = typeof tokenTransactions.$inferSelect;
+export type InsertTokenTransaction = z.infer<typeof insertTokenTransactionSchema>;
 
 export type CacheSetting = typeof cacheSettings.$inferSelect;
 export type InsertCacheSetting = typeof cacheSettings.$inferInsert;
