@@ -316,7 +316,7 @@ export class TokenInfoSyncService {
         decimals,
         totalSupply,
         holdersCount,
-        priceUsd: priceUsd?.toString() || null,
+        priceUsd: null, // Price service temporarily disabled
       };
     } catch (error) {
       console.log('Web scraping failed:', error);

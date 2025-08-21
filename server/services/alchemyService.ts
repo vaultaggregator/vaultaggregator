@@ -16,6 +16,16 @@ export class AlchemyService {
   private alchemyBase: Alchemy | null = null;
   private isInitialized: boolean = false;
   
+  // Token metadata cache to avoid repeated API calls
+  // Key format: `${tokenAddress}-${network}`
+  private tokenMetadataCache: Map<string, {
+    data: any;
+    timestamp: number;
+  }> = new Map();
+  
+  // Cache duration: 24 hours (token metadata doesn't change)
+  private readonly CACHE_DURATION = 24 * 60 * 60 * 1000;
+  
   constructor() {
     // Check if we have the ALCHEMY_RPC_URL configured
     const alchemyRpcUrl = process.env.ALCHEMY_RPC_URL;
@@ -119,8 +129,8 @@ export class AlchemyService {
       const MAX_FETCH_TIME = 60000; // 60 seconds with high-speed API
       const startTime = Date.now();
       
-      // Get token metadata first
-      const metadata = await client.core.getTokenMetadata(tokenAddress);
+      // Get token metadata first (using cached version)
+      const metadata = await this.getTokenMetadata(tokenAddress, network);
       console.log(`📊 Token: ${metadata.name} (${metadata.symbol}), Decimals: ${metadata.decimals}`);
       
       const holders: TokenHolder[] = [];
@@ -301,7 +311,7 @@ export class AlchemyService {
   }
 
   /**
-   * Get token metadata using Alchemy API
+   * Get token metadata using Alchemy API with caching
    */
   async getTokenMetadata(tokenAddress: string, network?: string) {
     // Check if Alchemy is enabled
@@ -311,6 +321,19 @@ export class AlchemyService {
       return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
     }
     
+    // Create cache key
+    const cacheKey = `${tokenAddress.toLowerCase()}-${(network || 'ethereum').toLowerCase()}`;
+    
+    // Check cache first
+    const cached = this.tokenMetadataCache.get(cacheKey);
+    if (cached) {
+      const age = Date.now() - cached.timestamp;
+      if (age < this.CACHE_DURATION) {
+        console.log(`✅ Using cached metadata for ${tokenAddress} (${Math.round(age / 1000)}s old)`);
+        return cached.data;
+      }
+    }
+    
     try {
       const client = this.getAlchemyClient(network);
       if (!client) {
@@ -318,11 +341,72 @@ export class AlchemyService {
         return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
       }
       
-      return await client.core.getTokenMetadata(tokenAddress);
+      // Fetch fresh metadata
+      console.log(`🔍 Fetching fresh metadata for ${tokenAddress} on ${network || 'ethereum'}`);
+      const metadata = await client.core.getTokenMetadata(tokenAddress);
+      
+      // Cache the result
+      this.tokenMetadataCache.set(cacheKey, {
+        data: metadata,
+        timestamp: Date.now()
+      });
+      
+      // Log cache size for monitoring
+      if (this.tokenMetadataCache.size % 10 === 0) {
+        console.log(`📊 Token metadata cache size: ${this.tokenMetadataCache.size} entries`);
+      }
+      
+      return metadata;
     } catch (error) {
       console.error(`Error fetching token metadata for ${tokenAddress}:`, error);
+      
+      // If we have stale cache data, use it as fallback
+      if (cached) {
+        console.log(`⚠️ Using stale cached metadata for ${tokenAddress} due to API error`);
+        return cached.data;
+      }
+      
       return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
     }
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  getCacheStats() {
+    const stats = {
+      totalCached: this.tokenMetadataCache.size,
+      cacheEntries: [] as any[]
+    };
+    
+    this.tokenMetadataCache.forEach((value, key) => {
+      const age = Date.now() - value.timestamp;
+      stats.cacheEntries.push({
+        key,
+        token: value.data.symbol,
+        name: value.data.name,
+        ageMinutes: Math.round(age / 60000),
+        isExpired: age > this.CACHE_DURATION
+      });
+    });
+    
+    return stats;
+  }
+  
+  /**
+   * Clear expired cache entries
+   */
+  clearExpiredCache() {
+    let cleared = 0;
+    this.tokenMetadataCache.forEach((value, key) => {
+      const age = Date.now() - value.timestamp;
+      if (age > this.CACHE_DURATION) {
+        this.tokenMetadataCache.delete(key);
+        cleared++;
+      }
+    });
+    console.log(`🧹 Cleared ${cleared} expired cache entries`);
+    return cleared;
   }
 
   /**
@@ -363,8 +447,8 @@ export class AlchemyService {
         return 1.0;
       }
       
-      // First try to get token metadata which may include price data
-      const metadata = await client.core.getTokenMetadata(tokenAddress);
+      // First try to get token metadata which may include price data (using cached version)
+      const metadata = await this.getTokenMetadata(tokenAddress, network);
       
       // Try to get token balances to compute price from popular stablecoins
       // This is a workaround since Alchemy doesn't have direct price API

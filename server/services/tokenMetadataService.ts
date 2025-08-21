@@ -3,29 +3,19 @@
  * Provides rich token information including logos, descriptions, and market data
  */
 
-import { Alchemy, Network } from 'alchemy-sdk';
 import { db } from '../db';
 import { pools, tokenInfo } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
+import { AlchemyService } from './alchemyService';
 
 export class TokenMetadataService {
   private static instance: TokenMetadataService;
-  private alchemyEth: Alchemy;
-  private alchemyBase: Alchemy;
+  private alchemyService: AlchemyService;
   private metadataCache: Map<string, any> = new Map();
   
   private constructor() {
-    // Initialize Alchemy SDK for Ethereum
-    this.alchemyEth = new Alchemy({
-      apiKey: process.env.ALCHEMY_API_KEY,
-      network: Network.ETH_MAINNET,
-    });
-
-    // Initialize Alchemy SDK for Base
-    this.alchemyBase = new Alchemy({
-      apiKey: process.env.ALCHEMY_API_KEY,
-      network: Network.BASE_MAINNET,
-    });
+    // Use cached AlchemyService instead of creating new instances
+    this.alchemyService = new AlchemyService();
   }
 
   static getInstance(): TokenMetadataService {
@@ -45,13 +35,11 @@ export class TokenMetadataService {
       if (this.metadataCache.has(cacheKey)) {
         return this.metadataCache.get(cacheKey);
       }
-
-      const alchemy = network === 'base' ? this.alchemyBase : this.alchemyEth;
       
       console.log(`🪙 Fetching metadata for token ${tokenAddress.slice(0, 8)}...`);
 
-      // Get token metadata from Alchemy
-      const metadata = await alchemy.core.getTokenMetadata(tokenAddress);
+      // Get token metadata from cached AlchemyService
+      const metadata = await this.alchemyService.getTokenMetadata(tokenAddress, network);
 
       // Get additional market data
       const marketData = await this.getTokenMarketData(tokenAddress, network);
@@ -114,13 +102,8 @@ export class TokenMetadataService {
    */
   private async getTokenMarketData(tokenAddress: string, network: 'ethereum' | 'base') {
     try {
-      const alchemy = network === 'base' ? this.alchemyBase : this.alchemyEth;
-
-      // Get token price from Alchemy
-      const prices = await alchemy.core.getTokenBalances(
-        '0x0000000000000000000000000000000000000000', // Use zero address for price check
-        [tokenAddress]
-      );
+      // Get token price from cached AlchemyService
+      const price = await this.alchemyService.getTokenPrice(tokenAddress, network);
 
       // Get 24h volume and other stats (simulated for now)
       const volume24h = Math.random() * 10000000; // Would come from real API
