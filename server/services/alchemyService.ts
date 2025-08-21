@@ -304,16 +304,24 @@ export class AlchemyService {
    * Get token metadata using Alchemy API
    */
   async getTokenMetadata(tokenAddress: string, network?: string) {
-    // TEMPORARILY DISABLED: Alchemy API connections disabled per user request
-    console.log('⚠️ ALCHEMY API DISABLED - Skipping metadata fetch');
-    return { name: 'Disabled', symbol: 'N/A', decimals: 18 };
+    // Check if Alchemy is enabled
+    const isEnabled = await this.isAlchemyEnabled();
+    if (!isEnabled || !this.isInitialized) {
+      console.log('⚠️ Alchemy API disabled or not initialized - skipping metadata fetch');
+      return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
+    }
     
     try {
       const client = this.getAlchemyClient(network);
+      if (!client) {
+        console.log('⚠️ Alchemy client not available for network:', network);
+        return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
+      }
+      
       return await client.core.getTokenMetadata(tokenAddress);
     } catch (error) {
       console.error(`Error fetching token metadata for ${tokenAddress}:`, error);
-      return null;
+      return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
     }
   }
 
