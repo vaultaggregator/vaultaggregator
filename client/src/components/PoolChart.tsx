@@ -414,6 +414,7 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
                     }}
                     formatter={(value: number, name: string) => {
                       if (name === 'apy') return [formatApy(value), 'APY'];
+                      if (name === 'tvl') return [formatTvl(value), 'TVL'];
                       return [value, name];
                     }}
                     labelFormatter={(label: any, payload: any) => payload?.[0]?.payload?.fullDate || label}
