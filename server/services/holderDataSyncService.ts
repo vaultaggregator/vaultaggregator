@@ -33,24 +33,24 @@ export class HolderDataSyncService {
   }
 
   /**
-   * Sync holder data for all active pools using the new holderService
+   * Sync holder data for all active pools - simplified to only update counts
    */
   async syncAllHolderData(): Promise<void> {
-    console.log("Starting holder data sync for all active pools...");
+    console.log("📊 Updating holder counts for all active pools...");
     
     try {
-      // Use the newer holderService for comprehensive sync
-      const { holderService } = await import('./holderService');
-      await holderService.syncAllPoolHolders();
+      // Use the simple holder count service that only updates totals
+      const { simpleHolderCountService } = await import('./simpleHolderCountService');
+      await simpleHolderCountService.updateAllPoolHolderCounts();
       
-      console.log('✅ Holder data sync completed using holderService');
+      console.log('✅ Holder count update completed');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error("Error during holder data sync:", errorMsg);
+      console.error("Error during holder count update:", errorMsg);
       
       await this.logError(
-        'Holder Data Sync Failed',
-        'Failed to synchronize holder data for all active pools. This affects holder analytics, growth tracking, and statistical displays across the platform.',
+        'Holder Count Update Failed',
+        'Failed to update holder counts for active pools. This affects holder count displays on the homepage and pool detail pages.',
         errorMsg,
         undefined,
         'high'

@@ -57,16 +57,16 @@ class ComprehensiveHolderSyncService {
   }
 
   /**
-   * Sync holders for all pools that need it
+   * Sync holders for all pools - simplified to only update counts
    */
   async syncAllPools() {
     if (this.isRunning) {
-      console.log('⏳ Comprehensive holder sync already in progress, skipping...');
+      console.log('⏳ Holder count update already in progress, skipping...');
       return;
     }
 
     this.isRunning = true;
-    console.log('🔄 Starting comprehensive holder sync for all pools...');
+    console.log('📊 Updating holder counts for all pools (simplified approach)...');
 
     try {
       // Get all ACTIVE pools with contract addresses
