@@ -320,9 +320,9 @@ export default function AdminNetworks() {
                   <Card key={chain.id} className="p-4">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-{chain.iconUrl ? (
+{chain.logoUrl ? (
                           <img 
-                            src={chain.iconUrl} 
+                            src={chain.logoUrl} 
                             alt={chain.displayName}
                             className="w-8 h-8 rounded-full object-cover"
                           />

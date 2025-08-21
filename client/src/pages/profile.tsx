@@ -128,7 +128,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
           </div>
@@ -142,7 +142,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           <Card className="max-w-2xl mx-auto">
             <CardContent className="p-8 text-center">
               <Info className="w-12 h-12 mx-auto mb-4 text-yellow-500" />
@@ -168,7 +168,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Back Button */}
         <Button 
           variant="ghost" 

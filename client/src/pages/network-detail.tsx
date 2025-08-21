@@ -126,7 +126,7 @@ export default function NetworkDetail() {
     return (
       <>
         <Header />
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         <div className="mb-8">
           <Skeleton className="h-12 w-64 mb-4" />
           <Skeleton className="h-6 w-96" />
@@ -169,7 +169,7 @@ export default function NetworkDetail() {
     return (
       <>
         <Header />
-        <div className="container mx-auto p-6 max-w-7xl">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         <Card className="border-red-500/20">
           <CardContent className="p-12 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -195,7 +195,7 @@ export default function NetworkDetail() {
   return (
     <>
       <Header />
-      <div className="container mx-auto p-6 max-w-7xl">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Back Button */}
         <Button 
           variant="ghost" 

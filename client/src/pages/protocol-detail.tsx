@@ -88,7 +88,7 @@ export function ProtocolDetailPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           <div className="space-y-6">
             <Skeleton className="h-20 w-full" />
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -109,7 +109,7 @@ export function ProtocolDetailPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
           <Card className="max-w-2xl mx-auto">
             <CardContent className="p-12 text-center">
               <Activity className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -133,7 +133,7 @@ export function ProtocolDetailPage() {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Back Button */}
         <Button 
           variant="ghost" 
