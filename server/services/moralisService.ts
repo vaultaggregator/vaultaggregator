@@ -27,7 +27,7 @@ export class MoralisService {
   private baseUrl = 'https://deep-index.moralis.io/api/v2.2';
   
   // OPTIMIZATION: Comprehensive caching to eliminate redundant API calls
-  private holderCache: Map<string, { data: MoralisTokenHolder[], timestamp: number }> = new Map();
+  private holderCache: Map<string, { data: MoralisTokenHolder[], timestamp: number, total: number }> = new Map();
   private readonly HOLDER_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes cache
   private pendingRequests: Map<string, Promise<MoralisHoldersResponse>> = new Map();
 
@@ -87,12 +87,14 @@ export class MoralisService {
       // OPTIMIZATION 2: Check cache first (eliminates API calls)
       const cached = this.holderCache.get(cacheKey);
       if (cached && (Date.now() - cached.timestamp < this.HOLDER_CACHE_DURATION)) {
-        console.log(`⚡ Moralis cache hit for ${address} (${cached.data.length} holders) - NO API CALL`);
+        console.log(`⚡ Moralis cache hit for ${address} (${cached.data.length} holders, total: ${cached.total}) - NO API CALL`);
         return {
           result: cached.data,
           cursor: undefined, // Cached data doesn't need pagination
           page: 1,
-          page_size: cached.data.length
+          page_size: cached.data.length,
+          total: cached.total, // Include the total count
+          hasMore: false // Cached data is complete for this page
         };
       }
       
@@ -168,13 +170,24 @@ export class MoralisService {
       label: holder.owner_address_label
     }));
     
+    // Determine the total count
+    // If we got less than the limit, that's the total
+    // If we got exactly the limit AND there's a cursor, there are more holders
+    let estimatedTotal = processedResult.length;
+    if (data.cursor && processedResult.length === limit) {
+      // There are more holders, we need to estimate or fetch all
+      // For now, we'll indicate it's 100+ (we can improve this later)
+      estimatedTotal = processedResult.length; // Will be handled by caller
+    }
+    
     // Cache the result for future requests
     if (cacheKey && !cursor) { // Only cache first page to avoid complexity
       this.holderCache.set(cacheKey, {
         data: processedResult,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        total: estimatedTotal // Store the estimated total count
       });
-      console.log(`⚡ Cached ${processedResult.length} holders for ${address} (30min cache)`);
+      console.log(`⚡ Cached ${processedResult.length} holders for ${address}, estimated total: ${estimatedTotal} (30min cache)`);
     }
     
     return {
@@ -182,10 +195,69 @@ export class MoralisService {
       cursor: data.cursor,
       page: data.page,
       page_size: data.page_size,
-      total: data.total // Include total count
+      total: estimatedTotal,
+      hasMore: !!data.cursor // Indicates if there are more holders
     };
   }
 
+  /**
+   * Get the actual total holder count by paginating if needed
+   */
+  private async getActualHolderCount(
+    address: string,
+    network: string = 'ethereum'
+  ): Promise<number> {
+    let totalCount = 0;
+    let cursor: string | undefined;
+    let pageCount = 0;
+    const maxPages = 50; // Limit to prevent excessive API calls
+    
+    try {
+      while (pageCount < maxPages) {
+        // Make direct API call without cache to count all holders
+        const chainHex = this.getChainHex(network);
+        const apiUrl = `${this.baseUrl}/erc20/${address}/owners`;
+        const queryParams = new URLSearchParams({
+          chain: chainHex,
+          limit: '100',
+          order: 'DESC'
+        });
+        
+        if (cursor) {
+          queryParams.append('cursor', cursor);
+        }
+
+        const response = await fetch(`${apiUrl}?${queryParams}`, {
+          headers: {
+            'X-API-Key': process.env.MORALIS_API_KEY!,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`Moralis API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        totalCount += data.result?.length || 0;
+        
+        // If no cursor or less than 100 results, we've got all holders
+        if (!data.cursor || (data.result?.length || 0) < 100) {
+          break;
+        }
+        
+        cursor = data.cursor;
+        pageCount++;
+      }
+      
+      console.log(`📊 Counted ${totalCount} total holders across ${pageCount + 1} pages`);
+      return totalCount;
+    } catch (error) {
+      console.error(`❌ Failed to get total holder count for ${address}:`, error);
+      return 0;
+    }
+  }
+  
   /**
    * Get holder count and top holders efficiently
    * Optimized to minimize API calls
@@ -196,7 +268,7 @@ export class MoralisService {
     topHoldersLimit: number = 100
   ): Promise<{ totalCount: number; topHolders: MoralisTokenHolder[] }> {
     try {
-      // Make a single API call to get total count and top holders
+      // Make a single API call to get top holders
       console.log(`📊 Getting holder count and top ${topHoldersLimit} holders for ${address}`);
       
       const response = await this.getTokenHolders(address, network, topHoldersLimit);
@@ -216,9 +288,22 @@ export class MoralisService {
         };
       }
       
-      // For other tokens, use the actual holder count from the response
-      // The total property might contain the actual total even when only returning 100
-      const totalCount = response?.total || holders.length;
+      // Determine the actual total count
+      let totalCount = holders.length;
+      
+      // If we have a cursor or hasMore flag, there are more holders
+      if ((response.cursor || response.hasMore) && holders.length === topHoldersLimit) {
+        console.log(`📊 More than ${topHoldersLimit} holders detected, fetching actual count...`);
+        totalCount = await this.getActualHolderCount(address, network);
+        
+        // Update the cache with the actual total count
+        const cacheKey = `${address}-${network}-${topHoldersLimit}-first`;
+        const cached = this.holderCache.get(cacheKey);
+        if (cached) {
+          cached.total = totalCount;
+          console.log(`💾 Updated cache with actual total: ${totalCount} holders`);
+        }
+      }
       
       console.log(`✅ Total holders: ${totalCount}, Retrieved top ${holders.length} holders`);
       
