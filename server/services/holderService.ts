@@ -65,7 +65,7 @@ export class HolderService {
       
       // Special handling for Base network pools - use timeout wrapper
       const isBase = networkName?.toLowerCase() === 'base';
-      const timeoutMs = isBase ? 30000 : 60000; // 30s for Base, 60s for others
+      const timeoutMs = isBase ? 45000 : 90000; // 45s for Base, 90s for others (increased for pools with many holders)
       
       // Create a timeout promise
       const timeoutPromise = new Promise<any[]>((_, reject) => {

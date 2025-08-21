@@ -102,8 +102,9 @@ class ComprehensiveHolderSyncService {
           console.log(`🔄 Syncing holders for "${pool.tokenPair}" (currently ${storedCount} holders stored)...`);
           
           // Add timeout wrapper to prevent hanging on any single pool
+          // Increased timeout to 60 seconds for pools with many holders
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Sync timeout after 30 seconds')), 30000);
+            setTimeout(() => reject(new Error('Sync timeout after 60 seconds')), 60000);
           });
           
           const syncPromise = holderService.syncPoolHolders(pool.id);
