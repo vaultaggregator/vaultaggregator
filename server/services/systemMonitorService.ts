@@ -35,6 +35,7 @@ interface SystemHealth {
     holderDataSync: SystemCheck;
     aiOutlookGeneration: SystemCheck;
     cleanup: SystemCheck;
+    etherscanScraper: SystemCheck;
   };
   errorRates: {
     last1Hour: number;
@@ -130,7 +131,8 @@ export class SystemMonitorService {
         poolDataSync: this.checks.get('poolDataSync') || this.createUnknownCheck('poolDataSync'),
         holderDataSync: this.checks.get('holderDataSync') || this.createUnknownCheck('holderDataSync'),
         aiOutlookGeneration: this.checks.get('aiOutlookGeneration') || this.createUnknownCheck('aiOutlookGeneration'),
-        cleanup: this.checks.get('cleanup') || this.createUnknownCheck('cleanup')
+        cleanup: this.checks.get('cleanup') || this.createUnknownCheck('cleanup'),
+        etherscanScraper: this.checks.get('etherscanScraper') || this.createUnknownCheck('etherscanScraper')
       },
       errorRates
     };
@@ -315,6 +317,52 @@ export class SystemMonitorService {
       status: 'disabled',
       reason: 'Service temporarily disabled - Alchemy API connections suspended'
     });
+
+    // Check Etherscan Scraper Service
+    try {
+      const { db } = await import("../db");
+      const { poolMetricsCurrent } = await import("../../shared/schema");
+      const { desc } = await import("drizzle-orm");
+      
+      // Check when holder counts were last updated
+      const recentHolderUpdates = await db.select()
+        .from(poolMetricsCurrent)
+        .orderBy(desc(poolMetricsCurrent.updatedAt))
+        .limit(1);
+      
+      if (recentHolderUpdates.length > 0) {
+        const lastUpdate = recentHolderUpdates[0].updatedAt?.getTime() || 0;
+        const timeSinceUpdate = now - lastUpdate;
+        const thirtyMinutes = 30 * 60 * 1000; // Scraper runs every 30 minutes
+        
+        if (timeSinceUpdate < thirtyMinutes * 2) {
+          this.updateCheck('etherscanScraper', 'up', 0, undefined, {
+            lastSync: new Date(lastUpdate),
+            timeSinceSync: timeSinceUpdate,
+            holdersCount: recentHolderUpdates[0].holdersCount,
+            status: 'active'
+          });
+        } else if (timeSinceUpdate < thirtyMinutes * 4) {
+          this.updateCheck('etherscanScraper', 'warning', 0, 'Scraper may be delayed', {
+            lastSync: new Date(lastUpdate),
+            timeSinceSync: timeSinceUpdate,
+            status: 'delayed'
+          });
+        } else {
+          this.updateCheck('etherscanScraper', 'down', 0, 'Scraper appears to be stopped', {
+            lastSync: new Date(lastUpdate),
+            timeSinceSync: timeSinceUpdate,
+            status: 'stopped'
+          });
+        }
+      } else {
+        this.updateCheck('etherscanScraper', 'warning', 0, 'No holder data found', {
+          status: 'no_data'
+        });
+      }
+    } catch (error) {
+      this.updateCheck('etherscanScraper', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
+    }
 
     // Check AI Outlook Generation Service
     try {
