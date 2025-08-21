@@ -290,7 +290,7 @@ export default function AdminApiKeys() {
                         </Button>
                       </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       Created: {formatDate(apiKey.createdAt)}
                     </div>
                   </div>
@@ -309,7 +309,7 @@ export default function AdminApiKeys() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
                 <h4 className="font-medium mb-2">Rate Limits</h4>
-                <ul className="space-y-1 text-muted-foreground">
+                <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                   <li>• Free tier: 1,000 requests per hour</li>
                   <li>• Pro tier: 10,000 requests per hour</li>
                   <li>• Rate limits reset every hour</li>
@@ -317,7 +317,7 @@ export default function AdminApiKeys() {
               </div>
               <div>
                 <h4 className="font-medium mb-2">Authentication</h4>
-                <ul className="space-y-1 text-muted-foreground">
+                <ul className="space-y-1 text-gray-600 dark:text-gray-400">
                   <li>• Include API key in Authorization header</li>
                   <li>• Format: Bearer YOUR_API_KEY</li>
                   <li>• All API endpoints require authentication</li>
@@ -326,7 +326,7 @@ export default function AdminApiKeys() {
             </div>
             <div className="pt-2 border-t">
               <h4 className="font-medium mb-2">Available Endpoints</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <div>• GET /api/v1/pools - List yield pools</div>
                 <div>• GET /api/v1/chains - List blockchain networks</div>
                 <div>• GET /api/v1/platforms - List DeFi platforms</div>

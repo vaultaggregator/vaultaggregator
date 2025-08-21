@@ -308,7 +308,7 @@ export default function AdminServices() {
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 Service Monitor
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600 dark:text-gray-300">
                 Monitor and manage background services and scheduled tasks
               </p>
             </div>

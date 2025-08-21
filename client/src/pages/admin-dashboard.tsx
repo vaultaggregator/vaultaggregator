@@ -783,7 +783,7 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Pool Management</CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Toggle switches to control which pools are visible to guest visitors on the main site. 
               Hidden pools will not appear on the homepage.
             </p>
@@ -794,7 +794,7 @@ export default function AdminDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : pools.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-300">
                 No pools found
               </div>
             ) : (
@@ -1004,7 +1004,7 @@ export default function AdminDashboard() {
                               disabled={toggleVisibilityMutation.isPending}
                               data-testid={`switch-visibility-${pool.id}`}
                             />
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
                               {pool.isVisible ? "Visible" : "Hidden"}
                             </span>
                           </div>
@@ -1019,7 +1019,7 @@ export default function AdminDashboard() {
             
             {pagination && (
               <div className="flex items-center justify-between px-4 py-3 border-t">
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, pagination.total)} of {pagination.total} pools
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1032,7 +1032,7 @@ export default function AdminDashboard() {
                   >
                     Previous
                   </Button>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     Page {currentPage + 1} of {Math.ceil(pagination.total / pageSize)}
                   </span>
                   <Button 

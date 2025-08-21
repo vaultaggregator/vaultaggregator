@@ -448,11 +448,11 @@ export default function AdminCategories() {
                           {category.parentId && <span className="text-xs text-gray-400">└─</span>}
                           {category.displayName}
                         </CardTitle>
-                        <p className="text-sm text-gray-500">{category.name}</p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-300">{category.name}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-300">
                           {category.poolCount} pools
                           {category.parentId && (
-                            <span className="ml-2 text-blue-600">
+                            <span className="ml-2 text-blue-600 dark:text-blue-400">
                               (Subcategory)
                             </span>
                           )}
@@ -469,11 +469,11 @@ export default function AdminCategories() {
                 <CardContent>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm text-gray-600">Slug: {category.slug}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Slug: {category.slug}</p>
                       {category.description && (
-                        <p className="text-sm text-gray-600 mt-1">{category.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{category.description}</p>
                       )}
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                         Created: {new Date(category.createdAt).toLocaleDateString()}
                       </p>
                     </div>

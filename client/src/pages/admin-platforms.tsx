@@ -332,7 +332,7 @@ export default function AdminPlatforms() {
             </div>
             <div>
               <CardTitle className="text-lg">{platform.displayName}</CardTitle>
-              <p className="text-sm text-gray-500">{platform.name}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{platform.name}</p>
             </div>
           </div>
           
@@ -345,7 +345,7 @@ export default function AdminPlatforms() {
               {platform.isActive ? "Active" : "Inactive"}
             </Badge>
             {platform.hasVisiblePools && (
-              <Badge variant="outline" className="text-blue-600 border-blue-300">
+              <Badge variant="outline" className="text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-500">
                 Has Pools
               </Badge>
             )}
@@ -358,7 +358,7 @@ export default function AdminPlatforms() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Platform Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Platform Name</label>
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
@@ -367,7 +367,7 @@ export default function AdminPlatforms() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
                 <Input
                   value={editDisplayName}
                   onChange={(e) => setEditDisplayName(e.target.value)}
@@ -376,7 +376,7 @@ export default function AdminPlatforms() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Website</label>
                 <Input
                   value={editWebsite}
                   onChange={(e) => setEditWebsite(e.target.value)}
@@ -385,7 +385,7 @@ export default function AdminPlatforms() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">URL Template</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL Template</label>
                 <Input
                   value={editUrlTemplate}
                   onChange={(e) => setEditUrlTemplate(e.target.value)}
@@ -394,7 +394,7 @@ export default function AdminPlatforms() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">🎯 Data Refresh Interval (Minutes)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">🎯 Data Refresh Interval (Minutes)</label>
                 <Input
                   type="number"
                   min="1"
@@ -404,7 +404,7 @@ export default function AdminPlatforms() {
                   placeholder="10"
                   data-testid={`input-edit-refresh-interval-${platform.id}`}
                 />
-                <p className="text-xs text-gray-500 mt-1">How often to collect metrics for pools on this platform (1-1440 minutes)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">How often to collect metrics for pools on this platform (1-1440 minutes)</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -437,45 +437,45 @@ export default function AdminPlatforms() {
         ) : (
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-gray-600">Slug: {platform.slug}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Slug: {platform.slug}</p>
               {platform.website && (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Website: 
                   <a 
                     href={platform.website} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline ml-1"
+                    className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
                   >
                     {platform.website}
                   </a>
                 </p>
               )}
               {platform.visitUrlTemplate && (
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   URL Template: 
-                  <code className="text-xs bg-gray-100 px-1 py-0.5 rounded ml-1">
+                  <code className="text-xs bg-gray-100 dark:bg-gray-700 dark:text-gray-200 px-1 py-0.5 rounded ml-1">
                     {platform.visitUrlTemplate}
                   </code>
                 </p>
               )}
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 Show Underlying Tokens: 
                 <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
                   platform.showUnderlyingTokens 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-600'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' 
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                 }`}>
                   {platform.showUnderlyingTokens ? 'Yes' : 'No'}
                 </span>
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 🎯 Metrics Refresh: 
-                <span className="ml-1 px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
+                <span className="ml-1 px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
                   {platform.dataRefreshIntervalMinutes || 10} minutes
                 </span>
               </p>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Created: {new Date(platform.createdAt).toLocaleDateString()}
               </p>
             </div>

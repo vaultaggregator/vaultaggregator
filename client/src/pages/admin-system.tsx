@@ -213,13 +213,13 @@ export default function AdminSystem() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Current Time</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Current Time</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
                   {health?.serverTime ? new Date(health.serverTime.current).toLocaleTimeString() : 'Loading...'}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Date</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Date</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
                   {health?.serverTime ? new Date(health.serverTime.current).toLocaleDateString('en-US', { 
                     month: 'short', 
@@ -229,7 +229,7 @@ export default function AdminSystem() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Timezone</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Timezone</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
                   {health?.serverTime?.timezone || 'Loading...'}
                 </p>
@@ -321,7 +321,7 @@ export default function AdminSystem() {
                   {environment && (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">Node.js Version:</span>
+                        <span className="text-gray-600 dark:text-gray-300">Node.js Version:</span>
                         <span className="font-medium">{environment.nodeVersion}</span>
                       </div>
                       <div className="flex justify-between">

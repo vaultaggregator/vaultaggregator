@@ -311,7 +311,7 @@ export default function AdminErrors() {
           {errorsLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading errors...</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Loading errors...</p>
             </div>
           ) : filteredErrors.length === 0 ? (
             <Card>

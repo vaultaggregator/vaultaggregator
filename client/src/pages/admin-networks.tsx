@@ -197,7 +197,7 @@ export default function AdminNetworks() {
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle>Networks</CardTitle>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Configure network visibility and upload custom icons
                 </p>
               </div>
@@ -302,7 +302,7 @@ export default function AdminNetworks() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : chains.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-300">
                 No networks found
               </div>
             ) : (
@@ -334,7 +334,7 @@ export default function AdminNetworks() {
                           <h3 className="font-semibold text-gray-900 dark:text-white">
                             {chain.displayName}
                           </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="text-sm text-gray-500 dark:text-gray-300">
                             {chain.name}
                           </p>
                         </div>
@@ -358,7 +358,7 @@ export default function AdminNetworks() {
                           className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: chain.color }}
                         ></div>
-                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
                           {chain.color}
                         </span>
                       </div>
