@@ -51,6 +51,32 @@ interface SystemHealth {
     last24Hours: number;
     critical: number;
   };
+  serverTime?: {
+    current: string;
+    timezone: string;
+    formatted: string;
+  };
+  cpuMetrics?: {
+    usage: number;
+    cores: number;
+    loadAverage: number[];
+  };
+  memoryMetrics?: {
+    total: string;
+    free: string;
+    used: string;
+    cached: string;
+    percentages: {
+      used: number;
+      free: number;
+      cached: number;
+    };
+  };
+  cacheMetrics?: {
+    hitRate: number;
+    missRate: number;
+    totalRequests: number;
+  };
 }
 
 interface SystemCheck {
@@ -73,6 +99,28 @@ export default function AdminSystem() {
   });
 
   const { data: environment } = useQuery({
+    queryKey: ["/api/admin/system/environment"],
+  });
+
+  interface SystemEnvironment {
+    nodeVersion: string;
+    environment: string;
+    platform: string;
+    arch: string;
+    cpuCount: number;
+    totalMemoryFormatted: string;
+    formatted?: {
+      uptime: string;
+      memory: string;
+      disk: string;
+      load: string;
+    };
+  }
+
+  const typedHealth = health as SystemHealth | undefined;
+  const typedEnvironment = environment as SystemEnvironment | undefined;
+
+  const { data: environment2 } = useQuery({
     queryKey: ["/api/admin/system/environment"],
     refetchInterval: 60000, // Refresh every minute
   });

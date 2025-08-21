@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers, Activity, ChevronDown, Menu, X } from "lucide-react";
+import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers, Activity, ChevronDown, Menu, X, Shield, TrendingUp, FileText, Eye } from "lucide-react";
 import { useAuth, type User } from "@/hooks/useAuth";
 import { useState } from "react";
 
@@ -26,6 +26,7 @@ export function AdminHeader() {
       label: "Overview",
       items: [
         { path: "/admin", icon: BarChart3, label: "Dashboard" },
+        { path: "/admin-analytics", icon: TrendingUp, label: "Analytics" },
       ]
     },
     {
@@ -43,11 +44,15 @@ export function AdminHeader() {
         { path: "/admin-platforms", icon: Database, label: "Platforms" },
         { path: "/admin-networks", icon: Settings, label: "Networks" },
         { path: "/admin-categories", icon: Tag, label: "Categories" },
+        { path: "/admin-content", icon: FileText, label: "Content" },
+        { path: "/admin-monitoring", icon: Eye, label: "Monitoring" },
       ]
     },
     {
       label: "Security",
       items: [
+        { path: "/admin-users", icon: Users, label: "Users" },
+        { path: "/admin-security", icon: Shield, label: "Security" },
         { path: "/admin-api-keys", icon: Key, label: "API Keys" },
         { path: "/admin-errors", icon: AlertTriangle, label: "Error Logs", highlight: "error" },
       ]
