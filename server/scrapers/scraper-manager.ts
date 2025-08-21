@@ -35,8 +35,8 @@ export class ScraperManager {
       const poolsResults = await db
         .select()
         .from(pools)
-        .leftJoin(platforms, eq(pools.platformId, platforms.id))
-        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .innerJoin(platforms, eq(pools.platformId, platforms.id))
+        .innerJoin(chains, eq(pools.chainId, chains.id))
         .where(
           and(
             eq(pools.isActive, true),
@@ -46,14 +46,12 @@ export class ScraperManager {
         )
         .orderBy(desc(pools.apy));
 
-      // Format the results to match Pool type with platform/chain, filtering out pools without platforms
-      const formattedPools = poolsResults
-        .filter(result => result.platforms && result.chains)
-        .map(result => ({
-          ...result.pools,
-          platform: result.platforms!,
-          chain: result.chains!,
-        }));
+      // Format the results to match Pool type with platform/chain
+      const formattedPools = poolsResults.map(result => ({
+        ...result.pools,
+        platform: result.platforms,
+        chain: result.chains,
+      }));
 
       console.log(`📊 Found ${formattedPools.length} pools to scrape`);
 
