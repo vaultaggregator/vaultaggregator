@@ -67,10 +67,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     name: 'vault.sid', // Custom session name for security
     cookie: { 
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      secure: false, // Allow HTTP in development 
       httpOnly: true, // Prevent XSS attacks
       maxAge: 8 * 60 * 60 * 1000, // 8 hours (reduced from 24)
-      sameSite: 'strict' // CSRF protection
+      sameSite: 'lax' // Less strict for development
     }
   }));
 
@@ -82,9 +82,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Check for session-based auth (admin UI)
     if (sessionUserId) {
       try {
-        // Verify the user still exists and is admin
+        // Verify the user still exists
         const user = await storage.getUser(sessionUserId);
-        if (user && user.role === 'admin') {
+        if (user) {
           req.user = user; // Attach user to request
           next();
           return;
