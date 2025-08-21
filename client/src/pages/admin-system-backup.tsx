@@ -59,11 +59,11 @@ interface SystemHealth {
   };
   apiHealth: {
     etherscan: SystemCheck;
-    defiLlama: SystemCheck;
+    morpho: SystemCheck;
     database: SystemCheck;
   };
   scheduledJobs: {
-    defiLlamaSync: SystemCheck;
+    poolDataSync: SystemCheck;
     holderDataSync: SystemCheck;
     aiOutlookGeneration: SystemCheck;
     cleanup: SystemCheck;
@@ -717,7 +717,7 @@ export default function AdminSystem() {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base capitalize flex items-center gap-2">
-                        {key === 'defiLlamaSync' && <Database className="h-4 w-4 text-blue-600" />}
+                        {key === 'poolDataSync' && <Database className="h-4 w-4 text-blue-600" />}
                         {key === 'holderDataSync' && <Users className="h-4 w-4 text-green-600" />}
                         {key === 'aiOutlookGeneration' && <Eye className="h-4 w-4 text-purple-600" />}
                         {key === 'cleanup' && <RefreshCw className="h-4 w-4 text-orange-600" />}

@@ -1,0 +1,93 @@
+🔍 Starting holder sync for pool 9136c522-28ea-4e12-b7cc-f32e5cb2fdc2
+📊 Syncing holders for TAC USDC on 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741
+🔍 Fetching token holders for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741
+🔄 Attempting Moralis fetch for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741 on ethereum
+📄 Fetching page 1 (up to 100 holders)...
+🔍 Fetching token holders from Moralis for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741 on ethereum
+✅ Moralis returned 53 holders
+⚡ Cached 53 holders for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741 (30min cache)
+✅ Page 1: Got 53 holders (total: 53)
+🎯 Moralis fetched 53 total holders for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741
+✅ Fetched 53 holders from Moralis (cost-effective)
+🔍 getTokenPrice called for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741
+🎯 Smart stablecoin detection (TAC USDC): $1.00 (NO API CALL)
+💰 Token price: $1
+💰 TAC USDC holder 0xffd0cb96...: 7436192.32 TAC @ $3.6 = $26770292.34
+💰 Returning known portfolio value for 0xffd0cb96...: $99,866
+💰 TAC USDC holder 0xc868bfb2...: 7129419.73 TAC @ $3.6 = $25665911.02
+💰 TAC USDC holder 0x567c701b...: 4547239.82 TAC @ $3.6 = $16370063.37
+💰 TAC USDC holder 0xb65b8cf3...: 1975338.85 TAC @ $3.6 = $7111219.84
+💰 TAC USDC holder 0x6d46e28a...: 976788.99 TAC @ $3.6 = $3516440.36
+💰 TAC USDC holder 0x3f3ac8c6...: 394789.65 TAC @ $3.6 = $1421242.75
+💰 TAC USDC holder 0x2a564c15...: 203926.19 TAC @ $3.6 = $734134.29
+💰 TAC USDC holder 0x0b9e6ab1...: 200499.20 TAC @ $3.6 = $721797.12
+💰 TAC USDC holder 0x030e3872...: 194865.90 TAC @ $3.6 = $701517.22
+💰 TAC USDC holder 0x5851c4cb...: 98711.72 TAC @ $3.6 = $355362.19
+💰 TAC USDC holder 0x39f22994...: 97908.96 TAC @ $3.6 = $352472.24
+💰 TAC USDC holder 0x84a20778...: 97344.47 TAC @ $3.6 = $350440.08
+💰 TAC USDC holder 0x2df3e5f2...: 73898.97 TAC @ $3.6 = $266036.29
+💰 TAC USDC holder 0xa0307798...: 64856.26 TAC @ $3.6 = $233482.55
+💰 TAC USDC holder 0xdd9bf0a4...: 58025.84 TAC @ $3.6 = $208893.01
+💰 TAC USDC holder 0x92c22c9d...: 49225.73 TAC @ $3.6 = $177212.64
+💰 TAC USDC holder 0x4aef5e6c...: 34410.96 TAC @ $3.6 = $123879.47
+💰 TAC USDC holder 0xd207e0e9...: 19689.04 TAC @ $3.6 = $70880.53
+💰 TAC USDC holder 0x720ec6f2...: 12734.38 TAC @ $3.6 = $45843.78
+💰 TAC USDC holder 0x4da185fc...: 10351.69 TAC @ $3.6 = $37266.07
+💰 TAC USDC holder 0xdcfba563...: 9845.23 TAC @ $3.6 = $35442.83
+💰 TAC USDC holder 0x27287a45...: 9173.33 TAC @ $3.6 = $33023.99
+💰 TAC USDC holder 0xecc7a20b...: 8852.28 TAC @ $3.6 = $31868.21
+💰 TAC USDC holder 0x7c764b26...: 4931.80 TAC @ $3.6 = $17754.48
+💰 TAC USDC holder 0x9bfed00a...: 4886.77 TAC @ $3.6 = $17592.39
+💰 TAC USDC holder 0xddc96c5b...: 4883.56 TAC @ $3.6 = $17580.82
+💰 TAC USDC holder 0x52abfce4...: 4879.31 TAC @ $3.6 = $17565.51
+💰 TAC USDC holder 0x810b6802...: 3944.71 TAC @ $3.6 = $14200.94
+💰 TAC USDC holder 0x1c05f164...: 2948.31 TAC @ $3.6 = $10613.90
+💰 TAC USDC holder 0x87803c50...: 2933.31 TAC @ $3.6 = $10559.93
+💰 TAC USDC holder 0x9251631d...: 2730.26 TAC @ $3.6 = $9828.95
+💰 TAC USDC holder 0xc7a79777...: 2190.46 TAC @ $3.6 = $7885.66
+💰 TAC USDC holder 0x0a9e7c3a...: 985.09 TAC @ $3.6 = $3546.33
+💰 TAC USDC holder 0x309c445e...: 739.17 TAC @ $3.6 = $2661.00
+💰 TAC USDC holder 0x47509e27...: 549.29 TAC @ $3.6 = $1977.45
+💰 TAC USDC holder 0x1dc45b49...: 492.09 TAC @ $3.6 = $1771.52
+💰 TAC USDC holder 0x90c69eba...: 77.43 TAC @ $3.6 = $278.75
+💰 TAC USDC holder 0xccb98af4...: 29.65 TAC @ $3.6 = $106.74
+💰 TAC USDC holder 0x00000000...: 27.11 TAC @ $3.6 = $97.61
+💰 TAC USDC holder 0xeacd6c09...: 21.69 TAC @ $3.6 = $78.10
+💰 TAC USDC holder 0x5cd9e656...: 19.72 TAC @ $3.6 = $71.00
+💰 TAC USDC holder 0xd2eee629...: 13.54 TAC @ $3.6 = $48.74
+💰 TAC USDC holder 0x000000dc...: 11.31 TAC @ $3.6 = $40.72
+💰 TAC USDC holder 0xa3b69fd0...: 2.87 TAC @ $3.6 = $10.33
+💰 TAC USDC holder 0xdce2cfd1...: 2.83 TAC @ $3.6 = $10.19
+💰 TAC USDC holder 0x9607d667...: 2.07 TAC @ $3.6 = $7.43
+💰 TAC USDC holder 0xe0a68a56...: 0.99 TAC @ $3.6 = $3.58
+💰 TAC USDC holder 0x688a3759...: 0.99 TAC @ $3.6 = $3.55
+💰 TAC USDC holder 0x950db4ea...: 0.98 TAC @ $3.6 = $3.54
+💰 TAC USDC holder 0x7d4038f8...: 0.14 TAC @ $3.6 = $0.51
+💰 TAC USDC holder 0x0000000f...: 0.08 TAC @ $3.6 = $0.27
+💰 TAC USDC holder 0x3e519fb5...: 0.01 TAC @ $3.6 = $0.03
+💰 TAC USDC holder 0xefec8486...: 0.00 TAC @ $3.6 = $0.00
+💾 Batch inserting 53 holders...
+❌ Failed to insert batch at index 0: error: numeric field overflow
+    at file:///home/runner/workspace/node_modules/@neondatabase/serverless/index.mjs:1345:74
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async DatabaseStorage.batchInsertTokenHolders (/home/runner/workspace/server/storage.ts:2230:9)
+    at async HolderService.syncPoolHolders (/home/runner/workspace/server/services/holderService.ts:131:29)
+    at async ComprehensiveHolderSyncService.syncAllPools (/home/runner/workspace/server/services/comprehensiveHolderSyncService.ts:113:11) {
+  length: 166,
+  severity: 'ERROR',
+  code: '22003',
+  detail: 'A field with precision 20, scale 2 must round to an absolute value less than 10^18.',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'numeric.c',
+  line: '7909',
+  routine: 'apply_typmod'
+}

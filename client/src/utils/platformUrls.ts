@@ -9,7 +9,7 @@ interface Pool {
     name?: string;
   };
   rawData?: any;
-  defiLlamaId?: string | null;
+  platformPoolId?: string | null;
   poolAddress?: string | null;
 }
 
@@ -53,8 +53,8 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
       }
     }
     
-    if (pool.defiLlamaId) {
-      url = url.replace(/\{defiLlamaId\}/g, pool.defiLlamaId);
+    if (pool.platformPoolId) {
+      url = url.replace(/\{platformPoolId\}/g, pool.platformPoolId);
     }
     
     if (pool.poolAddress) {
@@ -75,9 +75,9 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
     }
   }
   
-  // Default to DeFi Llama for all other pools
-  return pool.defiLlamaId ? {
-    url: `https://defillama.com/yields/pool/${pool.defiLlamaId}`,
-    label: 'Visit DeFiLlama'
+  // Default to Morpho for all other pools
+  return pool.platformPoolId ? {
+    url: `https://app.morpho.org/market?id=${pool.platformPoolId}`,
+    label: 'Visit Morpho'
   } : null;
 }

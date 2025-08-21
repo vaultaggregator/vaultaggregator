@@ -171,7 +171,7 @@ export default function AdminDashboard() {
 
 
 
-  // No longer need data sources query since we only have DeFi Llama
+  // Using direct platform APIs (Lido, Morpho) for data
 
   // Remove debug console log
 
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
         aValue = a.isVisible ? 1 : 0;
         bValue = b.isVisible ? 1 : 0;
         break;
-      // Removed datasource case since we only use DeFi Llama
+      // Removed datasource case - using direct platform APIs
       default:
         return 0;
     }

@@ -52,7 +52,7 @@ export class MorphoDataMigrationService {
       
       for (const pool of pools) {
         // Check if this pool has DeFi Llama data structure
-        if (pool.project === 'defillama' || pool.rawData) {
+        if (pool.project === 'morpho-blue' || pool.rawData) {
           await this.migrateSinglePool(pool.id);
           migratedCount++;
           console.log(`✅ Migrated pool: ${pool.tokenPair} (${pool.platform.displayName})`);
@@ -79,9 +79,8 @@ export class MorphoDataMigrationService {
     
     // Update the pool with new Morpho data structure
     await storage.updatePool(poolId, {
-      project: 'morpho-blue', // Change from 'defillama' to 'morpho-blue'
-      rawData: morphoData,
-      lastUpdated: new Date()
+      project: 'morpho-blue', // Using Morpho Blue project identifier
+      rawData: morphoData
     });
   }
   
@@ -143,7 +142,7 @@ export class MorphoDataMigrationService {
   }
   
   /**
-   * Calculate fee from DeFi Llama data
+   * Calculate fee from platform data
    */
   private calculateFee(rawData: any): number {
     // Calculate fee as difference between gross and net APY
@@ -186,8 +185,7 @@ export class MorphoDataMigrationService {
       apy: morphoData.state.apy.toString(),
       tvl: morphoData.state.totalAssetsUsd.toString(),
       project: 'morpho-blue',
-      rawData: morphoData,
-      lastUpdated: new Date()
+      rawData: morphoData
     });
   }
 }

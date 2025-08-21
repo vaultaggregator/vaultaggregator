@@ -95,8 +95,8 @@ class ErrorLogger {
       description: `Failed to sync data for pool ${details.poolId}. This means the pool's APY, TVL, and other metrics might be outdated for users.`,
       errorType: "Service",
       severity: "high",
-      source: "DefiLlamaService",
-      fixPrompt: "A pool failed to synchronize with DeFi Llama data. Check if the pool's defiLlamaId is correct, verify the DeFi Llama API is responding, and ensure the pool mapping logic is working. You might need to manually update the pool's defiLlamaId or check for API changes.",
+      source: "PoolDataService",
+      fixPrompt: "A pool failed to synchronize with platform API data. Check if the pool's configuration is correct, verify the platform APIs (Lido, Morpho) are responding, and ensure the pool mapping logic is working. You might need to manually update the pool's configuration or check for API changes.",
       metadata: {
         poolId: details.poolId,
         error: details.error,

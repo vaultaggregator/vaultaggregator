@@ -24,7 +24,7 @@ router.get("/status", requireAuth, async (req, res) => {
     
     // Define all services including those not in scheduled jobs
     const allServices = [
-      'defiLlamaSync',
+      'poolDataSync',
       'holderDataSync', 
       'aiOutlookGeneration',
       'cleanup',
@@ -138,7 +138,7 @@ router.post("/refresh", requireAuth, async (req, res) => {
           timestamp: new Date().toISOString()
         });
       }
-    } else if (serviceName === 'defiLlamaSync') {
+    } else if (serviceName === 'poolDataSync') {
       console.log("📊 Manual DeFi Llama sync triggered from admin panel");
       try {
         // Import and run the scraper manager that collects real data from Morpho and Lido APIs
@@ -306,7 +306,7 @@ router.get("/:service/logs", requireAuth, async (req, res) => {
 
 // Service configuration storage (in a real app, this would be in database)
 const serviceConfigs: { [key: string]: { interval: number; enabled: boolean } } = {
-  defiLlamaSync: { interval: 5, enabled: true },
+  poolDataSync: { interval: 5, enabled: true },
   holderDataSync: { interval: 30, enabled: true },
   aiOutlookGeneration: { interval: 1440, enabled: true }, // 24 hours
   cleanup: { interval: 86400, enabled: true }, // 60 days
@@ -336,7 +336,7 @@ function getNextRun(serviceName: string): string {
 
 function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | 'healing' {
   const typeMap: { [key: string]: 'scraper' | 'sync' | 'metrics' | 'healing' } = {
-    defiLlamaSync: 'scraper',
+    poolDataSync: 'scraper',
     holderDataSync: 'sync',
     aiOutlookGeneration: 'healing',
     cleanup: 'healing',
@@ -351,7 +351,7 @@ function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | '
 
 function getServiceDescription(serviceName: string): string {
   const descriptions: { [key: string]: string } = {
-    defiLlamaSync: 'Synchronizes APY and TVL data from DeFi protocols',
+    poolDataSync: 'Synchronizes APY and TVL data from platform APIs',
     holderDataSync: 'Updates token holder information and portfolio values',
     aiOutlookGeneration: 'Generates AI-powered market insights and predictions',
     cleanup: 'Performs database maintenance and removes expired data',
@@ -366,7 +366,7 @@ function getServiceDescription(serviceName: string): string {
 
 function getPoolsAffected(serviceName: string): number {
   const poolCounts: { [key: string]: number } = {
-    defiLlamaSync: 44,
+    poolDataSync: 44,
     holderDataSync: 44,
     aiOutlookGeneration: 44,
     cleanup: 0,
@@ -408,7 +408,7 @@ async function updateServiceConfig(serviceName: string, config: { interval: numb
     }
   }
   
-  if (serviceName === 'defiLlamaSync' && config.enabled) {
+  if (serviceName === 'poolDataSync' && config.enabled) {
     try {
       console.log(`📊 Updating DeFi Llama sync interval to ${config.interval} minutes`);
       // Note: This would require modifying the scraper manager
@@ -427,7 +427,7 @@ function getServiceStats(serviceName: string, job: any): any {
     successRate: 100
   };
   
-  if (serviceName === 'defiLlamaSync') {
+  if (serviceName === 'poolDataSync') {
     return {
       ...baseStats,
       processed: 44,

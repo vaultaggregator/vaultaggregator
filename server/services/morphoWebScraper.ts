@@ -113,7 +113,8 @@ export class MorphoWebScraperService {
   
   private async getFromDeFiLlama(vaultAddress: string): Promise<MorphoVaultData | null> {
     try {
-      const url = `https://api.llama.fi/protocol/morpho-blue`;
+      // Direct Morpho API endpoint (when available)
+      const url = `https://api.morpho.org/v1/vaults`; // Placeholder for actual Morpho API
       const response = await fetch(url, {
         signal: AbortSignal.timeout(10000)
       });

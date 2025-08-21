@@ -177,8 +177,7 @@ const CHAIN_CONFIGS: Record<string, {
 // CoinGecko API for token prices
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 
-// DefiLlama API for TVL data
-const DEFILLAMA_API = 'https://api.llama.fi';
+// Calculate TVL from database pools
 
 async function fetchTokenPrice(coingeckoId: string) {
   try {
@@ -210,34 +209,24 @@ async function fetchTokenPrice(coingeckoId: string) {
 
 async function fetchChainTVL(chainName: string) {
   try {
-    // Fetch TVL data from DefiLlama
-    const response = await fetch(`${DEFILLAMA_API}/v2/chains`);
+    // Calculate TVL from pools in database
+    const { storage } = await import('../storage');
+    const pools = await storage.getPools({ limit: 1000 });
     
-    if (!response.ok) {
-      console.log(`DefiLlama API returned ${response.status}`);
-      return null;
-    }
-
-    const chains = await response.json();
-    
-    // Find the chain by name (case-insensitive)
-    const chainData = chains.find((c: any) => 
-      c.name.toLowerCase() === chainName.toLowerCase() ||
-      c.name.toLowerCase() === chainName.replace(' ', '').toLowerCase()
-    );
-
-    if (!chainData) {
-      console.log(`Chain ${chainName} not found in DefiLlama data`);
-      return null;
-    }
+    // Filter pools by chain name and sum TVL
+    const chainTvl = pools
+      .filter(pool => pool.chainName?.toLowerCase() === chainName.toLowerCase())
+      .reduce((total, pool) => {
+        const tvl = parseFloat(pool.tvl || '0');
+        return total + tvl;
+      }, 0);
 
     return {
-      tvl: chainData.tvl || 0,
-      tvl24hChange: chainData.tvlPrevDay ? 
-        ((chainData.tvl - chainData.tvlPrevDay) / chainData.tvlPrevDay) * 100 : 0,
+      tvl: chainTvl,
+      tvl24hChange: 0, // Historical change would require historical data
     };
   } catch (error) {
-    console.error('Error fetching TVL from DefiLlama:', error);
+    console.error('Error calculating chain TVL:', error);
     return null;
   }
 }

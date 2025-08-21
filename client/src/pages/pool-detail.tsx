@@ -148,7 +148,7 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
 
 
 
-// DeFi Llama integration removed - using Morpho API instead
+// Using direct platform APIs (Morpho, Lido) for data
 
 // Morpho APY Data Type
 interface MorphoApyData {

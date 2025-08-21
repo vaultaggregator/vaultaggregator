@@ -155,11 +155,11 @@ export default function AdminServices() {
   // Mock service data if not available from API
   const mockServices: ServiceStatus[] = [
     {
-      name: 'defiLlamaSync',
-      displayName: 'DeFi Llama Sync',
-      status: health?.scheduledJobs?.defiLlamaSync?.status || 'running',
-      uptime: Date.now() - (health?.scheduledJobs?.defiLlamaSync?.lastCheck || Date.now()),
-      lastCheck: new Date(health?.scheduledJobs?.defiLlamaSync?.lastCheck || Date.now()).toLocaleTimeString(),
+      name: 'poolDataSync',
+      displayName: 'Pool Data Sync',
+      status: health?.scheduledJobs?.poolDataSync?.status || 'running',
+      uptime: Date.now() - (health?.scheduledJobs?.poolDataSync?.lastCheck || Date.now()),
+      lastCheck: new Date(health?.scheduledJobs?.poolDataSync?.lastCheck || Date.now()).toLocaleTimeString(),
       nextRun: '5 minutes',
       stats: {
         processed: 44,
@@ -469,7 +469,7 @@ export default function AdminServices() {
                               // Show appropriate toast message based on service
                               const toastMessages: Record<string, string> = {
                                 holderDataSync: "Syncing holders for all 44 pools - this may take several minutes",
-                                defiLlamaSync: "Refreshing APY and TVL data from DeFi Llama",
+                                poolDataSync: "Refreshing APY and TVL data from platform APIs",
                                 tokenPriceSync: "Updating token prices from data sources",
                                 historicalDataSync: "Collecting historical data for charts",
                                 morphoApiSync: "Syncing data from Morpho protocol",
@@ -499,7 +499,7 @@ export default function AdminServices() {
                             // Remove from refreshing set after appropriate delay
                             const delays: Record<string, number> = {
                               holderDataSync: 10000,
-                              defiLlamaSync: 5000,
+                              poolDataSync: 5000,
                               tokenPriceSync: 4000,
                               historicalDataSync: 6000,
                               morphoApiSync: 3000,
@@ -571,7 +571,7 @@ export default function AdminServices() {
                         </div>
                         <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                           {service.name === 'holderDataSync' && 'Syncing holders for all 44 pools. Check server logs for detailed progress.'}
-                          {service.name === 'defiLlamaSync' && 'Fetching latest APY and TVL data from DeFi Llama for all pools.'}
+                          {service.name === 'poolDataSync' && 'Fetching latest APY and TVL data from platform APIs for all pools.'}
                           {service.name === 'tokenPriceSync' && 'Updating token prices from multiple data sources.'}
                           {service.name === 'historicalDataSync' && 'Collecting historical APY and TVL data for charts.'}
                           {service.name === 'morphoApiSync' && 'Syncing data from Morpho protocol APIs.'}

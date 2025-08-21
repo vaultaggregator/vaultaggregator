@@ -27,11 +27,11 @@ interface SystemHealth {
   };
   apiHealth: {
     etherscan: SystemCheck;
-    defiLlama: SystemCheck;
+    morpho: SystemCheck;
     database: SystemCheck;
   };
   scheduledJobs: {
-    defiLlamaSync: SystemCheck;
+    poolDataSync: SystemCheck;
     holderDataSync: SystemCheck;
     aiOutlookGeneration: SystemCheck;
     cleanup: SystemCheck;
@@ -123,11 +123,11 @@ export class SystemMonitorService {
       },
       apiHealth: {
         etherscan: this.checks.get('etherscan') || this.createUnknownCheck('etherscan'),
-        defiLlama: this.checks.get('defiLlama') || this.createUnknownCheck('defiLlama'),
+        morpho: this.checks.get('morpho') || this.createUnknownCheck('morpho'),
         database: this.checks.get('database') || this.createUnknownCheck('database')
       },
       scheduledJobs: {
-        defiLlamaSync: this.checks.get('defiLlamaSync') || this.createUnknownCheck('defiLlamaSync'),
+        poolDataSync: this.checks.get('poolDataSync') || this.createUnknownCheck('poolDataSync'),
         holderDataSync: this.checks.get('holderDataSync') || this.createUnknownCheck('holderDataSync'),
         aiOutlookGeneration: this.checks.get('aiOutlookGeneration') || this.createUnknownCheck('aiOutlookGeneration'),
         cleanup: this.checks.get('cleanup') || this.createUnknownCheck('cleanup')
@@ -148,7 +148,7 @@ export class SystemMonitorService {
     await Promise.allSettled([
       this.checkAlchemyAPI(),
       this.checkEtherscanAPI(),
-      this.checkDefiLlamaAPI(),
+      this.checkMorphoAPI(),
       this.checkDatabaseHealth(),
       this.checkScheduledJobs()
     ]);
@@ -224,22 +224,20 @@ export class SystemMonitorService {
   }
 
   /**
-   * Check DeFi Llama API health
+   * Check Morpho API health
    */
-  private async checkDefiLlamaAPI(): Promise<void> {
+  private async checkMorphoAPI(): Promise<void> {
     const startTime = performance.now();
-    const checkName = 'defiLlama';
+    const checkName = 'morpho';
     
     try {
-      const response = await fetch('https://yields.llama.fi/pools');
+      const response = await fetch('https://api.morpho.org/blue/health');
       const endTime = performance.now();
       const responseTime = endTime - startTime;
       
       if (response.ok) {
-        const data = await response.json();
         this.updateCheck(checkName, 'up', responseTime, undefined, {
-          poolCount: data.data?.length || 0,
-          status: 'ok'
+          status: 'healthy'
         });
       } else {
         this.updateCheck(checkName, 'down', responseTime, `HTTP ${response.status}: ${response.statusText}`);
@@ -281,7 +279,7 @@ export class SystemMonitorService {
   private async checkScheduledJobs(): Promise<void> {
     const now = Date.now();
     
-    // Check DeFi Llama Sync Service (when pools were last updated)
+    // Check Pool Data Sync Service (when pools were last updated)
     try {
       const pools = await storage.getPools({ limit: 5 });
       const lastUpdate = pools.reduce((latest, pool) => {
@@ -293,23 +291,23 @@ export class SystemMonitorService {
       const tenMinutes = 10 * 60 * 1000;
       
       if (timeSinceUpdate < tenMinutes) {
-        this.updateCheck('defiLlamaSync', 'up', 0, undefined, {
+        this.updateCheck('poolDataSync', 'up', 0, undefined, {
           lastSync: new Date(lastUpdate),
           timeSinceSync: timeSinceUpdate
         });
       } else if (timeSinceUpdate < tenMinutes * 2) {
-        this.updateCheck('defiLlamaSync', 'warning', 0, 'Sync overdue', {
+        this.updateCheck('poolDataSync', 'warning', 0, 'Sync overdue', {
           lastSync: new Date(lastUpdate),
           timeSinceSync: timeSinceUpdate
         });
       } else {
-        this.updateCheck('defiLlamaSync', 'down', 0, 'Sync severely overdue', {
+        this.updateCheck('poolDataSync', 'down', 0, 'Sync severely overdue', {
           lastSync: new Date(lastUpdate),
           timeSinceSync: timeSinceUpdate
         });
       }
     } catch (error) {
-      this.updateCheck('defiLlamaSync', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
+      this.updateCheck('poolDataSync', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
     }
 
     // Check Holder Data Sync Service (currently disabled)

@@ -58,8 +58,7 @@ const ETHERSCAN_APIS: Record<string, { url: string; apiKey?: string }> = {
 // CoinGecko API base URL
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 
-// DefiLlama API base URL
-const DEFILLAMA_API = 'https://api.llama.fi';
+// Removed DefiLlama API - now using direct platform APIs
 
 async function fetchTokenFromCoinGecko(chainId: string, tokenAddress: string) {
   try {
@@ -110,50 +109,7 @@ async function fetchTokenFromCoinGecko(chainId: string, tokenAddress: string) {
   }
 }
 
-async function fetchTokenFromDefiLlama(chainId: string, tokenAddress: string) {
-  try {
-    // Map chain IDs to DefiLlama chain names
-    const chainMap: Record<string, string> = {
-      'ethereum': 'ethereum',
-      'base': 'base',
-      'arbitrum': 'arbitrum',
-      'optimism': 'optimism',
-      'polygon': 'polygon',
-      'bsc': 'bsc',
-    };
-
-    const chain = chainMap[chainId] || 'ethereum';
-    
-    // Fetch current price from DefiLlama with timeout
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
-    const priceResponse = await fetch(
-      `${DEFILLAMA_API}/coins/prices/current/${chain}:${tokenAddress}`,
-      { signal: controller.signal }
-    ).finally(() => clearTimeout(timeout));
-
-    if (!priceResponse.ok) {
-      console.log(`DefiLlama price API returned ${priceResponse.status}`);
-      return null;
-    }
-
-    const priceData = await priceResponse.json();
-    const tokenKey = `${chain}:${tokenAddress}`;
-    const tokenInfo = priceData.coins?.[tokenKey];
-
-    if (!tokenInfo) return null;
-
-    return {
-      price: tokenInfo.price || 0,
-      symbol: tokenInfo.symbol,
-      decimals: tokenInfo.decimals || 18,
-    };
-  } catch (error) {
-    console.error('Error fetching from DefiLlama:', error);
-    return null;
-  }
-}
+// Removed DefiLlama API integration - now using platform-specific APIs
 
 async function fetchTokenFromEtherscan(chainId: string, tokenAddress: string) {
   try {
@@ -202,33 +158,9 @@ async function fetchTokenFromEtherscan(chainId: string, tokenAddress: string) {
 
 async function fetchProtocolsUsingToken(tokenAddress: string, tokenSymbol: string) {
   try {
-    // Get TVL data from DefiLlama for protocols using this token
-    const response = await fetch(`${DEFILLAMA_API}/protocols`);
-    
-    if (!response.ok) {
-      console.log(`DefiLlama protocols API returned ${response.status}`);
-      return [];
-    }
-
-    const protocols = await response.json();
-    
-    // Filter protocols that might use this token (simplified logic)
-    // In production, you'd need more sophisticated matching
-    const relevantProtocols = protocols
-      .filter((p: any) => {
-        const hasToken = p.symbol?.toLowerCase() === tokenSymbol?.toLowerCase() ||
-                        p.name?.toLowerCase().includes(tokenSymbol?.toLowerCase());
-        return hasToken && p.tvl > 0;
-      })
-      .slice(0, 6)
-      .map((p: any) => ({
-        name: p.name,
-        type: p.category || 'DeFi',
-        tvl: p.tvl || 0,
-        logo: p.logo,
-      }));
-
-    return relevantProtocols;
+    // Return empty array for now - will integrate with platform-specific APIs later
+    // This would fetch from our database or direct platform APIs (Morpho, Lido, etc.)
+    return [];
   } catch (error) {
     console.error('Error fetching protocols:', error);
     return [];
@@ -248,21 +180,13 @@ export async function getTokenDetails(req: Request, res: Response) {
     const chainName = chain?.name || chainId;
 
     // Fetch token data from multiple sources in parallel
-    const [coinGeckoData, defiLlamaData, etherscanData] = await Promise.all([
+    const [coinGeckoData, etherscanData] = await Promise.all([
       fetchTokenFromCoinGecko(chainId, tokenAddress),
-      fetchTokenFromDefiLlama(chainId, tokenAddress),
       fetchTokenFromEtherscan(chainId, tokenAddress),
     ]);
 
     // Merge data from different sources (prioritize CoinGecko for most fields)
     const tokenData: any = coinGeckoData || {};
-    
-    // Override with DefiLlama data if available
-    if (defiLlamaData) {
-      tokenData.price = defiLlamaData.price || tokenData.price;
-      tokenData.symbol = tokenData.symbol || defiLlamaData.symbol;
-      tokenData.decimals = defiLlamaData.decimals || tokenData.decimals || 18;
-    }
 
     // Override with Etherscan data if available
     if (etherscanData) {

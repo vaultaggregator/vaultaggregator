@@ -351,8 +351,8 @@ export const pools = pgTable("pools", {
   tvl: decimal("tvl", { precision: 20, scale: 2 }),
   riskLevel: text("risk_level").notNull().default("medium"), // low, medium, high
   poolAddress: text("pool_address"),
-  defiLlamaId: text("defi_llama_id"),
-  project: text("project"), // Data source identifier (defillama, morpho, lido)
+  platformPoolId: text("platform_pool_id"), // Platform-specific pool identifier
+  project: text("project"), // Data source identifier (morpho-blue, lido)
   rawData: jsonb("raw_data"),
   tokenInfoId: varchar("token_info_id").references(() => tokenInfo.id), // Link to token information
   showUsdInFlow: boolean("show_usd_in_flow").notNull().default(false), // Admin control for USD display in token flow analysis

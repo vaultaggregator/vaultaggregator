@@ -104,13 +104,13 @@ export interface IStorage {
   }): Promise<{pools: PoolWithRelations[], total: number}>;
   getAllPoolsWithRelations(): Promise<PoolWithRelations[]>;
   getPoolById(id: string): Promise<PoolWithRelations | undefined>;
-  getPoolByDefiLlamaId(defiLlamaId: string): Promise<Pool | undefined>;
+  getPoolByPlatformPoolId(platformPoolId: string): Promise<Pool | undefined>;
   getPoolByAddress(address: string): Promise<Pool | undefined>;
   getPoolByTokenAndPlatform(tokenPair: string, platformId: string): Promise<Pool | undefined>;
   createPool(pool: InsertPool): Promise<Pool>;
   updatePool(id: string, pool: Partial<InsertPool>): Promise<Pool | undefined>;
   deletePool(id: string): Promise<boolean>;
-  upsertPool(defiLlamaId: string, pool: InsertPool): Promise<Pool>;
+  upsertPool(platformPoolId: string, pool: InsertPool): Promise<Pool>;
   
   // Trash bin methods
   softDeletePool(id: string, deletedBy: string | null): Promise<boolean>;
@@ -383,8 +383,8 @@ export class DatabaseStorage implements IStorage {
     return pool || undefined;
   }
 
-  async getPoolByDefiLlamaId(defiLlamaId: string): Promise<Pool | undefined> {
-    const [pool] = await db.select().from(pools).where(eq(pools.defiLlamaId, defiLlamaId));
+  async getPoolByPlatformPoolId(platformPoolId: string): Promise<Pool | undefined> {
+    const [pool] = await db.select().from(pools).where(eq(pools.platform_pool_id, platformPoolId));
     return pool || undefined;
   }
 
@@ -734,7 +734,7 @@ export class DatabaseStorage implements IStorage {
 
     if (dataSources && dataSources.length > 0) {
       const dataSourceConditions = [];
-      if (dataSources.includes('defillama')) {
+      if (dataSources.includes('platform')) {
         // All pools are now from DeFi Llama only
         dataSourceConditions.push(sql`1=1`); // Always true since we only have DeFi Llama
       }
@@ -927,7 +927,7 @@ export class DatabaseStorage implements IStorage {
         tvl: pools.tvl,
         riskLevel: pools.riskLevel,
         poolAddress: pools.poolAddress,
-        defiLlamaId: pools.defiLlamaId,
+        platform_pool_id: pools.platform_pool_id,
         project: pools.project,
         rawData: pools.rawData,
         tokenInfoId: pools.tokenInfoId,
@@ -1021,9 +1021,9 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount || 0;
   }
 
-  async upsertPool(defiLlamaId: string, poolData: InsertPool): Promise<Pool> {
-    // Try to find existing pool by defiLlamaId
-    const [existingPool] = await db.select().from(pools).where(eq(pools.defiLlamaId, defiLlamaId));
+  async upsertPool(platformPoolId: string, poolData: InsertPool): Promise<Pool> {
+    // Try to find existing pool by platformPoolId
+    const [existingPool] = await db.select().from(pools).where(eq(pools.platform_pool_id, platformPoolId));
 
     if (existingPool) {
       // Update existing pool BUT preserve admin visibility settings
@@ -1041,7 +1041,7 @@ export class DatabaseStorage implements IStorage {
       // Create new pool (defaults to hidden so admin can control visibility)
       const [newPool] = await db.insert(pools).values({
         ...poolData,
-        defiLlamaId,
+        platform_pool_id: platformPoolId,
         isVisible: false, // All new pools start hidden
         lastUpdated: new Date(),
       }).returning();

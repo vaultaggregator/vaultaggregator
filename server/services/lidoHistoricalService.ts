@@ -8,41 +8,15 @@ export interface LidoDataPoint {
 
 export class LidoHistoricalService {
   private readonly lidoBaseUrl = 'https://eth-api.lido.fi/v1';
-  private readonly defiLlamaBaseUrl = 'https://yields.llama.fi';
-  private readonly stethPoolId = '747c1d2a-c668-4682-b9f9-296708a3dd90'; // Lido stETH pool on DefiLlama
 
   async fetchComprehensiveHistoricalData(): Promise<any> {
-    try {
-      console.log('🔍 Fetching comprehensive Lido stETH historical data from DefiLlama...');
-      
-      // Get comprehensive historical data from DefiLlama
-      const response = await fetch(`${this.defiLlamaBaseUrl}/chart/${this.stethPoolId}`);
-      
-      if (!response.ok) {
-        console.error(`❌ DefiLlama API error: ${response.status} ${response.statusText}`);
-        // Fallback to recent Lido data if DefiLlama fails
-        return this.fetchRecentLidoData();
-      }
-
-      const result = await response.json();
-      
-      if (!result.data || result.data.length === 0) {
-        console.warn('⚠️ No historical data found in DefiLlama response, result structure:', result);
-        return this.fetchRecentLidoData();
-      }
-
-      console.log(`✅ Fetched ${result.data.length} comprehensive historical data points from DefiLlama`);
-      return { type: 'defillama', data: result.data };
-    } catch (error) {
-      console.error('❌ Error fetching comprehensive historical data:', error);
-      // Fallback to recent Lido data
-      return this.fetchRecentLidoData();
-    }
+    // Directly use Lido API without DefiLlama
+    return this.fetchRecentLidoData();
   }
 
   async fetchRecentLidoData(): Promise<any> {
     try {
-      console.log('🔍 Fetching recent Lido historical APR data...');
+      console.log('🔍 Fetching Lido historical APR data directly from Lido API...');
       
       const response = await fetch(`${this.lidoBaseUrl}/protocol/steth/apr/sma`);
       
@@ -58,7 +32,7 @@ export class LidoHistoricalService {
         return null;
       }
 
-      console.log(`✅ Fetched ${result.data.aprs.length} recent historical APR points from Lido`);
+      console.log(`✅ Fetched ${result.data.aprs.length} historical APR points from Lido API`);
       return { type: 'lido', data: result.data };
     } catch (error) {
       console.error('❌ Error fetching Lido historical data:', error);
@@ -68,7 +42,7 @@ export class LidoHistoricalService {
 
   async storeHistoricalData(poolId: string): Promise<void> {
     try {
-      console.log(`🔄 Starting comprehensive Lido historical data collection for pool ${poolId}`);
+      console.log(`🔄 Starting Lido historical data collection for pool ${poolId}`);
       
       const historicalData = await this.fetchComprehensiveHistoricalData();
       
@@ -79,49 +53,29 @@ export class LidoHistoricalService {
 
       let dataPointsToInsert: any[] = [];
 
-      if (historicalData.type === 'defillama') {
-        // Process DefiLlama comprehensive historical data
-        const { data } = historicalData;
-        console.log(`📊 Processing ${data.length} comprehensive data points from DefiLlama`);
+      // Process Lido API data directly
+      const { data } = historicalData;
+      const { aprs } = data;
+      
+      if (!aprs || aprs.length === 0) {
+        console.warn(`⚠️ No APR historical data for Lido stETH`);
+        return;
+      }
+
+      console.log(`📊 Processing ${aprs.length} APR data points from Lido API`);
+
+      for (const point of aprs) {
+        const timestamp = new Date(point.timeUnix * 1000);
         
-        for (const point of data) {
-          const timestamp = new Date(point.timestamp);
-          
-          const dataPoint = {
-            poolId,
-            timestamp,
-            apy: (point.apy || point.apyBase || 0).toString(), // Use apy or apyBase from DefiLlama
-            tvl: point.tvlUsd ? point.tvlUsd.toString() : null, // DefiLlama provides TVL data
-            dataSource: 'defillama_api'
-          };
+        const dataPoint = {
+          poolId,
+          timestamp,
+          apy: point.apr.toString(),
+          tvl: null, // Lido SMA API doesn't provide historical TVL
+          dataSource: 'lido_api'
+        };
 
-          dataPointsToInsert.push(dataPoint);
-        }
-      } else if (historicalData.type === 'lido') {
-        // Process recent Lido SMA data as fallback
-        const { data } = historicalData;
-        const { aprs } = data;
-        
-        if (!aprs || aprs.length === 0) {
-          console.warn(`⚠️ No APR historical data for Lido stETH`);
-          return;
-        }
-
-        console.log(`📊 Processing ${aprs.length} recent APR data points from Lido`);
-
-        for (const point of aprs) {
-          const timestamp = new Date(point.timeUnix * 1000);
-          
-          const dataPoint = {
-            poolId,
-            timestamp,
-            apy: point.apr.toString(),
-            tvl: null, // Lido SMA API doesn't provide historical TVL
-            dataSource: 'lido_api'
-          };
-
-          dataPointsToInsert.push(dataPoint);
-        }
+        dataPointsToInsert.push(dataPoint);
       }
 
       if (dataPointsToInsert.length > 0) {

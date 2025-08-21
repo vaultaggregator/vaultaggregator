@@ -290,7 +290,7 @@ export default function PoolDataModal({ isOpen, onClose, poolId, poolData }: Poo
                       <span>{poolData?.lastUpdated ? new Date(poolData.lastUpdated).toLocaleDateString() : 'N/A'}</span>
                       
                       <span className="font-medium">DeFi Llama ID:</span>
-                      <span className="font-mono text-xs">{poolData?.defiLlamaId || 'N/A'}</span>
+                      <span className="font-mono text-xs">{poolData?.platformPoolId || 'N/A'}</span>
                     </div>
                   </div>
                 </div>

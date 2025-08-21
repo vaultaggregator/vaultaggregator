@@ -60,7 +60,7 @@ interface Pool {
   tvl?: string;
   riskLevel: string;
   poolAddress?: string;
-  defiLlamaId?: string;
+  platformPoolId?: string;
   project?: string;
   tokenInfoId?: string;
   showUsdInFlow: boolean;
