@@ -24,7 +24,7 @@ interface PoolChartProps {
   className?: string;
 }
 
-type TimeRange = '1H' | '1D' | '1W' | '1M' | '3M' | '1Y';
+type TimeRange = '1H' | '1D' | '1W' | '1M' | '3M' | '1Y' | 'All';
 type ChartType = 'apy' | 'tvl';
 
 // Fetch real historical data from API
@@ -67,7 +67,8 @@ export function PoolChart({ poolId, currentApy, currentTvl, tokenPair, className
     '1W': { days: 7, label: '1W' },
     '1M': { days: 30, label: '1M' },
     '3M': { days: 90, label: '3M' },
-    '1Y': { days: 365, label: '1Y' }
+    '1Y': { days: 365, label: '1Y' },
+    'All': { days: 99999, label: 'All' } // All time - use very large number to get all data
   };
 
   // Fetch real historical data based on selected time range
