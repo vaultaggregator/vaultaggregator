@@ -88,4 +88,25 @@ router.post('/api/test/alchemy/tokenBalances', requireFlag('getTokenBalances'), 
   }
 });
 
+// Test endpoint for token metadata - lightweight method
+router.get('/api/test/alchemy/tokenMetadata', requireFlag('getTokenMetadata'), async (req: Request, res: Response) => {
+  try {
+    const { address } = req.query;
+    if (!address) {
+      return res.status(400).json({ error: 'address query parameter is required' });
+    }
+    
+    // Use alchemy_getTokenMetadata method
+    const result = await alchemyRequest('alchemy_getTokenMetadata', [address as string]);
+    res.json({ 
+      address,
+      metadata: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (e: any) {
+    console.error('❌ Alchemy tokenMetadata error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;
