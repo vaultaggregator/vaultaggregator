@@ -57,7 +57,7 @@ function CategorySelector({
     const newSelection = selectedCategories.includes(categoryId)
       ? selectedCategories.filter(id => id !== categoryId)
       : [...selectedCategories, categoryId];
-    
+
     setSelectedCategories(newSelection);
     onCategoryChange(poolId, newSelection);
   };
@@ -76,7 +76,7 @@ function CategorySelector({
       >
         {selectedCategoryNames || "No categories"}
       </button>
-      
+
       {isOpen && (
         <div className="absolute z-10 top-full left-0 mt-1 w-64 bg-white dark:bg-gray-800 border rounded-md shadow-lg max-h-48 overflow-y-auto">
           {categories.map(category => (
@@ -111,6 +111,9 @@ export default function AdminDashboard() {
   const [pageSize, setPageSize] = useState(50);
   const [selectedPoolForModal, setSelectedPoolForModal] = useState<any>(null);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
+  
+  // Calculate total APY
+  const totalAPY = pools.reduce((sum, pool) => sum + parseFloat(pool.apy || '0'), 0);
 
 
   const { user, logout, isLoading: userLoading } = useAuth();
@@ -144,7 +147,7 @@ export default function AdminDashboard() {
 
   const pools = poolsResponse?.pools || [];
   const pagination = poolsResponse?.pagination;
-  
+
   console.log("Admin pools query:", { 
     pools: pools?.length, 
     error, 
@@ -170,7 +173,7 @@ export default function AdminDashboard() {
 
 
   // No longer need data sources query since we only have DeFi Llama
-  
+
   // Remove debug console log
 
   // Reset current page when filters change
@@ -247,17 +250,17 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Failed to update visibility");
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
       console.log("Toggle success:", data, variables);
-      
+
       // Update the specific pool in the cache immediately
       queryClient.setQueryData<{pools: PoolWithRelations[], pagination: any}>(
         ["/api/admin/pools", { 
@@ -277,12 +280,12 @@ export default function AdminDashboard() {
           };
         }
       );
-      
+
       // Invalidate all related queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/pools"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-      
+
       toast({
         title: "Success",
         description: `Pool visibility ${data.isVisible ? 'enabled' : 'disabled'}`,
@@ -445,9 +448,9 @@ export default function AdminDashboard() {
   // Sort pools
   const sortedPools = [...pools].sort((a, b) => {
     if (!sortField || !sortDirection) return 0;
-    
+
     let aValue: any, bValue: any;
-    
+
     switch (sortField) {
       case 'platform':
         aValue = a.platform?.displayName?.toLowerCase() || '';
@@ -478,7 +481,7 @@ export default function AdminDashboard() {
       default:
         return 0;
     }
-    
+
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
@@ -518,7 +521,7 @@ export default function AdminDashboard() {
     <>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <AdminHeader />
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -553,7 +556,7 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -596,15 +599,15 @@ export default function AdminDashboard() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder="Search pools..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
                       className="pl-9"
                       data-testid="input-search"
                     />
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Select value={selectedChainId || ""} onValueChange={setSelectedChainId}>
+                  <Select value={selectedChains.join(',')} onValueChange={(value) => setSelectedChains(value ? value.split(',') : [])}>
                     <SelectTrigger className="w-40" data-testid="select-chain">
                       <SelectValue placeholder="All Chains" />
                     </SelectTrigger>
@@ -617,7 +620,7 @@ export default function AdminDashboard() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={selectedPlatformId || ""} onValueChange={setSelectedPlatformId}>
+                  <Select value={selectedPlatforms.join(',')} onValueChange={(value) => setSelectedPlatforms(value ? value.split(',') : [])}>
                     <SelectTrigger className="w-40" data-testid="select-platform">
                       <SelectValue placeholder="All Platforms" />
                     </SelectTrigger>
@@ -630,17 +633,14 @@ export default function AdminDashboard() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={selectedCategoryId || ""} onValueChange={setSelectedCategoryId}>
-                    <SelectTrigger className="w-40" data-testid="select-category">
-                      <SelectValue placeholder="All Categories" />
+                  <Select value={visibilityFilters.join(',')} onValueChange={(value) => setVisibilityFilters(value ? value.split(',') : [])}>
+                    <SelectTrigger className="w-40" data-testid="select-visibility">
+                      <SelectValue placeholder="Visibility" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.displayName}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="">All</SelectItem>
+                      <SelectItem value="true">Visible</SelectItem>
+                      <SelectItem value="false">Hidden</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -662,6 +662,149 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               </div>
+              {poolsLoading ? (
+                <div className="flex justify-center items-center h-64">
+                  <SyncAnimation />
+                </div>
+              ) : error ? (
+                <div className="flex justify-center items-center h-64 text-red-500">
+                  Error loading pools: {error.message}
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <button className="flex items-center" onClick={() => handleSort('platform')}>
+                              Platform {getSortIcon('platform')}
+                            </button>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <button className="flex items-center" onClick={() => handleSort('chain')}>
+                              Chain {getSortIcon('chain')}
+                            </button>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Pool Name
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Token Pair
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <button className="flex items-center ml-auto" onClick={() => handleSort('apy')}>
+                              APY {getSortIcon('apy')}
+                            </button>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <button className="flex items-center ml-auto" onClick={() => handleSort('tvl')}>
+                              TVL {getSortIcon('tvl')}
+                            </button>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <button className="flex items-center" onClick={() => handleSort('risk')}>
+                              Risk {getSortIcon('risk')}
+                            </button>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Categories
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <button className="flex items-center" onClick={() => handleSort('visible')}>
+                              Visible {getSortIcon('visible')}
+                            </button>
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        {sortedPools.map((pool) => (
+                          <tr key={pool.id}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                              <EditableField
+                                value={pool.platform?.displayName || ""}
+                                onSave={(newValue) => updatePlatformName(pool.platformId, newValue)}
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {pool.chain?.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                              <button onClick={() => handleOpenPoolModal(pool)} className="hover:underline">
+                                {pool.name}
+                              </button>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              <EditableField
+                                value={pool.tokenPair || ""}
+                                onSave={(newValue) => updateTokenPair(pool.id, newValue)}
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-green-600">
+                              {formatNumber(parseFloat(pool.apy || '0'))}%
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-blue-600">
+                              <TokenDisplay amount={formatCurrency(parseFloat(pool.tvl || '0'))} />
+                            </td>
+                            <td className="px-6 py-4 whitespace-normal text-sm">
+                              <RiskBadge level={pool.riskLevel} />
+                            </td>
+                            <td className="px-6 py-4 whitespace-normal text-sm">
+                              <CategorySelector 
+                                poolId={pool.id} 
+                                categories={categories} 
+                                onCategoryChange={updatePoolCategories}
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <Switch
+                                checked={pool.isVisible}
+                                onCheckedChange={(checked) => toggleVisibilityMutation.mutate({ poolId: pool.id, isVisible: checked })}
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                              <Button size="sm" variant="ghost" onClick={() => handleOpenPoolModal(pool)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              {/* Add other action buttons here if needed */}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  {pagination && pagination.total > pageSize && (
+                    <div className="mt-4 flex justify-between items-center">
+                      <div className="text-sm text-gray-700 dark:text-gray-300">
+                        Showing {pagination.showing} of {pagination.total} pools
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                          disabled={currentPage === 0}
+                          variant="outline"
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setCurrentPage(prev => prev + 1)}
+                          disabled={!pagination.hasMore}
+                          variant="outline"
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
