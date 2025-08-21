@@ -70,6 +70,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const { getTokenDetails } = await import("./routes/tokens");
   app.get('/api/tokens/:chainId/:tokenAddress', getTokenDetails);
 
+  // Import and register network routes
+  const { getNetworkDetails } = await import("./routes/networks");
+  app.get('/api/networks/:chainId', getNetworkDetails);
+
   // Import and register admin error management routes will be added later after requireAuth is defined
 
   // Enhanced Session configuration with security hardening

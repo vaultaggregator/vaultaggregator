@@ -39,6 +39,7 @@ import HealingDashboard from "@/pages/healing-dashboard";
 import ProfilePage from "@/pages/profile";
 import { ProtocolDetailPage } from "@/pages/protocol-detail";
 import TokenDetail from "@/pages/token-detail";
+import NetworkDetail from "@/pages/network-detail";
 
 
 
@@ -52,6 +53,7 @@ function Router() {
       <Route path="/profile/:address" component={ProfilePage} />
       <Route path="/protocols/:chainId/:protocolId" component={ProtocolDetailPage} />
       <Route path="/token/:chainId/:tokenAddress" component={TokenDetail} />
+      <Route path="/network/:chainId" component={NetworkDetail} />
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />

@@ -4,6 +4,21 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # Recent Changes (August 21, 2025)
 
+**NETWORK DETAIL PAGE ADDED:**
+- Created comprehensive network/chain details page at /network/:chainId route
+- Displays network logo, name, chainId, native token symbol and pricing data
+- Shows real-time metrics: TVL from DefiLlama, gas prices, block time, active addresses, transaction counts
+- Includes social links (website, Twitter, Discord, GitHub, docs, explorer)
+- Fetches data from CoinGecko (token prices), DefiLlama (TVL), and chain-specific metrics
+- Consistent Tailwind/shadcn dark theme with loading and error states
+
+**TOKEN DETAIL PAGE COMPLETED:**
+- Built comprehensive token details page at /token/:chainId/:tokenAddress route
+- Displays token name, symbol, logo, price, 24h change, market cap, total supply, holder count
+- Shows top holders list, recent transfers, and protocols using the token
+- Backend fetches real data from CoinGecko, DefiLlama, and Etherscan APIs
+- Integrated with existing site theme using Tailwind/shadcn components
+
 **CHART DEFAULT TIMEFRAME UPDATED:**
 - Changed default chart timeframe to 1 year (1Y) for all chart components
 - InteractivePoolChart now defaults to 'all' (1 year view) instead of 30 days
