@@ -111,10 +111,6 @@ export default function AdminDashboard() {
   const [pageSize, setPageSize] = useState(50);
   const [selectedPoolForModal, setSelectedPoolForModal] = useState<any>(null);
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
-  
-  // Calculate total APY
-  const totalAPY = pools.reduce((sum, pool) => sum + parseFloat(pool.apy || '0'), 0);
-
 
   const { user, logout, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
@@ -147,6 +143,9 @@ export default function AdminDashboard() {
 
   const pools = poolsResponse?.pools || [];
   const pagination = poolsResponse?.pagination;
+
+  // Calculate total APY after pools are defined
+  const totalAPY = pools.reduce((sum, pool) => sum + parseFloat(pool.apy || '0'), 0);
 
   console.log("Admin pools query:", { 
     pools: pools?.length, 
