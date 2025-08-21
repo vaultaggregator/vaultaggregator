@@ -4,6 +4,11 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 ## Recent Changes (August 21, 2025)
 
+- **Automatic Holder Sync for New Pools**: Implemented automatic holder data synchronization when pools are created or updated
+  - When a new pool is created with a contract address, holder sync automatically triggers via Moralis API
+  - When an existing pool's contract address is updated, holder sync runs automatically in the background
+  - Pool_metrics_current table is updated immediately after holder sync completes
+  - Ensures consistent holder counts between homepage and pool detail pages from the moment a pool is added
 - **Performance Optimizations**: Major improvements to reduce slow request warnings and optimize bundle loading
   - Implemented React lazy loading for all admin pages and heavy components
   - Added code splitting to reduce initial bundle size from ~3MB to <500KB

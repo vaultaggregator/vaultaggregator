@@ -1556,6 +1556,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             console.log(`✅ Immediate data collection completed for ${newPool.tokenPair}`);
             
+            // 🔄 AUTOMATIC HOLDER SYNC: Sync holders if pool has a contract address
+            if (newPool.poolAddress) {
+              try {
+                console.log(`👥 Starting automatic holder sync for new pool: ${newPool.tokenPair} (${newPool.poolAddress})`);
+                const { holderService } = await import("./services/holderService");
+                await holderService.syncPoolHolders(newPool.id);
+                console.log(`✅ Automatic holder sync completed for ${newPool.tokenPair}`);
+                
+                // Also update pool_metrics_current with holder count
+                const { comprehensiveHolderSyncService } = await import("./services/comprehensiveHolderSyncService");
+                await comprehensiveHolderSyncService.updatePoolMetricsForSinglePool(newPool.id);
+                console.log(`📊 Pool metrics updated with holder count for ${newPool.tokenPair}`);
+              } catch (holderError) {
+                console.error(`❌ Failed automatic holder sync for pool ${newPool.id}:`, holderError);
+              }
+            }
+            
             // 📊 HISTORICAL DATA COLLECTION: Automatically collect historical data for new pools
             console.log(`📊 Starting automatic historical data collection for new pool: ${newPool.tokenPair}`);
             
@@ -1804,6 +1821,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedPool = await storage.updatePool(poolId, updateData);
       if (!updatedPool) {
         return res.status(404).json({ message: "Pool not found" });
+      }
+
+      // 🔄 AUTOMATIC HOLDER SYNC: If pool address was added or updated, sync holders
+      if (updateData.poolAddress && updatedPool.poolAddress) {
+        try {
+          console.log(`👥 Pool address updated, starting automatic holder sync for: ${updatedPool.tokenPair} (${updatedPool.poolAddress})`);
+          
+          // Trigger holder sync in background (non-blocking)
+          setImmediate(async () => {
+            try {
+              const { holderService } = await import("./services/holderService");
+              await holderService.syncPoolHolders(poolId);
+              console.log(`✅ Automatic holder sync completed for updated pool: ${updatedPool.tokenPair}`);
+              
+              // Also update pool_metrics_current with holder count
+              const { comprehensiveHolderSyncService } = await import("./services/comprehensiveHolderSyncService");
+              await comprehensiveHolderSyncService.updatePoolMetricsForSinglePool(poolId);
+              console.log(`📊 Pool metrics updated with holder count for ${updatedPool.tokenPair}`);
+            } catch (holderError) {
+              console.error(`❌ Failed automatic holder sync for updated pool ${poolId}:`, holderError);
+            }
+          });
+        } catch (error) {
+          console.error("Failed to trigger holder sync for updated pool:", error);
+          // Don't fail the update if holder sync fails
+        }
       }
 
       res.json(updatedPool);

@@ -205,6 +205,56 @@ class ComprehensiveHolderSyncService {
       serviceActive: this.syncInterval !== null
     };
   }
+
+  /**
+   * Update pool_metrics_current for a single pool (used after manual sync)
+   */
+  async updatePoolMetricsForSinglePool(poolId: string) {
+    try {
+      // Get the current holder count for this pool
+      const [countResult] = await db
+        .select({ count: sql<number>`COUNT(*)` })
+        .from(tokenHolders)
+        .where(eq(tokenHolders.poolId, poolId));
+      
+      const holderCount = countResult?.count || 0;
+      
+      // Check if metrics record exists
+      const existingMetrics = await db
+        .select()
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .limit(1);
+      
+      if (existingMetrics.length > 0) {
+        // Update existing metrics
+        await db
+          .update(poolMetricsCurrent)
+          .set({
+            holdersCount: holderCount,
+            holdersStatus: 'success',
+            updatedAt: new Date()
+          })
+          .where(eq(poolMetricsCurrent.poolId, poolId));
+      } else {
+        // Insert new metrics record
+        await db
+          .insert(poolMetricsCurrent)
+          .values({
+            id: crypto.randomUUID(),
+            poolId: poolId,
+            holdersCount: holderCount,
+            holdersStatus: 'success',
+            updatedAt: new Date(),
+            createdAt: new Date()
+          });
+      }
+      
+      console.log(`📊 Updated pool_metrics_current for pool ${poolId}: ${holderCount} holders`);
+    } catch (error) {
+      console.error(`Error updating pool metrics for pool ${poolId}:`, error);
+    }
+  }
 }
 
 // Export singleton instance
