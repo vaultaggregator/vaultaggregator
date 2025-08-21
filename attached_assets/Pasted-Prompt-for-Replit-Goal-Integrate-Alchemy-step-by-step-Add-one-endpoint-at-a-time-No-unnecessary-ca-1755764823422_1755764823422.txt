@@ -1,0 +1,267 @@
+Prompt for Replit
+Goal
+Integrate Alchemy step by step. Add one endpoint at a time. No unnecessary calls. No hardcoded values.
+
+Rules
+
+Create a single Alchemy request wrapper and route all RPC calls through it
+
+Add a feature flag per endpoint, default off
+
+Enforce per-minute request budgets
+
+Add in-memory caching with TTL per method
+
+Dedupe concurrent identical calls
+
+Add exponential backoff with jitter on 429 and 5xx
+
+Add a minimum interval per method to prevent tight loops
+
+Log every request to alchemy_requests.log with timestamp, method, params hash, status, retries, cache hit
+
+If any rule blocks a call, return a friendly error and ask me for guidance before changing limits
+
+Prefer webhooks for on-chain events. Poll only when no webhook exists
+
+Never run Alchemy from the browser. Server only
+
+Never expand block ranges without my approval
+
+Process
+Step 1. Implement the wrapper below and wire it into a single test route only
+Step 2. Turn on one endpoint flag, run a manual test, confirm logs and budget counters
+Step 3. Ship to staging, watch usage for 24 hours, then move to production
+Step 4. Add next endpoint, repeat
+
+Env vars
+ALCHEMY_RPC_URL
+ALCHEMY_REQUESTS_PER_MIN=600
+ALCHEMY_CACHE_TTL_S=15
+ALCHEMY_MIN_INTERVAL_MS=250
+ALCHEMY_MAX_RETRIES=3
+ALCHEMY_RETRY_BASE_MS=250
+STAGE=staging or production
+
+Deliverables
+
+alchemyClient.js implementing the wrapper
+
+routes/alchemyTest.js exposing GET /api/test/alchemy that calls a single lightweight method
+
+Middleware that rejects requests if feature flag is off
+
+Docs in README explaining how to enable one endpoint at a time
+
+Wrapper skeleton (JS, no semicolons)
+Create file: src/lib/alchemyClient.js
+
+import fs from 'fs'
+import crypto from 'crypto'
+
+const cfg = {
+url: process.env.ALCHEMY_RPC_URL,
+perMin: Number(process.env.ALCHEMY_REQUESTS_PER_MIN || 600),
+ttl: Number(process.env.ALCHEMY_CACHE_TTL_S || 15),
+minInterval: Number(process.env.ALCHEMY_MIN_INTERVAL_MS || 250),
+maxRetries: Number(process.env.ALCHEMY_MAX_RETRIES || 3),
+retryBase: Number(process.env.ALCHEMY_RETRY_BASE_MS || 250)
+}
+
+const cache = new Map()
+const inFlight = new Map()
+const lastCallAt = new Map()
+let windowStart = Date.now()
+let windowCount = 0
+
+function hashKey(method, params) {
+return crypto.createHash('sha1').update(method + ':' + JSON.stringify(params)).digest('hex')
+}
+
+function sleep(ms) {
+return new Promise(r => setTimeout(r, ms))
+}
+
+function now() { return Date.now() }
+
+function rotateWindow() {
+const oneMin = 60_000
+if (now() - windowStart >= oneMin) {
+windowStart = now()
+windowCount = 0
+}
+}
+
+function log(line) {
+const row = [${new Date().toISOString()}] ${line}\n
+fs.appendFileSync('alchemy_requests.log', row)
+if (process.env.STAGE !== 'production') console.log(row.trim())
+}
+
+export async function alchemyRequest(method, params = [], opts = {}) {
+if (!cfg.url) throw new Error('ALCHEMY_RPC_URL missing')
+
+const key = hashKey(method, params)
+const cacheHit = cache.get(key)
+if (cacheHit && cacheHit.expire > now()) {
+log(HIT method=${method} key=${key})
+return cacheHit.data
+}
+
+if (inFlight.has(key)) {
+log(JOIN method=${method} key=${key})
+return inFlight.get(key)
+}
+
+rotateWindow()
+if (windowCount >= cfg.perMin) {
+log(BLOCK budget_exceeded method=${method})
+throw new Error('Budget exceeded, try later')
+}
+
+const last = lastCallAt.get(method) || 0
+const elapsed = now() - last
+if (elapsed < cfg.minInterval) {
+const wait = cfg.minInterval - elapsed
+await sleep(wait)
+}
+
+let attempts = 0
+const task = (async () => {
+while (true) {
+attempts += 1
+lastCallAt.set(method, now())
+windowCount += 1
+
+  try {
+    const res = await fetch(cfg.url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+    })
+
+    if (!res.ok) {
+      const body = await res.text()
+      log(`ERR http=${res.status} method=${method} attempt=${attempts} body=${body.slice(0,200)}`)
+      if ((res.status === 429 || res.status >= 500) && attempts <= cfg.maxRetries) {
+        const backoff = cfg.retryBase * 2 ** (attempts - 1) + Math.floor(Math.random() * 50)
+        await sleep(backoff)
+        continue
+      }
+      throw new Error(`HTTP ${res.status}`)
+    }
+
+    const json = await res.json()
+    if (json.error) {
+      log(`ERR rpc method=${method} attempt=${attempts} code=${json.error.code}`)
+      throw new Error(`RPC ${json.error.code}`)
+    }
+
+    cache.set(key, { data: json.result, expire: now() + cfg.ttl * 1000 })
+    log(`OK method=${method} attempts=${attempts} key=${key}`)
+    return json.result
+  } catch (e) {
+    if (attempts <= cfg.maxRetries) {
+      const backoff = cfg.retryBase * 2 ** (attempts - 1) + Math.floor(Math.random() * 50)
+      await sleep(backoff)
+      continue
+    }
+    log(`FAIL method=${method} attempts=${attempts} msg=${e.message}`)
+    throw e
+  } finally {
+    // nothing
+  }
+}
+
+
+})()
+
+inFlight.set(key, task)
+try {
+const out = await task
+return out
+} finally {
+inFlight.delete(key)
+}
+}
+
+Feature flags middleware
+Create file: src/middleware/featureFlags.js
+
+const flags = {
+getTokenBalances: false,
+getAssetTransfers: false,
+getLogs: false
+}
+
+export function requireFlag(name) {
+return (req, res, next) => {
+if (!flags[name]) {
+return res.status(403).json({ error: Feature ${name} disabled. Ask owner to enable })
+}
+next()
+}
+}
+
+export function setFlag(name, value) {
+flags[name] = value
+}
+
+Test route
+Create file: src/routes/alchemyTest.js
+
+import express from 'express'
+import { alchemyRequest } from '../lib/alchemyClient.js'
+import { requireFlag } from '../middleware/featureFlags.js'
+
+const router = express.Router()
+
+router.get('/api/test/alchemy/blockNumber', requireFlag('getBlockNumber'), async (req, res) => {
+try {
+const result = await alchemyRequest('eth_blockNumber', [])
+res.json({ blockNumber: result })
+} catch (e) {
+res.status(500).json({ error: e.message })
+}
+})
+
+export default router
+
+Then add a flag entry in featureFlags.js
+getBlockNumber: false
+
+Operating checklist
+
+Turn on only getBlockNumber flag
+
+Hit /api/test/alchemy/blockNumber a few times, verify logs, verify cache hits
+
+Turn the flag off, confirm 403
+
+Turn on getTokenBalances, test with a single wallet, confirm cache hits and low request rate
+
+Move event use cases to webhooks before any polling feature goes live
+
+Add alerts when windowCount crosses 70 percent of perMin. Print a warning and stop new requests until the window resets
+
+Webhook guardrails
+
+Validate Alchemy signature on every POST
+
+Do not call Alchemy from inside the webhook handler unless required
+
+Enqueue work and process slowly with backpressure
+
+What to ask Replit before each endpoint
+
+Which method
+
+Expected call rate per minute
+
+Cache TTL
+
+Feature flag name
+
+Test path and sample params
+
+Fallback behavior when budget hits the cap

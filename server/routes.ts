@@ -58,6 +58,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const alchemyEnhancedRoutes = (await import("./routes/alchemy-enhanced")).default;
   app.use(alchemyEnhancedRoutes);
 
+  // Import and register Alchemy test routes (controlled with feature flags)
+  const alchemyTestRoutes = (await import("./routes/alchemyTest")).default;
+  app.use(alchemyTestRoutes);
+
   // Import and register profile routes
   const profileRoutes = (await import("./routes/profile")).default;
   app.use(profileRoutes);
