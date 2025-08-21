@@ -200,7 +200,9 @@ export class MoralisService {
       console.log(`📊 Getting holder count and top ${topHoldersLimit} holders for ${address}`);
       
       const response = await this.getTokenHolders(address, network, topHoldersLimit);
-      const holders = response.result || [];
+      
+      // Ensure we have a valid result array
+      const holders = Array.isArray(response?.result) ? response.result : [];
       
       // Special handling for known large pools
       const isStETH = address.toLowerCase() === '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
@@ -214,9 +216,9 @@ export class MoralisService {
         };
       }
       
-      // For other tokens, if we get exactly 100 holders, it might be a limit
-      // Without a separate API endpoint for total count, we use the returned count
-      const totalCount = holders.length;
+      // For other tokens, use the actual holder count from the response
+      // The total property might contain the actual total even when only returning 100
+      const totalCount = response?.total || holders.length;
       
       console.log(`✅ Total holders: ${totalCount}, Retrieved top ${holders.length} holders`);
       
@@ -226,7 +228,11 @@ export class MoralisService {
       };
     } catch (error) {
       console.error(`❌ Failed to get optimized holder data for ${address}:`, error);
-      throw error;
+      // Return empty data on error instead of throwing
+      return {
+        totalCount: 0,
+        topHolders: []
+      };
     }
   }
 
