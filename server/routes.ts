@@ -1754,7 +1754,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create token
   app.post("/api/admin/tokens", requireAuth, async (req, res) => {
     try {
-      const tokenData = req.body;
+      const { chainId, address } = req.body;
+      
+      // Create token with basic data - metadata should be fetched later
+      const tokenData = {
+        chainId,
+        address,
+        name: "Unknown Token", // Placeholder until metadata is fetched
+        symbol: "UNKNOWN", // Placeholder until metadata is fetched
+        decimals: 18, // Default until metadata is fetched
+        isActive: true,
+      };
+      
       const newToken = await storage.createToken(tokenData);
       res.status(201).json(newToken);
     } catch (error) {
