@@ -116,7 +116,7 @@ router.post("/refresh", requireAuth, async (req, res) => {
             success: false,
             message: "Holder Data Sync unavailable - Alchemy API is currently disabled",
             timestamp: new Date().toISOString(),
-            details: "Enable Alchemy API to sync holder data. Current holder data remains cached."
+            details: "Enable Alchemy API to sync holder data. Holder counts will be updated via Etherscan scraper."
           });
           return;
         }

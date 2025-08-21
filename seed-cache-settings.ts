@@ -44,16 +44,6 @@ const defaultCacheSettings = [
     category: 'metadata',
     maxEntries: null,
     isEnabled: true
-  },
-  {
-    serviceName: 'holder_service_cache',
-    displayName: 'Holder Service Cache',
-    description: 'Cache for holder data processing and portfolio calculations',
-    cacheDurationMs: 30 * 60 * 1000, // 30 minutes
-    cacheType: 'memory',
-    category: 'holders',
-    maxEntries: 200,
-    isEnabled: true
   }
 ];
 

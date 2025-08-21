@@ -135,11 +135,11 @@ export class TokenMetadataService {
   }
 
   /**
-   * OPTIMIZED: Get holder count for a token (database cache only)
+   * Get holder count for a token from database
    */
   private async getOptimizedHolderCount(tokenAddress: string, network: 'ethereum' | 'base') {
     try {
-      // Database cache only - no API calls
+      // Get holder count from database (synced via Etherscan scraper)
       const [pool] = await db
         .select()
         .from(pools)
@@ -147,11 +147,11 @@ export class TokenMetadataService {
         .limit(1);
 
       if (pool?.holdersCount) {
-        console.log(`📊 Database cached holder count: ${pool.holdersCount} (NO API CALL)`);
+        console.log(`📊 Database holder count: ${pool.holdersCount}`);
         return pool.holdersCount;
       }
 
-      console.log(`⚡ No holder count in cache for ${tokenAddress} (NO API CALL)`);
+      console.log(`⚡ No holder count found for ${tokenAddress}`);
       return null;
     } catch (error) {
       return null;

@@ -179,10 +179,9 @@ export class TokenInfoSyncService {
         console.log(`Could not fetch optimized price for ${metadata.symbol}:`, error);
       }
       
-      // OPTIMIZATION 3: Database cache for holder count (eliminates API calls)
+      // Get holder count from database (synced via Etherscan scraper)
       let holdersCount = 0;
       try {
-        // Use database query for holder count instead of API calls
         const { db } = await import('../db');
         const { pools, tokenHolders } = await import('@shared/schema');
         const { eq, sql } = await import('drizzle-orm');
@@ -198,7 +197,7 @@ export class TokenInfoSyncService {
             .where(eq(tokenHolders.poolId, pool.id));
             
           holdersCount = holderCountResult[0]?.count || 0;
-          console.log(`📊 Using database holder count for ${metadata.symbol}: ${holdersCount} (NO API CALL)`);
+          console.log(`📊 Database holder count for ${metadata.symbol}: ${holdersCount}`);
         }
       } catch (error) {
         console.log(`Using default holder count for ${metadata.symbol}`);
