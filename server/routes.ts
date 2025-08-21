@@ -58,34 +58,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const alchemyEnhancedRoutes = (await import("./routes/alchemy-enhanced")).default;
   app.use(alchemyEnhancedRoutes);
 
-  // Session configuration
+  // Import and register admin error management routes will be added later after requireAuth is defined
+
+  // Enhanced Session configuration with security hardening
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+    secret: process.env.SESSION_SECRET || crypto.randomBytes(64).toString('hex'),
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 hours
+    name: 'vault.sid', // Custom session name for security
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      httpOnly: true, // Prevent XSS attacks
+      maxAge: 8 * 60 * 60 * 1000, // 8 hours (reduced from 24)
+      sameSite: 'strict' // CSRF protection
+    }
   }));
 
-  // Middleware to check if user is authenticated admin
-  const requireAuth = (req: any, res: any, next: any) => {
-    // During development, bypass authentication for easier testing
-    if (process.env.NODE_ENV === 'development') {
-      console.log("Development mode: Bypassing authentication");
-      next();
-      return;
+  // SECURE Admin Authentication Middleware - NO DEVELOPMENT BYPASS
+  const requireAuth = async (req: any, res: any, next: any) => {
+    const sessionUserId = req.session?.userId;
+    const authHeader = req.headers.authorization;
+    
+    // Check for session-based auth (admin UI)
+    if (sessionUserId) {
+      try {
+        // Verify the user still exists and is admin
+        const user = await storage.getUser(sessionUserId);
+        if (user && user.role === 'admin') {
+          req.user = user; // Attach user to request
+          next();
+          return;
+        } else {
+          // Invalid session - clear it
+          req.session.destroy((err: any) => {
+            console.error('Session destruction error:', err);
+          });
+        }
+      } catch (error) {
+        console.error('Auth verification error:', error);
+      }
     }
     
-    console.log("Auth check:", { 
-      sessionId: req.sessionID, 
-      userId: req.session?.userId, 
-      hasSession: !!req.session,
-      cookies: req.headers.cookie 
-    });
-    if (req.session?.userId) {
-      next();
-    } else {
-      res.status(401).json({ message: "Authentication required" });
+    // Check for API key authentication (API access)
+    if (authHeader?.startsWith('Bearer ')) {
+      const apiKey = authHeader.slice(7);
+      try {
+        const keyData = await storage.getApiKeyByKey(apiKey);
+        if (keyData && keyData.isActive) {
+          req.apiKey = keyData;
+          next();
+          return;
+        }
+      } catch (error) {
+        console.error('API key verification error:', error);
+      }
     }
+    
+    // No valid authentication found
+    res.status(401).json({ 
+      error: "Authentication required",
+      message: "Please login or provide a valid API key" 
+    });
   };
 
   // API Key authentication middleware

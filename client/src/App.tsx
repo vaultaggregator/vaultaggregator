@@ -37,6 +37,7 @@ import AdminSecurity from "@/pages/admin-security";
 import AdminAnalytics from "@/pages/admin-analytics";
 import AdminContent from "@/pages/admin-content";
 import AdminMonitoring from "@/pages/admin-monitoring";
+import AdminErrorManagement from "@/pages/admin-error-management";
 
 import HealingDashboard from "@/pages/healing-dashboard";
 
@@ -73,6 +74,8 @@ function Router() {
       <Route path="/admin-chatgpt" component={AdminChatGPT} />
       <Route path="/admin-logo-management" component={AdminLogoManagement} />
       <Route path="/admin-errors" component={AdminErrors} />
+      <Route path="/admin/error-management" component={AdminErrorManagement} />
+      <Route path="/admin-error-management" component={AdminErrorManagement} />
       <Route path="/admin/users" component={AdminUsers} />
       <Route path="/admin-users" component={AdminUsers} />
       <Route path="/admin/security" component={AdminSecurity} />

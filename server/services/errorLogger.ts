@@ -1,6 +1,6 @@
 import { db } from "../db.js";
 import { errorLogs, type InsertErrorLog } from "../../shared/schema.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 
 export interface ErrorLogData {
   title: string;
@@ -192,6 +192,121 @@ class ErrorLogger {
     };
 
     return stats;
+  }
+
+  /**
+   * ENHANCED: Get errors with comprehensive filtering and pagination
+   */
+  async getErrorsWithFilters(filters: any, options: any) {
+    // Build the where conditions
+    const whereConditions = [];
+    if (filters.errorType) whereConditions.push(eq(errorLogs.errorType, filters.errorType));
+    if (filters.severity) whereConditions.push(eq(errorLogs.severity, filters.severity));
+    if (filters.resolved !== undefined) whereConditions.push(eq(errorLogs.isResolved, filters.resolved));
+    if (filters.source) whereConditions.push(eq(errorLogs.source, filters.source));
+    
+    // Build base query with conditions
+    let query = db.select().from(errorLogs);
+    if (whereConditions.length > 0) {
+      query = whereConditions.length === 1 ? 
+        query.where(whereConditions[0]) : 
+        query.where(and(...whereConditions));
+    }
+    
+    // Apply ordering
+    const orderField = options.sortBy === 'title' ? errorLogs.title : 
+                      options.sortBy === 'severity' ? errorLogs.severity :
+                      errorLogs.lastOccurredAt;
+    
+    const orderedQuery = options.sortOrder === 'asc' ? 
+      query.orderBy(asc(orderField)) : 
+      query.orderBy(desc(orderField));
+    
+    // Get total count with same conditions
+    let countQuery = db.select({ count: sql`count(*)` }).from(errorLogs);
+    if (whereConditions.length > 0) {
+      countQuery = whereConditions.length === 1 ? 
+        countQuery.where(whereConditions[0]) : 
+        countQuery.where(and(...whereConditions));
+    }
+    const totalResult = await countQuery;
+    const totalCount = Number(totalResult[0]?.count || 0);
+    
+    // Apply pagination
+    const errors = await orderedQuery.limit(options.limit).offset(options.offset);
+    
+    return {
+      errors,
+      totalCount
+    };
+  }
+
+  /**
+   * ENHANCED: Get detailed error by ID
+   */
+  async getErrorById(errorId: string) {
+    const [error] = await db
+      .select()
+      .from(errorLogs)
+      .where(eq(errorLogs.id, errorId));
+    
+    return error || null;
+  }
+
+  /**
+   * ENHANCED: Get system logs (placeholder for future system logging)
+   */
+  async getSystemLogs(options: any) {
+    // For now, return error logs as system logs
+    // In future, this would integrate with a dedicated system logging service
+    return {
+      logs: await this.getAllErrors(options.limit),
+      totalCount: 0,
+      message: "System logging integration pending"
+    };
+  }
+
+  /**
+   * ENHANCED: Export errors in different formats
+   */
+  async exportErrors(options: { format: 'json' | 'csv'; startDate?: string; endDate?: string; severity?: string }) {
+    // Build query with filters
+    const whereConditions = [];
+    if (options.severity) {
+      whereConditions.push(eq(errorLogs.severity, options.severity));
+    }
+    
+    let query = db.select().from(errorLogs);
+    if (whereConditions.length > 0) {
+      query = whereConditions.length === 1 ? 
+        query.where(whereConditions[0]) : 
+        query.where(and(...whereConditions));
+    }
+    
+    const errors = await query.orderBy(desc(errorLogs.lastOccurredAt));
+    
+    if (options.format === 'csv') {
+      // Convert to CSV format
+      const headers = ['ID', 'Title', 'Description', 'Type', 'Severity', 'Source', 'Last_Occurred', 'Count', 'Resolved'];
+      const csvRows = [
+        headers.join(','),
+        ...errors.map(error => [
+          error.id,
+          `"${error.title.replace(/"/g, '""')}"`,
+          `"${error.description.replace(/"/g, '""')}"`,
+          error.errorType,
+          error.severity,
+          error.source || '',
+          error.lastOccurredAt?.toISOString() || '',
+          error.count,
+          error.isResolved ? 'Yes' : 'No'
+        ].join(','))
+      ];
+      return csvRows.join('\n');
+    } else {
+      // Return JSON format
+      return JSON.stringify(errors, null, 2);
+    }
   }
 }
 

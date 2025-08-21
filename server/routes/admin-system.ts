@@ -6,6 +6,17 @@ import * as os from "os";
 export function registerAdminSystemRoutes(app: Express) {
   // Register service monitor routes
   app.use('/api/admin/services', adminServiceMonitorRoutes);
+  
+  // Register error management routes - will be loaded dynamically
+  app.use('/api/admin/errors', async (req, res, next) => {
+    try {
+      const { default: adminErrorRoutes } = await import("./admin-errors.js");
+      adminErrorRoutes(req, res, next);
+    } catch (error) {
+      console.error("Failed to load error management routes:", error);
+      next(error);
+    }
+  });
   // Middleware to check if user is authenticated admin
   const requireAuth = (req: any, res: any, next: any) => {
     // During development, bypass authentication for easier testing
