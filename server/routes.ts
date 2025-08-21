@@ -4064,5 +4064,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint for Moralis API - Cost optimization verification
+  app.get('/api/test/moralis/holders/:address', async (req: Request, res: Response) => {
+    try {
+      const { moralisService } = await import('./services/moralisService.js');
+      const { address } = req.params;
+      const network = req.query.network as string || 'ethereum';
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100 per request
+      const getAllHolders = req.query.all === 'true';
+      
+      console.log(`🧪 Testing Moralis API for ${address} on ${network}`);
+      
+      if (getAllHolders) {
+        // Test pagination to get all holders
+        const allHolders = await moralisService.getAllTokenHolders(address, network, 1000);
+        res.json({
+          success: true,
+          service: 'Moralis',
+          tokenAddress: address,
+          network,
+          holdersCount: allHolders.length,
+          holders: allHolders.slice(0, 10), // Show first 10 for preview
+          costOptimization: 'Using Moralis pagination to fetch unlimited holders cost-effectively',
+          note: 'Use ?all=true to test pagination for all holders (up to 1000)'
+        });
+      } else {
+        // Test single request
+        const holders = await moralisService.getTokenHolders(address, network, limit);
+        res.json({
+          success: true,
+          service: 'Moralis',
+          tokenAddress: address,
+          network,
+          holdersCount: holders.result.length,
+          holders: holders.result,
+          costOptimization: 'Using Moralis reduces API costs compared to Alchemy',
+          pagination: {
+            cursor: holders.cursor,
+            page: holders.page,
+            pageSize: holders.page_size
+          },
+          note: 'Use ?all=true to test pagination for all holders (up to 1000)'
+        });
+      }
+    } catch (error) {
+      res.status(500).json({ 
+        error: 'Moralis API test failed', 
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   return httpServer;
 }

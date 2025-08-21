@@ -1,5 +1,6 @@
 import { EtherscanService } from './etherscanService.js';
 import { alchemyService } from './alchemyService.js';
+import { moralisService } from './moralisService.js';
 import { storage } from '../storage.js';
 import type { Pool, InsertTokenHolder } from '@shared/schema.js';
 
@@ -19,7 +20,7 @@ export class HolderService {
 
   constructor() {
     this.etherscan = new EtherscanService();
-    console.log('✅ Using singleton Alchemy service for holder data');
+    console.log('✅ HolderService initialized with Moralis (primary) + Alchemy (fallback)');
   }
 
   private async logError(title: string, description: string, error: string, poolId?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
@@ -148,21 +149,46 @@ export class HolderService {
   }
 
   /**
-   * Fetch token holders using Alchemy API
+   * Fetch token holders using Moralis API (primary) with Alchemy fallback
+   * This reduces API costs by using Moralis as the cost-effective primary source
    */
   private async fetchTokenHolders(tokenAddress: string, networkName?: string): Promise<any[]> {
     try {
       console.log(`🔍 Fetching token holders for ${tokenAddress}`);
       
-      // Use Alchemy if available
+      // PRIORITY 1: Try Moralis API first (more cost-effective)
+      if (moralisService.isAvailable()) {
+        try {
+          console.log(`🔄 Attempting Moralis fetch for ${tokenAddress} on ${networkName}`);
+          const moralisHolders = await moralisService.getAllTokenHolders(
+            tokenAddress, 
+            networkName || 'ethereum', 
+            1000 // Limit to 1000 for cost optimization
+          );
+          
+          if (moralisHolders && moralisHolders.length > 0) {
+            console.log(`✅ Fetched ${moralisHolders.length} holders from Moralis (cost-effective)`);
+            
+            // Convert to expected format
+            return moralisHolders.map(holder => ({
+              address: holder.owner_address,
+              balance: holder.balance
+            }));
+          }
+        } catch (moralisError) {
+          console.warn('⚠️ Moralis fetch failed, falling back to Alchemy:', moralisError);
+        }
+      }
+      
+      // PRIORITY 2: Fallback to Alchemy if Moralis fails
       if (alchemyService) {
         try {
-          // Fetch up to 2000 holders for all pools to ensure complete data
-          const holderLimit = 2000;
+          // Reduced limit to save on Alchemy costs when used as fallback
+          const holderLimit = 500; // Reduced from 2000 to optimize costs
           
-          console.log(`📊 Fetching top ${holderLimit} holders for ${tokenAddress}`);
+          console.log(`📊 Fetching top ${holderLimit} holders from Alchemy (fallback)`);
           const holders = await alchemyService.getTopTokenHolders(tokenAddress, holderLimit, networkName);
-          console.log(`✅ Fetched ${holders.length} holders from Alchemy`);
+          console.log(`✅ Fetched ${holders.length} holders from Alchemy (fallback)`);
           
           // Convert to expected format
           return holders.map(holder => ({
@@ -170,11 +196,11 @@ export class HolderService {
             balance: holder.balance
           }));
         } catch (alchemyError) {
-          console.error('❌ Alchemy fetch failed:', alchemyError);
+          console.error('❌ Alchemy fallback failed:', alchemyError);
         }
       }
       
-      // Fallback to Etherscan token info (no detailed holder data)
+      // PRIORITY 3: Final fallback to Etherscan token info (no detailed holder data)
       const tokenInfo = await this.etherscan.getTokenInfo(tokenAddress);
       if (!tokenInfo) {
         console.log(`❌ Token info not found for ${tokenAddress}`);
@@ -182,7 +208,7 @@ export class HolderService {
       }
       
       console.log(`✅ Token found: ${tokenInfo.tokenName} (${tokenInfo.symbol})`);
-      console.log(`⚠️ Detailed holder data not available - Alchemy API error`);
+      console.log(`⚠️ Detailed holder data not available - using last resort`);
       return [];
       
     } catch (error) {
