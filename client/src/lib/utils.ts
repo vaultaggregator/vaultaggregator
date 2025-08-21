@@ -28,30 +28,63 @@ export function formatTimeAgo(date: string | Date): string {
   }
 }
 
-export function formatCurrency(value: number): string {
-  if (value >= 1e9) {
-    return `$${(value / 1e9).toFixed(2)}B`;
-  } else if (value >= 1e6) {
-    return `$${(value / 1e6).toFixed(2)}M`;
-  } else if (value >= 1e3) {
-    return `$${(value / 1e3).toFixed(2)}K`;
+export function formatCurrency(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '$0';
+  }
+  
+  // Convert string to number if needed
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
+    return '$0';
+  }
+  
+  if (numValue >= 1e9) {
+    return `$${(numValue / 1e9).toFixed(2)}B`;
+  } else if (numValue >= 1e6) {
+    return `$${(numValue / 1e6).toFixed(2)}M`;
+  } else if (numValue >= 1e3) {
+    return `$${(numValue / 1e3).toFixed(2)}K`;
   } else {
-    return `$${value.toFixed(2)}`;
+    return `$${numValue.toFixed(2)}`;
   }
 }
 
-export function formatNumber(value: number): string {
-  if (value >= 1e9) {
-    return `${(value / 1e9).toFixed(2)}B`;
-  } else if (value >= 1e6) {
-    return `${(value / 1e6).toFixed(2)}M`;
-  } else if (value >= 1e3) {
-    return `${(value / 1e3).toFixed(2)}K`;
+export function formatNumber(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '0';
+  }
+  
+  // Convert string to number if needed
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
+    return '0';
+  }
+  
+  if (numValue >= 1e9) {
+    return `${(numValue / 1e9).toFixed(2)}B`;
+  } else if (numValue >= 1e6) {
+    return `${(numValue / 1e6).toFixed(2)}M`;
+  } else if (numValue >= 1e3) {
+    return `${(numValue / 1e3).toFixed(2)}K`;
   } else {
-    return value.toLocaleString();
+    return numValue.toLocaleString();
   }
 }
 
-export function formatPercentage(value: number): string {
-  return `${value.toFixed(2)}%`;
+export function formatPercentage(value: number | string | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '0.00%';
+  }
+  
+  // Convert string to number if needed
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
+    return '0.00%';
+  }
+  
+  return `${numValue.toFixed(2)}%`;
 }

@@ -71,32 +71,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { slug } = req.params;
       
-      // Query protocol by slug
+      // Query protocol by slug OR name (case-insensitive)
       const protocol = await db.select()
         .from(protocols)
-        .where(eq(protocols.slug, slug))
+        .where(or(
+          eq(protocols.slug, slug),
+          eq(protocols.name, slug.toLowerCase()),
+          eq(protocols.name, slug.charAt(0).toUpperCase() + slug.slice(1).toLowerCase())
+        ))
         .limit(1);
       
       if (!protocol || protocol.length === 0) {
+        console.log(`Protocol not found for slug/name: ${slug}`);
         return res.status(404).json({ message: "Protocol not found" });
       }
       
-      // Return basic protocol data (you can expand this as needed)
+      // Return basic protocol data
       const protocolData = protocol[0];
+      
+      // Get pools for this protocol to calculate TVL
+      const protocolPools = await db.select()
+        .from(pools)
+        .where(and(
+          eq(pools.platformId, protocolData.id),
+          eq(pools.isActive, true),
+          eq(pools.isVisible, true)
+        ));
+      
+      // Calculate total TVL from pools
+      const totalTvl = protocolPools.reduce((sum, pool) => {
+        const tvl = parseFloat(pool.tvl || '0');
+        return sum + (isNaN(tvl) ? 0 : tvl);
+      }, 0);
+      
       res.json({
         id: protocolData.id,
         name: protocolData.name,
-        slug: protocolData.slug,
+        slug: protocolData.slug || protocolData.name.toLowerCase(),
         displayName: protocolData.displayName,
         logo: protocolData.logoUrl,
         website: protocolData.website,
-        chainName: protocolData.chainId || 'ethereum',
-        chainId: protocolData.chainId,
-        description: `${protocolData.displayName || protocolData.name} is a DeFi protocol operating on the blockchain.`,
-        tvl: 0, // These would need to be fetched from pools
+        chainName: 'ethereum',
+        chainId: '164641ea-b9e1-49a0-b655-334a73efabec',
+        description: protocolData.description || `${protocolData.displayName || protocolData.name} is a leading DeFi protocol providing innovative yield opportunities and financial services on the blockchain.`,
+        tvl: totalTvl,
         userCount: 0,
-        assets: [],
-        markets: [],
+        assets: protocolPools.map(pool => ({
+          id: pool.id,
+          name: pool.tokenPair,
+          apy: pool.apy,
+          tvl: pool.tvl
+        })),
+        markets: protocolPools.map(pool => ({
+          id: pool.id,
+          name: pool.tokenPair,
+          type: 'Lending',
+          apy: pool.apy,
+          tvl: pool.tvl,
+          status: pool.isActive ? 'Active' : 'Inactive'
+        })),
         topHolders: []
       });
     } catch (error) {

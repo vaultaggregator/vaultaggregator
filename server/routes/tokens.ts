@@ -75,10 +75,14 @@ async function fetchTokenFromCoinGecko(chainId: string, tokenAddress: string) {
 
     const platform = platformMap[chainId] || 'ethereum';
     
-    // Fetch token info from CoinGecko
+    // Fetch token info from CoinGecko with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const response = await fetch(
-      `${COINGECKO_API}/coins/${platform}/contract/${tokenAddress.toLowerCase()}`
-    );
+      `${COINGECKO_API}/coins/${platform}/contract/${tokenAddress.toLowerCase()}`,
+      { signal: controller.signal }
+    ).finally(() => clearTimeout(timeout));
 
     if (!response.ok) {
       console.log(`CoinGecko API returned ${response.status} for token ${tokenAddress}`);
@@ -120,10 +124,14 @@ async function fetchTokenFromDefiLlama(chainId: string, tokenAddress: string) {
 
     const chain = chainMap[chainId] || 'ethereum';
     
-    // Fetch current price from DefiLlama
+    // Fetch current price from DefiLlama with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const priceResponse = await fetch(
-      `${DEFILLAMA_API}/coins/prices/current/${chain}:${tokenAddress}`
-    );
+      `${DEFILLAMA_API}/coins/prices/current/${chain}:${tokenAddress}`,
+      { signal: controller.signal }
+    ).finally(() => clearTimeout(timeout));
 
     if (!priceResponse.ok) {
       console.log(`DefiLlama price API returned ${priceResponse.status}`);
