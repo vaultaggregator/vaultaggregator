@@ -41,6 +41,8 @@ import ProfilePage from "@/pages/profile";
 import { ProtocolDetailPage } from "@/pages/protocol-detail";
 import TokenDetail from "@/pages/token-detail";
 import NetworkDetail from "@/pages/network-detail";
+import PoolHoldersPage from "@/pages/pool-holders";
+import PoolTransfersPage from "@/pages/pool-transfers";
 
 
 
@@ -87,6 +89,10 @@ function Router() {
       <Route path="/admin-analytics" component={AdminAnalytics} />
 
       {/* Pool detail routes - these must come AFTER admin routes */}
+      {/* Pool holders and transfers pages - these must come BEFORE the generic pool detail routes */}
+      <Route path="/yield/:network/:protocol/:tokenPair/holders" component={PoolHoldersPage} />
+      <Route path="/yield/:network/:protocol/:tokenPair/transfers" component={PoolTransfersPage} />
+      
       {/* Primary SEO-friendly URL patterns for pool details */}
       <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
       <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} />

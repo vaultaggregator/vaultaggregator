@@ -266,13 +266,29 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
-          <CardTitle>Last 5 Transfers</CardTitle>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              <CardTitle>Last 5 Transfers</CardTitle>
+            </div>
+            <CardDescription>
+              Recent deposits and withdrawals from the vault
+            </CardDescription>
+          </div>
+          <button
+            onClick={() => {
+              const parts = window.location.pathname.split('/');
+              const network = parts[2];
+              const protocol = parts[3];
+              const tokenPair = parts[4];
+              window.location.href = `/yield/${network}/${protocol}/${tokenPair}/transfers`;
+            }}
+            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+          >
+            View all →
+          </button>
         </div>
-        <CardDescription>
-          Recent deposits and withdrawals from the vault
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

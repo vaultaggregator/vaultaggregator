@@ -192,9 +192,23 @@ export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: Hol
             <Users className="h-5 w-5" />
             <CardTitle>Top 5 Holders</CardTitle>
           </div>
-          <Badge variant="secondary" className="text-xs">
-            {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="text-xs">
+              {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
+            </Badge>
+            <button
+              onClick={() => {
+                const parts = window.location.pathname.split('/');
+                const network = parts[2];
+                const protocol = parts[3];
+                const tokenPair = parts[4];
+                window.location.href = `/yield/${network}/${protocol}/${tokenPair}/holders`;
+              }}
+              className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+            >
+              View all →
+            </button>
+          </div>
         </div>
         <CardDescription>
           <div className="space-y-1">
