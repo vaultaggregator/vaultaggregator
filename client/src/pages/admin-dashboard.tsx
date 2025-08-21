@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Search, LogOut, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Sparkles } from "lucide-react";
+import { Search, Eye, EyeOff, Edit3, Check, X, ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, Settings, Percent } from "lucide-react";
 import { TokenDisplay } from "@/components/TokenDisplay";
 import { UnderlyingTokensEditor } from "@/components/underlying-tokens-editor";
 import { RiskBadge } from "@/components/risk-badge";
@@ -517,571 +517,154 @@ export default function AdminDashboard() {
   return (
     <>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Admin Dashboard
-              </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Welcome, {(user as any)?.username}
-              </p>
-            </div>
-            <div className="flex space-x-3">
-              <Button 
-                onClick={() => navigate("/admin-networks")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-networks"
-              >
-                Networks
-              </Button>
-              <Button 
-                onClick={() => navigate("/admin-platforms")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-platforms"
-              >
-                Platforms
-              </Button>
-              <Button 
-                onClick={() => navigate("/admin-categories")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-categories"
-              >
-                Categories
-              </Button>
-              <Button 
-                onClick={() => navigate("/admin-tokens")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-tokens"
-              >
-                Tokens
-              </Button>
-              <Button 
-                onClick={() => navigate("/admin-api-keys")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-api-keys"
-              >
-                API Keys
-              </Button>
-              <Button 
-                onClick={() => navigate("/admin-chatgpt")} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-chatgpt"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                ChatGPT
-              </Button>
-
-
-
-
-
-
-              <Button 
-                onClick={handleLogout} 
-                variant="outline" 
-                size="sm"
-                data-testid="button-logout"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Database Total
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {pagination?.total || pools.length}
-                  </p>
-                </div>
-                <Eye className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Showing
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {pagination?.showing || pools.length}
-                  </p>
-                </div>
-                <Eye className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Visible Pools
-                  </p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {visiblePools.length}
-                  </p>
-                </div>
-                <Eye className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Hidden Pools
-                  </p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {hiddenPools.length}
-                  </p>
-                </div>
-                <EyeOff className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search pools..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                  data-testid="input-search"
-                />
-              </div>
-              
-              {/* Filter Groups */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                
-                {/* Platforms */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Platforms</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {platforms.map((platform) => (
-                      <label key={platform.id} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedPlatforms.includes(platform.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedPlatforms([...selectedPlatforms, platform.id]);
-                            } else {
-                              setSelectedPlatforms(selectedPlatforms.filter(id => id !== platform.id));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          data-testid={`checkbox-platform-${platform.id}`}
-                        />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{platform.displayName}</span>
-                      </label>
-                    ))}
+        <AdminHeader />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Database Total
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {pagination?.total || pools.length}
+                    </p>
                   </div>
+                  <Eye className="h-8 w-8 text-blue-600" />
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* Chains */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Chains</h4>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {chains.map((chain) => (
-                      <label key={chain.id} className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedChains.includes(chain.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedChains([...selectedChains, chain.id]);
-                            } else {
-                              setSelectedChains(selectedChains.filter(id => id !== chain.id));
-                            }
-                          }}
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          data-testid={`checkbox-chain-${chain.id}`}
-                        />
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{chain.displayName}</span>
-                      </label>
-                    ))}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Showing
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {pagination?.showing || pools.length}
+                    </p>
                   </div>
+                  <Eye className="h-8 w-8 text-purple-600" />
                 </div>
-
-                {/* No data sources filter needed since we only use DeFi Llama */}
-
-                {/* Visibility */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">Visibility</h4>
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={visibilityFilters.includes('visible')}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setVisibilityFilters([...visibilityFilters, 'visible']);
-                          } else {
-                            setVisibilityFilters(visibilityFilters.filter(vis => vis !== 'visible'));
-                          }
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        data-testid="checkbox-visibility-visible"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Visible Pools</span>
-                    </label>
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={visibilityFilters.includes('hidden')}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setVisibilityFilters([...visibilityFilters, 'hidden']);
-                          } else {
-                            setVisibilityFilters(visibilityFilters.filter(vis => vis !== 'hidden'));
-                          }
-                        }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        data-testid="checkbox-visibility-hidden"
-                      />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Hidden Pools</span>
-                    </label>
-                  </div>
-                </div>
-                
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-
-
-        {/* Pools Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pool Management</CardTitle>
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Toggle switches to control which pools are visible to guest visitors on the main site. 
-              Hidden pools will not appear on the homepage.
-            </p>
-          </CardHeader>
-          <CardContent>
-            {poolsLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-            ) : pools.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-300">
-                No pools found
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <TooltipProvider>
-                  <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white w-12">
-                        Select
-                      </th>
-                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Pool
-                      </th>
-                      <th 
-                        className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('platform')}
-                        data-testid="sort-platform"
-                      >
-                        <div className="flex items-center gap-2">
-                          Platform
-                          {getSortIcon('platform')}
-                        </div>
-                      </th>
-                      <th 
-                        className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('chain')}
-                        data-testid="sort-chain"
-                      >
-                        <div className="flex items-center gap-2">
-                          Chain
-                          {getSortIcon('chain')}
-                        </div>
-                      </th>
-                      <th 
-                        className="text-right py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('apy')}
-                        data-testid="sort-apy"
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          APY
-                          {getSortIcon('apy')}
-                        </div>
-                      </th>
-                      <th 
-                        className="text-right py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('tvl')}
-                        data-testid="sort-tvl"
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          TVL
-                          {getSortIcon('tvl')}
-                        </div>
-                      </th>
-                      <th 
-                        className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('risk')}
-                        data-testid="sort-risk"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          Risk
-                          {getSortIcon('risk')}
-                        </div>
-                      </th>
-
-                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Underlying Tokens
-                      </th>
-                      <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Categories
-                      </th>
-                      <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
-                        Actions
-                      </th>
-                      <th 
-                        className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                        onClick={() => handleSort('visible')}
-                        data-testid="sort-visible"
-                      >
-                        <div className="flex items-center justify-center gap-2">
-                          Visible
-                          {getSortIcon('visible')}
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedPools.map((pool) => (
-                      <tr 
-                        key={pool.id} 
-                        className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        data-testid={`row-pool-${pool.id}`}
-                      >
-
-                        <td className="py-3 px-2">
-                          <div className="flex items-center gap-2">
-                            <EditableField
-                              value={pool.tokenPair}
-                              onSave={(newValue) => updateTokenPair(pool.id, newValue)}
-                              className="font-medium text-gray-900 dark:text-white"
-                              data-testid={`edit-token-pair-${pool.id}`}
-                            />
-
-                          </div>
-                        </td>
-                        <td className="py-3 px-2">
-                          <EditableField
-                            value={pool.platform?.displayName || 'Unknown Platform'}
-                            onSave={(newValue) => updatePlatformName(pool.platformId, newValue)}
-                            className="text-sm text-gray-600 dark:text-gray-400"
-                            data-testid={`edit-platform-name-${pool.id}`}
-                          />
-                        </td>
-                        <td className="py-3 px-2">
-                          <Badge 
-                            variant="secondary" 
-                            style={{ backgroundColor: `${pool.chain?.color || '#000'}20`, color: pool.chain?.color || '#000' }}
-                          >
-                            {pool.chain?.displayName || 'Unknown Chain'}
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-2 text-right">
-                          <span className="font-mono text-sm">
-                            {parseFloat(pool.apy || '0').toFixed(2)}%
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-right">
-                          <span className="font-mono text-sm">
-                            {formatCurrency(parseFloat(pool.tvl || '0'))}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <RiskBadge 
-                            risk={pool.riskLevel}
-                            variant="compact"
-                            className="text-xs"
-                          />
-                        </td>
-
-                        <td className="py-3 px-2">
-                          <UnderlyingTokensEditor
-                            poolId={pool.id}
-                            tokens={(pool.rawData as any)?.underlyingTokens || []}
-                            onUpdate={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/pools"] })}
-                          />
-                        </td>
-                        <td className="py-3 px-2">
-                          <CategorySelector
-                            poolId={pool.id}
-                            categories={categories}
-                            onCategoryChange={updatePoolCategories}
-                          />
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <div className="flex items-center justify-center space-x-2">
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleOpenPoolModal(pool)}
-                                    className="h-8 w-8 p-0"
-                                    data-testid={`button-pool-settings-${pool.id}`}
-                                  >
-                                    <Settings className="w-4 h-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Configure pool data display</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            
-                            {(() => {
-                              const linkData = generatePlatformVisitUrl(pool);
-                              return linkData && (
-                                <a
-                                  href={linkData.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                                  data-testid={`link-external-${pool.id}`}
-                                  title={linkData.label}
-                                  onClick={(e) => {
-                                    console.log('Visit Platform clicked:', linkData);
-                                    // Let the browser handle the navigation
-                                  }}
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </a>
-                              );
-                            })()}
-                          </div>
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <div className="flex items-center justify-center space-x-2">
-                            <Switch
-                              checked={pool.isVisible}
-                              onCheckedChange={(checked) => {
-                                console.log("Toggle clicked:", { poolId: pool.id, currentVisible: pool.isVisible, newVisible: checked });
-                                toggleVisibilityMutation.mutate({ 
-                                  poolId: pool.id, 
-                                  isVisible: checked 
-                                });
-                              }}
-                              disabled={toggleVisibilityMutation.isPending}
-                              data-testid={`switch-visibility-${pool.id}`}
-                            />
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {pool.isVisible ? "Visible" : "Hidden"}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                </TooltipProvider>
-              </div>
-            )}
+              </CardContent>
+            </Card>
             
-            {pagination && (
-              <div className="flex items-center justify-between px-4 py-3 border-t">
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, pagination.total)} of {pagination.total} pools
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Visible Pools
+                    </p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {visiblePools.length}
+                    </p>
+                  </div>
+                  <Eye className="h-8 w-8 text-green-600" />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-                    disabled={currentPage === 0}
-                    data-testid="button-prev-page"
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Page {currentPage + 1} of {Math.ceil(pagination.total / pageSize)}
-                  </span>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={!pagination.hasMore}
-                    data-testid="button-next-page"
-                  >
-                    Next
-                  </Button>
-                  <div className="ml-4">
-                    <select 
-                      value={pageSize} 
-                      onChange={(e) => setPageSize(parseInt(e.target.value))}
-                      className="px-2 py-1 border rounded text-sm"
-                      data-testid="select-page-size"
-                    >
-                      <option value={25}>25 per page</option>
-                      <option value={50}>50 per page</option>
-                      <option value={100}>100 per page</option>
-                    </select>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      Total APY
+                    </p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {totalAPY.toFixed(2)}%
+                    </p>
+                  </div>
+                  <Percent className="h-8 w-8 text-orange-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters and Search */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search pools..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                      data-testid="input-search"
+                    />
                   </div>
                 </div>
+                <div className="flex gap-2">
+                  <Select value={selectedChainId || ""} onValueChange={setSelectedChainId}>
+                    <SelectTrigger className="w-40" data-testid="select-chain">
+                      <SelectValue placeholder="All Chains" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Chains</SelectItem>
+                      {chains.map((chain) => (
+                        <SelectItem key={chain.id} value={chain.id}>
+                          {chain.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedPlatformId || ""} onValueChange={setSelectedPlatformId}>
+                    <SelectTrigger className="w-40" data-testid="select-platform">
+                      <SelectValue placeholder="All Platforms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Platforms</SelectItem>
+                      {platforms.map((platform) => (
+                        <SelectItem key={platform.id} value={platform.id}>
+                          {platform.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedCategoryId || ""} onValueChange={setSelectedCategoryId}>
+                    <SelectTrigger className="w-40" data-testid="select-category">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.displayName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
 
-      {/* Pool Data Configuration Modal */}
-      <PoolDataModal
-        isOpen={isPoolModalOpen}
-        onClose={handleClosePoolModal}
-        poolId={selectedPoolForModal?.id || ''}
-        poolData={selectedPoolForModal}
-      />
-
-
+          {/* Main Content */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Pool Management</h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    Export Data
+                  </Button>
+                  <Button size="sm">
+                    Add Pool
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       <Footer />
     </>
