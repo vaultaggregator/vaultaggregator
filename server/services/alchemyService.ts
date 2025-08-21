@@ -758,6 +758,15 @@ export class AlchemyService {
         return 1.0;
       }
       
+      // Check if it's in our static cache (all vault tokens)
+      if (AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()]) {
+        // It's a known token in our cache, use $1 for USD tokens
+        const cachedToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
+        if (cachedToken.symbol?.includes('USD') || cachedToken.name?.includes('USD')) {
+          return 1.0;
+        }
+      }
+      
       // Default to $1 for unknown tokens
       console.log(`⚠️ Using default price for unknown token ${tokenAddress}`);
       return 1.0;
