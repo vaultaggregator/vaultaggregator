@@ -313,15 +313,10 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
                   </div>
 
                   <div className="col-span-3">
-                    <div className="space-y-1">
-                      <div className="font-semibold text-sm flex items-center gap-1">
-                        {transaction.type === 'withdraw' && '-'}
-                        {transaction.type === 'deposit' && '+'}
-                        {formatAmount(transaction.amount)} USDC
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatCurrency(transaction.amountUSD)}
-                      </div>
+                    <div className="font-semibold text-sm flex items-center gap-1">
+                      {transaction.type === 'withdraw' && '-'}
+                      {transaction.type === 'deposit' && '+'}
+                      {formatAmount(transaction.amount)} USDC
                     </div>
                   </div>
 
