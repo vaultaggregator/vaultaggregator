@@ -1754,15 +1754,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create token
   app.post("/api/admin/tokens", requireAuth, async (req, res) => {
     try {
-      const { chainId, address } = req.body;
+      const { chainId, address, name, symbol, decimals } = req.body;
       
-      // Create token with basic data - metadata should be fetched later
+      if (!chainId || !address) {
+        return res.status(400).json({ message: "Chain ID and address are required" });
+      }
+      
+      // Validate that the network exists
+      const network = await storage.getNetworkById(chainId);
+      if (!network) {
+        return res.status(400).json({ message: "Invalid network ID" });
+      }
+      
+      // Check if token already exists for this network
+      const existingTokens = await storage.getTokensByChain(network.chainId);
+      const existingToken = existingTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
+      
+      if (existingToken) {
+        return res.status(409).json({ 
+          message: "Token already exists for this network",
+          existingToken 
+        });
+      }
+      
+      // Create token with proper field mapping
       const tokenData = {
-        chainId,
-        address,
-        name: "Unknown Token", // Placeholder until metadata is fetched
-        symbol: "UNKNOWN", // Placeholder until metadata is fetched
-        decimals: 18, // Default until metadata is fetched
+        chainId: network.chainId, // Use the network's chainId, not the network ID
+        networkId: network.id, // Set the networkId for the foreign key
+        address: address.toLowerCase(),
+        name: name || "Unknown Token",
+        symbol: symbol || "UNKNOWN",
+        decimals: decimals || 18,
         isActive: true,
       };
       

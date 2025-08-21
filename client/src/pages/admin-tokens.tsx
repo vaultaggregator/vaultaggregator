@@ -61,6 +61,9 @@ interface TokenInfo {
 const createTokenSchema = z.object({
   chainId: z.string().min(1, "Network is required"),
   address: z.string().min(1, "Contract address is required"),
+  name: z.string().optional(),
+  symbol: z.string().optional(),
+  decimals: z.number().min(0).max(30).optional(),
 });
 
 export default function AdminTokensPage() {
@@ -158,9 +161,9 @@ export default function AdminTokensPage() {
       token.name.toLowerCase().includes(search.toLowerCase()) ||
       token.symbol.toLowerCase().includes(search.toLowerCase()) ||
       token.address.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesNetwork = !selectedNetwork || token.chainId === selectedNetwork;
-    
+
     return matchesSearch && matchesNetwork;
   });
 
@@ -237,7 +240,7 @@ export default function AdminTokensPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AdminHeader />
-      
+
       {/* Page Header */}
       <div className="bg-white dark:bg-gray-800 shadow border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -364,7 +367,7 @@ export default function AdminTokensPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={createForm.control}
                         name="address"
@@ -378,21 +381,57 @@ export default function AdminTokensPage() {
                           </FormItem>
                         )}
                       />
-
-
-
-                      <div className="flex justify-end space-x-2 pt-4">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => setShowCreateDialog(false)}
-                        >
+                      <FormField
+                        control={createForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Token Name" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="symbol"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Symbol (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="TKN" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={createForm.control}
+                        name="decimals"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Decimals (Optional)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0" 
+                                max="30" 
+                                placeholder="18" 
+                                {...field}
+                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
                           Cancel
                         </Button>
-                        <Button 
-                          type="submit" 
-                          disabled={createTokenMutation.isPending}
-                        >
+                        <Button type="submit" disabled={createTokenMutation.isPending}>
                           {createTokenMutation.isPending ? "Creating..." : "Create Token"}
                         </Button>
                       </div>
@@ -443,7 +482,7 @@ export default function AdminTokensPage() {
           <div className="space-y-8">
             {networks.filter(n => n.isActive && (!selectedNetwork || selectedNetwork === n.id)).map((network) => {
               const networkTokens = tokensByNetwork[network.id] || [];
-              
+
               if (networkTokens.length === 0 && selectedNetwork) return null;
 
               return (
@@ -490,7 +529,7 @@ export default function AdminTokensPage() {
                             {networkTokens.map((token) => {
                               const isEditing = editingToken === token.id;
                               const tokenInfo = getTokenInfo(token.address);
-                              
+
                               return (
                                 <tr key={token.id} className="border-b border-gray-100 dark:border-gray-800">
                                   <td className="py-3 px-2">
