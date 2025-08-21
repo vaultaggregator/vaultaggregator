@@ -44,107 +44,73 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import AdminHeader from "@/components/admin-header";
 
-// Helper functions
-const formatUptime = (uptimeMs: number) => {
-  const seconds = Math.floor(uptimeMs / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days}d ${hours % 24}h ${minutes % 60}m`;
-  } else if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`;
-  } else if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`;
-  } else {
-    return `${seconds}s`;
-  }
-};
-
-const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`;
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'up':
-    case 'healthy':
-      return <CheckCircle className="h-4 w-4 text-green-600" />;
-    case 'warning':
-      return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-    case 'down':
-    case 'unhealthy':
-      return <XCircle className="h-4 w-4 text-red-600" />;
-    default:
-      return <AlertTriangle className="h-4 w-4 text-gray-600" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'up':
-    case 'healthy':
-      return 'default';
-    case 'warning':
-      return 'secondary';
-    case 'down':
-    case 'unhealthy':
-      return 'destructive';
-    default:
-      return 'outline';
-  }
-};
-
-// Type definitions
-interface MemoryUsage {
-  used: number;
-  total: number;
-  percentage: number;
-}
-
-interface CachePerformance {
-  hitRate: number;
-  totalEntries: number;
-  memoryUsage: number;
-}
-
-interface ErrorRates {
-  last1Hour: number;
-  last24Hours: number;
-  critical: number;
-}
-
-interface ApiHealthCheck {
-  status: 'up' | 'down' | 'warning';
-  responseTime?: number;
-  lastCheck?: string;
-  error?: string;
-  details?: any;
-}
-
-interface ScheduledJobStatus {
-  status: 'up' | 'down' | 'warning';
-  lastCheck?: string;
-  error?: string;
-  details?: any;
-}
-
-interface HealthData {
-  overall: 'healthy' | 'warning' | 'unhealthy';
+interface SystemHealth {
+  overall: 'healthy' | 'degraded' | 'down';
   uptime: number;
-  memoryUsage: MemoryUsage;
-  cachePerformance: CachePerformance;
-  errorRates: ErrorRates;
-  apiHealth: Record<string, ApiHealthCheck>;
-  scheduledJobs: Record<string, ScheduledJobStatus>;
+  memoryUsage: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  cachePerformance: {
+    hitRate: number;
+    totalEntries: number;
+    memoryUsage: number;
+  };
+  apiHealth: {
+    etherscan: SystemCheck;
+    defiLlama: SystemCheck;
+    database: SystemCheck;
+  };
+  scheduledJobs: {
+    defiLlamaSync: SystemCheck;
+    holderDataSync: SystemCheck;
+    aiOutlookGeneration: SystemCheck;
+    cleanup: SystemCheck;
+  };
+  errorRates: {
+    last1Hour: number;
+    last24Hours: number;
+    critical: number;
+  };
+  serverTime?: {
+    current: string;
+    timezone: string;
+    formatted: string;
+  };
+  cpuMetrics?: {
+    usage: number;
+    cores: number;
+    loadAverage: number[];
+  };
+  memoryMetrics?: {
+    total: string;
+    free: string;
+    used: string;
+    cached: string;
+    percentages: {
+      used: number;
+      free: number;
+      cached: number;
+    };
+  };
+  cacheMetrics?: {
+    hitRate: number;
+    missRate: number;
+    totalRequests: number;
+  };
 }
 
-export default function AdminSystemEnhanced() {
+interface SystemCheck {
+  name: string;
+  status: 'up' | 'down' | 'warning' | 'unknown';
+  responseTime?: number;
+  lastCheck: number;
+  error?: string;
+  details?: any;
+}
+
+export default function AdminSystem() {
   const [selectedTab, setSelectedTab] = useState("overview");
   const [realTimeData, setRealTimeData] = useState<any[]>([]);
   const { toast } = useToast();
@@ -155,9 +121,31 @@ export default function AdminSystemEnhanced() {
     refetchInterval: 15000, // Refresh every 15 seconds for real-time feel
   });
 
-  const { data: uptime } = useQuery({
-    queryKey: ["/api/admin/system/uptime"],
-    refetchInterval: 30000, // Refresh every 30 seconds
+  const { data: environment } = useQuery({
+    queryKey: ["/api/admin/system/environment"],
+  });
+
+  interface SystemEnvironment {
+    nodeVersion: string;
+    environment: string;
+    platform: string;
+    arch: string;
+    cpuCount: number;
+    totalMemoryFormatted: string;
+    formatted?: {
+      uptime: string;
+      memory: string;
+      disk: string;
+      load: string;
+    };
+  }
+
+  const typedHealth = health as SystemHealth | undefined;
+  const typedEnvironment = environment as SystemEnvironment | undefined;
+
+  const { data: environment2 } = useQuery({
+    queryKey: ["/api/admin/system/environment"],
+    refetchInterval: 60000, // Refresh every minute
   });
 
   const { data: memory } = useQuery({
@@ -168,11 +156,6 @@ export default function AdminSystemEnhanced() {
   const { data: performance } = useQuery({
     queryKey: ["/api/admin/system/performance"],
     refetchInterval: 10000, // Refresh every 10 seconds
-  });
-
-  const { data: environment } = useQuery({
-    queryKey: ["/api/admin/system/environment"],
-    refetchInterval: 60000, // Refresh every minute
   });
 
   // Add real-time data collection for charts
@@ -195,76 +178,152 @@ export default function AdminSystemEnhanced() {
     }
   }, [health, performance]);
 
-  const refreshHealthMutation = useMutation({
+  const runHealthCheckMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/admin/system/health/refresh", {
-        method: "POST",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to refresh health status");
-      }
+      const response = await fetch("/api/admin/system/check", { method: "POST" });
+      if (!response.ok) throw new Error("Failed to run health check");
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/system/health"] });
       toast({
-        title: "Success",
-        description: "System health status refreshed successfully",
+        title: "Health Check Complete",
+        description: "System health check completed successfully",
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system"] });
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: "Error",
-        description: `Failed to refresh health status: ${error.message}`,
+        description: "Failed to run system health check",
         variant: "destructive",
       });
     },
   });
 
-  const typedHealth = health as HealthData | undefined;
-  const typedEnvironment = environment as any;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'up':
+      case 'healthy':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'warning':
+      case 'degraded':
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      case 'down':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <Monitor className="h-4 w-4 text-gray-500" />;
+    }
+  };
 
-  if (healthLoading && !health) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <AdminHeader />
-        <div className="p-6">
-          <div className="flex items-center justify-center h-64">
-            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'up':
+      case 'healthy':
+        return 'default';
+      case 'warning':
+      case 'degraded':
+        return 'secondary';
+      case 'down':
+        return 'destructive';
+      default:
+        return 'outline';
+    }
+  };
+
+  const formatUptime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+    if (hours > 0) return `${hours}h ${minutes % 60}m`;
+    return `${minutes}m ${seconds % 60}s`;
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <AdminHeader />
-      <div className="p-6 space-y-6">
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                System Status
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                Monitor system health, performance, and operational status
+              </p>
+              {health?.serverTime && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <Clock className="h-4 w-4" />
+                  <span>Server Time: {health.serverTime.formatted}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              {health && (
+                <Badge variant={getStatusColor(health.overall) as any} className="flex items-center gap-2">
+                  {getStatusIcon(health.overall)}
+                  System {health.overall}
+                </Badge>
+              )}
+              <Button
+                onClick={() => {
+                  runHealthCheckMutation.mutate();
+                  queryClient.invalidateQueries({ queryKey: ["/api/admin/system"] });
+                }}
+                disabled={runHealthCheckMutation.isPending}
+                className="flex items-center gap-2"
+                variant="outline"
+              >
+                <RefreshCw className={`h-4 w-4 ${runHealthCheckMutation.isPending ? 'animate-spin' : ''}`} />
+                {runHealthCheckMutation.isPending ? 'Refreshing...' : 'Refresh Data'}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Server Time Card */}
+        <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              Server Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <h2 className="text-2xl font-bold mb-2">System Status Dashboard</h2>
-                <p className="text-blue-100">
-                  Comprehensive real-time system monitoring and health analytics
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Current Time</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {health?.serverTime ? new Date(health.serverTime.current).toLocaleTimeString() : 'Loading...'}
                 </p>
               </div>
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="secondary" 
-                  size="sm"
-                  onClick={() => refreshHealthMutation.mutate()}
-                  disabled={refreshHealthMutation.isPending}
-                  data-testid="button-refresh-health"
-                >
-                  {refreshHealthMutation.isPending ? (
-                    <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                  )}
-                  Refresh Status
-                </Button>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Date</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {health?.serverTime ? new Date(health.serverTime.current).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  }) : 'Loading...'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Timezone</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {health?.serverTime?.timezone || 'Loading...'}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -285,7 +344,7 @@ export default function AdminSystemEnhanced() {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">System Uptime</CardTitle>
                   <div className="flex items-center gap-1">
-                    {typedHealth?.uptime > 86400000 ? (
+                    {health?.uptime > 86400000 ? (
                       <TrendingUp className="h-4 w-4 text-green-600" />
                     ) : (
                       <Clock className="h-4 w-4 text-blue-600" />
@@ -293,8 +352,8 @@ export default function AdminSystemEnhanced() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100" data-testid="text-uptime">
-                    {typedHealth ? formatUptime(typedHealth.uptime) : "Loading..."}
+                  <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {health ? formatUptime(health.uptime) : "Loading..."}
                   </div>
                   <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
                     System running steadily
@@ -306,7 +365,7 @@ export default function AdminSystemEnhanced() {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-green-900 dark:text-green-100">Memory Usage</CardTitle>
                   <div className="flex items-center gap-1">
-                    {(typedHealth?.memoryUsage.percentage || 0) > 80 ? (
+                    {(health?.memoryUsage.percentage || 0) > 80 ? (
                       <AlertTriangle className="h-4 w-4 text-orange-600" />
                     ) : (
                       <HardDrive className="h-4 w-4 text-green-600" />
@@ -314,16 +373,19 @@ export default function AdminSystemEnhanced() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-900 dark:text-green-100" data-testid="text-memory-usage">
-                    {typedHealth ? `${typedHealth.memoryUsage.percentage.toFixed(1)}%` : "0%"}
+                  <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {health ? `${health.memoryUsage.percentage.toFixed(1)}%` : "0%"}
                   </div>
                   <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                    {typedHealth ? formatBytes(typedHealth.memoryUsage.used) : "0 B"} / {typedHealth ? formatBytes(typedHealth.memoryUsage.total) : "0 B"}
+                    {health ? formatBytes(health.memoryUsage.used) : "0 B"} / {health ? formatBytes(health.memoryUsage.total) : "0 B"}
                   </p>
-                  {typedHealth && (
+                  {health && (
                     <Progress 
-                      value={typedHealth.memoryUsage.percentage} 
+                      value={health.memoryUsage.percentage} 
                       className="mt-2 h-2"
+                      style={{
+                        background: health.memoryUsage.percentage > 80 ? '#fef3c7' : '#dcfce7'
+                      }}
                     />
                   )}
                 </CardContent>
@@ -333,7 +395,7 @@ export default function AdminSystemEnhanced() {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Cache Performance</CardTitle>
                   <div className="flex items-center gap-1">
-                    {(typedHealth?.cachePerformance.hitRate || 0) > 80 ? (
+                    {(health?.cachePerformance.hitRate || 0) > 80 ? (
                       <Zap className="h-4 w-4 text-green-600" />
                     ) : (
                       <Activity className="h-4 w-4 text-purple-600" />
@@ -341,15 +403,15 @@ export default function AdminSystemEnhanced() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100" data-testid="text-cache-hit-rate">
-                    {typedHealth ? `${typedHealth.cachePerformance.hitRate.toFixed(1)}%` : "0%"}
+                  <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    {health ? `${health.cachePerformance.hitRate.toFixed(1)}%` : "0%"}
                   </div>
                   <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-                    {typedHealth?.cachePerformance.totalEntries || 0} entries cached
+                    {health?.cachePerformance.totalEntries || 0} entries cached
                   </p>
-                  {typedHealth && (
+                  {health && (
                     <Progress 
-                      value={typedHealth.cachePerformance.hitRate} 
+                      value={health.cachePerformance.hitRate} 
                       className="mt-2 h-2"
                     />
                   )}
@@ -360,15 +422,15 @@ export default function AdminSystemEnhanced() {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-orange-900 dark:text-orange-100">System Health</CardTitle>
                   <div className="flex items-center gap-1">
-                    {getStatusIcon(typedHealth?.overall || 'unknown')}
+                    {getStatusIcon(health?.overall || 'unknown')}
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100" data-testid="text-system-health">
-                    {typedHealth?.overall.toUpperCase() || 'UNKNOWN'}
+                  <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">
+                    {health?.overall.toUpperCase() || 'UNKNOWN'}
                   </div>
                   <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
-                    {typedHealth?.errorRates.last1Hour || 0} errors/hour
+                    {health?.errorRates.last1Hour || 0} errors/hour
                   </p>
                 </CardContent>
               </Card>
@@ -445,8 +507,8 @@ export default function AdminSystemEnhanced() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {typedHealth?.apiHealth && Object.entries(typedHealth.apiHealth).map(([key, api]) => (
-                      <div key={key} className="flex items-center justify-between p-3 border rounded-lg" data-testid={`card-api-${key}`}>
+                    {health?.apiHealth && Object.entries(health.apiHealth).map(([key, api]) => (
+                      <div key={key} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
                           {getStatusIcon(api.status)}
                           <div>
@@ -476,11 +538,11 @@ export default function AdminSystemEnhanced() {
                   <Shield className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-active-services">
-                    {typedHealth?.scheduledJobs ? Object.values(typedHealth.scheduledJobs).filter(job => job.status === 'up').length : 0}
+                  <div className="text-2xl font-bold">
+                    {health?.scheduledJobs ? Object.values(health.scheduledJobs).filter(job => job.status === 'up').length : 0}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Out of {typedHealth?.scheduledJobs ? Object.keys(typedHealth.scheduledJobs).length : 0} total services
+                    Out of {health?.scheduledJobs ? Object.keys(health.scheduledJobs).length : 0} total services
                   </p>
                 </CardContent>
               </Card>
@@ -491,8 +553,8 @@ export default function AdminSystemEnhanced() {
                   <Timer className="h-4 w-4 text-purple-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold" data-testid="text-cache-memory">
-                    {typedHealth ? formatBytes(typedHealth.cachePerformance.memoryUsage) : "0 B"}
+                  <div className="text-2xl font-bold">
+                    {health ? formatBytes(health.cachePerformance.memoryUsage) : "0 B"}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Memory utilized by cache
@@ -506,7 +568,7 @@ export default function AdminSystemEnhanced() {
                   <Activity className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600" data-testid="text-stability-score">
+                  <div className="text-2xl font-bold text-green-600">
                     99.9%
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -515,12 +577,81 @@ export default function AdminSystemEnhanced() {
                 </CardContent>
               </Card>
             </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Environment Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {environment && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-300">Node.js Version:</span>
+                        <span className="font-medium">{environment.nodeVersion}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Environment:</span>
+                        <Badge variant="outline">{environment.environment}</Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Platform:</span>
+                        <span className="font-medium">{environment.platform} ({environment.arch})</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">CPU Cores:</span>
+                        <span className="font-medium">{environment.cpuCount}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Total Memory:</span>
+                        <span className="font-medium">{environment.totalMemoryFormatted}</span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Memory Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {memory && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Heap Used:</span>
+                        <span className="font-medium">{memory.formatted.heapUsed}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Heap Total:</span>
+                        <span className="font-medium">{memory.formatted.heapTotal}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">External:</span>
+                        <span className="font-medium">{memory.formatted.external}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">RSS:</span>
+                        <span className="font-medium">{memory.formatted.rss}</span>
+                      </div>
+                      <div className="pt-2">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Heap Usage</span>
+                          <span>{memory.percentages.heapUsage}%</span>
+                        </div>
+                        <Progress value={memory.percentages.heapUsage} />
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="apis" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {typedHealth?.apiHealth && Object.entries(typedHealth.apiHealth).map(([key, api]) => (
-                <Card key={key} className="relative overflow-hidden" data-testid={`card-api-detail-${key}`}>
+              {health?.apiHealth && Object.entries(health.apiHealth).map(([key, api]) => (
+                <Card key={key} className="relative overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 ${
                     api.status === 'up' ? 'bg-green-500' : 
                     api.status === 'warning' ? 'bg-yellow-500' : 
@@ -565,6 +696,14 @@ export default function AdminSystemEnhanced() {
                         </p>
                       </div>
                     )}
+                    
+                    {api.details && (
+                      <div className="mt-2 p-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded">
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {JSON.stringify(api.details, null, 2)}
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
@@ -573,8 +712,8 @@ export default function AdminSystemEnhanced() {
 
           <TabsContent value="jobs" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {typedHealth?.scheduledJobs && Object.entries(typedHealth.scheduledJobs).map(([key, job]) => (
-                <Card key={key} className="relative" data-testid={`card-service-${key}`}>
+              {health?.scheduledJobs && Object.entries(health.scheduledJobs).map(([key, job]) => (
+                <Card key={key} className="relative">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base capitalize flex items-center gap-2">
@@ -600,6 +739,15 @@ export default function AdminSystemEnhanced() {
                         <span className="text-sm text-muted-foreground">Last Check:</span>
                         <span className="text-sm font-medium">
                           {new Date(job.lastCheck).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {job.details && job.details.lastSync && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Last Sync:</span>
+                        <span className="text-sm font-medium">
+                          {new Date(job.details.lastSync).toLocaleString()}
                         </span>
                       </div>
                     )}
@@ -631,6 +779,47 @@ export default function AdminSystemEnhanced() {
               ))}
             </div>
           </TabsContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {health && Object.entries(health.scheduledJobs).map(([name, job]) => (
+                <Card key={name}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">
+                        {name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                      </CardTitle>
+                      <Badge variant={getStatusColor(job.status) as any}>
+                        {getStatusIcon(job.status)}
+                        {job.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Last Check:</span>
+                      <span className="font-medium">
+                        {job.lastCheck ? new Date(job.lastCheck).toLocaleTimeString() : "Never"}
+                      </span>
+                    </div>
+                    {job.error && (
+                      <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                        {job.error}
+                      </div>
+                    )}
+                    {job.details && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        {Object.entries(job.details).map(([key, value]) => (
+                          <div key={key} className="flex justify-between">
+                            <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                            <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -638,7 +827,7 @@ export default function AdminSystemEnhanced() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-foreground" data-testid="text-response-time">
+                      <p className="text-2xl font-bold text-foreground">
                         {performance?.responseTime?.toFixed(0) || 0}ms
                       </p>
                       <p className="text-sm text-muted-foreground">Avg Response Time</p>
@@ -652,7 +841,7 @@ export default function AdminSystemEnhanced() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-foreground" data-testid="text-throughput">
+                      <p className="text-2xl font-bold text-foreground">
                         {performance?.throughput || 0}
                       </p>
                       <p className="text-sm text-muted-foreground">Requests/sec</p>
@@ -666,7 +855,7 @@ export default function AdminSystemEnhanced() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-foreground" data-testid="text-cpu-cores">
+                      <p className="text-2xl font-bold text-foreground">
                         {typedEnvironment?.cpuCount || 0}
                       </p>
                       <p className="text-sm text-muted-foreground">CPU Cores</p>
@@ -680,7 +869,7 @@ export default function AdminSystemEnhanced() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-foreground" data-testid="text-total-memory">
+                      <p className="text-2xl font-bold text-foreground">
                         {typedEnvironment?.totalMemoryFormatted || '0 GB'}
                       </p>
                       <p className="text-sm text-muted-foreground">Total Memory</p>
@@ -765,7 +954,83 @@ export default function AdminSystemEnhanced() {
               </Card>
             </div>
           </TabsContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Cpu className="h-5 w-5" />
+                    CPU Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {performance && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Execution Time:</span>
+                        <span className="font-medium">{performance.cpuMetrics.executionTime}ms</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Load Average:</span>
+                        <span className="font-medium text-xs">
+                          {performance.cpuMetrics.loadAverage.map((avg: number) => avg.toFixed(2)).join(', ')}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
 
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <HardDrive className="h-5 w-5" />
+                    Memory Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {performance && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Usage:</span>
+                        <span className="font-medium">{performance.memoryMetrics.percentage.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Used:</span>
+                        <span className="font-medium">{formatBytes(performance.memoryMetrics.used)}</span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Cache Metrics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {performance && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Hit Rate:</span>
+                        <span className="font-medium">{performance.cacheMetrics.hitRate.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Entries:</span>
+                        <span className="font-medium">{performance.cacheMetrics.totalEntries}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Size:</span>
+                        <span className="font-medium">{formatBytes(performance.cacheMetrics.memoryUsage)}</span>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
           <TabsContent value="monitoring" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
@@ -871,19 +1136,19 @@ export default function AdminSystemEnhanced() {
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Last Hour</span>
                           <span className="text-sm font-medium text-green-600">
-                            {typedHealth?.errorRates.last1Hour || 0} errors
+                            {health?.errorRates.last1Hour || 0} errors
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Last 24 Hours</span>
                           <span className="text-sm font-medium text-green-600">
-                            {typedHealth?.errorRates.last24Hours || 0} errors
+                            {health?.errorRates.last24Hours || 0} errors
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Critical Issues</span>
                           <span className="text-sm font-medium text-green-600">
-                            {typedHealth?.errorRates.critical || 0} issues
+                            {health?.errorRates.critical || 0} issues
                           </span>
                         </div>
                       </div>
@@ -895,19 +1160,19 @@ export default function AdminSystemEnhanced() {
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Hit Rate</span>
                           <span className="text-sm font-medium text-purple-600">
-                            {typedHealth?.cachePerformance.hitRate.toFixed(1)}%
+                            {health?.cachePerformance.hitRate.toFixed(1)}%
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Total Entries</span>
                           <span className="text-sm font-medium">
-                            {typedHealth?.cachePerformance.totalEntries || 0}
+                            {health?.cachePerformance.totalEntries || 0}
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm text-muted-foreground">Memory Usage</span>
                           <span className="text-sm font-medium">
-                            {typedHealth ? formatBytes(typedHealth.cachePerformance.memoryUsage) : '0 B'}
+                            {health ? formatBytes(health.cachePerformance.memoryUsage) : '0 B'}
                           </span>
                         </div>
                       </div>
@@ -928,7 +1193,7 @@ export default function AdminSystemEnhanced() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {(typedHealth?.memoryUsage.percentage || 0) > 80 && (
+                  {(health?.memoryUsage.percentage || 0) > 80 && (
                     <div className="flex items-center gap-3 p-3 border border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
                       <AlertTriangle className="h-4 w-4 text-orange-600 flex-shrink-0" />
                       <div>
@@ -936,13 +1201,13 @@ export default function AdminSystemEnhanced() {
                           High Memory Usage Detected
                         </p>
                         <p className="text-xs text-orange-700 dark:text-orange-300">
-                          Memory usage is at {typedHealth?.memoryUsage.percentage.toFixed(1)}%. Consider monitoring for potential memory leaks.
+                          Memory usage is at {health?.memoryUsage.percentage.toFixed(1)}%. Consider monitoring for potential memory leaks.
                         </p>
                       </div>
                     </div>
                   )}
                   
-                  {(typedHealth?.cachePerformance.hitRate || 0) < 70 && (
+                  {(health?.cachePerformance.hitRate || 0) < 70 && (
                     <div className="flex items-center gap-3 p-3 border border-yellow-200 dark:border-yellow-700 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                       <AlertTriangle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
                       <div>
@@ -950,14 +1215,14 @@ export default function AdminSystemEnhanced() {
                           Low Cache Hit Rate
                         </p>
                         <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                          Cache hit rate is at {typedHealth?.cachePerformance.hitRate.toFixed(1)}%. Cache optimization may be needed.
+                          Cache hit rate is at {health?.cachePerformance.hitRate.toFixed(1)}%. Cache optimization may be needed.
                         </p>
                       </div>
                     </div>
                   )}
                   
                   {/* Success message when all systems are healthy */}
-                  {(typedHealth?.memoryUsage.percentage || 0) <= 80 && (typedHealth?.cachePerformance.hitRate || 0) >= 70 && (
+                  {(health?.memoryUsage.percentage || 0) <= 80 && (health?.cachePerformance.hitRate || 0) >= 70 && (
                     <div className="flex items-center gap-3 p-3 border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20 rounded-lg">
                       <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                       <div>
