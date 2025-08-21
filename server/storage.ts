@@ -416,8 +416,7 @@ export class DatabaseStorage implements IStorage {
       symbol: tokens.symbol,
       decimals: tokens.decimals,
       isActive: tokens.isActive,
-      createdAt: tokens.createdAt,
-      updatedAt: tokens.updatedAt
+      createdAt: tokens.createdAt
     }).from(tokens).orderBy(tokens.symbol);
   }
 
@@ -431,8 +430,7 @@ export class DatabaseStorage implements IStorage {
       symbol: tokens.symbol,
       decimals: tokens.decimals,
       isActive: tokens.isActive,
-      createdAt: tokens.createdAt,
-      updatedAt: tokens.updatedAt
+      createdAt: tokens.createdAt
     }).from(tokens).where(eq(tokens.isActive, true)).orderBy(tokens.symbol);
   }
 
@@ -446,8 +444,7 @@ export class DatabaseStorage implements IStorage {
       symbol: tokens.symbol,
       decimals: tokens.decimals,
       isActive: tokens.isActive,
-      createdAt: tokens.createdAt,
-      updatedAt: tokens.updatedAt
+      createdAt: tokens.createdAt
     }).from(tokens).where(and(eq(tokens.chainId, chainId), eq(tokens.isActive, true))).orderBy(tokens.symbol);
   }
 
@@ -466,16 +463,12 @@ export class DatabaseStorage implements IStorage {
       symbol: tokens.symbol,
       decimals: tokens.decimals,
       isActive: tokens.isActive,
-      createdAt: tokens.createdAt,
-      updatedAt: tokens.updatedAt
+      createdAt: tokens.createdAt
     }).from(tokens).orderBy(tokens.symbol);
   }
 
   async updateToken(id: string, tokenData: Partial<InsertToken>): Promise<Token | undefined> {
-    const [updatedToken] = await db.update(tokens).set({
-      ...tokenData,
-      updatedAt: new Date()
-    }).where(eq(tokens.id, id)).returning();
+    const [updatedToken] = await db.update(tokens).set(tokenData).where(eq(tokens.id, id)).returning();
     return updatedToken || undefined;
   }
 

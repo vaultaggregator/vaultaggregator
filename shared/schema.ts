@@ -136,7 +136,6 @@ export const tokens = pgTable("tokens", {
   networkId: varchar("network_id").references(() => networks.id),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Keep platforms as alias for protocols for backwards compatibility
