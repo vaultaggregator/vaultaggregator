@@ -254,11 +254,10 @@ export default function ProfilePage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid w-full max-w-md grid-cols-4">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
             <TabsTrigger value="wallet">Wallet</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
-            <TabsTrigger value="nfts">NFTs</TabsTrigger>
           </TabsList>
 
           {/* Portfolio Tab */}
@@ -454,17 +453,7 @@ export default function ProfilePage() {
             </Card>
           </TabsContent>
 
-          {/* NFTs Tab */}
-          <TabsContent value="nfts" className="mt-6">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Activity className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  NFT data unavailable (Alchemy API disabled)
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </div>
 

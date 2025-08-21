@@ -4,6 +4,13 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # Recent Changes (August 21, 2025)
 
+**PROFILE PAGE NFT SECTION REMOVED (COMPLETED):**
+- Removed NFTs tab from wallet profile page per user request
+- Simplified tab navigation to 3 tabs: Portfolio, Wallet, History
+- Profile page now focuses on DeFi positions and wallet assets without NFT data
+
+# Recent Changes (August 21, 2025)
+
 **ADMIN INTERFACE STREAMLINED (COMPLETED):**
 - Completely removed admin-content functionality and all related components per user request
 - Removed admin-content page component, routing, imports, and navigation links
