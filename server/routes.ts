@@ -919,8 +919,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
+      // Get the actual total holder count from pool_metrics_current
+      const [metrics] = await db
+        .select({ holdersCount: poolMetricsCurrent.holdersCount })
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .limit(1);
+
       // Get holders from database (all pools uniformly show up to 1000 holders)
       const result = await storage.getPoolHolders(poolId, page, limit);
+      
+      // Use the real total count from pool_metrics_current if available, otherwise fall back to stored count
+      const actualTotalCount = metrics?.holdersCount || result.total;
+      const actualPages = Math.ceil(actualTotalCount / limit);
       
       // Format holder data for frontend with proper number conversion
       const formattedHolders = result.holders.map(holder => ({
@@ -938,8 +949,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pagination: {
           page,
           limit,
-          total: result.total,
-          pages: result.pages
+          total: actualTotalCount,
+          pages: actualPages
         }
       });
     } catch (error) {
