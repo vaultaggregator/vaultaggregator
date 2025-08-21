@@ -4,6 +4,15 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 # Recent Changes (August 21, 2025)
 
+**CRITICAL DATABASE MIGRATION COMPLETED:**
+- Fixed pools foreign key constraints - migrated from old "chains" table to "networks" table
+- Updated all 44 pools to use correct network IDs (43 for Ethereum, 1 for Base)
+- Updated all pools to use correct protocol IDs from protocols table
+- Fixed pools API route to join with protocols and networks tables (was using old platforms/chains)
+- All entities now properly linked with valid foreign key relationships
+- Protocol API now functional at /api/protocols/:chainId/:protocolId
+- Pools now correctly display platform (Morpho/Lido) and network (Ethereum/Base) information
+
 **NETWORK DETAIL PAGE ADDED:**
 - Created comprehensive network/chain details page at /network/:chainId route
 - Displays network logo, name, chainId, native token symbol and pricing data

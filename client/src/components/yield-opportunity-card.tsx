@@ -104,8 +104,9 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Protocol info - center aligned */}
             <Link 
-              href={`/protocols/${opportunity.chain.id}/${opportunity.platform.id}`}
+              href={`/protocol/${opportunity.chain.id}/${opportunity.platform.id}`}
               className="flex items-center justify-center space-x-2 flex-shrink-0 hover:text-primary transition-colors"
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
@@ -128,7 +129,11 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             
             {/* Network info - center aligned */}
             {showNetworkName && (
-              <div className="flex items-center justify-center space-x-2 flex-shrink-0 w-24">
+              <Link 
+                href={`/network/${opportunity.chain.id}`}
+                className="flex items-center justify-center space-x-2 flex-shrink-0 w-24 hover:text-primary transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div 
                   className="flex items-center justify-center flex-shrink-0"
                   data-testid={`badge-chain-${opportunity.id}`}
@@ -138,10 +143,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                     return <ChainIcon size={16} className="flex-shrink-0" />;
                   })()}
                 </div>
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-xs font-medium text-muted-foreground hover:text-primary">
                   {opportunity.chain.displayName || opportunity.chain.name}
                 </span>
-              </div>
+              </Link>
             )}
           </div>
 

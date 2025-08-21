@@ -8,6 +8,9 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  walletAddress: varchar("wallet_address", { length: 100 }).unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // API Keys table for external API access
@@ -74,38 +77,95 @@ export const errorLogs = pgTable("error_logs", {
   count: integer("count").notNull().default(1), // How many times this error occurred
 });
 
-export const chains = pgTable("chains", {
+// Networks table (formerly chains)
+export const networks = pgTable("networks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull().unique(),
+  chainId: varchar("chain_id", { length: 50 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
   displayName: text("display_name").notNull(),
+  logoUrl: text("logo_url"),
+  nativeToken: varchar("native_token", { length: 20 }),
+  website: text("website"),
+  twitter: text("twitter"),
+  discord: text("discord"),
+  github: text("github"),
+  docs: text("docs"),
+  explorer: text("explorer"),
+  rpcUrl: text("rpc_url"),
   color: text("color").notNull().default("#3B82F6"),
-  iconUrl: text("icon_url"),
+  isActive: boolean("is_active").notNull().default(true),
+  isTestnet: boolean("is_testnet").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Keep chains as alias for backwards compatibility
+export const chains = networks;
+
+// Protocols table (formerly platforms)
+export const protocols = pgTable("protocols", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  protocolId: varchar("protocol_id", { length: 100 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
+  displayName: text("display_name").notNull(),
+  networkId: varchar("network_id").references(() => networks.id),
+  chainId: varchar("chain_id", { length: 50 }).references(() => networks.chainId),
+  logoUrl: text("logo_url"),
+  website: text("website"),
+  twitter: text("twitter"),
+  discord: text("discord"),
+  github: text("github"),
+  docs: text("docs"),
+  slug: text("slug").notNull().unique(),
+  visitUrlTemplate: text("visit_url_template"),
+  showUnderlyingTokens: boolean("show_underlying_tokens").default(false),
+  dataRefreshIntervalMinutes: integer("data_refresh_interval_minutes").notNull().default(10),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const tokens = pgTable("tokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  symbol: text("symbol").notNull(),
-  name: text("name").notNull(),
-  address: text("address"),
-  chainId: varchar("chain_id").references(() => chains.id),
+  chainId: varchar("chain_id", { length: 50 }).notNull().references(() => networks.chainId),
+  address: varchar("address", { length: 100 }).notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  symbol: varchar("symbol", { length: 20 }).notNull(),
+  decimals: integer("decimals").notNull().default(18),
+  logoUrl: text("logo_url"),
+  networkId: varchar("network_id").references(() => networks.id),
   isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Keep platforms as alias for protocols for backwards compatibility
+export const platforms = protocols;
+
+// User token holdings (link between users and tokens)
+export const userTokens = pgTable("user_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  tokenId: varchar("token_id").notNull().references(() => tokens.id, { onDelete: "cascade" }),
+  balance: decimal("balance", { precision: 30, scale: 18 }).notNull().default(sql`0`),
+  usdValue: decimal("usd_value", { precision: 20, scale: 2 }).notNull().default(sql`0`),
+  lastUpdated: timestamp("last_updated").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const platforms = pgTable("platforms", {
+// User protocol interactions (link between users and protocols)
+export const userProtocols = pgTable("user_protocols", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull().unique(),
-  displayName: text("display_name").notNull(),
-  slug: text("slug").notNull().unique(),
-  logoUrl: text("logo_url"),
-  website: text("website"),
-  visitUrlTemplate: text("visit_url_template"), // Custom URL template with variables
-  showUnderlyingTokens: boolean("show_underlying_tokens").default(false), // Display underlying tokens on pool detail page
-  dataRefreshIntervalMinutes: integer("data_refresh_interval_minutes").notNull().default(10), // Platform-specific data refresh interval
-  isActive: boolean("is_active").notNull().default(true),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  protocolId: varchar("protocol_id").notNull().references(() => protocols.id, { onDelete: "cascade" }),
+  suppliedUsd: decimal("supplied_usd", { precision: 20, scale: 2 }).notNull().default(sql`0`),
+  borrowedUsd: decimal("borrowed_usd", { precision: 20, scale: 2 }).notNull().default(sql`0`),
+  stakedUsd: decimal("staked_usd", { precision: 20, scale: 2 }).notNull().default(sql`0`),
+  lpPositionsUsd: decimal("lp_positions_usd", { precision: 20, scale: 2 }).notNull().default(sql`0`),
+  rewardsEarnedUsd: decimal("rewards_earned_usd", { precision: 20, scale: 2 }).notNull().default(sql`0`),
+  lastInteraction: timestamp("last_interaction").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const categories = pgTable("categories", {
@@ -465,12 +525,7 @@ export const chainsRelations = relations(chains, ({ many }) => ({
   pools: many(pools),
 }));
 
-export const tokensRelations = relations(tokens, ({ one }) => ({
-  chain: one(chains, {
-    fields: [tokens.chainId],
-    references: [chains.id],
-  }),
-}));
+
 
 export const tokenInfoRelations = relations(tokenInfo, ({ many }) => ({
   pools: many(pools),
@@ -497,6 +552,64 @@ export const poolCategoriesRelations = relations(poolCategories, ({ one }) => ({
   category: one(categories, {
     fields: [poolCategories.categoryId],
     references: [categories.id],
+  }),
+}));
+
+// Define relations for the new tables
+export const usersRelations = relations(users, ({ many }) => ({
+  userTokens: many(userTokens),
+  userProtocols: many(userProtocols),
+  userAlerts: many(userAlerts),
+  poolReviews: many(poolReviews),
+  reviewVotes: many(reviewVotes),
+  strategies: many(strategies),
+  discussions: many(discussions),
+  discussionReplies: many(discussionReplies),
+  watchlists: many(watchlists),
+}));
+
+export const networksRelations = relations(networks, ({ many }) => ({
+  tokens: many(tokens),
+  protocols: many(protocols),
+  pools: many(pools),
+}));
+
+export const protocolsRelations = relations(protocols, ({ one, many }) => ({
+  network: one(networks, {
+    fields: [protocols.networkId],
+    references: [networks.id],
+  }),
+  userProtocols: many(userProtocols),
+  pools: many(pools),
+}));
+
+export const tokensRelations = relations(tokens, ({ one, many }) => ({
+  network: one(networks, {
+    fields: [tokens.networkId],
+    references: [networks.id],
+  }),
+  userTokens: many(userTokens),
+}));
+
+export const userTokensRelations = relations(userTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [userTokens.userId],
+    references: [users.id],
+  }),
+  token: one(tokens, {
+    fields: [userTokens.tokenId],
+    references: [tokens.id],
+  }),
+}));
+
+export const userProtocolsRelations = relations(userProtocols, ({ one }) => ({
+  user: one(users, {
+    fields: [userProtocols.userId],
+    references: [users.id],
+  }),
+  protocol: one(protocols, {
+    fields: [userProtocols.protocolId],
+    references: [protocols.id],
   }),
 }));
 
@@ -681,6 +794,38 @@ export const poolMetricsCurrentRelations = relations(poolMetricsCurrent, ({ one 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  walletAddress: true,
+});
+
+export const insertNetworkSchema = createInsertSchema(networks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProtocolSchema = createInsertSchema(protocols).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTokenSchema = createInsertSchema(tokens).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertUserTokenSchema = createInsertSchema(userTokens).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
+export const insertUserProtocolSchema = createInsertSchema(userProtocols).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastInteraction: true,
 });
 
 export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
@@ -701,11 +846,6 @@ export const insertApiSettingsSchema = createInsertSchema(apiSettings).omit({
 });
 
 export const insertChainSchema = createInsertSchema(chains).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertTokenSchema = createInsertSchema(tokens).omit({
   id: true,
   createdAt: true,
 });
@@ -875,6 +1015,18 @@ export const tokenHoldersRelations = relations(tokenHolders, ({ one }) => ({
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Network = typeof networks.$inferSelect;
+export type InsertNetwork = z.infer<typeof insertNetworkSchema>;
+
+export type Protocol = typeof protocols.$inferSelect;
+export type InsertProtocol = z.infer<typeof insertProtocolSchema>;
+
+export type UserToken = typeof userTokens.$inferSelect;
+export type InsertUserToken = z.infer<typeof insertUserTokenSchema>;
+
+export type UserProtocol = typeof userProtocols.$inferSelect;
+export type InsertUserProtocol = z.infer<typeof insertUserProtocolSchema>;
 
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type InsertApiKey = z.infer<typeof insertApiKeySchema>;

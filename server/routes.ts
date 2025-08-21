@@ -1,7 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, platforms, chains, tokenInfo, poolMetricsCurrent, categories, poolCategories } from "@shared/schema";
+import { insertPoolSchema, insertPlatformSchema, insertChainSchema, insertNoteSchema, insertUserSchema, insertApiKeySchema, pools, protocols, networks, tokenInfo, poolMetricsCurrent, categories, poolCategories } from "@shared/schema";
 import { z } from "zod";
 import crypto from "crypto";
 import { db } from "./db";
@@ -549,8 +549,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const poolsResults = await db
         .select()
         .from(pools)
-        .leftJoin(platforms, eq(pools.platformId, platforms.id))
-        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .leftJoin(protocols, eq(pools.platformId, protocols.id))
+        .leftJoin(networks, eq(pools.chainId, networks.id))
         .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
         .where(and(...whereConditions))
         .orderBy(desc(pools.apy))
@@ -593,17 +593,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...result.pools,
         pool_address: result.pools.poolAddress || null, // Include pool address for Etherscan links
         platform: {
-          id: result.platforms?.id || null,
-          name: result.platforms?.name || "Unknown",
-          displayName: result.platforms?.displayName || "Unknown",
-          logoUrl: result.platforms?.logoUrl || null,
-          website: result.platforms?.website || null
+          id: result.protocols?.id || null,
+          name: result.protocols?.name || "Unknown",
+          displayName: result.protocols?.displayName || "Unknown",
+          logoUrl: result.protocols?.logoUrl || null,
+          website: result.protocols?.website || null
         },
         chain: {
-          id: result.chains?.id || null,
-          name: result.chains?.name || "ethereum",
-          displayName: result.chains?.displayName || "Ethereum",
-          color: result.chains?.color || "#627EEA"
+          id: result.networks?.id || null,
+          name: result.networks?.name || "ethereum",
+          displayName: result.networks?.displayName || "Ethereum",
+          color: result.networks?.color || "#627EEA"
         },
         notes: [],
         categories: categoriesByPool[result.pools.id] || [],

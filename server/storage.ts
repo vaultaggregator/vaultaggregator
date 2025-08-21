@@ -590,7 +590,7 @@ export class DatabaseStorage implements IStorage {
     const poolsWithRelations: PoolWithRelations[] = results.map(result => ({
       ...result.pools,
       platform: result.platforms!,
-      chain: result.chains!,
+      chain: result.networks!,
       notes: [],
       categories: [],
       holdersCount: result.pool_metrics_current?.holdersCount || null,
@@ -694,7 +694,7 @@ export class DatabaseStorage implements IStorage {
         poolsMap.set(poolId, {
           ...result.pools,
           platform: result.platforms!,
-          chain: result.chains!,
+          chain: result.networks!,
           notes: result.notes ? [result.notes] : [],
         });
       } else {
@@ -733,7 +733,7 @@ export class DatabaseStorage implements IStorage {
         poolsMap.set(poolId, {
           ...result.pools,
           platform: result.platforms!,
-          chain: result.chains!,
+          chain: result.networks!,
           notes: result.notes ? [result.notes] : [],
           categories: result.categories ? [result.categories] : [],
           holdersCount: result.token_info?.holdersCount || null,
@@ -1606,7 +1606,7 @@ export class DatabaseStorage implements IStorage {
           pool: {
             ...result.pools,
             platform: result.platforms,
-            chain: result.chains
+            chain: result.networks
           }
         });
       }
@@ -1775,7 +1775,7 @@ export class DatabaseStorage implements IStorage {
           pool: {
             ...result.pools,
             platform: result.platforms,
-            chain: result.chains
+            chain: result.networks
           }
         });
       }

@@ -1,0 +1,102 @@
+Prompt for Replit
+
+I want to implement a proper database schema for my DeFi aggregator so that users, networks, protocols, and tokens only show entities that exist in my database. All relationships between them must be respected, and everything must link internally.
+
+Requirements:
+
+Database must have tables for users, tokens, protocols, networks.
+
+Use foreign keys to link them.
+
+On the frontend, display only entities present in my DB. No external placeholders.
+
+If something doesn’t exist, show a friendly “Not supported yet” message.
+
+On a user page:
+
+Token names link to /token/:chainId/:address.
+
+Protocol names link to /protocol/:chainId/:protocolId.
+
+Network names link to /network/:chainId.
+
+All pages must only fetch and render from my DB. No hardcoded values.
+
+Keep the same UI design as the rest of the site (Tailwind/shadcn dark theme, rounded cards).
+
+Add loading and error states.
+
+Suggested Schema (SQL style)
+-- Networks table
+CREATE TABLE networks (
+  id SERIAL PRIMARY KEY,
+  chain_id VARCHAR(50) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  logo_url TEXT,
+  native_token VARCHAR(20),
+  website TEXT,
+  twitter TEXT,
+  discord TEXT,
+  github TEXT,
+  docs TEXT
+);
+
+-- Protocols table
+CREATE TABLE protocols (
+  id SERIAL PRIMARY KEY,
+  chain_id VARCHAR(50) REFERENCES networks(chain_id),
+  protocol_id VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  logo_url TEXT,
+  website TEXT,
+  twitter TEXT,
+  discord TEXT,
+  github TEXT,
+  docs TEXT
+);
+
+-- Tokens table
+CREATE TABLE tokens (
+  id SERIAL PRIMARY KEY,
+  chain_id VARCHAR(50) REFERENCES networks(chain_id),
+  address VARCHAR(100) NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  symbol VARCHAR(20) NOT NULL,
+  decimals INT NOT NULL,
+  logo_url TEXT,
+  UNIQUE(chain_id, address)
+);
+
+-- Users table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  wallet_address VARCHAR(100) UNIQUE NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User token holdings (link between users and tokens)
+CREATE TABLE user_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  token_id INT REFERENCES tokens(id),
+  balance NUMERIC DEFAULT 0,
+  usd_value NUMERIC DEFAULT 0
+);
+
+-- User protocol interactions (link between users and protocols)
+CREATE TABLE user_protocols (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  protocol_id INT REFERENCES protocols(id),
+  supplied_usd NUMERIC DEFAULT 0,
+  borrowed_usd NUMERIC DEFAULT 0
+);
+
+
+This schema lets you:
+
+Only show tokens, protocols, and networks you store.
+
+Link them internally (user → token → protocol → network).
+
+Easily expand with more tables later (like vaults, APY history).

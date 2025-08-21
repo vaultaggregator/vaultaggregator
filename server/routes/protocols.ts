@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../db";
-import { platforms, pools, chains, poolHistoricalData } from "@shared/schema";
+import { protocols, pools, networks, poolHistoricalData } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 
 const router = Router();
@@ -12,30 +12,30 @@ router.get("/api/protocols/:chainId/:protocolId", async (req, res) => {
     
     console.log(`📊 Fetching protocol details for ${protocolId} on chain ${chainId}`);
 
-    // Get the chain info
-    const chain = await db
+    // Get the network info - search by chainId not by UUID id
+    const network = await db
       .select()
-      .from(chains)
-      .where(eq(chains.id, chainId))
+      .from(networks)
+      .where(eq(networks.chainId, chainId))
       .limit(1);
 
-    if (!chain || chain.length === 0) {
-      return res.status(404).json({ error: "Chain not found" });
+    if (!network || network.length === 0) {
+      return res.status(404).json({ error: "Network not found" });
     }
 
-    // Get the platform/protocol info
-    const platform = await db
+    // Get the protocol info - search by protocol_id not by UUID id
+    const protocol = await db
       .select()
-      .from(platforms)
-      .where(eq(platforms.id, protocolId))
+      .from(protocols)
+      .where(eq(protocols.protocolId, protocolId))
       .limit(1);
 
-    if (!platform || platform.length === 0) {
+    if (!protocol || protocol.length === 0) {
       return res.status(404).json({ error: "Protocol not found" });
     }
 
-    const protocolData = platform[0];
-    const chainData = chain[0];
+    const protocolData = protocol[0];
+    const networkData = network[0];
 
     // Get all pools for this protocol on this chain
     const protocolPools = await db
@@ -114,9 +114,9 @@ router.get("/api/protocols/:chainId/:protocolId", async (req, res) => {
       id: protocolData.id,
       name: protocolData.name,
       logo: protocolData.logoUrl,
-      chainName: chainData.name,
-      chainId: chainData.id,
-      description: `${protocolData.name} is a DeFi protocol operating on ${chainData.name} network.`,
+      chainName: networkData.name,
+      chainId: networkData.id,
+      description: `${protocolData.name} is a DeFi protocol operating on ${networkData.name} network.`,
       website: protocolData.website,
       tvl: totalTvl,
       userCount,
@@ -151,30 +151,30 @@ router.get("/api/protocols", async (req, res) => {
   try {
     const allProtocols = await db
       .select({
-        platform: platforms,
-        chain: chains,
+        protocol: protocols,
+        network: networks,
         poolCount: sql<number>`count(${pools.id})::int`,
         totalTvl: sql<number>`sum(${pools.tvl})::float`,
         avgApy: sql<number>`avg(${pools.apy})::float`,
       })
-      .from(platforms)
-      .leftJoin(pools, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
-      .groupBy(platforms.id, chains.id)
+      .from(protocols)
+      .leftJoin(pools, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id))
+      .groupBy(protocols.id, networks.id)
       .having(sql`count(${pools.id}) > 0`);
 
-    const protocols = allProtocols.map(row => ({
-      id: row.platform.id,
-      name: row.platform.name,
-      logo: row.platform.logoUrl,
-      chainId: row.chain?.id,
-      chainName: row.chain?.name,
+    const protocolsList = allProtocols.map(row => ({
+      id: row.protocol.id,
+      name: row.protocol.name,
+      logo: row.protocol.logoUrl,
+      chainId: row.network?.id,
+      chainName: row.network?.name,
       poolCount: row.poolCount || 0,
       tvl: row.totalTvl || 0,
       avgApy: row.avgApy || 0,
     }));
 
-    res.json(protocols);
+    res.json(protocolsList);
   } catch (error) {
     console.error("Error fetching protocols:", error);
     res.status(500).json({ 
