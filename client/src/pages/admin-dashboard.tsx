@@ -555,6 +555,14 @@ export default function AdminDashboard() {
                 Categories
               </Button>
               <Button 
+                onClick={() => navigate("/admin-tokens")} 
+                variant="outline" 
+                size="sm"
+                data-testid="button-tokens"
+              >
+                Tokens
+              </Button>
+              <Button 
                 onClick={() => navigate("/admin-api-keys")} 
                 variant="outline" 
                 size="sm"

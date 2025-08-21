@@ -268,19 +268,24 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(networks).where(eq(networks.isActive, true)).orderBy(networks.displayName);
   }
 
-  async createChain(chain: InsertChain): Promise<Chain> {
-    const [newChain] = await db.insert(chains).values(chain).returning();
+  async createChain(chain: InsertNetwork): Promise<Network> {
+    const [newChain] = await db.insert(networks).values(chain).returning();
     return newChain;
   }
 
-  async updateChain(id: string, chain: Partial<InsertChain>): Promise<Chain | undefined> {
-    const [updatedChain] = await db.update(chains).set(chain).where(eq(chains.id, id)).returning();
+  async updateChain(id: string, chain: Partial<InsertNetwork>): Promise<Network | undefined> {
+    const [updatedChain] = await db.update(networks).set(chain).where(eq(networks.id, id)).returning();
     return updatedChain || undefined;
   }
 
   async deleteChain(id: string): Promise<boolean> {
-    const result = await db.delete(chains).where(eq(chains.id, id));
+    const result = await db.delete(networks).where(eq(networks.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Add missing getChains method for compatibility
+  async getChains(): Promise<Network[]> {
+    return await this.getNetworks();
   }
 
   async getProtocols(): Promise<Protocol[]> {
@@ -291,32 +296,40 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(protocols).where(eq(protocols.isActive, true)).orderBy(protocols.displayName);
   }
 
-  async getPlatformsWithVisibility(): Promise<(Platform & { hasVisiblePools: boolean })[]> {
+  async getPlatformsWithVisibility(): Promise<(Protocol & { hasVisiblePools: boolean })[]> {
     const result = await db
       .select({
-        id: platforms.id,
-        name: platforms.name,
-        displayName: platforms.displayName,
-        slug: platforms.slug,
-        logoUrl: platforms.logoUrl,
-        website: platforms.website,
-        visitUrlTemplate: platforms.visitUrlTemplate,
-        showUnderlyingTokens: platforms.showUnderlyingTokens,
-        dataRefreshIntervalMinutes: platforms.dataRefreshIntervalMinutes,
-        isActive: platforms.isActive,
-        createdAt: platforms.createdAt,
+        id: protocols.id,
+        protocolId: protocols.protocolId,
+        name: protocols.name,
+        displayName: protocols.displayName,
+        networkId: protocols.networkId,
+        chainId: protocols.chainId,
+        logoUrl: protocols.logoUrl,
+        website: protocols.website,
+        twitter: protocols.twitter,
+        discord: protocols.discord,
+        github: protocols.github,
+        docs: protocols.docs,
+        slug: protocols.slug,
+        visitUrlTemplate: protocols.visitUrlTemplate,
+        showUnderlyingTokens: protocols.showUnderlyingTokens,
+        dataRefreshIntervalMinutes: protocols.dataRefreshIntervalMinutes,
+        isActive: protocols.isActive,
+        createdAt: protocols.createdAt,
+        updatedAt: protocols.updatedAt,
         hasVisiblePools: sql`CASE WHEN COUNT(${pools.id}) > 0 THEN true ELSE false END`.as('hasVisiblePools')
       })
-      .from(platforms)
+      .from(protocols)
       .leftJoin(pools, and(
-        eq(platforms.id, pools.platformId),
+        eq(protocols.id, pools.platformId),
         eq(pools.isVisible, true)
       ))
-      .where(eq(platforms.isActive, true))
-      .groupBy(platforms.id)
+      .where(eq(protocols.isActive, true))
+      .groupBy(protocols.id)
       .orderBy(
-        sql`CASE WHEN COUNT(${pools.id}) > 0 THEN 0 ELSE 1 END`, // Platforms with visible pools first
-        platforms.displayName
+        sql`CASE WHEN COUNT(${pools.id}) > 0 THEN 0 ELSE 1 END`, // Protocols with visible pools first
+        protocols.displayName
       );
 
     return result.map(platform => ({
@@ -325,28 +338,28 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async getPlatformByName(name: string): Promise<Platform | undefined> {
-    const [platform] = await db.select().from(platforms).where(eq(platforms.name, name));
+  async getPlatformByName(name: string): Promise<Protocol | undefined> {
+    const [platform] = await db.select().from(protocols).where(eq(protocols.name, name));
     return platform || undefined;
   }
 
-  async getPlatformById(id: string): Promise<Platform | undefined> {
-    const [platform] = await db.select().from(platforms).where(eq(platforms.id, id));
+  async getPlatformById(id: string): Promise<Protocol | undefined> {
+    const [platform] = await db.select().from(protocols).where(eq(protocols.id, id));
     return platform || undefined;
   }
 
-  async getPlatformBySlug(slug: string): Promise<Platform | undefined> {
-    const [platform] = await db.select().from(platforms).where(eq(platforms.slug, slug));
+  async getPlatformBySlug(slug: string): Promise<Protocol | undefined> {
+    const [platform] = await db.select().from(protocols).where(eq(protocols.slug, slug));
     return platform || undefined;
   }
 
-  async getChainByName(name: string): Promise<Chain | undefined> {
-    const [chain] = await db.select().from(chains).where(eq(chains.name, name));
+  async getChainByName(name: string): Promise<Network | undefined> {
+    const [chain] = await db.select().from(networks).where(eq(networks.name, name));
     return chain || undefined;
   }
 
-  async getChainById(id: string): Promise<Chain | undefined> {
-    const [chain] = await db.select().from(chains).where(eq(chains.id, id));
+  async getChainById(id: string): Promise<Network | undefined> {
+    const [chain] = await db.select().from(networks).where(eq(networks.id, id));
     return chain || undefined;
   }
 
@@ -367,22 +380,22 @@ export class DatabaseStorage implements IStorage {
     return pool || undefined;
   }
 
-  async createPlatform(platform: InsertPlatform): Promise<Platform> {
+  async createPlatform(platform: InsertProtocol): Promise<Protocol> {
     const platformData = {
       ...platform,
       slug: platform.slug || platform.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
     };
-    const [newPlatform] = await db.insert(platforms).values(platformData).returning();
+    const [newPlatform] = await db.insert(protocols).values(platformData).returning();
     return newPlatform;
   }
 
-  async updatePlatform(id: string, platform: Partial<InsertPlatform>): Promise<Platform | undefined> {
-    const [updatedPlatform] = await db.update(platforms).set(platform).where(eq(platforms.id, id)).returning();
+  async updatePlatform(id: string, platform: Partial<InsertProtocol>): Promise<Protocol | undefined> {
+    const [updatedPlatform] = await db.update(protocols).set(platform).where(eq(protocols.id, id)).returning();
     return updatedPlatform || undefined;
   }
 
   async deletePlatform(id: string): Promise<boolean> {
-    const result = await db.delete(platforms).where(eq(platforms.id, id));
+    const result = await db.delete(protocols).where(eq(protocols.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
@@ -615,15 +628,15 @@ export class DatabaseStorage implements IStorage {
     let query = db
       .select()
       .from(pools)
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .leftJoin(protocols, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id))
       .leftJoin(notes, eq(pools.id, notes.poolId));
 
     let countQuery = db
       .select({ count: sql<number>`count(distinct ${pools.id})` })
       .from(pools)
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id));
+      .leftJoin(protocols, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id));
 
     const conditions = [eq(pools.isActive, true), isNull(pools.deletedAt)];
 
@@ -637,7 +650,7 @@ export class DatabaseStorage implements IStorage {
 
     if (search) {
       const searchCondition = or(
-        ilike(platforms.displayName, `%${search}%`),
+        ilike(protocols.displayName, `%${search}%`),
         ilike(pools.tokenPair, `%${search}%`),
         sql`${pools.rawData}::text ILIKE ${'%' + search + '%'}`
       )!;
@@ -865,31 +878,41 @@ export class DatabaseStorage implements IStorage {
         lastUpdated: pools.lastUpdated,
         createdAt: pools.createdAt,
         platform: {
-          id: platforms.id,
-          name: platforms.name,
-          displayName: platforms.displayName,
-          slug: platforms.slug,
-          logoUrl: platforms.logoUrl,
-          website: platforms.website,
-          visitUrlTemplate: platforms.visitUrlTemplate,
-          showUnderlyingTokens: platforms.showUnderlyingTokens,
-          dataRefreshIntervalMinutes: platforms.dataRefreshIntervalMinutes,
-          isActive: platforms.isActive,
-          createdAt: platforms.createdAt,
+          id: protocols.id,
+          protocolId: protocols.protocolId,
+          name: protocols.name,
+          displayName: protocols.displayName,
+          networkId: protocols.networkId,
+          chainId: protocols.chainId,
+          logoUrl: protocols.logoUrl,
+          website: protocols.website,
+          twitter: protocols.twitter,
+          discord: protocols.discord,
+          github: protocols.github,
+          docs: protocols.docs,
+          slug: protocols.slug,
+          visitUrlTemplate: protocols.visitUrlTemplate,
+          showUnderlyingTokens: protocols.showUnderlyingTokens,
+          dataRefreshIntervalMinutes: protocols.dataRefreshIntervalMinutes,
+          isActive: protocols.isActive,
+          createdAt: protocols.createdAt,
+          updatedAt: protocols.updatedAt,
         },
         chain: {
-          id: chains.id,
-          name: chains.name,
-          displayName: chains.displayName,
-          color: chains.color,
-          iconUrl: chains.iconUrl,
-          isActive: chains.isActive,
-          createdAt: chains.createdAt,
+          id: networks.id,
+          chainId: networks.chainId,
+          name: networks.name,
+          displayName: networks.displayName,
+          color: networks.color,
+          iconUrl: networks.iconUrl,
+          isActive: networks.isActive,
+          createdAt: networks.createdAt,
+          updatedAt: networks.updatedAt,
         }
       })
       .from(pools)
-      .leftJoin(platforms, eq(pools.platformId, platforms.id))
-      .leftJoin(chains, eq(pools.chainId, chains.id))
+      .leftJoin(protocols, eq(pools.platformId, protocols.id))
+      .leftJoin(networks, eq(pools.chainId, networks.id))
       .where(isNotNull(pools.deletedAt))
       .orderBy(desc(pools.deletedAt));
 
