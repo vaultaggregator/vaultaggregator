@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, ArrowUpRight, ArrowDownRight, Activity, Clock, DollarSign, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { AddressLink } from "@/components/entity-links";
 import {
   Select,
   SelectContent,
@@ -357,14 +358,10 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
                   </div>
 
                   <div className="col-span-2">
-                    <button
-                      onClick={() => openEtherscan(transaction.user)}
-                      className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex items-center gap-1"
-                      title={`View ${transaction.user} on ${chainName === 'base' ? 'Basescan' : 'Etherscan'}`}
-                    >
-                      {formatAddress(transaction.user)}
-                      <ExternalLink className="h-3 w-3" />
-                    </button>
+                    <AddressLink 
+                      address={transaction.user}
+                      className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                    />
                   </div>
 
                   <div className="col-span-2">
