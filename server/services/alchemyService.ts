@@ -690,7 +690,17 @@ export class AlchemyService {
   
   private async _fetchTokenPrice(tokenAddress: string, network?: string, priceKey?: string): Promise<number> {
     try {
-      // PRIORITY 1: Check our database for stored price first
+      // PRIORITY 1: Check static cache first (no API call needed)
+      const cachedToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
+      if (cachedToken) {
+        // All USD vault tokens should be priced at $1
+        if (cachedToken.symbol?.includes('USD') || cachedToken.name?.includes('USD')) {
+          console.log(`💵 Using cached price for ${cachedToken.symbol}: $1.00`);
+          return 1.0;
+        }
+      }
+      
+      // PRIORITY 2: Check our database for stored price
       try {
         const { storage } = await import('../storage');
         const storedToken = await storage.getTokenInfoByAddress(tokenAddress);
@@ -718,7 +728,7 @@ export class AlchemyService {
       // This is a workaround since Alchemy doesn't have direct price API
       // We'll use token balance comparisons and known prices
       
-      // Check if it's a known stablecoin or vault token
+      // Check if it's a known stablecoin
       const stablecoins = [
         '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', // USDC
         '0xdac17f958d2ee523a2206206994597c13d831ec7', // USDT
@@ -726,14 +736,7 @@ export class AlchemyService {
         '0x4fabb145d64652a948d72533023f6e7a623c7c53', // BUSD
       ];
       
-      // Check if it's a known vault token that tracks USD
-      const vaultTokens = Object.keys(AlchemyService.COMMON_TOKENS)
-        .filter(addr => {
-          const token = AlchemyService.COMMON_TOKENS[addr];
-          return token.symbol?.includes('USD') || token.name?.includes('USD');
-        });
-      
-      if (stablecoins.includes(tokenAddress.toLowerCase()) || vaultTokens.includes(tokenAddress.toLowerCase())) {
+      if (stablecoins.includes(tokenAddress.toLowerCase())) {
         return 1.0;
       }
       
@@ -756,15 +759,6 @@ export class AlchemyService {
       if (metadata.symbol?.includes('USD')) {
         // Most USD vault tokens track close to $1
         return 1.0;
-      }
-      
-      // Check if it's in our static cache (all vault tokens)
-      if (AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()]) {
-        // It's a known token in our cache, use $1 for USD tokens
-        const cachedToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
-        if (cachedToken.symbol?.includes('USD') || cachedToken.name?.includes('USD')) {
-          return 1.0;
-        }
       }
       
       // Default to $1 for unknown tokens
