@@ -43,6 +43,36 @@ export class AlchemyService {
     base?: { number: number; timestamp: number };
   } = {};
   
+  // Request deduplication - prevent multiple simultaneous requests for same data
+  private pendingMetadataRequests = new Map<string, Promise<any>>();
+  private pendingPriceRequests = new Map<string, Promise<number>>();
+  
+  // Static cache of frequently requested tokens to eliminate API calls
+  private static readonly COMMON_TOKENS: Record<string, any> = {
+    // Major stablecoins
+    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': { // USDC
+      name: 'USD Coin', symbol: 'USDC', decimals: 6,
+      logo: 'https://static.alchemyapi.io/images/assets/3408.png'
+    },
+    '0xdac17f958d2ee523a2206206994597c13d831ec7': { // USDT  
+      name: 'Tether USDt', symbol: 'USDT', decimals: 6,
+      logo: 'https://static.alchemyapi.io/images/assets/825.png'
+    },
+    '0x6b175474e89094c44da98b954eedeac495271d0f': { // DAI
+      name: 'Dai Stablecoin', symbol: 'DAI', decimals: 18,
+      logo: 'https://static.alchemyapi.io/images/assets/4943.png'
+    },
+    // Major tokens
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': { // WETH
+      name: 'Wrapped Ether', symbol: 'WETH', decimals: 18,
+      logo: 'https://static.alchemyapi.io/images/assets/2396.png'
+    },
+    '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': { // stETH
+      name: 'Liquid staked Ether 2.0', symbol: 'stETH', decimals: 18,
+      logo: 'https://static.alchemyapi.io/images/assets/8085.png'
+    }
+  };
+  
   // Cache durations
   private readonly METADATA_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours for metadata
   private readonly TRANSFER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes for transfers
@@ -307,10 +337,41 @@ export class AlchemyService {
       return { name: 'Unknown', symbol: 'N/A', decimals: 18 };
     }
     
+    // PRIORITY 1: Check static cache for common tokens (eliminates API calls entirely)
+    const commonToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
+    if (commonToken) {
+      console.log(`⚡ Using static cache for common token ${tokenAddress}: ${commonToken.symbol}`);
+      return commonToken;
+    }
+    
+    // PRIORITY 2: Check our database storage to avoid unnecessary API calls
+    try {
+      const { storage } = await import('../storage');
+      const storedToken = await storage.getTokenInfoByAddress(tokenAddress);
+      if (storedToken) {
+        console.log(`🗄️ Using stored token metadata for ${tokenAddress}: ${storedToken.symbol}`);
+        return {
+          name: storedToken.name,
+          symbol: storedToken.symbol,
+          decimals: storedToken.decimals || 18,
+          logo: storedToken.logoUrl
+        };
+      }
+    } catch (error) {
+      console.log(`⚠️ Could not check stored token data for ${tokenAddress}:`, error);
+    }
+    
     // Create cache key
     const cacheKey = `${tokenAddress.toLowerCase()}-${(network || 'ethereum').toLowerCase()}`;
     
-    // Check cache first
+    // Check if there's already a pending request for this token
+    const pendingRequest = this.pendingMetadataRequests.get(cacheKey);
+    if (pendingRequest) {
+      console.log(`🔄 Waiting for existing metadata request for ${tokenAddress}`);
+      return await pendingRequest;
+    }
+    
+    // Check cache second
     const cached = this.tokenMetadataCache.get(cacheKey);
     if (cached) {
       const age = Date.now() - cached.timestamp;
@@ -320,6 +381,20 @@ export class AlchemyService {
       }
     }
     
+    // Create and store the promise to prevent duplicate requests
+    const requestPromise = this._fetchTokenMetadata(tokenAddress, network, cacheKey);
+    this.pendingMetadataRequests.set(cacheKey, requestPromise);
+    
+    try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      // Clean up pending request
+      this.pendingMetadataRequests.delete(cacheKey);
+    }
+  }
+  
+  private async _fetchTokenMetadata(tokenAddress: string, network?: string, cacheKey?: string) {
     try {
       const client = this.getAlchemyClient(network);
       if (!client) {
@@ -332,10 +407,12 @@ export class AlchemyService {
       const metadata = await client.core.getTokenMetadata(tokenAddress);
       
       // Cache the result
-      this.tokenMetadataCache.set(cacheKey, {
-        data: metadata,
-        timestamp: Date.now()
-      });
+      if (cacheKey) {
+        this.tokenMetadataCache.set(cacheKey, {
+          data: metadata,
+          timestamp: Date.now()
+        });
+      }
       
       // Log cache size for monitoring
       if (this.tokenMetadataCache.size % 10 === 0) {
@@ -347,6 +424,7 @@ export class AlchemyService {
       console.error(`Error fetching token metadata for ${tokenAddress}:`, error);
       
       // If we have stale cache data, use it as fallback
+      const cached = cacheKey ? this.tokenMetadataCache.get(cacheKey) : null;
       if (cached) {
         console.log(`⚠️ Using stale cached metadata for ${tokenAddress} due to API error`);
         return cached.data;
@@ -498,14 +576,53 @@ export class AlchemyService {
       return 1.0;
     }
     
+    // Create cache key for price requests
+    const priceKey = `${tokenAddress.toLowerCase()}-${(network || 'ethereum').toLowerCase()}`;
+    
+    // Check if there's already a pending price request
+    const pendingRequest = this.pendingPriceRequests.get(priceKey);
+    if (pendingRequest) {
+      console.log(`🔄 Waiting for existing price request for ${tokenAddress}`);
+      return await pendingRequest;
+    }
+    
+    // Create and store the promise to prevent duplicate requests
+    const requestPromise = this._fetchTokenPrice(tokenAddress, network, priceKey);
+    this.pendingPriceRequests.set(priceKey, requestPromise);
+    
     try {
+      const result = await requestPromise;
+      return result;
+    } finally {
+      // Clean up pending request
+      this.pendingPriceRequests.delete(priceKey);
+    }
+  }
+  
+  private async _fetchTokenPrice(tokenAddress: string, network?: string, priceKey?: string): Promise<number> {
+    try {
+      // PRIORITY 1: Check our database for stored price first
+      try {
+        const { storage } = await import('../storage');
+        const storedToken = await storage.getTokenInfoByAddress(tokenAddress);
+        if (storedToken?.priceUsd) {
+          const storedPrice = parseFloat(storedToken.priceUsd);
+          if (storedPrice > 0) {
+            console.log(`🗄️ Using stored token price for ${tokenAddress}: $${storedPrice}`);
+            return storedPrice;
+          }
+        }
+      } catch (error) {
+        console.log(`⚠️ Could not check stored price for ${tokenAddress}:`, error);
+      }
+      
       const client = this.getAlchemyClient(network);
       if (!client) {
         console.log('⚠️ Could not get Alchemy client - using default price');
         return 1.0;
       }
       
-      // First try to get token metadata which may include price data (using cached version)
+      // Try to get token metadata which may include price data (using cached version)
       const metadata = await this.getTokenMetadata(tokenAddress, network);
       
       // Try to get token balances to compute price from popular stablecoins

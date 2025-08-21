@@ -202,7 +202,7 @@ export default function AdminSystemEnhanced() {
   // New API services query
   const { data: apiHealth, isLoading: apiLoading, refetch: refetchApis } = useQuery<ApiHealthResponse>({
     queryKey: ["/api/admin/system/apis"],
-    refetchInterval: 15000, // Refresh every 15 seconds
+    refetchInterval: 60000, // Refresh every 60 seconds (reduced from 15s for cost optimization)
   });
 
   // Add real-time data collection for charts
