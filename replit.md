@@ -8,6 +8,11 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 - **Database Architecture Update**: Implemented separate `chains` and `networks` tables with proper foreign key relationships for token management
 - **API Endpoint Enhancement**: Added `/api/admin/chains` endpoint to provide correct chain data for token creation
 - **Schema Improvements**: Fixed token schema by removing non-existent fields and ensuring proper type definitions
+- **Human-Readable URLs**: Implemented user-friendly URL patterns:
+  - Protocol URLs: `/protocol/lido` instead of `/protocol/{uuid}/{uuid}`
+  - Network URLs: `/network/ethereum` instead of `/network/{uuid}`
+  - Token URLs: `/token/ethereum/{address}` instead of `/token/{uuid}/{address}`
+  - All entity links now use names/slugs for better SEO and user experience
 
 # User Preferences
 

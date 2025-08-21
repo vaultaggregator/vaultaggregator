@@ -52,10 +52,10 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/risk-calculation" component={RiskCalculation} />
       <Route path="/profile/:address" component={ProfilePage} />
-      <Route path="/protocols/:chainId/:protocolId" component={ProtocolDetailPage} />
-      <Route path="/protocol/:chainId/:protocolId" component={ProtocolDetailPage} />
-      <Route path="/token/:chainId/:tokenAddress" component={TokenDetail} />
-      <Route path="/network/:chainId" component={NetworkDetail} />
+      <Route path="/protocols/:slug" component={ProtocolDetailPage} />
+      <Route path="/protocol/:slug" component={ProtocolDetailPage} />
+      <Route path="/token/:chainName/:tokenAddress" component={TokenDetail} />
+      <Route path="/network/:name" component={NetworkDetail} />
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />

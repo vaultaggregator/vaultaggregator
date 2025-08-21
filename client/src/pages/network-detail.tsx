@@ -72,19 +72,19 @@ interface NetworkData {
 }
 
 export default function NetworkDetail() {
-  const { chainId } = useParams() as { chainId: string };
+  const { name } = useParams() as { name: string };
   const [copiedRpc, setCopiedRpc] = useState(false);
 
   const { data: networkData, isLoading, error } = useQuery<NetworkData>({
-    queryKey: ['/api/networks', chainId],
+    queryKey: ['/api/networks', name],
     queryFn: async () => {
-      const response = await fetch(`/api/networks/${chainId}`);
+      const response = await fetch(`/api/networks/${name}`);
       if (!response.ok) {
         throw new Error('Failed to fetch network data');
       }
       return response.json();
     },
-    enabled: !!chainId,
+    enabled: !!name,
     staleTime: 60000, // 1 minute
     refetchInterval: 60000, // Refetch every minute
   });

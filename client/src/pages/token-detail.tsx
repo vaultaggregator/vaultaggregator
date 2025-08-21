@@ -54,19 +54,19 @@ interface TokenData {
 }
 
 export default function TokenDetail() {
-  const { chainId, tokenAddress } = useParams() as { chainId: string; tokenAddress: string };
+  const { chainName, tokenAddress } = useParams() as { chainName: string; tokenAddress: string };
   const [copiedAddress, setCopiedAddress] = useState(false);
 
   const { data: tokenData, isLoading, error } = useQuery<TokenData>({
-    queryKey: ['/api/tokens', chainId, tokenAddress],
+    queryKey: ['/api/tokens', chainName, tokenAddress],
     queryFn: async () => {
-      const response = await fetch(`/api/tokens/${chainId}/${tokenAddress}`);
+      const response = await fetch(`/api/tokens/${chainName}/${tokenAddress}`);
       if (!response.ok) {
         throw new Error('Failed to fetch token data');
       }
       return response.json();
     },
-    enabled: !!chainId && !!tokenAddress,
+    enabled: !!chainName && !!tokenAddress,
     staleTime: 60000, // 1 minute
     refetchInterval: 60000, // Refetch every minute
   });

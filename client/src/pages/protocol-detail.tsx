@@ -77,11 +77,11 @@ interface ProtocolData {
 }
 
 export function ProtocolDetailPage() {
-  const { chainId, protocolId } = useParams();
+  const { slug } = useParams();
 
   const { data: protocol, isLoading, error } = useQuery<ProtocolData>({
-    queryKey: [`/api/protocols/${chainId}/${protocolId}`],
-    enabled: !!chainId && !!protocolId,
+    queryKey: [`/api/protocols/${slug}`],
+    enabled: !!slug,
   });
 
   if (isLoading) {

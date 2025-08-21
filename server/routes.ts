@@ -66,13 +66,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const protocolRoutes = (await import("./routes/protocols")).default;
   app.use(protocolRoutes);
 
+  // Add new protocol route for slug-based URLs
+  app.get('/api/protocols/:slug', async (req, res) => {
+    try {
+      const { slug } = req.params;
+      
+      // Query protocol by slug
+      const protocol = await db.select()
+        .from(protocols)
+        .where(eq(protocols.slug, slug))
+        .limit(1);
+      
+      if (!protocol || protocol.length === 0) {
+        return res.status(404).json({ message: "Protocol not found" });
+      }
+      
+      // Return basic protocol data (you can expand this as needed)
+      const protocolData = protocol[0];
+      res.json({
+        id: protocolData.id,
+        name: protocolData.name,
+        slug: protocolData.slug,
+        displayName: protocolData.displayName,
+        logo: protocolData.logoUrl,
+        website: protocolData.website,
+        chainName: protocolData.chainId || 'ethereum',
+        chainId: protocolData.chainId,
+        description: `${protocolData.displayName || protocolData.name} is a DeFi protocol operating on the blockchain.`,
+        tvl: 0, // These would need to be fetched from pools
+        userCount: 0,
+        assets: [],
+        markets: [],
+        topHolders: []
+      });
+    } catch (error) {
+      console.error("Error fetching protocol by slug:", error);
+      res.status(500).json({ message: "Failed to fetch protocol" });
+    }
+  });
+
   // Import and register token routes
   const { getTokenDetails } = await import("./routes/tokens");
-  app.get('/api/tokens/:chainId/:tokenAddress', getTokenDetails);
+  
+  // Keep old endpoint for backward compatibility
+  app.get('/api/tokens/:chainId/:tokenAddress', async (req, res, next) => {
+    const { chainId } = req.params;
+    // If chainId looks like a UUID, use the old handler
+    if (chainId.includes('-')) {
+      return getTokenDetails(req, res);
+    }
+    // Otherwise fall through to the new handler
+    next();
+  });
+  
+  // New token route for name-based URLs
+  app.get('/api/tokens/:chainName/:tokenAddress', async (req, res) => {
+    try {
+      const { chainName, tokenAddress } = req.params;
+      
+      // First get the network by name
+      const network = await db.select()
+        .from(networks)
+        .where(eq(networks.name, chainName.toLowerCase()))
+        .limit(1);
+      
+      if (!network || network.length === 0) {
+        return res.status(404).json({ message: "Network not found" });
+      }
+      
+      // Create a new request object with the correct params
+      const newReq = Object.assign({}, req, {
+        params: { chainId: network[0].id, tokenAddress }
+      });
+      
+      return getTokenDetails(newReq as any, res);
+    } catch (error) {
+      console.error("Error fetching token by chain name:", error);
+      res.status(500).json({ message: "Failed to fetch token" });
+    }
+  });
 
-  // Import and register network routes
+  // Import and register network routes  
   const { getNetworkDetails } = await import("./routes/networks");
-  app.get('/api/networks/:chainId', getNetworkDetails);
+  
+  // Keep old endpoint for backward compatibility
+  app.get('/api/networks/:identifier', async (req, res) => {
+    try {
+      const { identifier } = req.params;
+      
+      // Check if it's a UUID (old format) or name (new format)
+      const isUuid = identifier.includes('-');
+      
+      if (isUuid) {
+        // Use the old handler
+        const newReq = Object.assign({}, req, {
+          params: { chainId: identifier }
+        });
+        return getNetworkDetails(newReq as any, res);
+      } else {
+        // Query by name for new format
+        const network = await db.select()
+          .from(networks)
+          .where(eq(networks.name, identifier.toLowerCase()))
+          .limit(1);
+        
+        if (!network || network.length === 0) {
+          return res.status(404).json({ message: "Network not found" });
+        }
+        
+        // Use the existing handler with the found ID
+        const newReq = Object.assign({}, req, {
+          params: { chainId: network[0].id }
+        });
+        return getNetworkDetails(newReq as any, res);
+      }
+    } catch (error) {
+      console.error("Error fetching network:", error);
+      res.status(500).json({ message: "Failed to fetch network" });
+    }
+  });
 
   // Import and register admin error management routes will be added later after requireAuth is defined
 

@@ -26,9 +26,10 @@ interface ProtocolLinkProps {
   protocol: {
     id: string;
     name: string;
+    slug?: string;
     displayName?: string;
   };
-  chain: {
+  chain?: {
     id: string;
     name: string;
   };
@@ -38,7 +39,9 @@ interface ProtocolLinkProps {
 
 export function ProtocolLink({ protocol, chain, className, children }: ProtocolLinkProps) {
   const displayText = children || protocol.displayName || protocol.name;
-  const href = `/protocol/${chain.id}/${protocol.id}`;
+  // Use slug if available, otherwise use name
+  const protocolSlug = protocol.slug || protocol.name.toLowerCase().replace(/\s+/g, '-');
+  const href = `/protocol/${protocolSlug}`;
   const inClickableContainer = useInClickableContainer();
   
   if (inClickableContainer) {
@@ -71,7 +74,9 @@ interface NetworkLinkProps {
 
 export function NetworkLink({ network, className, children }: NetworkLinkProps) {
   const displayText = children || network.displayName || network.name;
-  const href = `/network/${network.id}`;
+  // Use network name in URL (lowercase)
+  const networkName = network.name.toLowerCase();
+  const href = `/network/${networkName}`;
   const inClickableContainer = useInClickableContainer();
   
   if (inClickableContainer) {
@@ -108,7 +113,9 @@ interface TokenLinkProps {
 
 export function TokenLink({ token, chain, className, children }: TokenLinkProps) {
   const displayText = children || token.symbol || token.name || "Token";
-  const href = `/token/${chain.id}/${token.address}`;
+  // Use chain name in URL (lowercase)
+  const chainName = chain.name.toLowerCase();
+  const href = `/token/${chainName}/${token.address.toLowerCase()}`;
   const inClickableContainer = useInClickableContainer();
   
   if (inClickableContainer) {
