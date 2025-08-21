@@ -173,4 +173,29 @@ export class ApiRegistrationService {
       return false;
     }
   }
+
+  /**
+   * Initialize API services on server startup
+   * This ensures all configured APIs are synced to the database automatically
+   */
+  static async initializeApiServices(): Promise<void> {
+    try {
+      console.log('🔄 Initializing API services from configuration...');
+      const result = await this.syncApiServices();
+      
+      if (result.added.length > 0) {
+        console.log(`✅ New APIs registered: ${result.added.join(', ')}`);
+      }
+      if (result.updated.length > 0) {
+        console.log(`🔄 APIs updated: ${result.updated.join(', ')}`);
+      }
+      if (result.errors.length > 0) {
+        console.log(`⚠️  API sync errors: ${result.errors.join(', ')}`);
+      }
+      
+      console.log('✅ API services initialization complete');
+    } catch (error) {
+      console.error('❌ Error initializing API services:', error);
+    }
+  }
 }

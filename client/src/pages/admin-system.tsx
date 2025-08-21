@@ -119,6 +119,30 @@ interface ErrorRates {
   critical: number;
 }
 
+interface ApiService {
+  id: string;
+  serviceName: string;
+  displayName: string;
+  description: string;
+  baseUrl: string;
+  category: string;
+  isEnabled: boolean;
+  status: string;
+  responseTime?: number;
+  lastCheck?: string;
+  rateLimitRpm: number;
+  disabledReason?: string;
+  priority: number;
+}
+
+interface ApiHealthResponse {
+  apis: ApiService[];
+  totalCount: number;
+  enabledCount: number;
+  healthyCount: number;
+  lastChecked: string;
+}
+
 interface ApiHealthCheck {
   status: 'up' | 'down' | 'warning';
   responseTime?: number;
@@ -175,6 +199,12 @@ export default function AdminSystemEnhanced() {
     refetchInterval: 60000, // Refresh every minute
   });
 
+  // New API services query
+  const { data: apiHealth, isLoading: apiLoading, refetch: refetchApis } = useQuery<ApiHealthResponse>({
+    queryKey: ["/api/admin/system/apis"],
+    refetchInterval: 15000, // Refresh every 15 seconds
+  });
+
   // Add real-time data collection for charts
   useEffect(() => {
     if (health && performance) {
@@ -219,6 +249,33 @@ export default function AdminSystemEnhanced() {
         variant: "destructive",
       });
     },
+  });
+
+  // API sync mutation
+  const syncApisMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/admin/system/sync-apis", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to sync APIs');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/system/apis"] });
+      refetchApis();
+      toast({
+        title: "Success",
+        description: data.message || "API services synchronized successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to sync API services",
+        variant: "destructive",
+      });
+    }
   });
 
   const typedHealth = health as HealthData | undefined;
@@ -518,9 +575,113 @@ export default function AdminSystemEnhanced() {
           </TabsContent>
 
           <TabsContent value="apis" className="space-y-6">
+            {/* API Services Header with Sync Button */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">API Services Status</h3>
+                <p className="text-sm text-muted-foreground">
+                  {apiHealth ? `${apiHealth.totalCount} total services, ${apiHealth.enabledCount} enabled, ${apiHealth.healthyCount} healthy` : 'Loading API services...'}
+                </p>
+              </div>
+              <Button 
+                onClick={() => syncApisMutation.mutate()}
+                disabled={syncApisMutation.isPending}
+                className="flex items-center gap-2"
+                data-testid="button-sync-apis"
+              >
+                <RefreshCw className={`h-4 w-4 ${syncApisMutation.isPending ? 'animate-spin' : ''}`} />
+                {syncApisMutation.isPending ? 'Syncing...' : 'Sync APIs'}
+              </Button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {typedHealth?.apiHealth && Object.entries(typedHealth.apiHealth).map(([key, api]) => (
-                <Card key={key} className="relative overflow-hidden" data-testid={`card-api-detail-${key}`}>
+              {apiLoading && (
+                <div className="col-span-full flex items-center justify-center py-8">
+                  <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-muted-foreground">Loading API services...</span>
+                </div>
+              )}
+              
+              {apiHealth?.apis && apiHealth.apis.length > 0 ? (
+                apiHealth.apis.map((api) => (
+                  <Card key={api.id} className="relative overflow-hidden" data-testid={`card-api-${api.serviceName}`}>
+                    <div className={`absolute top-0 left-0 w-full h-1 ${
+                      api.status === 'healthy' || api.status === 'up' ? 'bg-green-500' : 
+                      api.status === 'warning' || api.status === 'degraded' ? 'bg-yellow-500' : 
+                      api.status === 'down' || api.status === 'unhealthy' ? 'bg-red-500' : 'bg-gray-500'
+                    }`} />
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{api.displayName}</CardTitle>
+                        {getStatusIcon(api.status)}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{api.description}</p>
+                      
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Status:</span>
+                        <Badge variant={getStatusColor(api.status) as any} className="text-xs">
+                          {api.status.toUpperCase()}
+                        </Badge>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Category:</span>
+                        <span className="text-sm font-medium capitalize">{api.category}</span>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Enabled:</span>
+                        <Badge variant={api.isEnabled ? 'default' : 'secondary'} className="text-xs">
+                          {api.isEnabled ? 'Yes' : 'No'}
+                        </Badge>
+                      </div>
+                      
+                      {api.responseTime && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Response Time:</span>
+                          <span className="text-sm font-medium">
+                            {api.responseTime.toFixed(0)}ms
+                          </span>
+                        </div>
+                      )}
+
+                      {api.rateLimitRpm && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Rate Limit:</span>
+                          <span className="text-sm font-medium">{api.rateLimitRpm}/min</span>
+                        </div>
+                      )}
+                      
+                      {api.lastCheck && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Last Check:</span>
+                          <span className="text-sm font-medium">
+                            {new Date(api.lastCheck).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      )}
+
+                      {!api.isEnabled && api.disabledReason && (
+                        <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                          <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                            Disabled: {api.disabledReason}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : !apiLoading && (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  No API services configured. Click "Sync APIs" to register services from configuration.
+                </div>
+              )}
+
+              {/* Fallback to old structure if new structure not available */}
+              {!apiHealth?.apis && !apiLoading && typedHealth?.apiHealth && Object.entries(typedHealth.apiHealth).map(([key, api]) => (
+                <Card key={key} className="relative overflow-hidden" data-testid={`card-api-legacy-${key}`}>
                   <div className={`absolute top-0 left-0 w-full h-1 ${
                     api.status === 'up' ? 'bg-green-500' : 
                     api.status === 'warning' ? 'bg-yellow-500' : 
@@ -555,14 +716,6 @@ export default function AdminSystemEnhanced() {
                         <span className="text-sm font-medium">
                           {new Date(api.lastCheck).toLocaleTimeString()}
                         </span>
-                      </div>
-                    )}
-                    
-                    {api.error && (
-                      <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
-                        <p className="text-xs text-red-700 dark:text-red-300">
-                          Error: {api.error}
-                        </p>
                       </div>
                     )}
                   </CardContent>

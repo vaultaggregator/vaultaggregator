@@ -244,12 +244,55 @@ export function registerAdminSystemRoutes(app: Express) {
    */
   app.get("/api/admin/system/apis", requireAuth, async (req, res) => {
     try {
+      const { db } = await import("../db");
+      const { apiSettings } = await import("../../shared/schema");
+      
+      // Get all APIs from database
+      const allApis = await db.select().from(apiSettings).orderBy(apiSettings.priority, apiSettings.serviceName);
+      
+      // Get system health for additional status info
       const health = await systemMonitor.getSystemHealth();
       
+      // Transform to include health check data
+      const apiStatuses = allApis.map(api => {
+        // Try to get health status from system monitor
+        let healthStatus = api.healthStatus || 'unknown';
+        let responseTime = undefined;
+        let lastCheck = undefined;
+        
+        // Check if we have health data for this API
+        if (health.apiHealth) {
+          const healthKey = api.serviceName.replace('_api', '');
+          const healthData = health.apiHealth[healthKey as keyof typeof health.apiHealth];
+          if (healthData) {
+            healthStatus = healthData.status || healthStatus;
+            responseTime = healthData.responseTime;
+            lastCheck = healthData.lastCheck;
+          }
+        }
+        
+        return {
+          id: api.id,
+          serviceName: api.serviceName,
+          displayName: api.displayName,
+          description: api.description,
+          baseUrl: api.baseUrl,
+          category: api.category,
+          isEnabled: api.isEnabled,
+          status: healthStatus,
+          responseTime,
+          lastCheck,
+          rateLimitRpm: api.rateLimitRpm,
+          disabledReason: api.disabledReason,
+          priority: api.priority
+        };
+      });
+      
       res.json({
-        etherscan: health.apiHealth.etherscan,
-        defiLlama: health.apiHealth.defiLlama,
-        database: health.apiHealth.database,
+        apis: apiStatuses,
+        totalCount: apiStatuses.length,
+        enabledCount: apiStatuses.filter(api => api.isEnabled).length,
+        healthyCount: apiStatuses.filter(api => api.status === 'healthy' || api.status === 'up').length,
         lastChecked: new Date().toISOString()
       });
     } catch (error) {
@@ -335,6 +378,25 @@ export function registerAdminSystemRoutes(app: Express) {
     } catch (error) {
       console.error("Error fetching performance metrics:", error);
       res.status(500).json({ error: "Failed to fetch performance metrics" });
+    }
+  });
+  
+  /**
+   * Sync API services from config to database
+   */
+  app.post("/api/admin/system/sync-apis", requireAuth, async (req, res) => {
+    try {
+      const { ApiRegistrationService } = await import("../services/apiRegistrationService");
+      const result = await ApiRegistrationService.syncApiServices();
+      
+      res.json({
+        success: true,
+        message: `API Service Sync Complete: ${result.added.length} added, ${result.updated.length} updated, ${result.removed.length} removed`,
+        ...result
+      });
+    } catch (error) {
+      console.error("Error syncing API services:", error);
+      res.status(500).json({ error: "Failed to sync API services" });
     }
   });
 }
