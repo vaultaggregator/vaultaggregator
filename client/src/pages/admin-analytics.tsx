@@ -49,10 +49,7 @@ interface AnalyticsData {
     bounceRate: number;
     conversionRate: number;
     revenue: number;
-    totalPools: number;
     totalTvl: number;
-    avgApy: number;
-    totalPlatforms: number;
     totalChains: number;
     systemHealth: string;
     errorRate: number;
@@ -64,12 +61,7 @@ interface AnalyticsData {
     newUsers: number;
     returningUsers: number;
   }>;
-  poolMetrics: Array<{
-    date: string;
-    totalTvl: number;
-    avgApy: number;
-    activePools: number;
-  }>;
+
   performanceData: Array<{
     hour: number;
     sessions: number;
@@ -77,14 +69,7 @@ interface AnalyticsData {
     errors: number;
     responseTime: number;
   }>;
-  platformBreakdown: Array<{
-    name: string;
-    pools: number;
-    tvl: number;
-    avgApy: number;
-    percentage: number;
-    color: string;
-  }>;
+
   chainBreakdown: Array<{
     name: string;
     pools: number;
@@ -108,15 +93,7 @@ interface AnalyticsData {
     criticalErrors: number;
     resolvedErrors: number;
   };
-  topPools: Array<{
-    name: string;
-    platform: string;
-    chain: string;
-    tvl: number;
-    apy: number;
-    views: number;
-    interactions: number;
-  }>;
+
   recentActivity: Array<{
     type: string;
     message: string;
@@ -299,10 +276,8 @@ export default function AdminAnalytics() {
 
         {/* Analytics Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="pools">Pools</TabsTrigger>
-            <TabsTrigger value="platforms">Platforms</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
             <TabsTrigger value="errors">Errors</TabsTrigger>
           </TabsList>
@@ -347,41 +322,7 @@ export default function AdminAnalytics() {
                 </CardContent>
               </Card>
 
-              {/* Platform Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChartIcon className="h-5 w-5 text-green-600" />
-                    Platform Distribution
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={analytics?.platformBreakdown || []}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percentage }) => `${name}: ${percentage.toFixed(1)}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="pools"
-                        >
-                          {(analytics?.platformBreakdown || []).map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: any, name: any, props: any) => [
-                          `${value} pools ($${formatNumber(props.payload?.tvl || 0)} TVL)`,
-                          props.payload?.name
-                        ]} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
+
             </div>
 
             {/* Recent Activity */}
@@ -423,109 +364,7 @@ export default function AdminAnalytics() {
             </Card>
           </TabsContent>
 
-          {/* Pools Tab */}
-          <TabsContent value="pools" className="space-y-6">
-            <div className="grid grid-cols-1 gap-6">
-              {/* Top Performing Pools */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-blue-600" />
-                    Top Performing Pools by TVL
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {analytics?.topPools?.slice(0, 10).map((pool, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border bg-card">
-                        <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 font-semibold text-sm">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="font-medium text-foreground">{pool.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {pool.platform} • {pool.chain}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-foreground">
-                            ${formatNumber(pool.tvl)}
-                          </p>
-                          <p className="text-sm text-green-600">
-                            {pool.apy.toFixed(2)}% APY
-                          </p>
-                        </div>
-                      </div>
-                    )) || (
-                      <p className="text-center text-muted-foreground py-8">No pool data available</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
 
-          {/* Platforms Tab */}
-          <TabsContent value="platforms" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Platform Performance Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Platform TVL Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={analytics?.platformBreakdown || []}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip formatter={(value: any) => [`$${formatNumber(value)}`, 'TVL']} />
-                        <Bar dataKey="tvl" fill="#3b82f6" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Platform Details */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Platform Statistics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {analytics?.platformBreakdown?.map((platform, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                        <div className="flex items-center gap-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: platform.color }}
-                          />
-                          <div>
-                            <p className="font-medium text-foreground">{platform.name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {platform.pools} pools • {platform.percentage.toFixed(1)}%
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-foreground">${formatNumber(platform.tvl)}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {platform.avgApy.toFixed(2)}% avg APY
-                          </p>
-                        </div>
-                      </div>
-                    )) || (
-                      <p className="text-center text-muted-foreground py-4">No platform data available</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
 
           {/* System Tab */}
           <TabsContent value="system" className="space-y-6">

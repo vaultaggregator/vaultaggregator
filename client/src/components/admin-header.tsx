@@ -45,14 +45,12 @@ export function AdminHeader() {
         { path: "/admin-networks", icon: Settings, label: "Networks" },
         { path: "/admin-categories", icon: Tag, label: "Categories" },
 
-        { path: "/admin-monitoring", icon: Eye, label: "Monitoring" },
+
       ]
     },
     {
       label: "Security",
       items: [
-        { path: "/admin-users", icon: Users, label: "Users" },
-        { path: "/admin-security", icon: Shield, label: "Security" },
         { path: "/admin-api-keys", icon: Key, label: "API Keys" },
         { path: "/admin-errors", icon: AlertTriangle, label: "Error Logs", highlight: "error" },
       ]

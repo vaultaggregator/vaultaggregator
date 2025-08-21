@@ -32,11 +32,7 @@ import AdminPanel from "@/pages/admin-panel";
 import AdminPools from "@/pages/admin-pools";
 import AdminServices from "@/pages/admin-services";
 import AdminApiSettings from "@/pages/AdminApiSettings";
-import AdminUsers from "@/pages/admin-users";
-import AdminSecurity from "@/pages/admin-security";
 import AdminAnalytics from "@/pages/admin-analytics";
-
-import AdminMonitoring from "@/pages/admin-monitoring";
 import AdminErrorManagement from "@/pages/admin-error-management";
 
 import HealingDashboard from "@/pages/healing-dashboard";
@@ -76,15 +72,8 @@ function Router() {
       <Route path="/admin-errors" component={AdminErrors} />
       <Route path="/admin/error-management" component={AdminErrorManagement} />
       <Route path="/admin-error-management" component={AdminErrorManagement} />
-      <Route path="/admin/users" component={AdminUsers} />
-      <Route path="/admin-users" component={AdminUsers} />
-      <Route path="/admin/security" component={AdminSecurity} />
-      <Route path="/admin-security" component={AdminSecurity} />
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin-analytics" component={AdminAnalytics} />
-
-      <Route path="/admin/monitoring" component={AdminMonitoring} />
-      <Route path="/admin-monitoring" component={AdminMonitoring} />
 
       {/* Pool detail routes - these must come AFTER admin routes */}
       {/* Primary SEO-friendly URL patterns for pool details */}
