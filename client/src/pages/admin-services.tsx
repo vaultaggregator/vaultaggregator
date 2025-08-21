@@ -41,6 +41,24 @@ interface ServiceStatus {
   error?: string;
 }
 
+interface HealthData {
+  overall: string;
+  uptime: number;
+  memoryUsage: {
+    used: number;
+    total: number;
+    percentage: number;
+  };
+  scheduledJobs?: {
+    poolDataSync?: { status: string; lastCheck: number; details?: any };
+    holderDataSync?: { status: string; lastCheck: number; details?: any };
+    etherscanScraper?: { status: string; lastCheck: number; details?: any };
+    aiOutlookGeneration?: { status: string; lastCheck: number; details?: any };
+    cleanup?: { status: string; lastCheck: number; details?: any };
+  };
+  [key: string]: any;
+}
+
 export default function AdminServices() {
   const [selectedTab, setSelectedTab] = useState("active");
   const [refreshingServices, setRefreshingServices] = useState<Set<string>>(new Set());
@@ -52,7 +70,7 @@ export default function AdminServices() {
     refetchInterval: 10000, // Refresh every 10 seconds
   });
 
-  const { data: health } = useQuery({
+  const { data: health } = useQuery<HealthData>({
     queryKey: ["/api/admin/system/health"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
@@ -157,7 +175,7 @@ export default function AdminServices() {
     {
       name: 'poolDataSync',
       displayName: 'Pool Data Sync',
-      status: health?.scheduledJobs?.poolDataSync?.status || 'running',
+      status: (health?.scheduledJobs?.poolDataSync?.status || 'running') as 'running' | 'stopped' | 'error' | 'warning',
       uptime: Date.now() - (health?.scheduledJobs?.poolDataSync?.lastCheck || Date.now()),
       lastCheck: new Date(health?.scheduledJobs?.poolDataSync?.lastCheck || Date.now()).toLocaleTimeString(),
       nextRun: '5 minutes',
@@ -170,12 +188,26 @@ export default function AdminServices() {
     {
       name: 'holderDataSync',
       displayName: 'Holder Data Sync',
-      status: health?.scheduledJobs?.holderDataSync?.status || 'running',
+      status: (health?.scheduledJobs?.holderDataSync?.status || 'running') as 'running' | 'stopped' | 'error' | 'warning',
       uptime: Date.now() - (health?.scheduledJobs?.holderDataSync?.lastCheck || Date.now()),
       lastCheck: new Date(health?.scheduledJobs?.holderDataSync?.lastCheck || Date.now()).toLocaleTimeString(),
       nextRun: '30 minutes',
       stats: {
         processed: 44,
+        failed: 0,
+        pending: 0,
+        successRate: 100
+      }
+    },
+    {
+      name: 'etherscanScraper',
+      displayName: 'Etherscan Scraper',
+      status: (health?.scheduledJobs?.etherscanScraper?.status || 'running') as 'running' | 'stopped' | 'error' | 'warning',
+      uptime: Date.now() - (health?.scheduledJobs?.etherscanScraper?.lastCheck || Date.now()),
+      lastCheck: new Date(health?.scheduledJobs?.etherscanScraper?.lastCheck || Date.now()).toLocaleTimeString(),
+      nextRun: '30 minutes',
+      stats: {
+        processed: health?.scheduledJobs?.etherscanScraper?.details?.holdersCount || 0,
         failed: 0,
         pending: 0,
         successRate: 100
@@ -250,7 +282,7 @@ export default function AdminServices() {
     {
       name: 'aiOutlookGeneration',
       displayName: 'AI Outlook Generation',
-      status: health?.scheduledJobs?.aiOutlookGeneration?.status || 'warning',
+      status: (health?.scheduledJobs?.aiOutlookGeneration?.status || 'warning') as 'running' | 'stopped' | 'error' | 'warning',
       uptime: Date.now() - (health?.scheduledJobs?.aiOutlookGeneration?.lastCheck || Date.now()),
       lastCheck: new Date(health?.scheduledJobs?.aiOutlookGeneration?.lastCheck || Date.now()).toLocaleTimeString(),
       nextRun: '24 hours',
@@ -263,7 +295,7 @@ export default function AdminServices() {
     {
       name: 'cleanup',
       displayName: 'Database Cleanup',
-      status: health?.scheduledJobs?.cleanup?.status || 'running',
+      status: (health?.scheduledJobs?.cleanup?.status || 'running') as 'running' | 'stopped' | 'error' | 'warning',
       uptime: Date.now() - (health?.scheduledJobs?.cleanup?.lastCheck || Date.now()),
       lastCheck: new Date(health?.scheduledJobs?.cleanup?.lastCheck || Date.now()).toLocaleTimeString(),
       nextRun: '60 days',
@@ -278,7 +310,9 @@ export default function AdminServices() {
   // Always show all services, merging API data with mock data
   const displayServices = mockServices.map(mockService => {
     // Find matching service from API response
-    const apiService = services?.find((s: ServiceStatus) => s.name === mockService.name);
+    const apiService = Array.isArray(services) ? 
+      services.find((s: ServiceStatus) => s.name === mockService.name) : 
+      undefined;
     
     // If API has data for this service, merge it with mock, otherwise use mock
     if (apiService) {
