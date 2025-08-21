@@ -2,6 +2,13 @@
 
 Vault Aggregator is a streamlined DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project's ambition is to provide accurate, reliable DeFi data to empower user investment decisions, focusing on efficiency and a clean architecture by exclusively tracking core yield opportunities for two specific pools (STETH and STEAKUSDC) on two platforms (Lido and Morpho) on the Ethereum chain.
 
+## Recent Changes (August 21, 2025)
+
+- **Fixed Token Creation System**: Resolved foreign key constraint violations by properly separating chains and networks tables in the database schema
+- **Database Architecture Update**: Implemented separate `chains` and `networks` tables with proper foreign key relationships for token management
+- **API Endpoint Enhancement**: Added `/api/admin/chains` endpoint to provide correct chain data for token creation
+- **Schema Improvements**: Fixed token schema by removing non-existent fields and ensuring proper type definitions
+
 # User Preferences
 
 - CRITICAL RULE - NO HARDCODED VALUES (ABSOLUTE REQUIREMENT):
