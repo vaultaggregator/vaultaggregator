@@ -69,21 +69,22 @@ class ComprehensiveHolderSyncService {
     console.log('🔄 Starting comprehensive holder sync for all pools...');
 
     try {
-      // Get all pools with contract addresses
+      // Get all ACTIVE pools with contract addresses
       const allPools = await db
         .select({
           id: pools.id,
           tokenPair: pools.tokenPair,
           poolAddress: pools.poolAddress,
-          platformId: pools.platformId
+          platformId: pools.platformId,
+          isActive: pools.isActive
         })
         .from(pools)
-        .where(sql`${pools.poolAddress} IS NOT NULL AND ${pools.poolAddress} != ''`);
+        .where(sql`${pools.poolAddress} IS NOT NULL AND ${pools.poolAddress} != '' AND ${pools.isActive} = true`);
 
-      console.log(`📊 Found ${allPools.length} pools with contract addresses`);
+      console.log(`📊 Found ${allPools.length} active pools with contract addresses`);
 
-      // Sync ALL pools to ensure we have up to 1000 holders for each
-      console.log(`🎯 Syncing holders for ALL ${allPools.length} pools to ensure complete data...`);
+      // Sync ALL ACTIVE pools to ensure we have up to 1000 holders for each
+      console.log(`🎯 Syncing holders for ${allPools.length} active pools to ensure complete data...`);
 
       // Sync each pool
       let successCount = 0;

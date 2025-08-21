@@ -327,8 +327,8 @@ export class EnhancedTransfersService {
    */
   async getWhaleAlerts(limit: number = 10) {
     try {
-      // Get all pools
-      const allPools = await db.select().from(pools);
+      // Get all active pools only
+      const allPools = await db.select().from(pools).where(eq(pools.isActive, true));
       const whaleAlerts: any[] = [];
 
       for (const pool of allPools.slice(0, 5)) { // Check first 5 pools for performance

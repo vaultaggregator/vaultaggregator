@@ -1,6 +1,7 @@
 import { AIPredictionService } from './aiPredictionService';
 import { db } from '../db';
 import { pools } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export interface SchedulerConfig {
   enabled: boolean;
@@ -106,8 +107,11 @@ export class AISchedulerService {
     this.config.lastRun = new Date();
     
     try {
-      // Get all pools
-      const allPools = await db.select({ id: pools.id }).from(pools);
+      // Get all active pools only
+      const allPools = await db
+        .select({ id: pools.id, isActive: pools.isActive })
+        .from(pools)
+        .where(eq(pools.isActive, true));
       
       let successCount = 0;
       let errorCount = 0;
