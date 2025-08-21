@@ -47,22 +47,48 @@ export class SystemMonitorService {
   private startTime = Date.now();
   private checks: Map<string, SystemCheck> = new Map();
   private healthHistory: Array<{ timestamp: number; status: string }> = [];
+  private cachedHealth: SystemHealth | null = null;
+  private lastHealthCheckTime = 0;
+  private readonly HEALTH_CACHE_TTL = 30000; // Cache for 30 seconds
+  private isRunningHealthCheck = false;
 
   constructor() {
-    // Run initial health checks
-    this.runAllHealthChecks();
+    // Run initial health checks in background
+    this.runBackgroundHealthCheck();
     
     // Schedule regular health checks every 2 minutes
-    setInterval(() => this.runAllHealthChecks(), 2 * 60 * 1000);
+    setInterval(() => this.runBackgroundHealthCheck(), 2 * 60 * 1000);
     
     console.log('System Monitor Service initialized');
+  }
+  
+  private async runBackgroundHealthCheck() {
+    if (this.isRunningHealthCheck) return;
+    this.isRunningHealthCheck = true;
+    try {
+      await this.runAllHealthChecks();
+      this.lastHealthCheckTime = Date.now();
+    } finally {
+      this.isRunningHealthCheck = false;
+    }
   }
 
   /**
    * Get comprehensive system health status
    */
   async getSystemHealth(): Promise<SystemHealth> {
-    await this.runAllHealthChecks();
+    const now = Date.now();
+    
+    // Return cached result if still valid
+    if (this.cachedHealth && (now - this.lastHealthCheckTime) < this.HEALTH_CACHE_TTL) {
+      return this.cachedHealth;
+    }
+    
+    // Don't wait for health checks if they're already running
+    if (!this.isRunningHealthCheck) {
+      // Run health checks in background for next request
+      this.runBackgroundHealthCheck();
+    }
     
     const checks = Array.from(this.checks.values());
     const downCount = checks.filter(c => c.status === 'down').length;
@@ -81,7 +107,7 @@ export class SystemMonitorService {
     // Get error rates
     const errorRates = await this.getErrorRates();
 
-    return {
+    const health: SystemHealth = {
       overall,
       checks,
       uptime: Date.now() - this.startTime,
@@ -108,6 +134,11 @@ export class SystemMonitorService {
       },
       errorRates
     };
+    
+    // Cache the result
+    this.cachedHealth = health;
+    
+    return health;
   }
 
   /**
