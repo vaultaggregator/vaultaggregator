@@ -64,3 +64,5 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
     </header>
   );
 }
+
+export { Header };

@@ -37,6 +37,7 @@ import AdminErrorManagement from "@/pages/admin-error-management";
 
 import HealingDashboard from "@/pages/healing-dashboard";
 import ProfilePage from "@/pages/profile";
+import { ProtocolDetailPage } from "@/pages/protocol-detail";
 
 
 
@@ -48,6 +49,7 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/risk-calculation" component={RiskCalculation} />
       <Route path="/profile/:address" component={ProfilePage} />
+      <Route path="/protocols/:chainId/:protocolId" component={ProtocolDetailPage} />
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />

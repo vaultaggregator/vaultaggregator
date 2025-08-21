@@ -1,0 +1,143 @@
+Prompt for Replit:
+I want to add a new page to my DeFi aggregator for token details, similar to Debank’s token pages.
+
+Requirements:
+
+Route: /token/:chainId/:tokenAddress
+
+Do not hardcode values. Always fetch from my backend API or public APIs like CoinGecko, DefiLlama, or Alchemy.
+
+The page should display:
+
+Token name, symbol, logo
+
+Current price in USD, 24h change, market cap, total supply
+
+Holder count and top holders list
+
+Recent transfers table (from Etherscan or Alchemy logs)
+
+Protocols where the token is used (lending, vaults, LPs)
+
+Style: same as existing pages (Tailwind/shadcn, dark theme, cards with rounded corners).
+
+Include loading and error states.
+
+React Skeleton Example:
+
+// src/pages/TokenPage.jsx
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+export default function TokenPage() {
+  const { chainId, tokenAddress } = useParams();
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    async function fetchToken() {
+      try {
+        // Replace with your backend that aggregates CoinGecko, DefiLlama, Alchemy
+        const res = await fetch(`/api/token/${chainId}/${tokenAddress}`);
+        const data = await res.json();
+        setToken(data);
+      } catch (err) {
+        console.error("Failed to fetch token", err);
+      }
+    }
+    fetchToken();
+  }, [chainId, tokenAddress]);
+
+  if (!token) return <div className="p-6">Loading token data...</div>;
+
+  return (
+    <div className="p-6 text-white">
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-6">
+        <img src={token.logo} alt={token.symbol} className="w-12 h-12 rounded-full" />
+        <div>
+          <h1 className="text-2xl">{token.name} ({token.symbol})</h1>
+          <p className="text-gray-400">Address: {tokenAddress}</p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Price</p>
+          <p className="text-lg">${token.price}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Market Cap</p>
+          <p className="text-lg">${token.marketCap}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Total Supply</p>
+          <p className="text-lg">{token.totalSupply}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Holders</p>
+          <p className="text-lg">{token.holders}</p>
+        </div>
+      </div>
+
+      {/* Top Holders */}
+      <h2 className="text-xl mb-3">Top Holders</h2>
+      <div className="bg-gray-900 rounded-xl p-4 mb-6">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-700">
+              <th className="p-2">Address</th>
+              <th className="p-2">Balance</th>
+              <th className="p-2">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {token.topHolders?.map((holder, i) => (
+              <tr key={i} className="border-b border-gray-700">
+                <td className="p-2">{holder.address}</td>
+                <td className="p-2">{holder.balance}</td>
+                <td className="p-2">{holder.share}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Recent Transfers */}
+      <h2 className="text-xl mb-3">Recent Transfers</h2>
+      <div className="bg-gray-900 rounded-xl p-4 mb-6">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-700">
+              <th className="p-2">From</th>
+              <th className="p-2">To</th>
+              <th className="p-2">Amount</th>
+              <th className="p-2">Tx</th>
+            </tr>
+          </thead>
+          <tbody>
+            {token.transfers?.map((tx, i) => (
+              <tr key={i} className="border-b border-gray-700">
+                <td className="p-2">{tx.from}</td>
+                <td className="p-2">{tx.to}</td>
+                <td className="p-2">{tx.amount}</td>
+                <td className="p-2"><a href={tx.explorer} target="_blank" rel="noreferrer">View</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Protocols */}
+      <h2 className="text-xl mb-3">Used In Protocols</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {token.protocols?.map((p, i) => (
+          <div key={i} className="bg-gray-800 p-4 rounded-xl">
+            <h3 className="text-lg">{p.name}</h3>
+            <p className="text-gray-400">TVL: ${p.tvl}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

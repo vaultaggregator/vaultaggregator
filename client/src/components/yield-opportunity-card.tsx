@@ -103,7 +103,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
             </div>
             
             {/* Protocol info - center aligned */}
-            <div className="flex items-center justify-center space-x-2 flex-shrink-0">
+            <Link 
+              href={`/protocols/${opportunity.chain.id}/${opportunity.platform.id}`}
+              className="flex items-center justify-center space-x-2 flex-shrink-0 hover:text-primary transition-colors"
+            >
               <div className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
                 {opportunity.platform.logoUrl ? (
                   <img 
@@ -118,10 +121,10 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
                   </div>
                 )}
               </div>
-              <span className="text-xs font-medium text-muted-foreground text-center">
+              <span className="text-xs font-medium text-muted-foreground text-center hover:text-primary">
                 {opportunity.platform.displayName || opportunity.platform.name}
               </span>
-            </div>
+            </Link>
             
             {/* Network info - center aligned */}
             {showNetworkName && (

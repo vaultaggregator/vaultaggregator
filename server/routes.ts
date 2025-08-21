@@ -62,6 +62,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const profileRoutes = (await import("./routes/profile")).default;
   app.use(profileRoutes);
 
+  // Import and register protocol routes
+  const protocolRoutes = (await import("./routes/protocols")).default;
+  app.use(protocolRoutes);
+
   // Import and register admin error management routes will be added later after requireAuth is defined
 
   // Enhanced Session configuration with security hardening
