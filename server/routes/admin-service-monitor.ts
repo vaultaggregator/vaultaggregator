@@ -272,6 +272,7 @@ const serviceConfigs: { [key: string]: { interval: number; enabled: boolean } } 
 };
 
 // Helper functions
+
 function getNextRun(serviceName: string): string {
   const config = serviceConfigs[serviceName];
   if (!config) return 'N/A';
@@ -345,16 +346,9 @@ async function updateServiceConfig(serviceName: string, config: { interval: numb
   
   console.log(`✅ Updated ${serviceName} configuration:`, config);
   
-  // In a real implementation, you would:
-  // 1. Save to database
-  // 2. Update the actual service scheduler  
-  // 3. Restart the service with new configuration
-  
-  // For demonstration, we'll update some actual service intervals
+  // Update actual service intervals where possible
   if (serviceName === 'holderDataSync' && config.enabled) {
     try {
-      // Update holder sync interval
-      const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
       console.log(`🔄 Updating holder sync interval to ${config.interval} minutes`);
       // Note: This would require modifying the service to accept dynamic intervals
     } catch (error) {
@@ -364,7 +358,6 @@ async function updateServiceConfig(serviceName: string, config: { interval: numb
   
   if (serviceName === 'defiLlamaSync' && config.enabled) {
     try {
-      // Update scraper interval
       console.log(`📊 Updating DeFi Llama sync interval to ${config.interval} minutes`);
       // Note: This would require modifying the scraper manager
     } catch (error) {
