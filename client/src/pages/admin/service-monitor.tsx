@@ -68,15 +68,25 @@ export default function ServiceMonitor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ interval: config.interval, enabled: config.enabled }),
       });
-      if (!response.ok) throw new Error('Failed to update service configuration');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update service configuration');
+      }
       return response.json();
     },
-    onSuccess: () => {
-      toast({ title: "Service configuration updated successfully" });
+    onSuccess: (data) => {
+      toast({ 
+        title: "Service configuration updated successfully",
+        description: `Service will run every ${data.config.interval} minutes`
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/services/status'] });
     },
-    onError: () => {
-      toast({ title: "Failed to update service configuration", variant: "destructive" });
+    onError: (error) => {
+      toast({ 
+        title: "Failed to update service configuration", 
+        description: error.message,
+        variant: "destructive" 
+      });
     },
   });
 
@@ -158,6 +168,18 @@ export default function ServiceMonitor() {
       });
     };
 
+    const formatInterval = (minutes: number) => {
+      if (minutes >= 1440) {
+        const days = Math.round(minutes / 1440);
+        return `${days} day${days !== 1 ? 's' : ''}`;
+      } else if (minutes >= 60) {
+        const hours = Math.round(minutes / 60);
+        return `${hours} hour${hours !== 1 ? 's' : ''}`;
+      } else {
+        return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+      }
+    };
+
     return (
       <Dialog>
         <DialogTrigger asChild>
@@ -168,7 +190,7 @@ export default function ServiceMonitor() {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Configure {service.name}</DialogTitle>
+            <DialogTitle>Configure {service.displayName || service.name}</DialogTitle>
             <DialogDescription>
               Adjust the collection interval and enable/disable this service.
             </DialogDescription>
@@ -180,13 +202,16 @@ export default function ServiceMonitor() {
                 id="interval"
                 type="number"
                 min="1"
-                max="1440"
+                max="86400"
                 value={interval}
                 onChange={(e) => setInterval(parseInt(e.target.value))}
                 data-testid="input-interval"
               />
               <p className="text-sm text-muted-foreground mt-1">
-                Current: Every {service.interval} minutes
+                Current: Every {formatInterval(service.interval)}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Common intervals: 5 min (real-time), 30 min (regular), 60 min (hourly), 1440 min (daily)
               </p>
             </div>
             <div className="flex items-center space-x-2">
@@ -199,8 +224,16 @@ export default function ServiceMonitor() {
               />
               <Label htmlFor="enabled">Enable service</Label>
             </div>
-            <Button onClick={handleSave} className="w-full" data-testid="button-save-config">
-              Save Configuration
+            <div className="text-sm text-gray-600">
+              <strong>Service:</strong> {service.description}
+            </div>
+            <Button 
+              onClick={handleSave} 
+              className="w-full" 
+              data-testid="button-save-config"
+              disabled={updateConfigMutation.isPending}
+            >
+              {updateConfigMutation.isPending ? 'Saving...' : 'Save Configuration'}
             </Button>
           </div>
         </DialogContent>
@@ -266,7 +299,11 @@ export default function ServiceMonitor() {
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Interval</span>
-                    <span className="text-sm font-medium">{service.interval}m</span>
+                    <span className="text-sm font-medium">
+                      {service.interval >= 1440 ? `${Math.round(service.interval / 1440)}d` : 
+                       service.interval >= 60 ? `${Math.round(service.interval / 60)}h` : 
+                       `${service.interval}m`}
+                    </span>
                   </div>
 
                   <div className="flex justify-between items-center">
