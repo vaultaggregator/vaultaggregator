@@ -61,9 +61,6 @@ interface TokenInfo {
 const createTokenSchema = z.object({
   chainId: z.string().min(1, "Network is required"),
   address: z.string().min(1, "Contract address is required"),
-  name: z.string().optional(),
-  symbol: z.string().optional(),
-  decimals: z.number().min(0).max(30).optional(),
 });
 
 export default function AdminTokensPage() {
@@ -111,8 +108,7 @@ export default function AdminTokensPage() {
   // Create token mutation
   const createTokenMutation = useMutation({
     mutationFn: async (data: z.infer<typeof createTokenSchema>) => {
-      const response = await apiRequest("POST", "/api/admin/tokens", data);
-      return await response.json();
+      return await apiRequest("/api/admin/tokens", "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/tokens"] });
@@ -381,52 +377,7 @@ export default function AdminTokensPage() {
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={createForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Name (Optional)</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Token Name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={createForm.control}
-                        name="symbol"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Symbol (Optional)</FormLabel>
-                            <FormControl>
-                              <Input placeholder="TKN" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={createForm.control}
-                        name="decimals"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Decimals (Optional)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="0" 
-                                max="30" 
-                                placeholder="18" 
-                                {...field}
-                                onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
                       <div className="flex justify-end gap-3">
                         <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
                           Cancel

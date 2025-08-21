@@ -1754,37 +1754,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create token
   app.post("/api/admin/tokens", requireAuth, async (req, res) => {
     try {
-      const { chainId, address, name, symbol, decimals } = req.body;
+      const { chainId, address } = req.body;
       
       if (!chainId || !address) {
-        return res.status(400).json({ message: "Chain ID and address are required" });
+        return res.status(400).json({ message: "Network and address are required" });
       }
       
-      // Validate that the network exists
-      const network = await storage.getNetworkById(chainId);
-      if (!network) {
-        return res.status(400).json({ message: "Invalid network ID" });
-      }
-      
-      // Check if token already exists for this network
-      const existingTokens = await storage.getTokensByChain(network.chainId);
-      const existingToken = existingTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
-      
-      if (existingToken) {
-        return res.status(409).json({ 
-          message: "Token already exists for this network",
-          existingToken 
-        });
-      }
-      
-      // Create token with proper field mapping
+      // Create token with basic data - metadata will be fetched later by API
       const tokenData = {
-        chainId: network.chainId, // Use the network's chainId, not the network ID
-        networkId: network.id, // Set the networkId for the foreign key
+        chainId,
         address: address.toLowerCase(),
-        name: name || "Unknown Token",
-        symbol: symbol || "UNKNOWN",
-        decimals: decimals || 18,
+        name: "Unknown Token", // Will be updated when API fetches metadata
+        symbol: "UNKNOWN", // Will be updated when API fetches metadata
+        decimals: 18, // Will be updated when API fetches metadata
         isActive: true,
       };
       
