@@ -1,0 +1,103 @@
+Prompt for Replit:
+I want a new page in my DeFi aggregator for protocol details, similar to Debank’s protocol pages.
+
+Requirements:
+
+Route: /protocols/:chainId/:protocolId
+
+When user clicks a protocol (e.g. Venus), it should navigate here.
+
+Do not hardcode any data. Always fetch real data from my backend API or directly from the protocol’s API. If unsure which API endpoint to use, ask me first.
+
+The page should display:
+
+Protocol name, logo, chain
+
+Total TVL, user count, lending/borrowing data
+
+Token list with balances and USD values
+
+Table of top holders if available
+
+UI: follow the same Tailwind/shadcn style we are already using (clean cards, rounded corners, dark mode support).
+
+Add loading state and error handling.
+
+Skeleton Code Example (React + Tailwind):
+
+// src/pages/ProtocolPage.jsx
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+
+export default function ProtocolPage() {
+  const { chainId, protocolId } = useParams();
+  const [protocol, setProtocol] = useState(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Replace with real API (DefiLlama, Debank, Morpho, etc.)
+        const res = await fetch(`/api/protocol/${chainId}/${protocolId}`);
+        const data = await res.json();
+        setProtocol(data);
+      } catch (err) {
+        console.error("Failed to fetch protocol", err);
+      }
+    }
+    fetchData();
+  }, [chainId, protocolId]);
+
+  if (!protocol) return <div className="p-6">Loading...</div>;
+
+  return (
+    <div className="p-6 text-white">
+      <div className="flex items-center gap-4 mb-6">
+        <img src={protocol.logo} alt={protocol.name} className="w-12 h-12 rounded-full" />
+        <div>
+          <h1 className="text-2xl">{protocol.name}</h1>
+          <p className="text-gray-400">{protocol.chain}</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">TVL</p>
+          <p className="text-lg">${protocol.tvl}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Users</p>
+          <p className="text-lg">{protocol.userCount}</p>
+        </div>
+        <div className="bg-gray-800 p-4 rounded-xl">
+          <p className="text-gray-400">Active Markets</p>
+          <p className="text-lg">{protocol.markets?.length || 0}</p>
+        </div>
+      </div>
+
+      <h2 className="text-xl mb-3">Assets</h2>
+      <div className="bg-gray-900 rounded-xl p-4">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-700">
+              <th className="p-2">Token</th>
+              <th className="p-2">Balance</th>
+              <th className="p-2">USD Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {protocol.assets.map((asset, i) => (
+              <tr key={i} className="border-b border-gray-700">
+                <td className="p-2 flex items-center gap-2">
+                  <img src={asset.logo} alt={asset.symbol} className="w-5 h-5 rounded-full" />
+                  {asset.symbol}
+                </td>
+                <td className="p-2">{asset.balance}</td>
+                <td className="p-2">${asset.usdValue}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
