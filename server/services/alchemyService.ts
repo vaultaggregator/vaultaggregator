@@ -23,8 +23,31 @@ export class AlchemyService {
     timestamp: number;
   }> = new Map();
   
-  // Cache duration: 24 hours (token metadata doesn't change)
-  private readonly CACHE_DURATION = 24 * 60 * 60 * 1000;
+  // Transfer events cache to avoid repeated fetches
+  // Key format: `${tokenAddress}-${network}`
+  private transferEventCache: Map<string, {
+    addresses: Set<string>;
+    timestamp: number;
+  }> = new Map();
+  
+  // ETH balance cache (short-lived)
+  // Key format: `${address}`
+  private ethBalanceCache: Map<string, {
+    balance: number;
+    timestamp: number;
+  }> = new Map();
+  
+  // Block number cache
+  private blockNumberCache: {
+    ethereum?: { number: number; timestamp: number };
+    base?: { number: number; timestamp: number };
+  } = {};
+  
+  // Cache durations
+  private readonly METADATA_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours for metadata
+  private readonly TRANSFER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes for transfers
+  private readonly ETH_BALANCE_CACHE_DURATION = 60 * 1000; // 1 minute for ETH balances
+  private readonly BLOCK_NUMBER_CACHE_DURATION = 10 * 1000; // 10 seconds for block numbers
   
   constructor() {
     // Check if we have the ALCHEMY_RPC_URL configured
@@ -328,7 +351,7 @@ export class AlchemyService {
     const cached = this.tokenMetadataCache.get(cacheKey);
     if (cached) {
       const age = Date.now() - cached.timestamp;
-      if (age < this.CACHE_DURATION) {
+      if (age < this.METADATA_CACHE_DURATION) {
         console.log(`✅ Using cached metadata for ${tokenAddress} (${Math.round(age / 1000)}s old)`);
         return cached.data;
       }
@@ -386,7 +409,7 @@ export class AlchemyService {
         token: value.data.symbol,
         name: value.data.name,
         ageMinutes: Math.round(age / 60000),
-        isExpired: age > this.CACHE_DURATION
+        isExpired: age > this.METADATA_CACHE_DURATION
       });
     });
     
@@ -400,7 +423,7 @@ export class AlchemyService {
     let cleared = 0;
     this.tokenMetadataCache.forEach((value, key) => {
       const age = Date.now() - value.timestamp;
-      if (age > this.CACHE_DURATION) {
+      if (age > this.METADATA_CACHE_DURATION) {
         this.tokenMetadataCache.delete(key);
         cleared++;
       }
@@ -410,9 +433,73 @@ export class AlchemyService {
   }
 
   /**
-   * Get ETH balance for an address
+   * Get cached block number to reduce API calls
+   */
+  private async getCachedBlockNumber(network?: 'ethereum' | 'base'): Promise<number> {
+    const client = this.getAlchemyClient(network);
+    if (!client) throw new Error('Alchemy client not initialized');
+    
+    const cacheKey = network === 'base' ? 'base' : 'ethereum';
+    const cached = this.blockNumberCache[cacheKey];
+    
+    if (cached && (Date.now() - cached.timestamp < this.BLOCK_NUMBER_CACHE_DURATION)) {
+      return cached.number;
+    }
+    
+    const blockNumber = await client.core.getBlockNumber();
+    this.blockNumberCache[cacheKey] = {
+      number: blockNumber,
+      timestamp: Date.now()
+    };
+    
+    return blockNumber;
+  }
+
+  /**
+   * Batch get token balances for multiple addresses
+   */
+  async batchGetTokenBalances(
+    addresses: string[],
+    tokenAddress: string,
+    network?: 'ethereum' | 'base'
+  ): Promise<Map<string, string>> {
+    const client = this.getAlchemyClient(network);
+    if (!client) throw new Error('Alchemy client not initialized');
+    
+    const balances = new Map<string, string>();
+    const BATCH_SIZE = 100; // Alchemy supports up to 100 addresses per call
+    
+    for (let i = 0; i < addresses.length; i += BATCH_SIZE) {
+      const batch = addresses.slice(i, Math.min(i + BATCH_SIZE, addresses.length));
+      
+      try {
+        // Use alchemy_getTokenBalances for batch requests
+        const response = await client.core.getTokenBalances(batch[0], [tokenAddress]);
+        
+        // For each address in batch, get balance
+        await Promise.all(batch.map(async (address) => {
+          const balance = await client.core.getTokenBalances(address, [tokenAddress]);
+          if (balance.tokenBalances.length > 0 && balance.tokenBalances[0].tokenBalance) {
+            balances.set(address.toLowerCase(), balance.tokenBalances[0].tokenBalance);
+          }
+        }));
+      } catch (error) {
+        console.log(`⚠️ Error fetching batch balances: ${error}`);
+      }
+    }
+    
+    return balances;
+  }
+
+  /**
+   * Get ETH balance for an address with caching
    */
   async getEthBalance(address: string): Promise<number> {
+    // Check cache first
+    const cached = this.ethBalanceCache.get(address.toLowerCase());
+    if (cached && (Date.now() - cached.timestamp < this.ETH_BALANCE_CACHE_DURATION)) {
+      return cached.balance;
+    }
     // Check if Alchemy is enabled
     const isEnabled = await this.isAlchemyEnabled();
     if (!isEnabled || !this.isInitialized || !this.alchemy) {
@@ -422,7 +509,15 @@ export class AlchemyService {
     
     try {
       const balance = await this.alchemy.core.getBalance(address);
-      return parseFloat(balance.toString()) / Math.pow(10, 18);
+      const ethBalance = parseFloat(balance.toString()) / Math.pow(10, 18);
+      
+      // Cache the balance
+      this.ethBalanceCache.set(address.toLowerCase(), {
+        balance: ethBalance,
+        timestamp: Date.now()
+      });
+      
+      return ethBalance;
     } catch (error) {
       console.error(`Error fetching ETH balance for ${address}:`, error);
       return 0;

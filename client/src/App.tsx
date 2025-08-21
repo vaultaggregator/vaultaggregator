@@ -44,6 +44,7 @@ const AdminApiSettings = lazy(() => import("@/pages/AdminApiSettings"));
 const AdminAnalytics = lazy(() => import("@/pages/admin-analytics"));
 const AdminErrorManagement = lazy(() => import("@/pages/admin-error-management"));
 const HealingDashboard = lazy(() => import("@/pages/healing-dashboard"));
+const CacheMonitor = lazy(() => import("@/pages/admin/cache-monitor").then(m => ({ default: m.CacheMonitor })));
 
 
 
@@ -83,6 +84,7 @@ function Router() {
         <Route path="/admin/system" component={AdminSystem} />
         <Route path="/admin/services" component={AdminServices} />
         <Route path="/admin/api-settings" component={AdminApiSettings} />
+        <Route path="/admin/cache-monitor" component={CacheMonitor} />
         <Route path="/admin/panel" component={AdminPanel} />
         <Route path="/admin/pools" component={AdminPools} />
         <Route path="/admin-pools" component={AdminPools} />
