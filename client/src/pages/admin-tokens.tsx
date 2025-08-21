@@ -93,11 +93,13 @@ export default function AdminTokensPage() {
     staleTime: 30000,
   });
 
-  // Fetch networks for filtering
+  // Fetch chains for token creation (not networks)
   const { data: networks = [] } = useQuery<Network[]>({
-    queryKey: ["/api/admin/networks"],
+    queryKey: ["/api/admin/chains"],
     staleTime: 60000,
   });
+  
+  console.log("Chains loaded for tokens:", networks);
 
   // Fetch token info
   const { data: tokenInfos = [] } = useQuery<TokenInfo[]>({

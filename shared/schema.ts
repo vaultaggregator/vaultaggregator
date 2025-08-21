@@ -99,8 +99,16 @@ export const networks = pgTable("networks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Keep chains as alias for backwards compatibility
-export const chains = networks;
+// Separate chains table for token foreign key references
+export const chains = pgTable("chains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  displayName: text("display_name").notNull(),
+  color: text("color").notNull().default("#3B82F6"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  iconUrl: text("icon_url"),
+});
 
 // Protocols table (formerly platforms)
 export const protocols = pgTable("protocols", {
@@ -127,7 +135,7 @@ export const protocols = pgTable("protocols", {
 
 export const tokens = pgTable("tokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  chainId: varchar("chain_id", { length: 50 }).notNull().references(() => networks.chainId),
+  chainId: varchar("chain_id").notNull().references(() => chains.id),
   address: varchar("address", { length: 100 }).notNull(),
   name: varchar("name", { length: 100 }).notNull(),
   symbol: varchar("symbol", { length: 20 }).notNull(),
@@ -811,7 +819,6 @@ export const insertProtocolSchema = createInsertSchema(protocols).omit({
 export const insertTokenSchema = createInsertSchema(tokens).omit({
   id: true,
   createdAt: true,
-  updatedAt: true,
 });
 
 export const insertUserTokenSchema = createInsertSchema(userTokens).omit({

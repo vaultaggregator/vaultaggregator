@@ -1796,6 +1796,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all chains for token creation (returns actual chains table data)
+  app.get("/api/admin/chains", requireAuth, async (req, res) => {
+    try {
+      const chains = await storage.getAllChainsFromChainsTable();
+      res.json(chains);
+    } catch (error) {
+      console.error("Error fetching chains:", error);
+      res.status(500).json({ message: "Failed to fetch chains" });
+    }
+  });
+
   // Get all networks for admin
   app.get("/api/admin/networks", requireAuth, async (req, res) => {
     try {

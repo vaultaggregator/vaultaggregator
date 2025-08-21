@@ -1,10 +1,10 @@
 import { 
-  pools, protocols, networks, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
+  pools, protocols, networks, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
   poolMetricsHistory, poolMetricsCurrent, tokenHolders,
-  type Pool, type Protocol, type Network, type Token, type TokenInfo, type Note,
-  type InsertPool, type InsertProtocol, type InsertNetwork, type InsertToken, type InsertTokenInfo, type InsertNote,
+  type Pool, type Protocol, type Network, type Chain, type Token, type TokenInfo, type Note,
+  type InsertPool, type InsertProtocol, type InsertNetwork, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
   type Category, type InsertCategory, type PoolCategory, type InsertPoolCategory,
   type CategoryWithPoolCount, type ApiKey, type InsertApiKey, type ApiKeyUsage, type InsertApiKeyUsage,
@@ -236,6 +236,7 @@ export interface IStorage {
   // Admin methods
   getAllPoolsForAdmin(): Promise<any[]>;
   updatePool(id: string, updates: Partial<InsertPool>): Promise<Pool | undefined>;
+  getAllChainsFromChainsTable(): Promise<Chain[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -285,9 +286,14 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
-  // Add missing getChains method for compatibility
+  // Add missing getChains method for compatibility  
   async getChains(): Promise<Network[]> {
     return await this.getNetworks();
+  }
+
+  // Get chains from the actual chains table for token creation
+  async getAllChainsFromChainsTable(): Promise<Chain[]> {
+    return await db.select().from(chains).where(eq(chains.isActive, true)).orderBy(chains.displayName);
   }
 
   // Alias method for backward compatibility
