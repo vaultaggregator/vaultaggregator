@@ -36,6 +36,7 @@ import AdminAnalytics from "@/pages/admin-analytics";
 import AdminErrorManagement from "@/pages/admin-error-management";
 
 import HealingDashboard from "@/pages/healing-dashboard";
+import ProfilePage from "@/pages/profile";
 
 
 
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/risk-calculation" component={RiskCalculation} />
+      <Route path="/profile/:address" component={ProfilePage} />
       <Route path="/contact" component={Contact} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />

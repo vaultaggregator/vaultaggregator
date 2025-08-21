@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, ChevronRight, Users, Wallet, TrendingUp, ExternalLink, ChevronsLeft, ChevronsRight, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users, Wallet, TrendingUp, ExternalLink, ChevronsLeft, ChevronsRight, Info, User } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Holder {
@@ -260,12 +261,20 @@ export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: Hol
                 
                 <div className="col-span-3">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => openEtherscan(holder.address)}
+                    <Link 
+                      href={`/profile/${holder.address}`}
                       className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex items-center gap-1"
-                      data-testid={`link-etherscan-${holder.address}`}
+                      data-testid={`link-profile-${holder.address}`}
                     >
                       {formatAddress(holder.address)}
+                      <User className="h-3 w-3" />
+                    </Link>
+                    <button
+                      onClick={() => openEtherscan(holder.address)}
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                      title="View on Etherscan"
+                      data-testid={`link-etherscan-${holder.address}`}
+                    >
                       <ExternalLink className="h-3 w-3" />
                     </button>
                   </div>

@@ -58,6 +58,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const alchemyEnhancedRoutes = (await import("./routes/alchemy-enhanced")).default;
   app.use(alchemyEnhancedRoutes);
 
+  // Import and register profile routes
+  const profileRoutes = (await import("./routes/profile")).default;
+  app.use(profileRoutes);
+
   // Import and register admin error management routes will be added later after requireAuth is defined
 
   // Enhanced Session configuration with security hardening
