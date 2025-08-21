@@ -3848,46 +3848,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
-  // DISABLED: WebSocket server due to serious connection issues
-  // const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  // Initialize WebSocket server
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
-  // DISABLED: Smart WebSocket service initialization
-  // smartWebSocketService.initializeWebSocketServer(wss);
+  // Initialize Smart WebSocket service (without real-time monitoring)
+  smartWebSocketService.initializeWebSocketServer(wss);
   
-  // DISABLED: Real-time blockchain monitoring to prevent millions of Alchemy API requests
+  // NOTE: Real-time blockchain monitoring is disabled to prevent excessive API usage
   // This was monitoring EVERY block on Ethereum (~7,200/day) and Base (~43,200/day)
-  // causing excessive API usage. Re-enable only with proper rate limiting.
+  // causing millions of Alchemy API requests. Only enable with proper rate limiting.
   // smartWebSocketService.startRealTimeMonitoring().catch(error => {
   //   console.error('Failed to start Smart WebSocket monitoring:', error);
   // });
   
-  // DISABLED: WebSocket connections handling
+  // WebSocket connections handling
   const wsConnections = new Set<WebSocket>();
   
-  // DISABLED: WebSocket connection handler
-  // wss.on('connection', (ws: WebSocket) => {
-  //   console.log('📡 WebSocket connection established');
-  //   wsConnections.add(ws);
-  //   
-  //   // Send initial connection confirmation
-  //   ws.send(JSON.stringify({
-  //     type: 'connection',
-  //     status: 'connected',
-  //     timestamp: Date.now()
-  //   }));
-  //   
-  //   ws.on('close', () => {
-  //     console.log('📡 WebSocket connection closed');
-  //     wsConnections.delete(ws);
-  //   });
-  //   
-  //   ws.on('error', (error) => {
-  //     console.error('📡 WebSocket error:', error);
-  //     wsConnections.delete(ws);
-  //   });
-  // });
+  // WebSocket connection handler
+  wss.on('connection', (ws: WebSocket) => {
+    console.log('📡 WebSocket connection established');
+    wsConnections.add(ws);
+    
+    // Send initial connection confirmation
+    ws.send(JSON.stringify({
+      type: 'connection',
+      status: 'connected',
+      timestamp: Date.now()
+    }));
+    
+    ws.on('close', () => {
+      console.log('📡 WebSocket connection closed');
+      wsConnections.delete(ws);
+    });
+    
+    ws.on('error', (error) => {
+      console.error('📡 WebSocket error:', error);
+      wsConnections.delete(ws);
+    });
+  });
   
-  console.log('⚠️ WebSocket server DISABLED due to serious connection issues');
+  console.log('✅ WebSocket server enabled on /ws path');
   
   // Real-time APY update service
   const broadcastApyUpdate = (poolId: string, apy: string, timestamp: number) => {
