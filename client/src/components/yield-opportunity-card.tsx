@@ -1,6 +1,6 @@
 
 import { ExternalLink } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,12 +24,12 @@ interface YieldOpportunityCardProps {
 }
 
 export default function YieldOpportunityCard({ opportunity, showHeaders = true, showNetworkName = true }: YieldOpportunityCardProps) {
+  const [, setLocation] = useLocation();
+
   const formatApy = (apy: string): string => {
     const num = parseFloat(apy);
     return `${num.toFixed(2)}%`;
   };
-
-
 
   const getChainColor = (color: string) => {
     return { backgroundColor: `${color}20`, color: color };
@@ -44,8 +44,16 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
       .slice(0, 2);
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on interactive elements
+    if ((e.target as HTMLElement).closest('button, a, [role="button"]')) {
+      return;
+    }
+    setLocation(generateYieldUrl(opportunity));
+  };
+
   return (
-    <Link href={generateYieldUrl(opportunity)} className="block">
+    <div onClick={handleCardClick} className="block cursor-pointer">
       <Card className={`bg-card cursor-pointer card-hover ${showHeaders ? 'rounded-lg sm:rounded-xl shadow-soft border border-border hover:shadow-medium hover:border-accent-primary/50 border-l-4 border-l-transparent hover:border-l-accent-primary' : 'rounded-none shadow-none border-0 hover:bg-muted/50'}`}>
         <CardContent className="p-2 sm:p-3">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:items-center">
@@ -317,6 +325,6 @@ export default function YieldOpportunityCard({ opportunity, showHeaders = true, 
         </div>
       </CardContent>
     </Card>
-    </Link>
+    </div>
   );
 }
