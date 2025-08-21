@@ -447,12 +447,24 @@ export default function AdminServices() {
                             
                             // Handle service refresh based on service type
                             try {
-                              const response = await fetch("/api/admin/services/refresh", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ service: service.name })
-                              });
-                              const data = await response.json();
+                              let response;
+                              let data;
+                              
+                              // Special handling for AI Outlook Generation
+                              if (service.name === 'aiOutlookGeneration') {
+                                response = await fetch("/api/admin/services/aiOutlookGeneration/start", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" }
+                                });
+                                data = await response.json();
+                              } else {
+                                response = await fetch("/api/admin/services/refresh", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ service: service.name })
+                                });
+                                data = await response.json();
+                              }
                               
                               // Show appropriate toast message based on service
                               const toastMessages: Record<string, string> = {

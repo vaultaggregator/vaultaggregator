@@ -70,12 +70,25 @@ router.post("/refresh", requireAuth, async (req, res) => {
       });
     } else if (serviceName === 'aiOutlookGeneration') {
       console.log("🤖 Manual AI outlook generation triggered from admin panel");
-      // AI generation logic would go here
-      res.json({
-        success: true,
-        message: "AI Outlook Generation started - generating market insights",
-        timestamp: new Date().toISOString()
-      });
+      try {
+        const { aiScheduler } = await import("../services/aiSchedulerService");
+        const result = await aiScheduler.manualTrigger();
+        
+        res.json({
+          success: true,
+          message: `AI Outlook Generation completed: ${result.success} insights generated, ${result.errors} failed`,
+          data: result,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('❌ AI generation failed in refresh endpoint:', error);
+        res.json({
+          success: false,
+          message: "AI Outlook Generation failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
     } else if (serviceName === 'cleanup') {
       console.log("🧹 Manual cleanup triggered from admin panel");
       // Cleanup logic would go here
@@ -224,5 +237,30 @@ function getServiceStats(serviceName: string, job: any): any {
   
   return baseStats;
 }
+
+// Add manual trigger endpoint for AI Outlook Generation
+router.post('/aiOutlookGeneration/start', async (req, res) => {
+  try {
+    const { aiScheduler } = await import("../services/aiSchedulerService");
+    
+    console.log('🤖 Manual AI Outlook Generation triggered via admin interface');
+    
+    const result = await aiScheduler.manualTrigger();
+    
+    res.json({
+      success: true,
+      message: 'AI Outlook Generation completed successfully',
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Manual AI generation failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      message: 'Failed to run AI Outlook Generation'
+    });
+  }
+});
 
 export default router;

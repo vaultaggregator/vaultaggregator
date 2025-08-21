@@ -145,6 +145,13 @@ export class AISchedulerService {
 
   async manualTrigger(): Promise<{ success: number; errors: number; total: number }> {
     console.log('🤖 AI Scheduler: Manual trigger initiated...');
+    
+    // Override enabled check for manual trigger
+    const wasEnabled = this.config.enabled;
+    if (!wasEnabled) {
+      console.log('🤖 Temporarily enabling AI scheduler for manual trigger');
+    }
+    
     return await this.generateAllInsights();
   }
 
