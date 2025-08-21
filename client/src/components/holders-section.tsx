@@ -46,14 +46,12 @@ interface HoldersSectionProps {
 }
 
 export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: HoldersSectionProps) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageInput, setPageInput] = useState("");
-  const limit = 20;
+  const limit = 5; // Only show top 5 holders
 
   const { data: holdersData, isLoading, error } = useQuery<HoldersResponse>({
-    queryKey: [`/api/pools/${poolId}/holders`, currentPage],
+    queryKey: [`/api/pools/${poolId}/holders`],
     queryFn: async () => {
-      const response = await fetch(`/api/pools/${poolId}/holders?page=${currentPage}&limit=${limit}`);
+      const response = await fetch(`/api/pools/${poolId}/holders?page=1&limit=${limit}`);
       if (!response.ok) {
         throw new Error('Failed to fetch holders data');
       }
@@ -98,14 +96,6 @@ export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: Hol
       ? `https://basescan.org/address/${address}`
       : `https://etherscan.io/address/${address}`;
     window.open(explorerUrl, '_blank');
-  };
-
-  const handleGoToPage = () => {
-    const page = parseInt(pageInput);
-    if (page && page > 0 && page <= (holdersData?.pagination.pages || 1)) {
-      setCurrentPage(page);
-      setPageInput("");
-    }
   };
 
   if (isLoading) {
@@ -200,8 +190,7 @@ export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: Hol
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            <CardTitle>Top Holders</CardTitle>
-            <span className="text-xs text-muted-foreground ml-2">(Up to 1,000)</span>
+            <CardTitle>Top 5 Holders</CardTitle>
           </div>
           <Badge variant="secondary" className="text-xs">
             {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
@@ -211,9 +200,9 @@ export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: Hol
           <div className="space-y-1">
             <div>
               {lidoNote?.isLido ? (
-                <>Showing top {lidoNote.sampleSize} of {lidoNote.actualTotal.toLocaleString()} holders • Lido stETH • Data from Etherscan</>
+                <>Showing top 5 of {lidoNote.actualTotal.toLocaleString()} holders • Lido stETH</>
               ) : (
-                <>Showing holders {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, pagination.total)} • Real-time blockchain data from Etherscan</>
+                <>Showing top 5 holders</>
               )}
             </div>
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -314,163 +303,6 @@ export function HoldersSection({ poolId, tokenSymbol = "Token", chainName }: Hol
               </div>
             ))}
           </div>
-
-          {/* Pagination */}
-          {pagination.pages > 1 && (
-            <div className="flex flex-col gap-4 pt-4 border-t">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Page {pagination.page} of {pagination.pages} • Total {pagination.total} holders
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {/* Previous Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={pagination.page <= 1}
-                    data-testid="button-previous-page"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-                  
-                  {/* Page Numbers with First Page Button */}
-                  <div className="flex items-center gap-1">
-                    {/* First Page Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(1)}
-                      disabled={pagination.page <= 1}
-                      data-testid="button-first-page"
-                      className="h-8 w-8 p-0"
-                    >
-                      <ChevronsLeft className="h-4 w-4" />
-                    </Button>
-                    {(() => {
-                      const pages = [];
-                      const maxVisible = 5;
-                      let start = Math.max(1, pagination.page - Math.floor(maxVisible / 2));
-                      let end = Math.min(pagination.pages, start + maxVisible - 1);
-                      
-                      if (end - start < maxVisible - 1) {
-                        start = Math.max(1, end - maxVisible + 1);
-                      }
-                      
-                      if (start > 1) {
-                        pages.push(
-                          <Button
-                            key={1}
-                            variant={1 === pagination.page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(1)}
-                            className="w-8 h-8 p-0"
-                            data-testid="button-page-1"
-                          >
-                            1
-                          </Button>
-                        );
-                        if (start > 2) {
-                          pages.push(<span key="dots1" className="text-muted-foreground px-1">...</span>);
-                        }
-                      }
-                      
-                      for (let i = start; i <= end; i++) {
-                        pages.push(
-                          <Button
-                            key={i}
-                            variant={i === pagination.page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(i)}
-                            className="w-8 h-8 p-0"
-                            data-testid={`button-page-${i}`}
-                          >
-                            {i}
-                          </Button>
-                        );
-                      }
-                      
-                      if (end < pagination.pages) {
-                        if (end < pagination.pages - 1) {
-                          pages.push(<span key="dots2" className="text-muted-foreground px-1">...</span>);
-                        }
-                        pages.push(
-                          <Button
-                            key={pagination.pages}
-                            variant={pagination.pages === pagination.page ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(pagination.pages)}
-                            className="w-8 h-8 p-0"
-                            data-testid={`button-page-${pagination.pages}`}
-                          >
-                            {pagination.pages}
-                          </Button>
-                        );
-                      }
-                      
-                      return pages;
-                    })()}
-                  </div>
-                  
-                  {/* Next Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
-                    disabled={pagination.page >= pagination.pages}
-                    data-testid="button-next-page"
-                  >
-                    Next
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                  
-                  {/* Last Page Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(pagination.pages)}
-                    disabled={pagination.page >= pagination.pages}
-                    data-testid="button-last-page"
-                    className="h-8 w-8 p-0"
-                  >
-                    <ChevronsRight className="h-4 w-4" />
-                  </Button>
-                  
-                  {/* Go to Page Input - Moved to the right */}
-                  <div className="flex items-center gap-1 ml-2">
-                    <span className="text-sm text-muted-foreground">Go to page:</span>
-                    <Input
-                      type="number"
-                      min="1"
-                      max={pagination.pages}
-                      value={pageInput}
-                      onChange={(e) => setPageInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleGoToPage();
-                        }
-                      }}
-                      className="w-16 h-8"
-                      placeholder={`1-${pagination.pages}`}
-                      data-testid="input-go-to-page"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleGoToPage}
-                      disabled={!pageInput || parseInt(pageInput) < 1 || parseInt(pageInput) > pagination.pages}
-                      data-testid="button-go-to-page"
-                      className="h-8 px-2"
-                    >
-                      Go
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
