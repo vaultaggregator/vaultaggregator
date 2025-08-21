@@ -262,10 +262,10 @@ export const tokenHolders = pgTable("token_holders", {
   tokenAddress: text("token_address").notNull(),
   holderAddress: text("holder_address").notNull(),
   tokenBalance: text("token_balance").notNull(), // Raw token balance (in wei)
-  tokenBalanceFormatted: decimal("token_balance_formatted", { precision: 20, scale: 8 }), // Human readable balance
-  usdValue: decimal("usd_value", { precision: 20, scale: 2 }), // USD value of token holding
-  walletBalanceEth: decimal("wallet_balance_eth", { precision: 20, scale: 8 }), // Total ETH balance in wallet
-  walletBalanceUsd: decimal("wallet_balance_usd", { precision: 20, scale: 2 }), // Total wallet value in USD
+  tokenBalanceFormatted: decimal("token_balance_formatted", { precision: 30, scale: 8 }), // Human readable balance - increased for large holders
+  usdValue: decimal("usd_value", { precision: 30, scale: 2 }), // USD value of token holding - increased for whales
+  walletBalanceEth: decimal("wallet_balance_eth", { precision: 30, scale: 8 }), // Total ETH balance in wallet - increased
+  walletBalanceUsd: decimal("wallet_balance_usd", { precision: 30, scale: 2 }), // Total wallet value in USD - increased for whales
   poolSharePercentage: decimal("pool_share_percentage", { precision: 10, scale: 6 }), // Percentage of pool owned
   rank: integer("rank").notNull(), // Holder rank by balance
   lastUpdated: timestamp("last_updated").defaultNow(),
