@@ -3372,14 +3372,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let dataSource = 'etherscan'; // Track which service was used
       
       // Check if Alchemy is available and try it first for high-volume tokens
-      const { AlchemyService } = await import('./services/alchemyService');
-      const alchemy = new AlchemyService();
+      const { alchemyService } = await import('./services/alchemyService');
       
-      if (alchemy.isAvailable()) {
+      if (alchemyService.isAvailable()) {
         try {
           console.log('🚀 Using Alchemy API for enhanced data coverage...');
           // Alchemy can get much more historical data efficiently - fetch 90+ days for true "all time" coverage
-          allTransfers = await alchemy.getHistoricalTransfers(underlyingToken, 90, 15000);
+          allTransfers = await alchemyService.getHistoricalTransfers(underlyingToken, 90, 15000);
           dataSource = 'alchemy';
           console.log(`✓ Alchemy: Successfully fetched ${allTransfers.length} transfers`);
         } catch (error) {

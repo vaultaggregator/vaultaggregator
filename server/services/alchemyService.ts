@@ -282,6 +282,7 @@ export class AlchemyService {
             console.log(`✅ Reached limit of ${limit} holders`);
             break;
           }
+        }
       
       // Sort by balance descending
       holders.sort((a, b) => b.formattedBalance - a.formattedBalance);

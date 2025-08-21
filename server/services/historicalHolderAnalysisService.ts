@@ -1,4 +1,4 @@
-import { AlchemyService } from './alchemyService';
+import { alchemyService } from './alchemyService';
 
 interface HolderSnapshot {
   timestamp: Date;
@@ -17,24 +17,22 @@ interface HistoricalHolderAnalysis {
 }
 
 export class HistoricalHolderAnalysisService {
-  private alchemyService: AlchemyService;
-
   constructor() {
-    this.alchemyService = new AlchemyService();
+    // Use singleton AlchemyService instance
   }
 
   /**
    * Analyze historical holder counts from transfer data
    */
   async analyzeHistoricalHolders(tokenAddress: string): Promise<HistoricalHolderAnalysis | null> {
-    if (!this.alchemyService.isAvailable()) {
+    if (!alchemyService.isAvailable()) {
       return null;
     }
 
     try {
       // Get ALL transfers since token creation - increase days significantly  
       console.log(`🔍 DEBUG: Fetching comprehensive transfer history for ${tokenAddress}`);
-      const transfers = await this.alchemyService.getHistoricalTransfers(tokenAddress, 365, 15000); // Get 1 year of data
+      const transfers = await alchemyService.getHistoricalTransfers(tokenAddress, 365, 15000); // Get 1 year of data
       
       console.log(`🔍 DEBUG: Retrieved ${transfers.length} transfers`);
       

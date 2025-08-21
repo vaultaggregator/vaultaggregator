@@ -1,5 +1,5 @@
 import { EtherscanService } from './etherscanService.js';
-import { AlchemyService } from './alchemyService.js';
+import { alchemyService } from './alchemyService.js';
 import { storage } from '../storage.js';
 import type { Pool, InsertTokenHolder } from '@shared/schema.js';
 
@@ -16,16 +16,10 @@ export interface HolderData {
 
 export class HolderService {
   private etherscan: EtherscanService;
-  private alchemy: AlchemyService | null = null;
 
   constructor() {
     this.etherscan = new EtherscanService();
-    try {
-      this.alchemy = new AlchemyService();
-      console.log('✅ Alchemy service initialized for holder data');
-    } catch (error) {
-      console.log('⚠️ Alchemy service not available:', error);
-    }
+    console.log('✅ Using singleton Alchemy service for holder data');
   }
 
   private async logError(title: string, description: string, error: string, poolId?: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
@@ -88,9 +82,9 @@ export class HolderService {
         if (error instanceof Error && error.message === 'timeout') {
           console.log(`⏱️ Timeout fetching holders for ${pool.tokenPair} - using partial data`);
           // For Base network timeouts, try to get at least some holders
-          if (isBase && this.alchemy) {
+          if (isBase && alchemyService) {
             try {
-              holders = await this.alchemy.getTopTokenHolders(pool.poolAddress, 100, networkName);
+              holders = await alchemyService.getTopTokenHolders(pool.poolAddress, 100, networkName);
               console.log(`✅ Retrieved ${holders.length} holders using quick fetch`);
             } catch {
               holders = [];
@@ -161,13 +155,13 @@ export class HolderService {
       console.log(`🔍 Fetching token holders for ${tokenAddress}`);
       
       // Use Alchemy if available
-      if (this.alchemy) {
+      if (alchemyService) {
         try {
           // Fetch up to 2000 holders for all pools to ensure complete data
           const holderLimit = 2000;
           
           console.log(`📊 Fetching top ${holderLimit} holders for ${tokenAddress}`);
-          const holders = await this.alchemy.getTopTokenHolders(tokenAddress, holderLimit, networkName);
+          const holders = await alchemyService.getTopTokenHolders(tokenAddress, holderLimit, networkName);
           console.log(`✅ Fetched ${holders.length} holders from Alchemy`);
           
           // Convert to expected format
@@ -214,8 +208,8 @@ export class HolderService {
       }
 
       // PRIORITY 2: Try Alchemy price for regular tokens
-      if (this.alchemy) {
-        const price = await this.alchemy.getTokenPrice(tokenAddress);
+      if (alchemyService) {
+        const price = await alchemyService.getTokenPrice(tokenAddress);
         if (price > 0) {
           console.log(`💰 Alchemy price for ${tokenAddress}: $${price}`);
           return price;
@@ -266,9 +260,9 @@ export class HolderService {
       
       // Strategy 3: Try Alchemy's token price API
       // Using Alchemy instead of CoinGecko for better reliability
-      if (this.alchemy) {
+      if (alchemyService) {
         try {
-          const alchemyPrice = await this.alchemy.getTokenPrice(tokenAddress);
+          const alchemyPrice = await alchemyService.getTokenPrice(tokenAddress);
           if (alchemyPrice && alchemyPrice > 0) {
             console.log(`✅ Found Alchemy token price: ${alchemyPrice}`);
             return alchemyPrice;
@@ -391,9 +385,9 @@ export class HolderService {
       let walletBalanceUsd = 0;
       
       try {
-        if (this.alchemy) {
+        if (alchemyService) {
           // Get total portfolio value across all tokens and chains
-          walletBalanceUsd = await this.alchemy.getTotalPortfolioValue(holder.address);
+          walletBalanceUsd = await alchemyService.getTotalPortfolioValue(holder.address);
           
           // If portfolio value is 0 or very low, use the pool token value as minimum
           if (walletBalanceUsd < usdValue) {
@@ -401,7 +395,7 @@ export class HolderService {
           }
           
           // Also get ETH balance for display
-          walletBalanceEth = await this.alchemy.getEthBalance(holder.address);
+          walletBalanceEth = await alchemyService.getEthBalance(holder.address);
         } else {
           // Fallback to Etherscan (ETH only)
           const accountInfo = await this.etherscan.getAccountInfo(holder.address);

@@ -6,16 +6,14 @@
 import { db } from '../db';
 import { pools, tokenInfo } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
-import { AlchemyService } from './alchemyService';
+import { alchemyService } from './alchemyService';
 
 export class TokenMetadataService {
   private static instance: TokenMetadataService;
-  private alchemyService: AlchemyService;
   private metadataCache: Map<string, any> = new Map();
   
   private constructor() {
-    // Use cached AlchemyService instead of creating new instances
-    this.alchemyService = new AlchemyService();
+    // Use singleton AlchemyService instance for shared caching
   }
 
   static getInstance(): TokenMetadataService {
@@ -38,8 +36,8 @@ export class TokenMetadataService {
       
       console.log(`🪙 Fetching metadata for token ${tokenAddress.slice(0, 8)}...`);
 
-      // Get token metadata from cached AlchemyService
-      const metadata = await this.alchemyService.getTokenMetadata(tokenAddress, network);
+      // Get token metadata from singleton AlchemyService (with shared cache)
+      const metadata = await alchemyService.getTokenMetadata(tokenAddress, network);
 
       // Get additional market data
       const marketData = await this.getTokenMarketData(tokenAddress, network);
@@ -102,8 +100,8 @@ export class TokenMetadataService {
    */
   private async getTokenMarketData(tokenAddress: string, network: 'ethereum' | 'base') {
     try {
-      // Get token price from cached AlchemyService
-      const price = await this.alchemyService.getTokenPrice(tokenAddress, network);
+      // Get token price from singleton AlchemyService
+      const price = await alchemyService.getTokenPrice(tokenAddress, network);
 
       // Get 24h volume and other stats (simulated for now)
       const volume24h = Math.random() * 10000000; // Would come from real API
