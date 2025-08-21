@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { TokenLink } from "@/components/entity-links";
 import { 
   Info, 
   DollarSign, 
@@ -120,10 +121,36 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-lg font-semibold">
-                {tokenInfo?.name || "Unknown Token"}
+                <TokenLink
+                  token={{
+                    address: (tokenData as any).tokenAddress,
+                    symbol: tokenInfo?.symbol || "Unknown",
+                    name: tokenInfo?.name || "Unknown Token"
+                  }}
+                  chain={{
+                    id: '164641ea-b9e1-49a0-b655-334a73efabec', // Ethereum
+                    name: 'ethereum'
+                  }}
+                  className="text-lg font-semibold hover:text-blue-500"
+                >
+                  {tokenInfo?.name || "Unknown Token"}
+                </TokenLink>
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Symbol: {tokenInfo?.symbol || "N/A"}
+                Symbol: <TokenLink
+                  token={{
+                    address: (tokenData as any).tokenAddress,
+                    symbol: tokenInfo?.symbol || "Unknown",
+                    name: tokenInfo?.name || "Unknown Token"
+                  }}
+                  chain={{
+                    id: '164641ea-b9e1-49a0-b655-334a73efabec', // Ethereum
+                    name: 'ethereum'
+                  }}
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-500"
+                >
+                  {tokenInfo?.symbol || "N/A"}
+                </TokenLink>
               </p>
             </div>
             <div className="flex items-center gap-2">

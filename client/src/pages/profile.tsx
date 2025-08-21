@@ -24,7 +24,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import { ProtocolLink, NetworkLink, AddressLink } from "@/components/entity-links";
+import { ProtocolLink, NetworkLink, AddressLink, TokenLink } from "@/components/entity-links";
 
 interface ProtocolPosition {
   protocolName: string;
@@ -292,12 +292,30 @@ export default function ProfilePage() {
                         )}
                         <div>
                           <h3 className="font-semibold text-lg">
-                            {/* For now display as text since we don't have protocol IDs in mock data */}
-                            {protocol.protocolName}
+                            <ProtocolLink
+                              protocol={{
+                                id: protocol.protocolName.toLowerCase() === 'lido' ? 'lido-protocol-id' : 
+                                    protocol.protocolName.toLowerCase() === 'morpho' ? 'morpho-protocol-id' : 'unknown-protocol-id',
+                                name: protocol.protocolName.toLowerCase(),
+                                displayName: protocol.protocolName
+                              }}
+                              chain={{
+                                id: protocol.chain.toLowerCase() === 'ethereum' ? '164641ea-b9e1-49a0-b655-334a73efabec' : 'unknown-chain-id',
+                                name: protocol.chain.toLowerCase()
+                              }}
+                              className="font-semibold text-lg hover:text-blue-500"
+                            />
                           </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {/* For now display as text since we don't have chain IDs in mock data */}
-                            {protocol.chain} • Net: {formatCurrency(protocol.netPositionUsd)}
+                            <NetworkLink
+                              network={{
+                                id: protocol.chain.toLowerCase() === 'ethereum' ? '164641ea-b9e1-49a0-b655-334a73efabec' : 'unknown-chain-id',
+                                name: protocol.chain.toLowerCase(),
+                                displayName: protocol.chain
+                              }}
+                              className="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500"
+                            />
+                            {" • Net: "}{formatCurrency(protocol.netPositionUsd)}
                           </p>
                         </div>
                       </div>
@@ -322,7 +340,23 @@ export default function ProfilePage() {
                                 <div className="flex items-center gap-2">
                                   <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600" />
                                   <div>
-                                    <p className="font-medium">{asset.symbol}</p>
+                                    <p className="font-medium">
+                                      <TokenLink
+                                        token={{
+                                          address: asset.symbol.toLowerCase() === 'steth' ? '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' :
+                                                  asset.symbol.toLowerCase() === 'usdc' ? '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9' :
+                                                  asset.symbol.toLowerCase() === 'weth' ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' :
+                                                  '0x0000000000000000000000000000000000000000',
+                                          symbol: asset.symbol,
+                                          name: asset.token
+                                        }}
+                                        chain={{
+                                          id: '164641ea-b9e1-49a0-b655-334a73efabec',
+                                          name: 'ethereum'
+                                        }}
+                                        className="font-medium hover:text-blue-500"
+                                      />
+                                    </p>
                                     <p className="text-xs text-gray-500">{formatNumber(asset.amount)}</p>
                                   </div>
                                 </div>
@@ -352,7 +386,23 @@ export default function ProfilePage() {
                                 <div className="flex items-center gap-2">
                                   <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600" />
                                   <div>
-                                    <p className="font-medium">{asset.symbol}</p>
+                                    <p className="font-medium">
+                                      <TokenLink
+                                        token={{
+                                          address: asset.symbol.toLowerCase() === 'steth' ? '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' :
+                                                  asset.symbol.toLowerCase() === 'usdc' ? '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9' :
+                                                  asset.symbol.toLowerCase() === 'weth' ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' :
+                                                  '0x0000000000000000000000000000000000000000',
+                                          symbol: asset.symbol,
+                                          name: asset.token
+                                        }}
+                                        chain={{
+                                          id: '164641ea-b9e1-49a0-b655-334a73efabec',
+                                          name: 'ethereum'
+                                        }}
+                                        className="font-medium hover:text-blue-500"
+                                      />
+                                    </p>
                                     <p className="text-xs text-gray-500">{formatNumber(asset.amount)}</p>
                                   </div>
                                 </div>
@@ -401,7 +451,23 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600" />
                           <div>
-                            <p className="font-medium">{asset.symbol}</p>
+                            <p className="font-medium">
+                              <TokenLink
+                                token={{
+                                  address: asset.symbol.toLowerCase() === 'steth' ? '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' :
+                                          asset.symbol.toLowerCase() === 'usdc' ? '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9' :
+                                          asset.symbol.toLowerCase() === 'weth' ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' :
+                                          '0x0000000000000000000000000000000000000000',
+                                  symbol: asset.symbol,
+                                  name: asset.token || asset.symbol
+                                }}
+                                chain={{
+                                  id: '164641ea-b9e1-49a0-b655-334a73efabec',
+                                  name: 'ethereum'
+                                }}
+                                className="font-medium hover:text-blue-500"
+                              />
+                            </p>
                             <p className="text-sm text-gray-500">
                               {formatNumber(asset.balance)} • ${asset.price.toFixed(2)}
                             </p>

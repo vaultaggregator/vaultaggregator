@@ -88,19 +88,18 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
       <CardContent>
         <div className="space-y-4">
           {filteredPools.map((pool) => (
-            <Link key={pool.id} href={`/pool/${pool.id}`}>
-              <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-gray-100">
-                      <PoolLink
-                        pool={{
-                          id: pool.id,
-                          tokenPair: pool.tokenPair
-                        }}
-                        className="font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-500"
-                      />
-                    </h4>
+            <div key={pool.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">
+                    <PoolLink
+                      pool={{
+                        id: pool.id,
+                        tokenPair: pool.tokenPair
+                      }}
+                      className="font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-500"
+                    />
+                  </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       <ProtocolLink
                         protocol={{
@@ -139,7 +138,6 @@ function RelatedPools({ currentPoolId, platform, chainId }: {
                   </span>
                 </div>
               </div>
-            </Link>
           ))}
         </div>
       </CardContent>
