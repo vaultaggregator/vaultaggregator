@@ -65,6 +65,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const profileRoutes = (await import("./routes/profile")).default;
   app.use(profileRoutes);
 
+  // Import and register admin cache management routes
+  const adminCacheRoutes = (await import("./routes/admin-cache")).default;
+  app.use("/api/admin", adminCacheRoutes);
+
   // Import and register protocol routes
   const protocolRoutes = (await import("./routes/protocols")).default;
   app.use(protocolRoutes);

@@ -49,6 +49,24 @@ export const apiSettings = pgTable("api_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Cache Settings table for managing cache durations
+export const cacheSettings = pgTable("cache_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceName: varchar("service_name", { length: 100 }).notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  cacheDurationMs: integer("cache_duration_ms").notNull(), // Cache duration in milliseconds
+  cacheType: varchar("cache_type", { length: 50 }).notNull().default("memory"), // memory, redis, database
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  category: varchar("category", { length: 50 }).notNull().default("general"), // api, metadata, holders, pricing
+  maxEntries: integer("max_entries"), // Maximum cache entries (for memory caches)
+  hitCount: integer("hit_count").notNull().default(0), // Cache hit statistics
+  missCount: integer("miss_count").notNull().default(0), // Cache miss statistics
+  lastClearAt: timestamp("last_clear_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const apiKeyUsage = pgTable("api_key_usage", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   apiKeyId: varchar("api_key_id").references(() => apiKeys.id).notNull(),
@@ -1010,6 +1028,14 @@ export const insertErrorLogSchema = createInsertSchema(errorLogs).omit({
   count: true,
 });
 
+export const insertCacheSettingsSchema = createInsertSchema(cacheSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  hitCount: true,
+  missCount: true,
+});
+
 // Token Holders relation
 export const tokenHoldersRelations = relations(tokenHolders, ({ one }) => ({
   pool: one(pools, {
@@ -1057,6 +1083,9 @@ export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
 
 export type TokenHolder = typeof tokenHolders.$inferSelect;
 export type InsertTokenHolder = z.infer<typeof insertTokenHolderSchema>;
+
+export type CacheSetting = typeof cacheSettings.$inferSelect;
+export type InsertCacheSetting = typeof cacheSettings.$inferInsert;
 
 export type Platform = typeof platforms.$inferSelect;
 export type InsertPlatform = z.infer<typeof insertPlatformSchema>;

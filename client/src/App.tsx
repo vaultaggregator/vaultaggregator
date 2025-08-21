@@ -85,6 +85,7 @@ function Router() {
         <Route path="/admin/services" component={ServiceMonitor} />
         <Route path="/admin/api-settings" component={AdminApiSettings} />
         <Route path="/admin/cache-monitor" component={CacheMonitor} />
+        <Route path="/admin/cache-settings" component={lazy(() => import('./pages/admin/cache-settings'))} />
         <Route path="/admin/panel" component={AdminPanel} />
         <Route path="/admin/pools" component={AdminPools} />
         <Route path="/admin-pools" component={AdminPools} />
