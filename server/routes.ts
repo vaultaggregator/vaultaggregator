@@ -1751,6 +1751,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create token
+  app.post("/api/admin/tokens", requireAuth, async (req, res) => {
+    try {
+      const tokenData = req.body;
+      const newToken = await storage.createToken(tokenData);
+      res.status(201).json(newToken);
+    } catch (error) {
+      console.error("Error creating token:", error);
+      res.status(500).json({ message: "Failed to create token" });
+    }
+  });
+
   // Update token
   app.patch("/api/admin/tokens/:id", requireAuth, async (req, res) => {
     try {

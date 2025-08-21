@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Edit, Save, X, Eye, EyeOff, Plus, Search, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { PoolDataLoading } from "@/components/loading-animations";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -52,6 +58,15 @@ interface TokenInfo {
   updatedAt: Date | null;
 }
 
+const createTokenSchema = z.object({
+  chainId: z.string().min(1, "Network is required"),
+  address: z.string().min(1, "Address is required"),
+  name: z.string().min(1, "Name is required"),
+  symbol: z.string().min(1, "Symbol is required"),
+  decimals: z.number().min(0).max(50).default(18),
+  logoUrl: z.string().url().optional().or(z.literal("")),
+});
+
 export default function AdminTokensPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -61,6 +76,19 @@ export default function AdminTokensPage() {
   const [selectedNetwork, setSelectedNetwork] = useState<string>("");
   const [editingToken, setEditingToken] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{[key: string]: any}>({});
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+
+  const createForm = useForm<z.infer<typeof createTokenSchema>>({
+    resolver: zodResolver(createTokenSchema),
+    defaultValues: {
+      chainId: "",
+      address: "",
+      name: "",
+      symbol: "",
+      decimals: 18,
+      logoUrl: "",
+    },
+  });
 
   // Fetch user for authentication
   const { data: user, isLoading: userLoading } = useQuery<any>({
@@ -83,6 +111,30 @@ export default function AdminTokensPage() {
   const { data: tokenInfos = [] } = useQuery<TokenInfo[]>({
     queryKey: ["/api/admin/token-info"],
     staleTime: 30000,
+  });
+
+  // Create token mutation
+  const createTokenMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof createTokenSchema>) => {
+      const response = await apiRequest("POST", "/api/admin/tokens", data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/tokens"] });
+      setShowCreateDialog(false);
+      createForm.reset();
+      toast({
+        title: "Success",
+        description: "Token created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create token",
+        variant: "destructive",
+      });
+    },
   });
 
   // Update token mutation
@@ -284,7 +336,142 @@ export default function AdminTokensPage() {
         {/* Filters */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Filters</CardTitle>
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2" data-testid="button-create-token">
+                    <Plus className="w-4 h-4" />
+                    Create Token
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Create New Token</DialogTitle>
+                  </DialogHeader>
+                  <Form {...createForm}>
+                    <form onSubmit={createForm.handleSubmit((data) => createTokenMutation.mutate(data))} className="space-y-4">
+                      <FormField
+                        control={createForm.control}
+                        name="chainId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Network</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select network" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {networks.filter(n => n.isActive).map((network) => (
+                                  <SelectItem key={network.id} value={network.id}>
+                                    {network.displayName}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={createForm.control}
+                        name="address"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Contract Address</FormLabel>
+                            <FormControl>
+                              <Input placeholder="0x..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={createForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Token Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., Ethereum" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={createForm.control}
+                        name="symbol"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Symbol</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., ETH" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={createForm.control}
+                        name="decimals"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Decimals</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0" 
+                                max="50" 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 18)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={createForm.control}
+                        name="logoUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Logo URL (Optional)</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setShowCreateDialog(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={createTokenMutation.isPending}
+                        >
+                          {createTokenMutation.isPending ? "Creating..." : "Create Token"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
