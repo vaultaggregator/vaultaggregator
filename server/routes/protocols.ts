@@ -12,22 +12,26 @@ router.get("/api/protocols/:chainId/:protocolId", async (req, res) => {
     
     console.log(`📊 Fetching protocol details for ${protocolId} on chain ${chainId}`);
 
-    // Get the network info - search by chainId not by UUID id
+    // Check if chainId is UUID (database ID) or actual chainId
+    const isChainUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(chainId);
+    const isProtocolUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(protocolId);
+    
+    // Get the network info
     const network = await db
       .select()
       .from(networks)
-      .where(eq(networks.chainId, chainId))
+      .where(isChainUUID ? eq(networks.id, chainId) : eq(networks.name, chainId))
       .limit(1);
 
     if (!network || network.length === 0) {
       return res.status(404).json({ error: "Network not found" });
     }
 
-    // Get the protocol info - search by protocol_id not by UUID id
+    // Get the protocol info
     const protocol = await db
       .select()
       .from(protocols)
-      .where(eq(protocols.protocolId, protocolId))
+      .where(isProtocolUUID ? eq(protocols.id, protocolId) : eq(protocols.name, protocolId))
       .limit(1);
 
     if (!protocol || protocol.length === 0) {
@@ -49,8 +53,8 @@ router.get("/api/protocols/:chainId/:protocolId", async (req, res) => {
       .from(pools)
       .where(
         and(
-          eq(pools.platformId, protocolId),
-          eq(pools.chainId, chainId)
+          eq(pools.platformId, protocolData.id),
+          eq(pools.chainId, networkData.id)
         )
       );
 
