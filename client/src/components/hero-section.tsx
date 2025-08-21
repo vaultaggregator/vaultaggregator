@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { AppStats } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeFiTooltip } from "./metric-tooltip";
+import { formatNumber } from "@/lib/format";
 
 export default function HeroSection() {
   const { data: stats, isLoading } = useQuery<AppStats>({
@@ -70,7 +71,7 @@ export default function HeroSection() {
               ) : (
                 <>
                   <div className="text-xl sm:text-2xl font-bold" data-testid="stat-total-tvl">
-                    ${stats?.totalTvl || '0'}
+                    {stats?.totalTvl ? formatNumber(parseFloat(stats.totalTvl), { currency: '$' }) : '$0'}
                   </div>
                   <div className="text-sm sm:text-base text-gray-200">Total TVL</div>
                 </>
