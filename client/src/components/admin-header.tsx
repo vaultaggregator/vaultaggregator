@@ -44,7 +44,7 @@ export function AdminHeader() {
         { path: "/admin-platforms", icon: Database, label: "Platforms" },
         { path: "/admin-networks", icon: Settings, label: "Networks" },
         { path: "/admin-categories", icon: Tag, label: "Categories" },
-        { path: "/admin-content", icon: FileText, label: "Content" },
+
         { path: "/admin-monitoring", icon: Eye, label: "Monitoring" },
       ]
     },

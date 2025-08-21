@@ -35,7 +35,7 @@ import AdminApiSettings from "@/pages/AdminApiSettings";
 import AdminUsers from "@/pages/admin-users";
 import AdminSecurity from "@/pages/admin-security";
 import AdminAnalytics from "@/pages/admin-analytics";
-import AdminContent from "@/pages/admin-content";
+
 import AdminMonitoring from "@/pages/admin-monitoring";
 import AdminErrorManagement from "@/pages/admin-error-management";
 
@@ -82,8 +82,7 @@ function Router() {
       <Route path="/admin-security" component={AdminSecurity} />
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin-analytics" component={AdminAnalytics} />
-      <Route path="/admin/content" component={AdminContent} />
-      <Route path="/admin-content" component={AdminContent} />
+
       <Route path="/admin/monitoring" component={AdminMonitoring} />
       <Route path="/admin-monitoring" component={AdminMonitoring} />
 
