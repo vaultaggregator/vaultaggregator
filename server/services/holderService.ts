@@ -65,7 +65,8 @@ export class HolderService {
       
       // Special handling for Base network pools - use timeout wrapper
       const isBase = networkName?.toLowerCase() === 'base';
-      const timeoutMs = isBase ? 45000 : 90000; // 45s for Base, 90s for others (increased for pools with many holders)
+      // Increased timeouts: 60s for Base, 120s for others to handle pools with many holders
+      const timeoutMs = isBase ? 60000 : 120000;
       
       // Create a timeout promise
       const timeoutPromise = new Promise<any[]>((_, reject) => {
@@ -160,10 +161,23 @@ export class HolderService {
       if (moralisService.isAvailable()) {
         try {
           console.log(`🔄 Attempting Moralis fetch for ${tokenAddress} on ${networkName}`);
+          
+          // For known problematic pools with many holders, use smaller batch size
+          const problematicPools = [
+            '0xbeef047a543e45807105e51a8bbefc5950fcfba', // Steakhouse USDT - 290 holders
+            '0x777791c4d6dc2ce140d00d2828a7c93503c67777'  // Hyperithm USDC - 129 holders
+          ];
+          const isProblematicPool = problematicPools.includes(tokenAddress.toLowerCase());
+          const maxHolders = isProblematicPool ? 300 : 1000; // Limit problematic pools
+          
+          if (isProblematicPool) {
+            console.log(`⚠️ Known problematic pool detected, limiting to ${maxHolders} holders`);
+          }
+          
           const moralisHolders = await moralisService.getAllTokenHolders(
             tokenAddress, 
             networkName || 'ethereum', 
-            1000 // Limit to 1000 for cost optimization
+            maxHolders
           );
           
           if (moralisHolders && moralisHolders.length > 0) {

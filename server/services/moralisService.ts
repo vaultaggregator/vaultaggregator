@@ -140,15 +140,20 @@ export class MoralisService {
     const allHolders: MoralisTokenHolder[] = [];
     let cursor: string | undefined;
     let totalFetched = 0;
+    let pageCount = 0;
 
     try {
       while (totalFetched < maxHolders) {
         const remainingLimit = Math.min(100, maxHolders - totalFetched);
+        pageCount++;
         
+        console.log(`📄 Fetching page ${pageCount} (up to ${remainingLimit} holders)...`);
         const response = await this.getTokenHolders(address, network, remainingLimit, cursor);
         
         allHolders.push(...response.result);
         totalFetched += response.result.length;
+        
+        console.log(`✅ Page ${pageCount}: Got ${response.result.length} holders (total: ${totalFetched})`);
         
         // Break if no more data or we've reached our limit
         if (!response.cursor || response.result.length === 0) {
@@ -157,8 +162,9 @@ export class MoralisService {
         
         cursor = response.cursor;
         
-        // Small delay to respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Reduced delay to 50ms for faster pagination
+        // Moralis has generous rate limits
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       console.log(`🎯 Moralis fetched ${allHolders.length} total holders for ${address}`);
