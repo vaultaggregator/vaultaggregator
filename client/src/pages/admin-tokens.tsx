@@ -60,11 +60,7 @@ interface TokenInfo {
 
 const createTokenSchema = z.object({
   chainId: z.string().min(1, "Network is required"),
-  address: z.string().min(1, "Address is required"),
-  name: z.string().min(1, "Name is required"),
-  symbol: z.string().min(1, "Symbol is required"),
-  decimals: z.number().min(0).max(50).default(18),
-  logoUrl: z.string().url().optional().or(z.literal("")),
+  address: z.string().min(1, "Contract address is required"),
 });
 
 export default function AdminTokensPage() {
@@ -83,10 +79,6 @@ export default function AdminTokensPage() {
     defaultValues: {
       chainId: "",
       address: "",
-      name: "",
-      symbol: "",
-      decimals: 18,
-      logoUrl: "",
     },
   });
 
@@ -387,67 +379,7 @@ export default function AdminTokensPage() {
                         )}
                       />
 
-                      <FormField
-                        control={createForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Token Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., Ethereum" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
 
-                      <FormField
-                        control={createForm.control}
-                        name="symbol"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Symbol</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., ETH" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={createForm.control}
-                        name="decimals"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Decimals</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="0" 
-                                max="50" 
-                                {...field} 
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 18)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={createForm.control}
-                        name="logoUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Logo URL (Optional)</FormLabel>
-                            <FormControl>
-                              <Input placeholder="https://..." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
 
                       <div className="flex justify-end space-x-2 pt-4">
                         <Button 
