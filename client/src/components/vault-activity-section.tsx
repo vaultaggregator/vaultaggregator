@@ -266,41 +266,9 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
   return (
     <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            <CardTitle>Last 5 Transfers</CardTitle>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
-              <SelectTrigger className="w-[140px] h-8">
-                <SelectValue placeholder="All transactions" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Transactions</SelectItem>
-                <SelectItem value="deposit">Deposits Only</SelectItem>
-                <SelectItem value="withdraw">Withdrawals Only</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant={autoRefresh ? "default" : "outline"}
-              size="sm"
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className="h-8"
-            >
-              <RefreshCw className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`} />
-              {autoRefresh ? 'Auto' : 'Manual'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              className="h-8"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <Activity className="h-5 w-5" />
+          <CardTitle>Last 5 Transfers</CardTitle>
         </div>
         <CardDescription>
           Recent deposits and withdrawals from the vault
