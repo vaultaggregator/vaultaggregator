@@ -182,7 +182,7 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
     
     const { open, high, low, close } = payload;
     const isPositive = close > open;
-    const color = isPositive ? '#16a34a' : '#dc2626';
+    const color = isPositive ? '#14b8a6' : '#ef4444'; // Teal for positive, red for negative
     const bodyHeight = Math.abs(close - open) * height / (payload.high - payload.low || 1);
     const bodyY = y + (Math.max(open, close) - payload.high) * height / (payload.high - payload.low || 1);
     
@@ -195,16 +195,17 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
           x2={x + width / 2}
           y2={y + height}
           stroke={color}
-          strokeWidth={1}
+          strokeWidth={1.5}
         />
         {/* Body */}
         <rect
-          x={x + width * 0.2}
+          x={x + width * 0.25}
           y={bodyY}
-          width={width * 0.6}
-          height={Math.max(bodyHeight, 1)}
+          width={width * 0.5}
+          height={Math.max(bodyHeight, 2)}
           fill={color}
           stroke={color}
+          rx={1}
         />
       </g>
     );
@@ -216,33 +217,33 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
       if (!data) return null;
       
       return (
-        <div className="bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-100 p-3 rounded-lg shadow-xl border border-gray-700 dark:border-gray-600 text-sm">
-          <p className="font-semibold mb-2 text-gray-300">{label}</p>
-          <div className="space-y-1">
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-gray-400">Open:</span>
-              <span className="font-mono">{data.open}%</span>
+        <div className="bg-slate-950/95 backdrop-blur-md text-white p-4 rounded-xl shadow-2xl border border-slate-700/50 text-sm min-w-[200px]">
+          <p className="font-semibold mb-3 text-slate-200 text-base">{label}</p>
+          <div className="space-y-2.5">
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-slate-400 text-sm">Open:</span>
+              <span className="font-mono text-slate-200 font-medium">{data.open?.toFixed(2)}%</span>
             </div>
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-gray-400">High:</span>
-              <span className="font-mono text-green-400">{data.high}%</span>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-slate-400 text-sm">High:</span>
+              <span className="font-mono text-teal-400 font-medium">{data.high?.toFixed(2)}%</span>
             </div>
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-gray-400">Low:</span>
-              <span className="font-mono text-red-400">{data.low}%</span>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-slate-400 text-sm">Low:</span>
+              <span className="font-mono text-red-400 font-medium">{data.low?.toFixed(2)}%</span>
             </div>
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-gray-400">Close:</span>
-              <span className="font-mono">{data.close}%</span>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-slate-400 text-sm">Close:</span>
+              <span className="font-mono text-white font-semibold">{data.close?.toFixed(2)}%</span>
             </div>
-            <div className="flex justify-between items-center gap-4">
-              <span className="text-gray-400">Volume:</span>
-              <span className="font-mono">{formatNumber(data.volume, { currency: '$', maxDecimals: 2 })}</span>
+            <div className="flex justify-between items-center gap-6">
+              <span className="text-slate-400 text-sm">Volume:</span>
+              <span className="font-mono text-slate-300 font-medium">{formatNumber(data.volume, { currency: '$', maxDecimals: 2 })}</span>
             </div>
             {data.changePercent !== 0 && (
-              <div className="flex justify-between items-center gap-4 pt-1 border-t border-gray-700">
-                <span className="text-gray-400">Change:</span>
-                <span className={`font-mono ${data.changePercent > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <div className="flex justify-between items-center gap-6 pt-2 mt-3 border-t border-slate-700/50">
+                <span className="text-slate-400 text-sm">Change:</span>
+                <span className={`font-mono font-semibold ${data.changePercent > 0 ? 'text-teal-400' : 'text-red-400'}`}>
                   {data.changePercent > 0 ? '+' : ''}{data.changePercent.toFixed(2)}%
                 </span>
               </div>
@@ -276,29 +277,31 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
   }
 
   return (
-    <Card className="w-full bg-gray-900 border-gray-800 text-white">
-      <CardHeader className="pb-4 bg-gray-900">
+    <Card className="w-full bg-slate-950/90 backdrop-blur-sm border-slate-800/60 text-white shadow-xl">
+      <CardHeader className="pb-6 bg-gradient-to-b from-slate-950/95 to-slate-950/80 border-b border-slate-800/40">
         {/* Main Header */}
-        <div className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-5">
           {/* Title and Current Price */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex items-center space-x-4">
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center">
+                <h2 className="text-xl font-semibold text-white flex items-center">
                   {poolName}
-                  <span className="text-sm font-normal text-gray-400 ml-2">APY</span>
+                  <span className="text-sm font-normal text-slate-400 ml-3 bg-slate-800/50 px-2 py-1 rounded-md">APY</span>
                 </h2>
-                <div className="flex items-center space-x-2 mt-1">
-                  <span className="text-2xl font-bold text-white">
+                <div className="flex items-center space-x-3 mt-2">
+                  <span className="text-3xl font-bold text-white tracking-tight">
                     {stats.currentPrice.toFixed(2)}%
                   </span>
-                  <div className={`flex items-center text-sm px-2 py-1 rounded ${
-                    stats.changePercent >= 0 ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
+                  <div className={`flex items-center text-sm px-3 py-1.5 rounded-lg font-medium ${
+                    stats.changePercent >= 0 
+                      ? 'bg-teal-500/10 text-teal-400 border border-teal-500/20' 
+                      : 'bg-red-500/10 text-red-400 border border-red-500/20'
                   }`}>
                     {stats.changePercent >= 0 ? (
-                      <ChevronUp className="w-3 h-3 mr-1" />
+                      <ChevronUp className="w-3.5 h-3.5 mr-1" />
                     ) : (
-                      <ChevronDown className="w-3 h-3 mr-1" />
+                      <ChevronDown className="w-3.5 h-3.5 mr-1" />
                     )}
                     {stats.changePercent >= 0 ? '+' : ''}{stats.changePercent.toFixed(2)}%
                   </div>
@@ -307,12 +310,16 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
             </div>
             
             {/* Chart Type Toggle */}
-            <div className="flex gap-1 bg-gray-800 rounded-lg p-1">
+            <div className="flex gap-0.5 bg-slate-800/60 rounded-lg p-1 backdrop-blur-sm">
               <Button
                 variant={chartType === 'candlestick' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartType('candlestick')}
-                className={`text-xs px-3 py-1 ${chartType === 'candlestick' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`text-xs px-4 py-2 rounded-md transition-all duration-200 ${
+                  chartType === 'candlestick' 
+                    ? 'bg-teal-600 text-white shadow-md' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
               >
                 Candles
               </Button>
@@ -320,7 +327,11 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                 variant={chartType === 'line' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartType('line')}
-                className={`text-xs px-3 py-1 ${chartType === 'line' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`text-xs px-4 py-2 rounded-md transition-all duration-200 ${
+                  chartType === 'line' 
+                    ? 'bg-teal-600 text-white shadow-md' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
               >
                 Line
               </Button>
@@ -328,7 +339,11 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                 variant={chartType === 'area' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setChartType('area')}
-                className={`text-xs px-3 py-1 ${chartType === 'area' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`text-xs px-4 py-2 rounded-md transition-all duration-200 ${
+                  chartType === 'area' 
+                    ? 'bg-teal-600 text-white shadow-md' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                }`}
               >
                 Area
               </Button>
@@ -343,10 +358,10 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedPeriod(period.key)}
-                className={`text-xs px-3 py-1 ${
+                className={`text-xs px-4 py-2 rounded-md transition-all duration-200 font-medium ${
                   selectedPeriod === period.key 
-                    ? 'bg-gray-700 text-white' 
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    ? 'bg-slate-700/60 text-white border border-slate-600/40' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
                 }`}
               >
                 {period.label}
@@ -355,22 +370,22 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
           </div>
 
           {/* Trading Statistics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-            <div>
-              <span className="text-gray-400">24h High</span>
-              <div className="text-green-400 font-mono">{stats.high24h.toFixed(2)}%</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
+            <div className="space-y-1">
+              <span className="text-slate-500 text-xs font-medium">24h High</span>
+              <div className="text-teal-400 font-semibold text-base">{stats.high24h.toFixed(2)}%</div>
             </div>
-            <div>
-              <span className="text-gray-400">24h Low</span>
-              <div className="text-red-400 font-mono">{stats.low24h.toFixed(2)}%</div>
+            <div className="space-y-1">
+              <span className="text-slate-500 text-xs font-medium">24h Low</span>
+              <div className="text-red-400 font-semibold text-base">{stats.low24h.toFixed(2)}%</div>
             </div>
-            <div>
-              <span className="text-gray-400">24h Volume</span>
-              <div className="text-gray-300 font-mono">{formatNumber(stats.volume24h, { currency: '$', maxDecimals: 2 })}</div>
+            <div className="space-y-1">
+              <span className="text-slate-500 text-xs font-medium">24h Volume</span>
+              <div className="text-slate-200 font-semibold text-base">{formatNumber(stats.volume24h, { currency: '$', maxDecimals: 2 })}</div>
             </div>
-            <div>
-              <span className="text-gray-400">Change</span>
-              <div className={`font-mono ${stats.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className="space-y-1">
+              <span className="text-slate-500 text-xs font-medium">Change</span>
+              <div className={`font-semibold text-base ${stats.change >= 0 ? 'text-teal-400' : 'text-red-400'}`}>
                 {stats.change >= 0 ? '+' : ''}{stats.change.toFixed(3)}%
               </div>
             </div>
@@ -378,30 +393,65 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
         </div>
       </CardHeader>
 
-      <CardContent className="p-0 bg-gray-900">
+      <CardContent className="p-0 bg-slate-950/80 backdrop-blur-sm">
         {/* Main Chart */}
         <div className="h-80 w-full relative">
           <ResponsiveContainer width="100%" height="100%">
             {chartType === 'candlestick' ? (
-              <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="1 1" stroke="#374151" opacity={0.3} />
+              <ComposedChart data={chartData} margin={{ top: 20, right: 40, left: 40, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="candleGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.4}/>
+                    <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.05}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="2 2" 
+                  stroke="#1e293b" 
+                  opacity={0.4}
+                  horizontal={true}
+                  vertical={false}
+                />
                 <XAxis 
                   dataKey="formattedDate" 
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  axisLine={{ stroke: '#374151' }}
-                  tickLine={{ stroke: '#374151' }}
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
                   interval="preserveStartEnd"
+                  dy={10}
                 />
                 <YAxis 
-                  domain={['dataMin - 0.1', 'dataMax + 0.1']}
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  axisLine={{ stroke: '#374151' }}
-                  tickLine={{ stroke: '#374151' }}
-                  tickFormatter={(value) => `${value.toFixed(2)}%`}
+                  domain={['dataMin - 0.5', 'dataMax + 0.5']}
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) => `${value.toFixed(1)}%`}
+                  orientation="right"
+                  width={60}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 
-                {/* Moving Averages */}
+                {/* Subtle background fill */}
+                <Area 
+                  type="monotone" 
+                  dataKey="close" 
+                  stroke="transparent" 
+                  strokeWidth={0}
+                  fillOpacity={1}
+                  fill="url(#candleGradient)"
+                />
+                
+                {/* Main line */}
+                <Line 
+                  type="monotone" 
+                  dataKey="close" 
+                  stroke="#14b8a6" 
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 5, fill: '#14b8a6', stroke: '#0f172a', strokeWidth: 2 }}
+                />
+                
+                {/* Moving Averages - more subtle */}
                 <Line 
                   type="monotone" 
                   dataKey="ma7" 
@@ -409,7 +459,7 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                   strokeWidth={1}
                   dot={false}
                   name="MA(7)"
-                  opacity={0.7}
+                  opacity={0.5}
                 />
                 <Line 
                   type="monotone" 
@@ -418,7 +468,7 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                   strokeWidth={1}
                   dot={false}
                   name="MA(25)"
-                  opacity={0.7}
+                  opacity={0.5}
                 />
                 
                 {/* Custom candlestick bars */}
@@ -429,37 +479,66 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                 />
               </ComposedChart>
             ) : chartType === 'line' ? (
-              <LineChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="1 1" stroke="#374151" opacity={0.3} />
+              <LineChart data={chartData} margin={{ top: 20, right: 40, left: 40, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.3}/>
+                    <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.02}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid 
+                  strokeDasharray="2 2" 
+                  stroke="#1e293b" 
+                  opacity={0.4}
+                  horizontal={true}
+                  vertical={false}
+                />
                 <XAxis 
                   dataKey="formattedDate" 
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  axisLine={{ stroke: '#374151' }}
-                  tickLine={{ stroke: '#374151' }}
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
                   interval="preserveStartEnd"
+                  dy={10}
                 />
                 <YAxis 
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  axisLine={{ stroke: '#374151' }}
-                  tickLine={{ stroke: '#374151' }}
-                  tickFormatter={(value) => `${value.toFixed(2)}%`}
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) => `${value.toFixed(1)}%`}
+                  orientation="right"
+                  width={60}
                 />
                 <Tooltip content={<CustomTooltip />} />
+                
+                {/* Subtle background fill */}
+                <Area 
+                  type="monotone" 
+                  dataKey="close" 
+                  stroke="transparent" 
+                  strokeWidth={0}
+                  fillOpacity={1}
+                  fill="url(#lineGradient)"
+                />
+                
+                {/* Main line with teal color like Pendle */}
                 <Line 
                   type="monotone" 
                   dataKey="close" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
+                  stroke="#14b8a6" 
+                  strokeWidth={2.5}
                   dot={false}
-                  activeDot={{ r: 4, fill: '#3b82f6' }}
+                  activeDot={{ r: 5, fill: '#14b8a6', stroke: '#0f172a', strokeWidth: 2 }}
                 />
+                
+                {/* Moving Averages - more subtle */}
                 <Line 
                   type="monotone" 
                   dataKey="ma7" 
                   stroke="#f59e0b" 
                   strokeWidth={1}
                   dot={false}
-                  opacity={0.7}
+                  opacity={0.5}
                 />
                 <Line 
                   type="monotone" 
@@ -467,39 +546,50 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
                   stroke="#8b5cf6" 
                   strokeWidth={1}
                   dot={false}
-                  opacity={0.7}
+                  opacity={0.5}
                 />
               </LineChart>
             ) : (
-              <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="1 1" stroke="#374151" opacity={0.3} />
-                <XAxis 
-                  dataKey="formattedDate" 
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  axisLine={{ stroke: '#374151' }}
-                  tickLine={{ stroke: '#374151' }}
-                  interval="preserveStartEnd"
-                />
-                <YAxis 
-                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
-                  axisLine={{ stroke: '#374151' }}
-                  tickLine={{ stroke: '#374151' }}
-                  tickFormatter={(value) => `${value.toFixed(2)}%`}
-                />
-                <Tooltip content={<CustomTooltip />} />
+              <AreaChart data={chartData} margin={{ top: 20, right: 40, left: 40, bottom: 20 }}>
                 <defs>
                   <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.6}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                    <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.4}/>
+                    <stop offset="50%" stopColor="#14b8a6" stopOpacity={0.2}/>
+                    <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.02}/>
                   </linearGradient>
                 </defs>
+                <CartesianGrid 
+                  strokeDasharray="2 2" 
+                  stroke="#1e293b" 
+                  opacity={0.4}
+                  horizontal={true}
+                  vertical={false}
+                />
+                <XAxis 
+                  dataKey="formattedDate" 
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                  dy={10}
+                />
+                <YAxis 
+                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) => `${value.toFixed(1)}%`}
+                  orientation="right"
+                  width={60}
+                />
+                <Tooltip content={<CustomTooltip />} />
                 <Area 
                   type="monotone" 
                   dataKey="close" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
+                  stroke="#14b8a6" 
+                  strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#areaGradient)"
+                  activeDot={{ r: 5, fill: '#14b8a6', stroke: '#0f172a', strokeWidth: 2 }}
                 />
               </AreaChart>
             )}
@@ -507,36 +597,47 @@ export function InteractivePoolChart({ poolId, poolName, currentApy, currentTvl 
         </div>
         
         {/* Volume Chart */}
-        <div className="h-20 w-full border-t border-gray-800">
+        <div className="h-24 w-full border-t border-slate-800/40">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="1 1" stroke="#374151" opacity={0.2} />
+            <BarChart data={chartData} margin={{ top: 10, right: 40, left: 40, bottom: 15 }}>
+              <CartesianGrid 
+                strokeDasharray="2 2" 
+                stroke="#1e293b" 
+                opacity={0.3}
+                horizontal={false}
+                vertical={false}
+              />
               <XAxis 
                 dataKey="formattedDate" 
-                tick={{ fontSize: 9, fill: '#9CA3AF' }}
-                axisLine={{ stroke: '#374151' }}
-                tickLine={{ stroke: '#374151' }}
+                tick={{ fontSize: 10, fill: '#64748b' }}
+                axisLine={false}
+                tickLine={false}
                 interval="preserveStartEnd"
+                hide={true}
               />
               <YAxis 
-                tick={{ fontSize: 9, fill: '#9CA3AF' }}
-                axisLine={{ stroke: '#374151' }}
-                tickLine={{ stroke: '#374151' }}
+                tick={{ fontSize: 10, fill: '#64748b' }}
+                axisLine={false}
+                tickLine={false}
                 tickFormatter={(value) => formatNumber(value, { currency: '$', maxDecimals: 1 })}
+                orientation="right"
+                width={50}
               />
               <Tooltip 
                 formatter={(value: any) => [formatNumber(value, { currency: '$', maxDecimals: 2 }), 'Volume']}
-                labelStyle={{ color: '#9CA3AF' }}
+                labelStyle={{ color: '#64748b', fontSize: '12px' }}
                 contentStyle={{ 
-                  backgroundColor: '#1f2937', 
-                  border: '1px solid #374151',
-                  borderRadius: '6px'
+                  backgroundColor: '#0f172a', 
+                  border: '1px solid #1e293b',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                 }}
               />
               <Bar 
                 dataKey="volume" 
-                fill="#4b5563"
-                opacity={0.7}
+                fill="#14b8a6"
+                opacity={0.6}
+                radius={[1, 1, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
