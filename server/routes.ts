@@ -7,8 +7,7 @@ import crypto from "crypto";
 import { db } from "./db";
 import { and, eq, desc, asc, like, or, sql, count, gte, lte, isNotNull, isNull, inArray } from "drizzle-orm";
 import { morphoService } from "./services/morphoService";
-import { WebSocketServer, WebSocket } from 'ws';
-import { smartWebSocketService } from './services/smartWebSocketService';
+
 
 import session from "express-session";
 import bcrypt from "bcrypt";
@@ -3848,102 +3847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
-  // DISABLED: WebSocket server per user request
-  // const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-  
-  // DISABLED: Smart WebSocket service initialization
-  // smartWebSocketService.initializeWebSocketServer(wss);
-  
-  // DISABLED: Real-time blockchain monitoring to prevent excessive API usage
-  // This was monitoring EVERY block on Ethereum (~7,200/day) and Base (~43,200/day)
-  // causing millions of Alchemy API requests. Only enable with proper rate limiting.
-  // smartWebSocketService.startRealTimeMonitoring().catch(error => {
-  //   console.error('Failed to start Smart WebSocket monitoring:', error);
-  // });
-  
-  // DISABLED: WebSocket connections handling
-  const wsConnections = new Set<WebSocket>();
-  
-  // DISABLED: WebSocket connection handler
-  // wss.on('connection', (ws: WebSocket) => {
-  //   console.log('📡 WebSocket connection established');
-  //   wsConnections.add(ws);
-  //   
-  //   // Send initial connection confirmation
-  //   ws.send(JSON.stringify({
-  //     type: 'connection',
-  //     status: 'connected',
-  //     timestamp: Date.now()
-  //   }));
-  //   
-  //   ws.on('close', () => {
-  //     console.log('📡 WebSocket connection closed');
-  //     wsConnections.delete(ws);
-  //   });
-  //   
-  //   ws.on('error', (error) => {
-  //     console.error('📡 WebSocket error:', error);
-  //     wsConnections.delete(ws);
-  //   });
-  // });
-  
-  console.log('⚠️ WebSocket server DISABLED per user request');
-  
-  // Real-time APY update service
-  const broadcastApyUpdate = (poolId: string, apy: string, timestamp: number) => {
-    const message = JSON.stringify({
-      type: 'apy_update',
-      poolId,
-      apy,
-      timestamp
-    });
-    
-    wsConnections.forEach(ws => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(message);
-      }
-    });
-  };
-  
-  // Database-first WebSocket broadcast system
-  const broadcastDatabaseChange = (poolId: string, apy: string, timestamp: number) => {
-    // Only broadcast when database is actually updated by scrapers
-    broadcastApyUpdate(poolId, apy, timestamp);
-  };
-  
-  // Test endpoint to manually trigger WebSocket animation for debugging
-  app.post("/api/admin/websocket/test-animation", async (req, res) => {
-    try {
-      // Get the first pool to test with
-      const pools = await db.select().from(poolMetricsCurrent).limit(1);
-      if (pools.length === 0) {
-        return res.status(404).json({ error: "No pools found for testing" });
-      }
-      
-      const testPool = pools[0];
-      const currentApy = parseFloat(testPool.apy || "4.49");
-      // Add a small random variation to trigger animation (±0.01%)
-      const variation = (Math.random() - 0.5) * 0.02;
-      const newApy = (currentApy + variation).toFixed(2);
-      
-      console.log(`🧪 Testing WebSocket animation: Pool ${testPool.poolId} APY ${currentApy}% → ${newApy}%`);
-      
-      // Broadcast the test update
-      broadcastApyUpdate(testPool.poolId, newApy, Date.now());
-      
-      res.json({ 
-        success: true, 
-        message: "Test APY update broadcasted",
-        poolId: testPool.poolId,
-        oldApy: currentApy.toFixed(2) + "%",
-        newApy: newApy + "%",
-        connectedClients: wsConnections.size
-      });
-    } catch (error) {
-      console.error("Error testing WebSocket animation:", error);
-      res.status(500).json({ error: "Failed to test WebSocket animation" });
-    }
-  });
+
   
   // Import and start the new database-first scheduler
   const { databaseScheduler } = await import('./services/database-scheduler');
