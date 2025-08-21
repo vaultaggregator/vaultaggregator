@@ -1,5 +1,7 @@
 import { useParams, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -121,7 +123,9 @@ export default function NetworkDetail() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl">
+      <>
+        <Header />
+        <div className="container mx-auto p-6 max-w-7xl">
         <div className="mb-8">
           <Skeleton className="h-12 w-64 mb-4" />
           <Skeleton className="h-6 w-96" />
@@ -154,13 +158,17 @@ export default function NetworkDetail() {
             </CardContent>
           </Card>
         </div>
-      </div>
+        </div>
+        <Footer />
+      </>
     );
   }
 
   if (error || !networkData) {
     return (
-      <div className="container mx-auto p-6 max-w-7xl">
+      <>
+        <Header />
+        <div className="container mx-auto p-6 max-w-7xl">
         <Card className="border-red-500/20">
           <CardContent className="p-12 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -171,7 +179,9 @@ export default function NetworkDetail() {
             </Link>
           </CardContent>
         </Card>
-      </div>
+        </div>
+        <Footer />
+      </>
     );
   }
 
@@ -182,7 +192,9 @@ export default function NetworkDetail() {
   const tvlChangeIcon = networkData.metrics.tvl24hChange >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />;
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <>
+      <Header />
+      <div className="container mx-auto p-6 max-w-7xl">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
@@ -497,6 +509,8 @@ export default function NetworkDetail() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2, Copy, Key, Plus, Clock, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminHeader from "@/components/admin-header";
+import Footer from "@/components/footer";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 
@@ -124,7 +125,8 @@ export default function AdminApiKeys() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <div className="min-h-screen bg-background">
       <AdminHeader />
       <div className="p-6">
         <div className="max-w-6xl mx-auto space-y-6">
@@ -337,6 +339,8 @@ export default function AdminApiKeys() {
         </Card>
         </div>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }

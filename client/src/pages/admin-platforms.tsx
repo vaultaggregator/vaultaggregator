@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { getPlatformIcon } from "@/components/platform-icons";
 import AdminHeader from "@/components/admin-header";
+import Footer from "@/components/footer";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload, Building } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 import { useForm } from "react-hook-form";
@@ -522,7 +523,8 @@ export default function AdminPlatforms() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <div className="min-h-screen bg-background">
       <AdminHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
@@ -798,6 +800,8 @@ export default function AdminPlatforms() {
       </div>
 
 
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 } 

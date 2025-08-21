@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Upload, Image, Plus, Trash2, Network } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import AdminHeader from "@/components/admin-header";
+import Footer from "@/components/footer";
 import { getChainIcon } from "@/components/chain-icons";
 import type { Chain } from "@shared/schema";
 import type { UploadResult } from "@uppy/core";
@@ -187,7 +188,8 @@ export default function AdminNetworks() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <div className="min-h-screen bg-background">
       <AdminHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -379,7 +381,7 @@ export default function AdminNetworks() {
                           buttonClassName="w-full"
                         >
                           <div className="flex items-center justify-center space-x-2">
-                            {chain.iconUrl ? (
+                            {chain.logoUrl ? (
                               <>
                                 <Image className="h-4 w-4" />
                                 <span>Update Icon</span>
@@ -412,6 +414,8 @@ export default function AdminNetworks() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }

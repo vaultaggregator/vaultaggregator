@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import AdminHeader from "@/components/admin-header";
+import Footer from "@/components/footer";
 import { ArrowLeft, Plus, Edit2, Trash2, Upload, Eye, EyeOff } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 
@@ -248,7 +249,8 @@ export default function AdminCategories() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <div className="min-h-screen bg-background">
       <AdminHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
@@ -532,6 +534,8 @@ export default function AdminCategories() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 }
