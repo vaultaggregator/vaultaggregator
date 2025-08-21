@@ -1740,6 +1740,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all tokens for admin
+  app.get("/api/admin/tokens", requireAuth, async (req, res) => {
+    try {
+      const tokens = await storage.getAllTokens();
+      res.json(tokens);
+    } catch (error) {
+      console.error("Error fetching tokens:", error);
+      res.status(500).json({ message: "Failed to fetch tokens" });
+    }
+  });
+
+  // Update token
+  app.patch("/api/admin/tokens/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const updatedToken = await storage.updateToken(id, updates);
+      if (!updatedToken) {
+        return res.status(404).json({ message: "Token not found" });
+      }
+      
+      res.json(updatedToken);
+    } catch (error) {
+      console.error("Error updating token:", error);
+      res.status(500).json({ message: "Failed to update token" });
+    }
+  });
+
+  // Get all networks for admin
+  app.get("/api/admin/networks", requireAuth, async (req, res) => {
+    try {
+      const networks = await storage.getChains(); // Use existing method that gets all networks
+      res.json(networks);
+    } catch (error) {
+      console.error("Error fetching networks:", error);
+      res.status(500).json({ message: "Failed to fetch networks" });
+    }
+  });
+
   // Update underlying tokens
   app.put("/api/admin/pools/:id/underlying-tokens", requireAuth, async (req, res) => {
     try {

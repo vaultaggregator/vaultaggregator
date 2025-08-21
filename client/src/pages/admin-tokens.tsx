@@ -1,0 +1,534 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Edit, Save, X, Eye, EyeOff, Plus, Search, ExternalLink } from "lucide-react";
+import { PoolDataLoading } from "@/components/loading-animations";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { AddressLink, NetworkLink } from "@/components/entity-links";
+
+interface Token {
+  id: string;
+  chainId: string;
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  logoUrl: string | null;
+  isActive: boolean;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}
+
+interface Network {
+  id: string;
+  chainId: string;
+  name: string;
+  displayName: string;
+  color: string;
+  iconUrl: string | null;
+  isActive: boolean;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}
+
+interface TokenInfo {
+  id: string;
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  logoUrl: string | null;
+  totalSupply: string | null;
+  holdersCount: number | null;
+  price: string | null;
+  priceChange24h: string | null;
+  marketCap: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+}
+
+export default function AdminTokensPage() {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [search, setSearch] = useState("");
+  const [selectedNetwork, setSelectedNetwork] = useState<string>("");
+  const [editingToken, setEditingToken] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<{[key: string]: any}>({});
+
+  // Fetch user for authentication
+  const { data: user, isLoading: userLoading } = useQuery<any>({
+    queryKey: ["/api/auth/me"],
+  });
+
+  // Fetch tokens
+  const { data: tokens = [], isLoading: tokensLoading, error: tokensError } = useQuery<Token[]>({
+    queryKey: ["/api/admin/tokens"],
+    staleTime: 30000,
+  });
+
+  // Fetch networks for filtering
+  const { data: networks = [] } = useQuery<Network[]>({
+    queryKey: ["/api/admin/networks"],
+    staleTime: 60000,
+  });
+
+  // Fetch token info
+  const { data: tokenInfos = [] } = useQuery<TokenInfo[]>({
+    queryKey: ["/api/admin/token-info"],
+    staleTime: 30000,
+  });
+
+  // Update token mutation
+  const updateTokenMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Token> }) => {
+      return await apiRequest(`/api/admin/tokens/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(updates),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/tokens"] });
+      toast({
+        title: "Success",
+        description: "Token updated successfully",
+      });
+      setEditingToken(null);
+      setEditValues({});
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update token",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Filter tokens
+  const filteredTokens = tokens.filter(token => {
+    const matchesSearch = !search || 
+      token.name.toLowerCase().includes(search.toLowerCase()) ||
+      token.symbol.toLowerCase().includes(search.toLowerCase()) ||
+      token.address.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesNetwork = !selectedNetwork || token.chainId === selectedNetwork;
+    
+    return matchesSearch && matchesNetwork;
+  });
+
+  // Group tokens by network
+  const tokensByNetwork = networks.reduce((acc, network) => {
+    acc[network.id] = filteredTokens.filter(token => token.chainId === network.id);
+    return acc;
+  }, {} as {[key: string]: Token[]});
+
+  // Helper to get token info
+  const getTokenInfo = (address: string) => {
+    return tokenInfos.find(info => info.address.toLowerCase() === address.toLowerCase());
+  };
+
+  // Helper to get network
+  const getNetwork = (chainId: string) => {
+    return networks.find(net => net.id === chainId);
+  };
+
+  const handleSave = (tokenId: string) => {
+    const updates = editValues[tokenId];
+    if (!updates) return;
+
+    updateTokenMutation.mutate({ id: tokenId, updates });
+  };
+
+  const handleCancel = (tokenId: string) => {
+    setEditingToken(null);
+    setEditValues(prev => {
+      const newValues = { ...prev };
+      delete newValues[tokenId];
+      return newValues;
+    });
+  };
+
+  const handleEdit = (token: Token) => {
+    setEditingToken(token.id);
+    setEditValues(prev => ({
+      ...prev,
+      [token.id]: {
+        name: token.name,
+        symbol: token.symbol,
+        logoUrl: token.logoUrl || "",
+        isActive: token.isActive,
+      }
+    }));
+  };
+
+  // Redirect if not authenticated
+  if (!userLoading && !user) {
+    navigate("/admin/login");
+    return null;
+  }
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <PoolDataLoading message="Loading admin tokens..." />
+      </div>
+    );
+  }
+
+  if (tokensError) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Error Loading Tokens</h2>
+          <p className="text-gray-600 dark:text-gray-400">Failed to load token data</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                onClick={() => navigate("/admin")}
+                variant="ghost"
+                size="sm"
+                data-testid="button-back"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Token Management
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Manage token metadata and information
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Total Tokens
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {tokens.length}
+                  </p>
+                </div>
+                <Eye className="h-8 w-8 text-blue-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Active Tokens
+                  </p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {tokens.filter(t => t.isActive).length}
+                  </p>
+                </div>
+                <Eye className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Networks
+                  </p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {networks.filter(n => n.isActive).length}
+                  </p>
+                </div>
+                <Eye className="h-8 w-8 text-purple-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    With Info
+                  </p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {tokenInfos.length}
+                  </p>
+                </div>
+                <Eye className="h-8 w-8 text-orange-600" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Filters</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search tokens..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                  data-testid="input-search"
+                />
+              </div>
+
+              {/* Network Filter */}
+              <select
+                value={selectedNetwork}
+                onChange={(e) => setSelectedNetwork(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                data-testid="select-network"
+              >
+                <option value="">All Networks</option>
+                {networks.filter(n => n.isActive).map((network) => (
+                  <option key={network.id} value={network.id}>
+                    {network.displayName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tokens by Network */}
+        {tokensLoading ? (
+          <div className="flex justify-center py-8">
+            <PoolDataLoading message="Loading tokens..." />
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {networks.filter(n => n.isActive && (!selectedNetwork || selectedNetwork === n.id)).map((network) => {
+              const networkTokens = tokensByNetwork[network.id] || [];
+              
+              if (networkTokens.length === 0 && selectedNetwork) return null;
+
+              return (
+                <Card key={network.id}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                      <NetworkLink networkId={network.id} />
+                      <span className="text-sm text-gray-500">
+                        ({networkTokens.length} tokens)
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {networkTokens.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        No tokens found for this network
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b border-gray-200 dark:border-gray-700">
+                              <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                                Token
+                              </th>
+                              <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                                Address
+                              </th>
+                              <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                                Decimals
+                              </th>
+                              <th className="text-left py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                                Info
+                              </th>
+                              <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                                Status
+                              </th>
+                              <th className="text-center py-3 px-2 font-semibold text-gray-900 dark:text-white">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {networkTokens.map((token) => {
+                              const isEditing = editingToken === token.id;
+                              const tokenInfo = getTokenInfo(token.address);
+                              
+                              return (
+                                <tr key={token.id} className="border-b border-gray-100 dark:border-gray-800">
+                                  <td className="py-3 px-2">
+                                    <div className="flex items-center gap-3">
+                                      {token.logoUrl && (
+                                        <img 
+                                          src={token.logoUrl} 
+                                          alt={token.symbol}
+                                          className="w-8 h-8 rounded-full"
+                                        />
+                                      )}
+                                      <div>
+                                        {isEditing ? (
+                                          <div className="space-y-1">
+                                            <Input
+                                              value={editValues[token.id]?.name || ""}
+                                              onChange={(e) => setEditValues(prev => ({
+                                                ...prev,
+                                                [token.id]: { ...prev[token.id], name: e.target.value }
+                                              }))}
+                                              placeholder="Token name"
+                                              className="h-8 text-sm"
+                                              data-testid={`input-name-${token.id}`}
+                                            />
+                                            <Input
+                                              value={editValues[token.id]?.symbol || ""}
+                                              onChange={(e) => setEditValues(prev => ({
+                                                ...prev,
+                                                [token.id]: { ...prev[token.id], symbol: e.target.value }
+                                              }))}
+                                              placeholder="Symbol"
+                                              className="h-8 text-sm"
+                                              data-testid={`input-symbol-${token.id}`}
+                                            />
+                                          </div>
+                                        ) : (
+                                          <div>
+                                            <div className="font-medium text-gray-900 dark:text-white">
+                                              {token.name}
+                                            </div>
+                                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                                              {token.symbol}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    <AddressLink address={token.address} />
+                                  </td>
+                                  <td className="py-3 px-2 text-center">
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      {token.decimals}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    {tokenInfo ? (
+                                      <div className="text-sm">
+                                        {tokenInfo.holdersCount && (
+                                          <div className="text-gray-600 dark:text-gray-400">
+                                            {tokenInfo.holdersCount.toLocaleString()} holders
+                                          </div>
+                                        )}
+                                        {tokenInfo.price && (
+                                          <div className="text-gray-600 dark:text-gray-400">
+                                            ${parseFloat(tokenInfo.price).toFixed(4)}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-sm text-gray-400">No info</span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-2 text-center">
+                                    {isEditing ? (
+                                      <select
+                                        value={editValues[token.id]?.isActive ? "active" : "inactive"}
+                                        onChange={(e) => setEditValues(prev => ({
+                                          ...prev,
+                                          [token.id]: { ...prev[token.id], isActive: e.target.value === "active" }
+                                        }))}
+                                        className="text-sm border rounded px-2 py-1"
+                                        data-testid={`select-status-${token.id}`}
+                                      >
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                      </select>
+                                    ) : (
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        token.isActive 
+                                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                      }`}>
+                                        {token.isActive ? 'Active' : 'Inactive'}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    <div className="flex justify-center space-x-2">
+                                      {isEditing ? (
+                                        <>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleSave(token.id)}
+                                            disabled={updateTokenMutation.isPending}
+                                            data-testid={`button-save-${token.id}`}
+                                          >
+                                            <Save className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleCancel(token.id)}
+                                            data-testid={`button-cancel-${token.id}`}
+                                          >
+                                            <X className="h-4 w-4" />
+                                          </Button>
+                                        </>
+                                      ) : (
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => handleEdit(token)}
+                                          data-testid={`button-edit-${token.id}`}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

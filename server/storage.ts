@@ -53,9 +53,11 @@ export interface IStorage {
 
   // Token methods
   getTokens(): Promise<Token[]>;
+  getAllTokens(): Promise<Token[]>;
   getActiveTokens(): Promise<Token[]>;
   getTokensByChain(chainId: string): Promise<Token[]>;
   createToken(token: InsertToken): Promise<Token>;
+  updateToken(id: string, token: Partial<InsertToken>): Promise<Token | undefined>;
 
   // Token Info methods
   getTokenInfoByAddress(address: string): Promise<TokenInfo | undefined>;
@@ -288,6 +290,11 @@ export class DatabaseStorage implements IStorage {
     return await this.getNetworks();
   }
 
+  // Alias method for backward compatibility
+  async getPlatforms(): Promise<Protocol[]> {
+    return await this.getProtocols();
+  }
+
   async getProtocols(): Promise<Protocol[]> {
     return await db.select().from(protocols).orderBy(protocols.displayName);
   }
@@ -414,6 +421,18 @@ export class DatabaseStorage implements IStorage {
   async createToken(token: InsertToken): Promise<Token> {
     const [newToken] = await db.insert(tokens).values(token).returning();
     return newToken;
+  }
+
+  async getAllTokens(): Promise<Token[]> {
+    return await db.select().from(tokens).orderBy(tokens.symbol);
+  }
+
+  async updateToken(id: string, tokenData: Partial<InsertToken>): Promise<Token | undefined> {
+    const [updatedToken] = await db.update(tokens).set({
+      ...tokenData,
+      updatedAt: new Date()
+    }).where(eq(tokens.id, id)).returning();
+    return updatedToken || undefined;
   }
 
   // Token Info methods
