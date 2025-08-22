@@ -255,7 +255,50 @@ export class MorphoService {
    * Get specific vault details by address
    */
   async getVaultByAddress(address: string, chainId: number = 1): Promise<MorphoVault | null> {
-    const query = `
+    // First try the direct vaultByAddress query which is more reliable
+    const directQuery = `
+      query GetVaultByAddress($address: String!, $chainId: Int!) {
+        vaultByAddress(address: $address, chainId: $chainId) {
+          address
+          symbol
+          name
+          asset {
+            address
+            symbol
+            name
+            decimals
+          }
+          state {
+            apy
+            netApy
+            totalAssetsUsd
+            fee
+          }
+          chain {
+            id
+            network
+          }
+        }
+      }
+    `;
+
+    try {
+      const data = await this.executeQuery(directQuery, { 
+        address: address, 
+        chainId: chainId 
+      });
+      const vault = data.vaultByAddress || null;
+      
+      if (vault) {
+        console.log(`📊 Fetched Morpho vault details for ${address}: ${vault.name}`);
+        return vault;
+      }
+    } catch (error) {
+      console.log(`⚠️ Direct vault query failed, trying list query...`);
+    }
+
+    // Fallback to list query if direct query fails
+    const listQuery = `
       query GetVaultByAddress($address: [String!]!, $chainId: [Int!]!) {
         vaults(
           where: { 
@@ -290,14 +333,14 @@ export class MorphoService {
     `;
 
     try {
-      const data = await this.executeQuery(query, { 
+      const data = await this.executeQuery(listQuery, { 
         address: [address], 
         chainId: [chainId] 
       });
       const vault = data.vaults?.items?.[0] || null;
       
       if (vault) {
-        console.log(`📊 Fetched Morpho vault details for ${address}`);
+        console.log(`📊 Fetched Morpho vault details via list query for ${address}: ${vault.name}`);
       }
       
       return vault;
