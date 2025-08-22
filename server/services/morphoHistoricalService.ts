@@ -20,13 +20,14 @@ interface MorphoVaultHistoricalResponse {
 }
 
 export class MorphoHistoricalService {
-  private readonly MORPHO_API_URL = 'https://api.morpho.org/graphql';
+  // Use the new blue-api endpoint that supports both Ethereum and Base networks
+  private readonly MORPHO_API_URL = 'https://blue-api.morpho.org/graphql';
 
-  async fetchHistoricalData(vaultAddress: string, startTimestamp: number, endTimestamp: number): Promise<MorphoVaultHistoricalResponse | null> {
+  async fetchHistoricalData(vaultAddress: string, startTimestamp: number, endTimestamp: number, chainId: number = 1): Promise<MorphoVaultHistoricalResponse | null> {
     try {
       const query = `
-        query VaultHistoricalData($address: String!, $options: TimeseriesOptions!) {
-          vaultByAddress(address: $address) {
+        query VaultHistoricalData($address: String!, $chainId: Int!, $options: TimeseriesOptions!) {
+          vaultByAddress(address: $address, chainId: $chainId) {
             address
             name
             historicalState {
@@ -40,6 +41,7 @@ export class MorphoHistoricalService {
 
       const variables = {
         address: vaultAddress,
+        chainId: chainId,
         options: {
           startTimestamp,
           endTimestamp,
@@ -82,16 +84,37 @@ export class MorphoHistoricalService {
   }
 
   async storeHistoricalData(poolId: string, vaultAddress: string, days?: number): Promise<void> {
-    // If days not specified, fetch pool data to get actual operating days
+    // Get chain ID for the pool (1 for Ethereum, 8453 for Base)
+    let chainId = 1; // Default to Ethereum
+    
+    // If days not specified, fetch pool data to get actual operating days and chain info
     if (!days) {
       try {
         const { db } = await import('../db');
-        const { pools } = await import('@shared/schema');
+        const { pools, networks } = await import('@shared/schema');
         const { eq } = await import('drizzle-orm');
         
-        const [pool] = await db.select().from(pools).where(eq(pools.id, poolId));
-        if (pool && (pool as any).operatingDays) {
-          days = parseInt((pool as any).operatingDays.toString()) + 10; // Add buffer for complete history
+        const [pool] = await db.select({
+          pool: pools,
+          network: networks
+        })
+        .from(pools)
+        .leftJoin(networks, eq(pools.chainId, networks.id))
+        .where(eq(pools.id, poolId));
+        
+        if (pool) {
+          // Get chain ID based on network name
+          if (pool.network?.name?.toLowerCase() === 'base') {
+            chainId = 8453;
+          } else {
+            chainId = 1; // Default to Ethereum
+          }
+          
+          if ((pool.pool as any).operatingDays) {
+            days = parseInt((pool.pool as any).operatingDays.toString()) + 10; // Add buffer for complete history
+          } else {
+            days = 400; // Fallback only if pool data unavailable
+          }
         } else {
           days = 400; // Fallback only if pool data unavailable
         }
@@ -99,12 +122,34 @@ export class MorphoHistoricalService {
         console.warn(`⚠️ Could not fetch pool operating days, using fallback: ${error}`);
         days = 400; // Conservative fallback
       }
+    } else {
+      // Still need to get chain ID even if days is provided
+      try {
+        const { db } = await import('../db');
+        const { pools, networks } = await import('@shared/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        const [pool] = await db.select({
+          network: networks
+        })
+        .from(pools)
+        .leftJoin(networks, eq(pools.chainId, networks.id))
+        .where(eq(pools.id, poolId));
+        
+        if (pool?.network?.name?.toLowerCase() === 'base') {
+          chainId = 8453;
+        }
+      } catch (error) {
+        console.warn(`⚠️ Could not fetch pool chain info, defaulting to Ethereum`);
+      }
     }
+    
     try {
       const endTimestamp = Math.floor(Date.now() / 1000);
       const startTimestamp = endTimestamp - (days * 24 * 60 * 60);
 
-      const historicalData = await this.fetchHistoricalData(vaultAddress, startTimestamp, endTimestamp);
+      console.log(`📊 Fetching historical data for vault ${vaultAddress} on chain ${chainId} (${chainId === 8453 ? 'Base' : 'Ethereum'})`);
+      const historicalData = await this.fetchHistoricalData(vaultAddress, startTimestamp, endTimestamp, chainId);
       
       if (!historicalData?.vaultByAddress?.historicalState) {
         console.warn(`⚠️ No historical data available for vault ${vaultAddress}`);
@@ -125,11 +170,12 @@ export class MorphoHistoricalService {
       // Combine APY and TVL data by timestamp
       const dataPoints = new Map<number, { apy?: number; tvl?: number }>();
 
-      // Process APY data
+      // Process APY data (convert from decimal to percentage)
       if (apyData) {
         for (const point of apyData) {
           const timestamp = new Date(point.x * 1000);
-          dataPoints.set(point.x, { ...dataPoints.get(point.x), apy: point.y });
+          const apyPercentage = point.y * 100; // Convert 0.0829 to 8.29
+          dataPoints.set(point.x, { ...dataPoints.get(point.x), apy: apyPercentage });
         }
       }
 
