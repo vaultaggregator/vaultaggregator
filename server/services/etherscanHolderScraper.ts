@@ -41,36 +41,105 @@ export class EtherscanHolderScraper {
       const document = dom.window.document;
       
       // Look for the holder count in the page
+      // Basescan displays it as "Holders" followed by the number like "17,365 (0.00%)"
       // Etherscan displays it as "Holders: X,XXX addresses"
-      const holderElements = Array.from(document.querySelectorAll('div'));
       let holderCount = 0;
       
-      for (const element of holderElements) {
-        const text = element.textContent || '';
+      // For Basescan: Look for the pattern "Holders" followed by numbers
+      if (chain.toLowerCase() === 'base') {
+        // Search for the specific pattern where Holders is followed by the count
+        // Basescan shows: #### Holders\n\n17,365 (0.00%)
+        const holderPattern = /Holders\s*<\/h\d+>\s*<[^>]+>([0-9,]+)\s*\(/;
+        let match = html.match(holderPattern);
         
-        // Look for patterns like "Holders:", "holders:", or "X holders"
-        const holderMatch = text.match(/holders[:\s]+([0-9,]+)/i);
-        if (holderMatch) {
-          // Remove commas and parse the number
-          const countStr = holderMatch[1].replace(/,/g, '');
-          const count = parseInt(countStr);
-          if (!isNaN(count) && count > 0) {
-            holderCount = count;
-            console.log(`✅ Found holder count: ${count.toLocaleString()}`);
-            break;
+        // Try alternate pattern if first doesn't match
+        if (!match) {
+          // Try pattern without HTML tags
+          match = html.match(/Holders\s+([0-9,]+)\s*\(/);
+        }
+        
+        // Try another pattern - looking for the count after "Holders" in any format
+        if (!match) {
+          // Find all occurrences of numbers with commas followed by percentage
+          const allMatches = html.matchAll(/([0-9]{1,3}(?:,[0-9]{3})*)\s*\([0-9]+\.[0-9]+%\)/g);
+          for (const m of allMatches) {
+            // Check if this is near "Holders" in the HTML
+            const index = html.indexOf(m[0]);
+            const contextBefore = html.substring(Math.max(0, index - 200), index);
+            if (contextBefore.toLowerCase().includes('holders')) {
+              match = m;
+              break;
+            }
           }
         }
         
-        // Alternative pattern: look for "X addresses" near "Holders"
-        if (text.includes('Holders') || text.includes('holders')) {
-          const addressMatch = text.match(/([0-9,]+)\s+addresses/i);
-          if (addressMatch) {
-            const countStr = addressMatch[1].replace(/,/g, '');
+        if (match) {
+          const countStr = match[1].replace(/,/g, '');
+          const count = parseInt(countStr);
+          if (!isNaN(count) && count > 0) {
+            holderCount = count;
+            console.log(`✅ Found Basescan holder count: ${count.toLocaleString()}`);
+          }
+        }
+      }
+      
+      // If not found yet, try standard parsing
+      if (holderCount === 0) {
+        // Try to find in h4 elements
+        const h4Elements = Array.from(document.querySelectorAll('h4'));
+        for (const element of h4Elements) {
+          const text = element.textContent || '';
+          if (text.toLowerCase().includes('holders')) {
+            // Look for the next sibling element
+            const nextSibling = element.nextElementSibling;
+            if (nextSibling) {
+              const siblingText = nextSibling.textContent || '';
+              // Match patterns like "17,365 (0.00%)" or "17,365"
+              const match = siblingText.match(/([0-9,]+)/);
+              if (match) {
+                const countStr = match[1].replace(/,/g, '');
+                const count = parseInt(countStr);
+                if (!isNaN(count) && count > 0) {
+                  holderCount = count;
+                  console.log(`✅ Found holder count in sibling: ${count.toLocaleString()}`);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // If not found, try div elements (fallback for both Etherscan and Basescan)
+      if (holderCount === 0) {
+        const divElements = Array.from(document.querySelectorAll('div'));
+        for (const element of divElements) {
+          const text = element.textContent || '';
+          
+          // Look for patterns like "Holders: X,XXX" or "Holders X,XXX"
+          const holderMatch = text.match(/holders[:\s]+([0-9,]+)(?:\s|\()/i);
+          if (holderMatch) {
+            // Remove commas and parse the number
+            const countStr = holderMatch[1].replace(/,/g, '');
             const count = parseInt(countStr);
             if (!isNaN(count) && count > 0) {
               holderCount = count;
               console.log(`✅ Found holder count: ${count.toLocaleString()}`);
               break;
+            }
+          }
+          
+          // Alternative pattern: look for "X addresses" near "Holders"
+          if (text.includes('Holders') || text.includes('holders')) {
+            const addressMatch = text.match(/([0-9,]+)\s+(?:addresses|holders|\()/i);
+            if (addressMatch) {
+              const countStr = addressMatch[1].replace(/,/g, '');
+              const count = parseInt(countStr);
+              if (!isNaN(count) && count > 0) {
+                holderCount = count;
+                console.log(`✅ Found holder count: ${count.toLocaleString()}`);
+                break;
+              }
             }
           }
         }
