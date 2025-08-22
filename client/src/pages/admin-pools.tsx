@@ -136,6 +136,19 @@ export default function AdminPools() {
   const { data: chains = [] } = useQuery<Chain[]>({
     queryKey: ["/api/admin/chains"],
   });
+  
+  // Debug chains data
+  React.useEffect(() => {
+    console.log("Loaded chains:", chains);
+    // Reset chain selection if current chainId is invalid
+    if (formData.chainId && chains.length > 0) {
+      const validChain = chains.find(c => c.id === formData.chainId);
+      if (!validChain) {
+        console.log("Invalid chainId detected, resetting:", formData.chainId);
+        setFormData(prev => ({ ...prev, chainId: "" }));
+      }
+    }
+  }, [chains, formData.chainId]);
 
   // Fetch categories
   const { data: categories = [] } = useQuery<Category[]>({
@@ -506,6 +519,17 @@ export default function AdminPools() {
             type="button"
             onClick={() => {
               console.log("Add Pool button clicked - setting showCreateForm to true");
+              // Reset form data when opening create form to clear any cached/invalid values
+              setFormData({
+                platformId: "",
+                chainId: "",
+                poolAddress: "",
+                showUsdInFlow: false,
+                isVisible: true,
+                isActive: true,
+                categories: []
+              });
+              setContractInfo({ isLoading: false });
               setShowCreateForm(true);
             }}
             className="bg-blue-600 hover:bg-blue-700"

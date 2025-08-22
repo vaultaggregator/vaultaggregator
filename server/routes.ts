@@ -2163,6 +2163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/chains", requireAuth, async (req, res) => {
     try {
       const chains = await storage.getChains(); // Get all chains, not just active ones
+      console.log("Admin chains endpoint returning:", chains.map(c => ({ id: c.id, name: c.name })));
       res.json(chains);
     } catch (error) {
       console.error("Error fetching all chains:", error);
