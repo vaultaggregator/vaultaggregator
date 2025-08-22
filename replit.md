@@ -2,83 +2,6 @@
 
 Vault Aggregator is a streamlined DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project's ambition is to provide accurate, reliable DeFi data to empower user investment decisions, focusing on efficiency and a clean architecture by exclusively tracking core yield opportunities for two specific pools (STETH and STEAKUSDC) on two platforms (Lido and Morpho) on the Ethereum chain.
 
-## Recent Changes (August 22, 2025)
-
-- **Service Configuration Database Persistence FIXED**: Completely resolved the service interval persistence issue
-  - Created `service_configurations` database table with proper schema for persistent storage
-  - Implemented ServiceConfigurationService for database-backed configuration management
-  - Admin panel interval changes now persist permanently across server restarts
-  - Service intervals are loaded from database on startup and maintained correctly
-  - Created seeding system with default configurations for all 9 services
-  - Memory cache synchronized with database for optimal performance
-  - System properly loads configuration: poolDataSync maintains custom intervals (tested: 7min → 10min)
-- **Dedicated poolDataSync Monitoring Tools**: Created two specialized console monitors
-  - Interactive monitor: `./monitor-pooldata-only.sh` - Shows status, manual trigger, refresh on demand
-  - Live auto-refresh monitor: `./monitor-pooldata-live.sh` - Real-time status changes and sync detection
-  - Both focus exclusively on poolDataSync service as requested by user
-- **Complete WebSocket Removal**: Successfully removed all WebSocket functionality from the entire platform
-  - Deleted WebSocket service files (smartWebSocketService.ts, websocket-status.tsx, useRealtimeApy.ts)
-  - Removed all WebSocket imports across 10+ files (header.tsx, home.tsx, pool-detail.tsx, yield-opportunity-card.tsx, admin-services.tsx, etc.)
-  - Cleaned up server-side WebSocket routes in alchemy-enhanced.ts and admin-service-monitor.ts
-  - Updated admin services panel to remove WebSocket manager service references
-  - Platform now operates 100% WebSocket-free, using scheduled API scraping every 5 minutes instead
-
-## Previous Changes (August 22, 2025 - Earlier)
-
-- **Pool Creation Fix & Spark USDC Vault Activation**: Resolved "Invalid chain ID" error in admin pool creation
-  - Fixed authentication middleware preventing new pool creation through admin interface
-  - Successfully enabled Spark USDC Vault on Base network (6.09% APY, $611M TVL)
-  - Enhanced Morpho scraper with proper Base network chain mapping (chainId: 8453)
-  - Added debugging capabilities for chain/platform validation issues
-  - Successfully created "Usual Boosted USDC" pool (0xd63070114470f685b75B74D60EEc7c1113d33a3D)
-  - System now supports adding new pools on both Ethereum and Base networks
-- **Trash Bin System Fix**: Fixed critical bug in admin trash bin functionality where deleted pools couldn't be displayed
-  - Resolved Drizzle ORM query error with LEFT JOINs returning null values
-  - Modified getTrashedPools() method to properly handle null platform/chain relationships
-  - Added fallback values for missing joined records to prevent "Cannot convert undefined or null to object" errors
-  - Trash bin now correctly displays deleted pools with 60-day automatic cleanup
-- **Pool Data Sync Repair**: Fixed poolDataSync refresh button in admin services panel
-  - Changed INNER JOIN to LEFT JOIN for chains table to handle mismatched chain IDs
-  - System now successfully scrapes and updates all 44 pools from Morpho/Lido APIs
-  - Manual refresh properly updates APY values from live API data (e.g., MEV Capital USDC: 9.73% → 9.59%)
-- **Complete Cache System Removal**: Eliminated all caching infrastructure from the platform
-  - Removed cache service files (admin-cache.ts, cache-stats.ts, cacheService.ts)
-  - Removed cache routes and references from server/routes.ts  
-  - Removed cacheCleanup service from admin services panel
-  - System now operates 100% cache-free with direct API calls to Morpho, Lido, and Etherscan
-
-## Previous Changes (August 21, 2025)
-
-- **Automatic Holder Sync for New Pools**: Implemented automatic holder data synchronization when pools are created or updated
-  - When a new pool is created with a contract address, holder sync automatically triggers via Moralis API
-  - When an existing pool's contract address is updated, holder sync runs automatically in the background
-  - Pool_metrics_current table is updated immediately after holder sync completes
-  - Ensures consistent holder counts between homepage and pool detail pages from the moment a pool is added
-- **Performance Optimizations**: Major improvements to reduce slow request warnings and optimize bundle loading
-  - Implemented React lazy loading for all admin pages and heavy components
-  - Added code splitting to reduce initial bundle size from ~3MB to <500KB
-  - Optimized QueryClient configuration with smart caching (30s stale time, 5min cache)
-  - Updated caniuse-lite and browserslist database to latest versions
-  - Added Suspense boundaries with loading states for better UX
-- **API Request Bug Fixes**: Corrected apiRequest function parameter order across multiple files
-  - Fixed 10+ instances of incorrect `(url, method, data)` calls to proper `(method, url, data)`
-  - Resolved Alchemy API toggle functionality in admin interface
-  - All admin API interactions now work properly without fetch errors
-- **WebSocket Complete Removal**: Entirely eliminated all WebSocket functionality from the platform
-  - Deleted all WebSocket service files (smartWebSocketService.ts, websocket-status.tsx, useRealtimeApy.ts)
-  - Removed all WebSocket imports, references, and dependencies across client and server code
-  - Updated admin services panel to remove WebSocket manager service
-  - Platform now uses scheduled API scraping (every 5 minutes) instead of real-time connections
-- **Alchemy Service Enhancement**: Fixed Alchemy service to properly respect database admin settings
-  - Service now checks database `apiSettings` table before making API calls
-  - Added proper initialization with ALCHEMY_RPC_URL environment variable
-  - Service correctly enables/disables based on admin menu toggle
-- **Human-Readable URLs**: Implemented user-friendly URL patterns:
-  - Protocol URLs: `/protocol/lido` instead of `/protocol/{uuid}/{uuid}`
-  - Network URLs: `/network/ethereum` instead of `/network/{uuid}`
-  - Token URLs: `/token/ethereum/{address}` instead of `/token/{uuid}/{address}`
-  - All entity links now use names/slugs for better SEO and user experience
-
 # User Preferences
 
 - CRITICAL RULE - NO HARDCODED VALUES (ABSOLUTE REQUIREMENT):
@@ -132,7 +55,7 @@ The client is built with React 18 and TypeScript, using `shadcn/ui` components, 
 
 ## Backend Architecture
 
-The server is built with Express.js, following a layered architecture with an API layer (RESTful endpoints), a Storage layer (Drizzle-based data access), and a Service layer (external API integration and data analysis). PostgreSQL with Drizzle ORM is used for data persistence. The backend includes a comprehensive multi-source data collection and analysis system, with services for synchronizing pool data and token information. It features enhanced API resilience with intelligent rate limiting, exponential backoff, and self-healing mechanisms for error recovery. Data is collected via a modular scraper system from real APIs (Morpho, Lido) every 5 minutes and stored in the database. An automatic API registration system allows new APIs to be defined in a central config and auto-synced to the database.
+The server is built with Express.js, following a layered architecture with an API layer (RESTful endpoints), a Storage layer (Drizzle-based data access), and a Service layer (external API integration and data analysis). PostgreSQL with Drizzle ORM is used for data persistence. The backend includes a comprehensive multi-source data collection and analysis system, with services for synchronizing pool data and token information. It features enhanced API resilience with intelligent rate limiting, exponential backoff, and self-healing mechanisms for error recovery. Data is collected via a modular scraper system from real APIs (Morpho, Lido) every 5 minutes and stored in the database. An automatic API registration system allows new APIs to be defined in a central config and auto-synced to the database. Service configuration is database-backed for persistence. PM2 is used for production-grade service management, enabling auto-restart on failure, centralized logging, and resource monitoring.
 
 ## Data Storage Solutions
 
@@ -140,7 +63,7 @@ The database schema includes tables for Chains, Platforms, Tokens, Pools, Notes,
 
 ## UI/UX Decisions
 
-The application prioritizes a consistent UI with standardized header/footer layouts, responsive design, and consistent branding. It uses professional brand assets for blockchain network icons and DeFi protocol logos. The dark theme is default. Risk display uses simple text badges (Low/Medium/High). All external images are localized and stored locally, eliminating external image host dependencies. Category navigation uses a horizontal layout with dropdown menus. Admin interface is streamlined, focusing on core system management (Overview, System, Content, Security) with a comprehensive 5-tab monitoring system (Overview, API Health, Services, Performance, Live Monitoring) with real-time charts.
+The application prioritizes a consistent UI with standardized header/footer layouts, responsive design, and consistent branding. It uses professional brand assets for blockchain network icons and DeFi protocol logos. The dark theme is default. Risk display uses simple text badges (Low/Medium/High). All external images are localized and stored locally, eliminating external image host dependencies. Category navigation uses a horizontal layout with dropdown menus. Admin interface is streamlined, focusing on core system management (Overview, System, Content, Security) with a comprehensive 5-tab monitoring system (Overview, API Health, Services, Performance, Live Monitoring) with real-time charts. React lazy loading and code splitting are implemented for performance optimization.
 
 # External Dependencies
 
