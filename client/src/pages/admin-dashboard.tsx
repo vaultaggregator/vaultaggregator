@@ -50,7 +50,16 @@ function CategorySelector({
 
   // Update selected categories when data loads
   useEffect(() => {
-    setSelectedCategories(poolCategories.map(cat => cat.id));
+    if (poolCategories && poolCategories.length >= 0) {
+      const categoryIds = poolCategories.map(cat => cat.id);
+      setSelectedCategories(prev => {
+        // Only update if the categories have actually changed
+        if (JSON.stringify(prev.sort()) !== JSON.stringify(categoryIds.sort())) {
+          return categoryIds;
+        }
+        return prev;
+      });
+    }
   }, [poolCategories]);
 
   const handleCategoryToggle = (categoryId: string) => {
