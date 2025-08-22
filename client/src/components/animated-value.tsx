@@ -14,7 +14,7 @@ interface AnimatedValueProps {
     decrease: string;
   };
   useRandomDelay?: boolean; // Whether to use random delays for staggered animations (default: true)
-  maxDelayMs?: number; // Maximum delay in milliseconds (default: 5000)
+  maxDelayMs?: number; // Maximum delay in milliseconds (default: 30000)
 }
 
 export function AnimatedValue({
@@ -29,7 +29,7 @@ export function AnimatedValue({
     decrease: 'animate-flash-decrease'
   },
   useRandomDelay = true,
-  maxDelayMs = 5000
+  maxDelayMs = 30000
 }: AnimatedValueProps) {
   // Always use the formatted value for display, never the compareValue
   const [displayValue, setDisplayValue] = useState(value);
