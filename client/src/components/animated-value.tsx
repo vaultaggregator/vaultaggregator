@@ -13,6 +13,8 @@ interface AnimatedValueProps {
     increase: string;
     decrease: string;
   };
+  useRandomDelay?: boolean; // Whether to use random delays for staggered animations (default: true)
+  maxDelayMs?: number; // Maximum delay in milliseconds (default: 5000)
 }
 
 export function AnimatedValue({
@@ -25,7 +27,9 @@ export function AnimatedValue({
   flashColors = {
     increase: 'animate-flash-increase',
     decrease: 'animate-flash-decrease'
-  }
+  },
+  useRandomDelay = true,
+  maxDelayMs = 5000
 }: AnimatedValueProps) {
   // Always use the formatted value for display, never the compareValue
   const [displayValue, setDisplayValue] = useState(value);
@@ -72,40 +76,50 @@ export function AnimatedValue({
         clearTimeout(timeoutRef.current);
       }
       
-      // Apply animation
-      setIsAnimating(true);
+      // Generate random delay for staggered animations
+      // This creates a nice visual effect where updates don't all flash at once
+      const randomDelay = useRandomDelay ? Math.random() * maxDelayMs : 0;
       
-      switch (animationType) {
-        case 'fade':
-          setAnimationClass('animate-pulse opacity-50');
-          break;
-        case 'slide':
-          setAnimationClass('transform translate-y-1 opacity-50 transition-all duration-300');
-          break;
-        case 'scale':
-          setAnimationClass('transform scale-105 transition-transform duration-200');
-          break;
-        case 'flash':
-        default:
-          setAnimationClass(direction === 'increase' ? flashColors.increase : flashColors.decrease);
-          break;
-      }
-      
-      // Remove animation after duration
+      // Apply animation with random delay
       timeoutRef.current = setTimeout(() => {
-        setIsAnimating(false);
-        setAnimationClass('');
-        setChangeDirection('none');
-      }, duration);
+        setIsAnimating(true);
+        
+        switch (animationType) {
+          case 'fade':
+            setAnimationClass('animate-pulse opacity-50');
+            break;
+          case 'slide':
+            setAnimationClass('transform translate-y-1 opacity-50 transition-all duration-300');
+            break;
+          case 'scale':
+            setAnimationClass('transform scale-105 transition-transform duration-200');
+            break;
+          case 'flash':
+          default:
+            setAnimationClass(direction === 'increase' ? flashColors.increase : flashColors.decrease);
+            break;
+        }
+        
+        // Remove animation after duration
+        setTimeout(() => {
+          setIsAnimating(false);
+          setAnimationClass('');
+          setChangeDirection('none');
+        }, duration);
+      }, randomDelay);
     } else if (hasTextChange) {
-      // Non-numeric text changed - simple pulse animation
-      setIsAnimating(true);
-      setAnimationClass('animate-pulse');
+      // Non-numeric text changed - simple pulse animation with optional random delay
+      const randomDelay = useRandomDelay ? Math.random() * maxDelayMs : 0;
       
       timeoutRef.current = setTimeout(() => {
-        setIsAnimating(false);
-        setAnimationClass('');
-      }, duration);
+        setIsAnimating(true);
+        setAnimationClass('animate-pulse');
+        
+        setTimeout(() => {
+          setIsAnimating(false);
+          setAnimationClass('');
+        }, duration);
+      }, randomDelay);
     }
     // If no change, don't animate
     
