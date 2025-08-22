@@ -1656,8 +1656,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           if (vault) {
+            // Use proper fallback order: name -> symbol -> formatted address
+            let displayName = vault.name || vault.symbol;
+            if (!displayName && vault.address) {
+              // Format address as "Morpho Vault 0xABCD...1234"
+              const shortAddr = vault.address.substring(0, 6) + '...' + vault.address.substring(vault.address.length - 4);
+              displayName = `Morpho Vault ${shortAddr}`;
+            }
+            
             contractInfo = {
-              tokenPair: vault.name || vault.symbol || 'Unknown',
+              tokenPair: displayName || 'Unknown',
               symbol: vault.symbol,
               name: vault.name,
               address: vault.address,
@@ -1683,8 +1691,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const metadata = await alchemyService.getTokenMetadata(address, network);
               
               if (metadata && metadata.symbol) {
+                // Use proper fallback order: name -> symbol -> formatted address
+                let displayName = metadata.name || metadata.symbol;
+                if (!displayName && address) {
+                  // Format address as "Morpho Vault 0xABCD...1234"
+                  const shortAddr = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+                  displayName = `Morpho Vault ${shortAddr}`;
+                }
+                
                 contractInfo = {
-                  tokenPair: metadata.name || metadata.symbol || 'Unknown',
+                  tokenPair: displayName || 'Unknown',
                   symbol: metadata.symbol,
                   name: metadata.name || metadata.symbol,
                   address: address,
@@ -1710,10 +1726,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     };
                     console.log(`✅ Found contract via Etherscan API: ${contractInfo.tokenPair}`);
                   } else {
-                    return res.status(404).json({ error: "Contract not found on Morpho API, Alchemy API, or Etherscan API" });
+                    // If no API returns data, use formatted address as last resort
+                    const shortAddr = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+                    contractInfo = {
+                      tokenPair: `Morpho Vault ${shortAddr}`,
+                      symbol: shortAddr,
+                      name: `Morpho Vault ${shortAddr}`,
+                      address: address,
+                      platform: 'Morpho'
+                    };
+                    console.log(`⚠️ Using formatted address as name: ${contractInfo.tokenPair}`);
                   }
                 } else {
-                  return res.status(404).json({ error: "Contract not found - all API sources unavailable" });
+                  // If API call fails, use formatted address as last resort
+                  const shortAddr = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+                  contractInfo = {
+                    tokenPair: `Morpho Vault ${shortAddr}`,
+                    symbol: shortAddr,
+                    name: `Morpho Vault ${shortAddr}`,
+                    address: address,
+                    platform: 'Morpho'
+                  };
+                  console.log(`⚠️ API unavailable, using formatted address: ${contractInfo.tokenPair}`);
                 }
               }
             } catch (lookupError) {

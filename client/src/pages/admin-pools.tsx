@@ -212,10 +212,18 @@ export default function AdminPools() {
 
   const createPoolMutation = useMutation({
     mutationFn: async (data: CreatePoolForm) => {
+      // Use proper naming fallback: name -> symbol -> formatted address
+      let poolName = contractInfo.name || contractInfo.symbol;
+      if (!poolName && data.poolAddress) {
+        // Format address as last resort
+        const shortAddr = data.poolAddress.substring(0, 6) + '...' + data.poolAddress.substring(data.poolAddress.length - 4);
+        poolName = `Pool ${shortAddr}`;
+      }
+      
       const poolData = {
         platformId: data.platformId,
         chainId: data.chainId,
-        tokenPair: contractInfo.tokenPair || contractInfo.symbol || 'Unknown',
+        tokenPair: poolName || 'Unknown',
         poolAddress: data.poolAddress || null,
         showUsdInFlow: data.showUsdInFlow,
         isVisible: data.isVisible,
