@@ -1656,7 +1656,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`📡 Fetching vault data from Morpho API for chain ${blockchainChainId}`);
             
             // Use morphoService to get vault data
+            console.log(`🔄 Calling morphoService.getVaultByAddress("${address}", ${blockchainChainId})`);
             const vaultData = await morphoService.getVaultByAddress(address, blockchainChainId);
+            console.log(`📦 Morpho API response:`, JSON.stringify(vaultData, null, 2));
             
             if (vaultData) {
               vault = {
