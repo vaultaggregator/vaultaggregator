@@ -1537,6 +1537,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updatePoolCategories(newPool.id, categories);
       }
 
+      // 📅 FETCH CONTRACT CREATION DATE: Immediately fetch and store contract creation date for operating days
+      if (newPool.poolAddress) {
+        try {
+          console.log(`📅 Fetching contract creation date for ${newPool.tokenPair} on ${chain.displayName}`);
+          
+          const chainName = chain.name.toLowerCase();
+          
+          // Check if this is an Ethereum or Base network pool
+          if (chainName === 'ethereum' || chainName === 'base') {
+            const etherscanApiKey = process.env.ETHERSCAN_API_KEY || '';
+            
+            if (!etherscanApiKey) {
+              console.log(`⚠️ ETHERSCAN_API_KEY not configured, contract creation date will be fetched later`);
+            } else {
+              try {
+                let apiUrl = '';
+                
+                if (chainName === 'base') {
+                  // Use Basescan API for Base network
+                  apiUrl = `https://api.basescan.org/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress}&apikey=${etherscanApiKey}`;
+                } else {
+                  // Use Etherscan API for Ethereum network
+                  apiUrl = `https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress}&apikey=${etherscanApiKey}`;
+                }
+                
+                console.log(`🔍 Fetching contract creation from ${chainName === 'base' ? 'Basescan' : 'Etherscan'}...`);
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                if (data.status === "1" && data.result && data.result.length > 0) {
+                  const txHash = data.result[0].txHash;
+                  
+                  // Get transaction details to find block timestamp
+                  let txUrl = '';
+                  if (chainName === 'base') {
+                    txUrl = `https://api.basescan.org/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash}&apikey=${etherscanApiKey}`;
+                  } else {
+                    txUrl = `https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash}&apikey=${etherscanApiKey}`;
+                  }
+                  
+                  const txResponse = await fetch(txUrl);
+                  const txData = await txResponse.json();
+                  
+                  if (txData.result && txData.result.blockNumber) {
+                    // Get block details for timestamp
+                    let blockUrl = '';
+                    if (chainName === 'base') {
+                      blockUrl = `https://api.basescan.org/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber}&boolean=true&apikey=${etherscanApiKey}`;
+                    } else {
+                      blockUrl = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber}&boolean=true&apikey=${etherscanApiKey}`;
+                    }
+                    
+                    const blockResponse = await fetch(blockUrl);
+                    const blockData = await blockResponse.json();
+                    
+                    if (blockData.result && blockData.result.timestamp) {
+                      const creationTimestamp = parseInt(blockData.result.timestamp, 16) * 1000;
+                      const creationDate = new Date(creationTimestamp);
+                      
+                      // Store the contract creation date in the database
+                      await db.update(pools)
+                        .set({ contractCreatedAt: creationDate })
+                        .where(eq(pools.id, newPool.id));
+                      
+                      const daysDiff = Math.floor((Date.now() - creationTimestamp) / (1000 * 60 * 60 * 24));
+                      console.log(`✅ Contract creation date stored for ${newPool.tokenPair}: ${daysDiff} days ago (${creationDate.toISOString().split('T')[0]})`);
+                      
+                      // Update the newPool object with the creation date for immediate use
+                      newPool.contractCreatedAt = creationDate;
+                      
+                      // Also update operating days in pool_metrics_current
+                      await db.update(poolMetricsCurrent)
+                        .set({ 
+                          operatingDays: daysDiff,
+                          updatedAt: new Date()
+                        })
+                        .where(eq(poolMetricsCurrent.poolId, newPool.id));
+                    }
+                  }
+                }
+              } catch (fetchError) {
+                console.error(`⚠️ Failed to fetch contract creation date:`, fetchError);
+                // Don't fail pool creation, date will be fetched later by metrics service
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`⚠️ Error fetching contract creation date:`, error);
+          // Don't fail pool creation
+        }
+      }
+
       // 🎯 IMMEDIATE DATA COLLECTION: Trigger comprehensive metrics collection for new pool
       try {
         console.log(`🚀 Triggering immediate data collection for new pool: ${newPool.tokenPair} (${newPool.id})`);

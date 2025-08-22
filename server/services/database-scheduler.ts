@@ -53,12 +53,13 @@ class DatabaseScheduler {
     //   }
     // });
 
-    // Morpho API Sync - uses configurable interval
+    // Morpho API Sync - uses configurable interval (optimized to reduce API calls)
     this.scheduleService('morphoApiSync', async () => {
       try {
-        console.log('🔶 Starting Morpho API sync...');
-        await scraperManager.scrapeAllPools(); // Morpho is part of the main scraper
-        console.log('✅ Morpho API sync completed');
+        console.log('🔶 Starting optimized Morpho API sync...');
+        const { optimizedMorphoSync } = await import('./optimized-morpho-sync');
+        await optimizedMorphoSync.syncMorphoPools();
+        console.log('✅ Optimized Morpho API sync completed');
       } catch (error) {
         console.error('❌ Error in Morpho API sync:', error);
       }
