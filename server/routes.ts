@@ -73,6 +73,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const adminServicesRoutes = (await import("./routes/admin-services")).default;
   app.use('/api', adminServicesRoutes);
 
+  // Import and register PM2 monitoring routes
+  const pm2MonitorRoutes = (await import("./routes/pm2-monitor")).default;
+  app.use('/api', pm2MonitorRoutes);
+
   // Add new protocol route for slug-based URLs
   app.get('/api/protocols/:slug', async (req, res) => {
     try {
