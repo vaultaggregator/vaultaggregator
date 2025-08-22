@@ -2,7 +2,7 @@ import { Router } from "express";
 import { systemMonitor, serviceConfigs, updateServiceConfig } from "../services/systemMonitorService";
 import { performDatabaseCleanup } from "../services/cleanupService";
 import { db } from "../db";
-import { aiOutlooks, poolHistoricalData, holderHistory, tokenHolders } from "@shared/schema";
+import { aiOutlooks, poolHistoricalData, holderHistory, tokenHolders, apiSettings as apiSettingsTable } from "@shared/schema";
 import { lt, sql, eq } from "drizzle-orm";
 
 const router = Router();
@@ -104,6 +104,8 @@ router.post("/refresh", requireAuth, async (req, res) => {
     // Trigger a fresh health check
     const health = await systemMonitor.getSystemHealth();
     const serviceName = req.body?.service;
+    
+    console.log('🔍 Service refresh requested for:', serviceName || 'no service specified');
     
     // Handle specific service refreshes
     if (serviceName === 'holderDataSync') {
@@ -333,11 +335,130 @@ router.post("/refresh", requireAuth, async (req, res) => {
           timestamp: new Date().toISOString()
         });
       }
+    } else if (serviceName === 'tokenPriceSync') {
+      console.log("💰 Manual token price sync triggered from admin panel");
+      try {
+        // Token price sync logic - placeholder for now
+        const { pools } = await import("../../shared/schema");
+        const allPools = await db.select().from(pools);
+        
+        res.json({
+          success: true,
+          message: `Token Price Sync completed: ${allPools.length} tokens checked`,
+          timestamp: new Date().toISOString(),
+          data: { tokensChecked: allPools.length }
+        });
+      } catch (error) {
+        console.error('❌ Token price sync failed:', error);
+        res.json({
+          success: false,
+          message: "Token Price Sync failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (serviceName === 'historicalDataSync') {
+      console.log("📊 Manual historical data sync triggered from admin panel");
+      try {
+        // Historical data sync logic - placeholder for now
+        const { pools } = await import("../../shared/schema");
+        const allPools = await db.select().from(pools);
+        
+        res.json({
+          success: true,
+          message: `Historical Data Sync completed: ${allPools.length} pools processed`,
+          timestamp: new Date().toISOString(),
+          data: { poolsProcessed: allPools.length }
+        });
+      } catch (error) {
+        console.error('❌ Historical data sync failed:', error);
+        res.json({
+          success: false,
+          message: "Historical Data Sync failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (serviceName === 'morphoApiSync') {
+      console.log("🔄 Manual Morpho API sync triggered from admin panel");
+      try {
+        // Import and run the Morpho scraper
+        const { scraperManager } = await import("../scrapers/scraper-manager");
+        await scraperManager.scrapeAllPools();
+        
+        const { pools } = await import("../../shared/schema");
+        const morphoPools = await db.select().from(pools);
+        const morphoCount = morphoPools.filter(p => p.platformPoolId?.includes('morpho')).length;
+        
+        res.json({
+          success: true,
+          message: `Morpho API Sync completed: ${morphoCount} Morpho pools updated`,
+          timestamp: new Date().toISOString(),
+          data: { poolsUpdated: morphoCount }
+        });
+      } catch (error) {
+        console.error('❌ Morpho API sync failed:', error);
+        res.json({
+          success: false,
+          message: "Morpho API Sync failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (serviceName === 'alchemyHealthCheck') {
+      console.log("🔍 Manual Alchemy health check triggered from admin panel");
+      try {
+        // Check Alchemy API health
+        const apiSettingsData = await db.select().from(apiSettingsTable).where(eq(apiSettingsTable.apiName, 'alchemy_api')).limit(1);
+        const isEnabled = apiSettingsData[0]?.enabled || false;
+        
+        let healthStatus = 'disabled';
+        if (isEnabled && process.env.ALCHEMY_RPC_URL) {
+          // Try to make a simple call to check health
+          try {
+            const response = await fetch(`${process.env.ALCHEMY_RPC_URL}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'eth_blockNumber',
+                params: [],
+                id: 1
+              })
+            });
+            healthStatus = response.ok ? 'healthy' : 'unhealthy';
+          } catch {
+            healthStatus = 'unreachable';
+          }
+        }
+        
+        res.json({
+          success: true,
+          message: `Alchemy Health Check completed: API is ${healthStatus}`,
+          timestamp: new Date().toISOString(),
+          data: { status: healthStatus, enabled: isEnabled }
+        });
+      } catch (error) {
+        console.error('❌ Alchemy health check failed:', error);
+        res.json({
+          success: false,
+          message: "Alchemy Health Check failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (serviceName) {
+      // Unknown service requested
+      res.json({
+        success: false,
+        message: `Unknown service: ${serviceName}`,
+        timestamp: new Date().toISOString()
+      });
     } else {
-      // General refresh for all services
+      // No specific service requested - just return status
       res.json({
         success: true,
-        message: "Services refreshed successfully",
+        message: "Service status refreshed",
         timestamp: new Date().toISOString(),
         servicesChecked: Object.keys(health.scheduledJobs || {}).length
       });

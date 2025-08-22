@@ -1,0 +1,79 @@
+Drop this file in your Replit root as cleanup.sh, then run it in the Shell.
+
+cleanup.sh
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Step 0. Verify git repo"
+git rev-parse --is-inside-work-tree >/dev/null
+
+echo "Step 1. Create list of sensitive paths"
+cat > sensitive_paths.txt << 'EOF'
+admin_cookie.txt
+admin_cookies.txt
+admin_session.txt
+cookies.txt
+working_cookies.txt
+EOF
+
+add any tracked .txt files not listed above
+
+git ls-files '*.txt' | sort | comm -13 <(sort sensitive_paths.txt) - >> sensitive_paths.txt || true
+sed -i '/^$/d' sensitive_paths.txt
+
+echo "Step 2. Stop tracking current secrets"
+if git ls-files -z -- '*.txt' | xargs -0r git rm --cached; then
+git commit -m "remove tracked txt secrets" || true
+fi
+
+echo "Step 3. Add .gitignore rules"
+touch .gitignore
+add_ignore() { grep -qxF "$1" .gitignore || echo "$1" >> .gitignore; }
+add_ignore ".env"
+add_ignore ".env.local"
+add_ignore ".txt"
+add_ignore ".log"
+add_ignore "tmp/"
+git add .gitignore
+git diff --cached --quiet || git commit -m "add .gitignore to block secrets"
+
+echo "Step 4. Optional .env.example"
+if [ ! -f .env.example ]; then
+cat > .env.example << 'ENVEOF'
+ALCHEMY_HTTP_URL=
+ETHERSCAN_API_KEY=
+DATABASE_URL=
+MORPHO_RPC_URL=
+SPARK_RPC_URL=
+ENVEOF
+git add .env.example
+git commit -m "add env example" || true
+fi
+
+echo "Step 5. Create backup branch before rewrite"
+git branch backup-before-filter-$(date +%Y%m%d%H%M%S) || true
+
+echo "Step 6. Install git-filter-repo"
+python3 -m pip install --upgrade git-filter-repo
+
+echo "Step 7. Rewrite history to drop sensitive files"
+git filter-repo --force --paths-from-file sensitive_paths.txt --invert-paths
+
+echo "Step 8. Force push rewritten history"
+git push origin --force
+
+echo "Done. Secrets removed from history. Rotate any exposed keys and sessions."
+
+How to run
+
+In Replit, open the Shell tab.
+
+Create the file.
+echo 'paste the script above here' > cleanup.sh
+Then open cleanup.sh, paste the content, and save.
+
+Make it executable.
+chmod +x cleanup.sh
+
+Run it.
+./cleanup.sh

@@ -533,6 +533,17 @@ export class SystemMonitorService {
       return `${minutes}m`;
     }
   }
+
+  /**
+   * Update service last run time for manual triggers
+   */
+  async updateServiceLastRun(serviceName: string): Promise<void> {
+    if (this.scheduledJobs[serviceName as keyof typeof this.scheduledJobs]) {
+      this.scheduledJobs[serviceName as keyof typeof this.scheduledJobs].lastCheck = Date.now();
+      this.scheduledJobs[serviceName as keyof typeof this.scheduledJobs].error = null;
+      console.log(`✅ Updated last run time for ${serviceName}`);
+    }
+  }
 }
 
 // Service configuration
