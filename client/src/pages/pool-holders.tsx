@@ -34,10 +34,10 @@ interface PoolData {
 interface Holder {
   rank: number;
   address: string;
-  balance: string;
-  valueUsd: number;
-  percentage: number;
-  portfolioValue?: number;
+  tokenBalance: string;
+  usdValue: number;
+  poolSharePercentage: number;
+  walletBalanceUsd?: number;
 }
 
 interface HoldersResponse {
@@ -298,19 +298,19 @@ export default function PoolHoldersPage() {
                   <div className="col-span-2">
                     <div className="flex items-center gap-1">
                       <Wallet className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{formatBalance(holder.balance)}</span>
+                      <span className="font-medium">{formatBalance(holder.tokenBalance)}</span>
                     </div>
                   </div>
                   
                   <div className="col-span-2">
-                    <span className="font-medium">{formatUsdValue(holder.valueUsd)}</span>
+                    <span className="font-medium">{formatUsdValue(holder.usdValue)}</span>
                   </div>
                   
                   <div className="col-span-2">
-                    {holder.portfolioValue ? (
+                    {holder.walletBalanceUsd && holder.walletBalanceUsd > 0 ? (
                       <div className="flex items-center gap-1">
                         <TrendingUp className="h-4 w-4 text-green-500" />
-                        <span className="font-medium">{formatUsdValue(holder.portfolioValue)}</span>
+                        <span className="font-medium">{formatUsdValue(holder.walletBalanceUsd)}</span>
                       </div>
                     ) : (
                       <span className="text-muted-foreground">N/A</span>
@@ -319,7 +319,7 @@ export default function PoolHoldersPage() {
                   
                   <div className="col-span-2">
                     <Badge variant="outline">
-                      {holder.percentage.toFixed(2)}%
+                      {holder.poolSharePercentage.toFixed(2)}%
                     </Badge>
                   </div>
                 </div>
