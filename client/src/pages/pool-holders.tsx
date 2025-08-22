@@ -46,7 +46,7 @@ interface HoldersResponse {
     page: number;
     limit: number;
     total: number;
-    totalPages: number;
+    pages: number;
   };
   specialCase?: {
     message: string;
@@ -107,7 +107,7 @@ export default function PoolHoldersPage() {
   };
 
   const handleNextPage = () => {
-    if (holdersData && page < holdersData.pagination.totalPages) {
+    if (holdersData && page < holdersData.pagination.pages) {
       setPage(page + 1);
     }
   };
@@ -341,9 +341,9 @@ export default function PoolHoldersPage() {
                     Previous
                   </Button>
                   <div className="flex items-center gap-1">
-                    {[...Array(Math.min(5, pagination.totalPages))].map((_, i) => {
+                    {[...Array(Math.min(5, pagination.pages))].map((_, i) => {
                       const pageNum = i + 1;
-                      if (pagination.totalPages <= 5) {
+                      if (pagination.pages <= 5) {
                         return (
                           <Button
                             key={pageNum}
@@ -357,7 +357,7 @@ export default function PoolHoldersPage() {
                       }
                       
                       // Show smart pagination for many pages
-                      if (pageNum === 1 || pageNum === pagination.totalPages || 
+                      if (pageNum === 1 || pageNum === pagination.pages || 
                           (pageNum >= page - 1 && pageNum <= page + 1)) {
                         return (
                           <Button
@@ -372,7 +372,7 @@ export default function PoolHoldersPage() {
                       }
                       
                       if ((pageNum === 2 && page > 3) || 
-                          (pageNum === pagination.totalPages - 1 && page < pagination.totalPages - 2)) {
+                          (pageNum === pagination.pages - 1 && page < pagination.pages - 2)) {
                         return <span key={pageNum} className="px-2">...</span>;
                       }
                       
