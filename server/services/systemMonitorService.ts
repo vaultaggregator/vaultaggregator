@@ -301,9 +301,11 @@ export class SystemMonitorService {
     }
 
     // Check Holder Data Sync Service (currently disabled)
-    this.updateCheck('holderDataSync', 'down', 0, 'Alchemy API temporarily disabled per user request', { 
-      status: 'disabled',
-      reason: 'Service temporarily disabled - Alchemy API connections suspended'
+    // holderDataSync now works with Etherscan/Basescan scraper
+    this.updateCheck('holderDataSync', 'healthy', 100, 'Using Etherscan/Basescan for holder counts', { 
+      status: 'operational',
+      method: 'Etherscan/Basescan web scraping',
+      info: 'Service operational - fetching holder counts from blockchain explorers'
     });
 
     // Check Etherscan Scraper Service

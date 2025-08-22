@@ -107,29 +107,92 @@ router.post("/refresh", requireAuth, async (req, res) => {
     
     // Handle specific service refreshes
     if (serviceName === 'holderDataSync') {
-      console.log("🔄 Manual holder sync triggered from admin panel");
+      console.log("🔄 Manual holder sync triggered from admin panel - using Etherscan/Basescan scraper");
       try {
-        const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
+        const { EtherscanHolderScraper } = await import("../services/etherscanHolderScraper");
+        const scraper = new EtherscanHolderScraper();
         
-        // Check if Alchemy is available before starting
-        const isAlchemyEnabled = process.env.ALCHEMY_API_KEY && !process.env.ALCHEMY_DISABLED;
+        // Get all pools with pool addresses and chain info
+        const { pools, poolMetricsCurrent, chains } = await import("../../shared/schema");
+        const allPools = await db.select({
+          pool: pools,
+          chain: chains
+        })
+        .from(pools)
+        .leftJoin(chains, eq(pools.chainId, chains.id));
         
-        if (!isAlchemyEnabled) {
-          res.json({
-            success: false,
-            message: "Holder Data Sync unavailable - Alchemy API is currently disabled",
-            timestamp: new Date().toISOString(),
-            details: "Enable Alchemy API to sync holder data. Holder counts will be updated via Etherscan scraper."
-          });
-          return;
+        let successCount = 0;
+        let errorCount = 0;
+        let skippedCount = 0;
+        
+        console.log(`📊 Processing ${allPools.length} pools for holder count updates...`);
+        
+        for (const row of allPools) {
+          if (!row.pool.poolAddress) {
+            skippedCount++;
+            continue;
+          }
+          
+          try {
+            // Determine which scanner to use based on chain
+            let chainName = 'ethereum';
+            if (row.chain) {
+              chainName = row.chain.name.toLowerCase();
+            } else if (row.pool.chainId === '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7') {
+              // This is Base network
+              chainName = 'base';
+            }
+            
+            console.log(`🔍 Fetching holder count for ${row.pool.tokenPair} on ${chainName}...`);
+            const holderCount = await scraper.getHolderCount(row.pool.poolAddress, chainName);
+            
+            if (holderCount > 0) {
+              // Check if record exists
+              const existing = await db.select()
+                .from(poolMetricsCurrent)
+                .where(eq(poolMetricsCurrent.poolId, row.pool.id))
+                .limit(1);
+              
+              if (existing.length > 0) {
+                // Update existing record
+                await db.update(poolMetricsCurrent)
+                  .set({ 
+                    holdersCount: holderCount,
+                    holdersStatus: 'success',
+                    updatedAt: new Date()
+                  })
+                  .where(eq(poolMetricsCurrent.poolId, row.pool.id));
+              } else {
+                // Insert new record
+                const { randomUUID } = await import('crypto');
+                await db.insert(poolMetricsCurrent)
+                  .values({
+                    id: randomUUID(),
+                    poolId: row.pool.id,
+                    holdersCount: holderCount,
+                    holdersStatus: 'success',
+                    updatedAt: new Date(),
+                    createdAt: new Date()
+                  });
+              }
+              
+              console.log(`✅ Updated ${row.pool.tokenPair}: ${holderCount.toLocaleString()} holders`);
+              successCount++;
+            } else {
+              console.log(`⚠️ No holder count found for ${row.pool.tokenPair}`);
+              errorCount++;
+            }
+          } catch (error) {
+            console.error(`❌ Failed to update ${row.pool.tokenPair}:`, error);
+            errorCount++;
+          }
         }
-        
-        await comprehensiveHolderSyncService.syncAllPools();
         
         res.json({
           success: true,
-          message: `Holder Data Sync completed: All pools processed`,
-          timestamp: new Date().toISOString()
+          message: `Holder Data Sync completed: ${successCount} pools updated, ${errorCount} failed, ${skippedCount} skipped`,
+          timestamp: new Date().toISOString(),
+          data: { successCount, errorCount, skippedCount }
         });
       } catch (error) {
         console.error('❌ Holder sync failed:', error);
