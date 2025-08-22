@@ -1449,14 +1449,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if platform and chain exist
+      console.log("Creating pool with platformId:", platformId, "chainId:", chainId);
+      
       const platform = await storage.getPlatformById(platformId);
       const chain = await storage.getChainById(chainId);
       
+      console.log("Found platform:", platform?.name);
+      console.log("Found chain:", chain?.name);
+      
       if (!platform) {
+        console.log("Platform not found for ID:", platformId);
         return res.status(400).json({ message: "Invalid platform ID" });
       }
       
       if (!chain) {
+        console.log("Chain not found for ID:", chainId);
+        const allChains = await db.select().from(networks);
+        console.log("Available chains in DB:", allChains.map(c => ({ id: c.id, name: c.name })));
         return res.status(400).json({ message: "Invalid chain ID" });
       }
 

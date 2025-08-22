@@ -19,8 +19,10 @@ export class MorphoScraper extends BaseScraper {
 
       // Map chain names to Morpho API chain IDs
       const chainIdMap: Record<string, number> = {
+        'ethereum': 1,
         'Ethereum': 1,
         'ETHEREUM': 1,
+        'base': 8453,
         'Base': 8453,
         'BASE': 8453
       };
@@ -58,6 +60,16 @@ export class MorphoScraper extends BaseScraper {
       }
 
       const data = await response.json();
+      
+      // Check for API errors (vault not found)
+      if (data.errors && data.errors.length > 0) {
+        const errorMessage = data.errors[0].message || 'Unknown error';
+        const errorStatus = data.errors[0].status || '';
+        if (errorStatus === 'NOT_FOUND') {
+          throw new Error(`Vault not found on Morpho: ${pool.poolAddress}`);
+        }
+        throw new Error(`Morpho API error: ${errorMessage}`);
+      }
       
       if (!this.validateData(data)) {
         throw new Error('Invalid response format from Morpho API');

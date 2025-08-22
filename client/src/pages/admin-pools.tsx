@@ -853,18 +853,25 @@ export default function AdminPools() {
                       <Label htmlFor="chain" className="text-sm font-medium">Network *</Label>
                       <Select 
                         value={formData.chainId} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, chainId: value }))}
+                        onValueChange={(value) => {
+                          console.log("Chain selected:", value);
+                          console.log("Available chains:", chains);
+                          setFormData(prev => ({ ...prev, chainId: value }));
+                        }}
                         required
                       >
                         <SelectTrigger data-testid="select-chain">
                           <SelectValue placeholder="Select network" />
                         </SelectTrigger>
                         <SelectContent>
-                          {chains.filter(c => c.isActive).map((chain) => (
-                            <SelectItem key={chain.id} value={chain.id}>
-                              {chain.displayName}
-                            </SelectItem>
-                          ))}
+                          {chains.filter(c => c.isActive).map((chain) => {
+                            console.log("Rendering chain option:", chain.id, chain.displayName);
+                            return (
+                              <SelectItem key={chain.id} value={chain.id}>
+                                {chain.displayName}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                     </div>
