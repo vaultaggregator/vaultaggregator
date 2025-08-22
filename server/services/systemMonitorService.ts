@@ -562,8 +562,23 @@ export const serviceConfigs: Record<string, { interval: number; enabled: boolean
 // Update service configuration
 export async function updateServiceConfig(serviceName: string, config: { interval: number; enabled: boolean }): Promise<void> {
   if (serviceConfigs[serviceName]) {
+    const oldConfig = { ...serviceConfigs[serviceName] };
     serviceConfigs[serviceName] = config;
-    console.log(`✅ Updated config for ${serviceName}: interval=${config.interval}min, enabled=${config.enabled}`);
+    console.log(`🔧 Updating ${serviceName} configuration: interval=${config.interval}min, enabled=${config.enabled}`);
+    
+    // Apply the configuration change to the running scheduler
+    try {
+      const { databaseScheduler } = await import('./database-scheduler');
+      databaseScheduler.updateServiceInterval(serviceName);
+      console.log(`✅ Updated ${serviceName} configuration: { interval: ${config.interval}, enabled: ${config.enabled} }`);
+    } catch (error) {
+      console.error(`❌ Failed to update ${serviceName} configuration:`, error);
+      // Rollback the configuration change
+      serviceConfigs[serviceName] = oldConfig;
+      throw error;
+    }
+  } else {
+    throw new Error(`Service ${serviceName} not found in configuration`);
   }
 }
 

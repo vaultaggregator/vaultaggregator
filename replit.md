@@ -4,6 +4,12 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 ## Recent Changes (August 22, 2025)
 
+- **Service Configuration System Fixed**: Resolved issue where admin interval changes weren't applied to running services
+  - Connected service configuration updates to the actual database scheduler
+  - Added dynamic interval updating that immediately applies changes to running services
+  - Implemented proper service restart mechanism when configuration changes
+  - Admin interface now properly controls actual service timing (poolDataSync, holderDataSync, cleanup, morphoApiSync)
+  - Service intervals now immediately update when changed through admin panel
 - **Complete WebSocket Removal**: Successfully removed all WebSocket functionality from the entire platform
   - Deleted WebSocket service files (smartWebSocketService.ts, websocket-status.tsx, useRealtimeApy.ts)
   - Removed all WebSocket imports across 10+ files (header.tsx, home.tsx, pool-detail.tsx, yield-opportunity-card.tsx, admin-services.tsx, etc.)

@@ -987,4 +987,34 @@ async function performDatabaseCleanup() {
   }
 }
 
+// Service configuration update endpoint
+router.put("/:serviceName/config", requireAuth, async (req, res) => {
+  try {
+    const { serviceName } = req.params;
+    const { interval, enabled } = req.body;
+
+    if (!interval || typeof enabled !== 'boolean') {
+      return res.status(400).json({ 
+        error: "Invalid configuration", 
+        message: "Both interval (number) and enabled (boolean) are required" 
+      });
+    }
+
+    // Update the service configuration
+    await updateServiceConfig(serviceName, { interval: parseInt(interval), enabled });
+
+    res.json({
+      success: true,
+      message: `Updated ${serviceName} configuration successfully`,
+      config: { interval: parseInt(interval), enabled }
+    });
+  } catch (error) {
+    console.error(`Error updating ${req.params.serviceName} configuration:`, error);
+    res.status(500).json({ 
+      error: "Configuration update failed", 
+      message: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+});
+
 export default router;
