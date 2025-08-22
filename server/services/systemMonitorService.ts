@@ -496,5 +496,26 @@ export class SystemMonitorService {
   }
 }
 
+// Service configuration
+export const serviceConfigs: Record<string, { interval: number; enabled: boolean }> = {
+  poolDataSync: { interval: 5, enabled: true },
+  holderDataSync: { interval: 30, enabled: true },
+  aiOutlookGeneration: { interval: 1440, enabled: true }, // 24 hours
+  cleanup: { interval: 86400, enabled: true }, // 60 days
+  etherscanScraper: { interval: 30, enabled: true },
+  tokenPriceSync: { interval: 10, enabled: true },
+  historicalDataSync: { interval: 60, enabled: true },
+  morphoApiSync: { interval: 3, enabled: true },
+  alchemyHealthCheck: { interval: 2, enabled: true }
+};
+
+// Update service configuration
+export async function updateServiceConfig(serviceName: string, config: { interval: number; enabled: boolean }): Promise<void> {
+  if (serviceConfigs[serviceName]) {
+    serviceConfigs[serviceName] = config;
+    console.log(`✅ Updated config for ${serviceName}: interval=${config.interval}min, enabled=${config.enabled}`);
+  }
+}
+
 // Singleton instance
 export const systemMonitor = new SystemMonitorService();

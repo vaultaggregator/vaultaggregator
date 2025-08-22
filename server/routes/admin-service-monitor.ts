@@ -38,7 +38,7 @@ router.get("/status", requireAuth, async (req, res) => {
     
     // Transform all services into service status format
     const services = await Promise.all(allServices.map(async name => {
-      const job = scheduledJobs[name];
+      const job = scheduledJobs[name as keyof typeof scheduledJobs];
       const config = serviceConfigs[name as keyof typeof serviceConfigs] || { interval: 5, enabled: true };
       
       // For services not in scheduled jobs, create default status
@@ -124,13 +124,12 @@ router.post("/refresh", requireAuth, async (req, res) => {
           return;
         }
         
-        const result = await comprehensiveHolderSyncService.syncAllPools();
+        await comprehensiveHolderSyncService.syncAllPools();
         
         res.json({
           success: true,
-          message: `Holder Data Sync completed: ${result ? 'All' : 'All'} pools processed`,
-          timestamp: new Date().toISOString(),
-          data: result
+          message: `Holder Data Sync completed: All pools processed`,
+          timestamp: new Date().toISOString()
         });
       } catch (error) {
         console.error('❌ Holder sync failed:', error);
@@ -225,7 +224,7 @@ router.post("/refresh", requireAuth, async (req, res) => {
               
               // Update the pool_metrics_current table with the holder count
               await db.update(poolMetricsCurrent)
-                .set({ holdersCount: holderCount.toString() })
+                .set({ holdersCount: holderCount })
                 .where(eq(poolMetricsCurrent.poolId, row.pool.id));
               successCount++;
             } catch (error) {
@@ -299,7 +298,7 @@ router.put("/:service/config", requireAuth, async (req, res) => {
     }
     
     // Check if service exists in our configuration
-    if (!serviceConfigs[service]) {
+    if (!serviceConfigs[service as keyof typeof serviceConfigs]) {
       return res.status(404).json({ error: `Service ${service} not found` });
     }
     
