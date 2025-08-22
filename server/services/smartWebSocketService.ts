@@ -19,15 +19,28 @@ export class SmartWebSocketService {
   private reconnectInterval: NodeJS.Timeout | null = null;
   
   private constructor() {
+    // Extract API key from ALCHEMY_RPC_URL
+    const alchemyRpcUrl = process.env.ALCHEMY_RPC_URL;
+    let apiKey: string | undefined;
+    
+    if (alchemyRpcUrl) {
+      const urlMatch = alchemyRpcUrl.match(/\/v2\/([^/]+)$/);
+      apiKey = urlMatch ? urlMatch[1] : undefined;
+    }
+    
+    if (!apiKey) {
+      console.warn('⚠️ Alchemy API key not found in ALCHEMY_RPC_URL');
+    }
+    
     // Initialize Alchemy SDK for Ethereum
     this.alchemyEth = new Alchemy({
-      apiKey: process.env.ALCHEMY_API_KEY,
+      apiKey: apiKey || '',
       network: Network.ETH_MAINNET,
     });
 
     // Initialize Alchemy SDK for Base
     this.alchemyBase = new Alchemy({
-      apiKey: process.env.ALCHEMY_API_KEY,
+      apiKey: apiKey || '',
       network: Network.BASE_MAINNET,
     });
   }
