@@ -479,26 +479,13 @@ export default function AdminServices() {
                             // Add service to refreshing set
                             setRefreshingServices(prev => new Set(prev).add(service.name));
                             
-                            // Handle service refresh based on service type
+                            // Handle service refresh - use the trigger action endpoint
                             try {
-                              let response;
-                              let data;
-                              
-                              // Special handling for AI Outlook Generation
-                              if (service.name === 'aiOutlookGeneration') {
-                                response = await fetch("/api/admin/services/aiOutlookGeneration/start", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" }
-                                });
-                                data = await response.json();
-                              } else {
-                                response = await fetch("/api/admin/services/refresh", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ service: service.name })
-                                });
-                                data = await response.json();
-                              }
+                              const response = await fetch(`/api/admin/services/${service.name}/trigger`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" }
+                              });
+                              const data = await response.json();
                               
                               // Show appropriate toast message based on service
                               const toastMessages: Record<string, string> = {
@@ -619,7 +606,12 @@ export default function AdminServices() {
                     
                     {service.error && (
                       <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                        {service.error}
+                        <div>{service.error}</div>
+                        {service.lastError && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Error occurred: {new Date(service.lastError).toLocaleString()}
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>

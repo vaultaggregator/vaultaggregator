@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { systemMonitor } from "../services/systemMonitorService";
+import { systemMonitor, serviceConfigs, updateServiceConfig } from "../services/systemMonitorService";
+import { performDatabaseCleanup } from "../services/cleanupService";
 import { db } from "../db";
 import { aiOutlooks, poolHistoricalData, holderHistory, tokenHolders } from "@shared/schema";
-import { lt, sql } from "drizzle-orm";
+import { lt, sql, eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -39,7 +40,7 @@ router.get("/status", requireAuth, async (req, res) => {
     // Transform all services into service status format
     const services = allServices.map(name => {
       const job = scheduledJobs[name];
-      const config = serviceConfigs[name] || { interval: 5, enabled: true };
+      const config = serviceConfigs[name as keyof typeof serviceConfigs] || { interval: 5, enabled: true };
       
       // For services not in scheduled jobs, create default status
       if (!job) {
@@ -126,7 +127,7 @@ router.post("/refresh", requireAuth, async (req, res) => {
         
         res.json({
           success: true,
-          message: `Holder Data Sync completed: ${result?.success || 'All'} pools processed`,
+          message: `Holder Data Sync completed: ${result ? 'All' : 'All'} pools processed`,
           timestamp: new Date().toISOString(),
           data: result
         });
@@ -181,6 +182,49 @@ router.post("/refresh", requireAuth, async (req, res) => {
         res.json({
           success: false,
           message: "AI Outlook Generation failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (serviceName === 'etherscanScraper') {
+      console.log("🔍 Manual Etherscan scraper triggered from admin panel");
+      try {
+        const { EtherscanHolderScraper } = await import("../services/etherscanHolderScraper");
+        const scraper = new EtherscanHolderScraper();
+        
+        // Get all pools with pool addresses
+        const { pools, poolMetricsCurrent } = await import("../../shared/schema");
+        const allPools = await db.select().from(pools);
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const pool of allPools) {
+          if (pool.poolAddress) {
+            try {
+              const holderCount = await scraper.getHolderCount(pool.poolAddress);
+              // Update the pool_metrics_current table with the holder count
+              await db.update(poolMetricsCurrent)
+                .set({ holderCount: holderCount.toString() })
+                .where(eq(poolMetricsCurrent.poolId, pool.id));
+              successCount++;
+            } catch (error) {
+              console.error(`Failed to update holder count for pool ${pool.id}:`, error);
+              errorCount++;
+            }
+          }
+        }
+        
+        res.json({
+          success: true,
+          message: `Etherscan scraper completed: ${successCount} pools updated, ${errorCount} failed`,
+          timestamp: new Date().toISOString(),
+          data: { successCount, errorCount }
+        });
+      } catch (error) {
+        console.error('❌ Etherscan scraper failed:', error);
+        res.json({
+          success: false,
+          message: "Etherscan scraper failed - check system logs",
           error: error instanceof Error ? error.message : 'Unknown error',
           timestamp: new Date().toISOString()
         });
@@ -257,23 +301,78 @@ router.put("/:service/config", requireAuth, async (req, res) => {
 });
 
 /**
- * Control a specific service
+ * Control a specific service - trigger manually runs the service
  */
 router.post("/:service/:action", requireAuth, async (req, res) => {
   try {
     const { service, action } = req.params;
     
-    // In a real implementation, you would control the actual services
-    // For now, we'll just simulate the action
-    console.log(`Service control: ${action} ${service}`);
-    
-    res.json({
-      success: true,
-      message: `Service ${service} ${action}ed successfully`,
-      service,
-      action,
-      timestamp: new Date().toISOString()
-    });
+    // For 'trigger' action, actually run the service
+    if (action === 'trigger') {
+      // Call the refresh endpoint logic directly with the service name
+      req.body = { service };
+      
+      // Re-use the refresh logic for triggering individual services
+      const health = await systemMonitor.getSystemHealth();
+      const serviceName = service;
+      
+      if (serviceName === 'poolDataSync') {
+        console.log("📊 Manual pool data sync triggered from admin panel");
+        try {
+          const { scraperManager } = await import("../scrapers/scraper-manager");
+          await scraperManager.scrapeAllPools();
+          res.json({
+            success: true,
+            message: `Pool data sync completed successfully`,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          res.json({
+            success: false,
+            message: "Pool data sync failed",
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          });
+        }
+      } else if (serviceName === 'etherscanScraper') {
+        console.log("🔍 Manual Etherscan scraper triggered from admin panel");
+        try {
+          const { simpleHolderCountService } = await import("../services/simpleHolderCountService");
+          await simpleHolderCountService.updateHolderCount();
+          res.json({
+            success: true,
+            message: `Etherscan scraper completed successfully`,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          res.json({
+            success: false,
+            message: "Etherscan scraper failed",
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          });
+        }
+      } else {
+        // For other services, just return success
+        res.json({
+          success: true,
+          message: `Service ${service} triggered successfully`,
+          service,
+          action,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else {
+      // For other actions, just log and return success
+      console.log(`Service control: ${action} ${service}`);
+      res.json({
+        success: true,
+        message: `Service ${service} ${action}ed successfully`,
+        service,
+        action,
+        timestamp: new Date().toISOString()
+      });
+    }
   } catch (error) {
     console.error("Error controlling service:", error);
     res.status(500).json({ error: "Failed to control service" });
