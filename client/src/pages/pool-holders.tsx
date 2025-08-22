@@ -188,7 +188,7 @@ export default function PoolHoldersPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                <CardTitle>Token Holders</CardTitle>
+                <CardTitle>Top 100 Token Holders</CardTitle>
               </div>
               <CardDescription>
                 {poolData?.name || `${tokenPair} Pool`} on {protocol}
@@ -232,15 +232,18 @@ export default function PoolHoldersPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="h-5 w-5" />
-                  <CardTitle>Token Holders</CardTitle>
+                  <CardTitle>Top 100 Token Holders</CardTitle>
                 </div>
                 <CardDescription>
                   {poolData?.name || `${tokenPair} Pool`} on {protocol}
                 </CardDescription>
               </div>
-              <Badge variant="secondary">
-                {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
-              </Badge>
+              <div className="flex flex-col items-end gap-1">
+                <Badge variant="secondary">
+                  {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
+                </Badge>
+                <span className="text-xs text-muted-foreground">Showing top 100</span>
+              </div>
             </div>
             {lidoNote?.isLido && (
               <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">

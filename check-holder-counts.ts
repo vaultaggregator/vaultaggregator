@@ -1,67 +1,32 @@
 import { db } from './server/db';
-import { pools, poolMetricsCurrent } from './shared/schema';
-import { eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 async function checkHolderCounts() {
-  try {
-    // Find Spark USDC Vault
-    const sparkPool = await db
-      .select()
-      .from(pools)
-      .where(eq(pools.name, 'Spark USDC Vault'))
-      .limit(1);
-    
-    if (sparkPool[0]) {
-      console.log('✅ Spark USDC Vault found:');
-      console.log('  - Pool ID:', sparkPool[0].id);
-      console.log('  - Contract:', sparkPool[0].poolAddress);
-      console.log('  - Chain ID:', sparkPool[0].chainId);
-      
-      // Check metrics
-      const metrics = await db
-        .select()
-        .from(poolMetricsCurrent)
-        .where(eq(poolMetricsCurrent.poolId, sparkPool[0].id))
-        .limit(1);
-      
-      if (metrics[0]) {
-        console.log('  - Holder Count:', metrics[0].holdersCount || 'Not set');
-        console.log('  - Holder Status:', metrics[0].holdersStatus || 'Not set');
-        console.log('  - Last Updated:', metrics[0].updatedAt);
-      } else {
-        console.log('  - No metrics found for this pool');
-      }
-    } else {
-      console.log('❌ Spark USDC Vault not found');
-    }
-    
-    // Check a few other pools for comparison
-    console.log('\n📊 Sample of other pools with holder counts:');
-    const samplePools = await db
-      .select({
-        id: pools.id,
-        name: pools.name,
-        address: pools.poolAddress,
-        chainId: pools.chainId
-      })
-      .from(pools)
-      .limit(5);
-    
-    for (const pool of samplePools) {
-      const metrics = await db
-        .select()
-        .from(poolMetricsCurrent)
-        .where(eq(poolMetricsCurrent.poolId, pool.id))
-        .limit(1);
-      
-      console.log(`  - ${pool.name}: ${metrics[0]?.holdersCount || 'No count'}`);
-    }
-    
-  } catch (error) {
-    console.error('Error:', error);
-  } finally {
-    process.exit(0);
+  const results = await db.execute(sql`
+    SELECT 
+      p.token_pair,
+      p.pool_address,
+      c.name as chain,
+      pm.holders_count
+    FROM pools p
+    LEFT JOIN pool_metrics_current pm ON p.id = pm.pool_id
+    LEFT JOIN chains c ON p.chain_id = c.id
+    WHERE p.is_active = true
+    ORDER BY pm.holders_count DESC
+    LIMIT 20
+  `);
+
+  console.log('Top 20 pools by holder count:');
+  for (const row of results.rows) {
+    const count = row.holders_count || 0;
+    const indicator = count === 100 ? '⚠️ ' : '✅ ';
+    console.log(`${indicator}${row.token_pair} on ${row.chain}: ${count} holders`);
   }
+
+  const count100 = results.rows.filter(r => r.holders_count === 100).length;
+  console.log(`\nPools with exactly 100 holders: ${count100}/20`);
+
+  process.exit(0);
 }
 
-checkHolderCounts();
+checkHolderCounts().catch(console.error);

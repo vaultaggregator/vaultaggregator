@@ -93,11 +93,17 @@ class AlchemyEnhancedHolderService {
     console.log(`📊 Syncing enhanced holders for pool ${poolId}...`);
 
     try {
-      // Get holder addresses from Etherscan scraping
+      // Get the ACTUAL total holder count from Etherscan (not limited to 100)
+      const totalHolderCount = await etherscanHolderScraper.getHolderCount(contractAddress, chainId);
+      console.log(`📊 Total holder count for pool ${poolId}: ${totalHolderCount}`);
+
+      // Get holder addresses from Etherscan scraping (top 100 holders with details)
       const holderAddresses = await etherscanHolderScraper.getTopHolders(contractAddress, chainId);
       
       if (!holderAddresses || holderAddresses.length === 0) {
         console.log(`⚠️ No holder data found for pool ${poolId}`);
+        // Still update the total holder count even if we can't get detailed holders
+        await this.updateHolderCount(poolId, totalHolderCount);
         return;
       }
 
@@ -118,7 +124,7 @@ class AlchemyEnhancedHolderService {
       // Get token price (simplified - you may want to use a price oracle)
       const tokenPrice = await this.getTokenPrice(contractAddress, tokenSymbol);
 
-      // Process holder data
+      // Process holder data (top 100 holders)
       const processedHolders = holderAddresses.slice(0, 100).map((holder, index) => {
         // Calculate USD value
         const usdValue = holder.balance * tokenPrice;
@@ -156,8 +162,8 @@ class AlchemyEnhancedHolderService {
         console.log(`✅ Synced ${processedHolders.length} holders for pool ${poolId}`);
       }
 
-      // Update holder count in metrics
-      await this.updateHolderCount(poolId, holderAddresses.length);
+      // Update holder count in metrics with the ACTUAL total count, not just top 100
+      await this.updateHolderCount(poolId, totalHolderCount);
 
     } catch (error) {
       console.error(`❌ Error syncing holders for pool ${poolId}:`, error);
