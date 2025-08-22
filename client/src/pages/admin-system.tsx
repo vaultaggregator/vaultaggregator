@@ -176,33 +176,39 @@ export default function AdminSystemEnhanced() {
 
   const { data: health, isLoading: healthLoading } = useQuery({
     queryKey: ["/api/admin/system/health"],
-    refetchInterval: 15000, // Refresh every 15 seconds for real-time feel
+    refetchInterval: () => document.visibilityState === 'visible' ? 60000 : false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: uptime } = useQuery({
     queryKey: ["/api/admin/system/uptime"],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: () => document.visibilityState === 'visible' ? 60000 : false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: memory } = useQuery({
     queryKey: ["/api/admin/system/memory"],
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: () => document.visibilityState === 'visible' ? 30000 : false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: performance } = useQuery({
     queryKey: ["/api/admin/system/performance"],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: () => document.visibilityState === 'visible' ? 60000 : false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: environment } = useQuery({
     queryKey: ["/api/admin/system/environment"],
-    refetchInterval: 60000, // Refresh every minute
+    refetchInterval: () => document.visibilityState === 'visible' ? 60000 : false,
+    refetchOnWindowFocus: false,
   });
 
   // New API services query
   const { data: apiHealth, isLoading: apiLoading, refetch: refetchApis } = useQuery<ApiHealthResponse>({
     queryKey: ["/api/admin/system/apis"],
-    refetchInterval: 60000, // Refresh every 60 seconds (reduced from 15s for cost optimization)
+    refetchInterval: () => document.visibilityState === 'visible' ? 60000 : false,
+    refetchOnWindowFocus: false,
   });
 
   // Add real-time data collection for charts

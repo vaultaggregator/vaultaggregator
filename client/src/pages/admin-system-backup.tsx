@@ -118,7 +118,7 @@ export default function AdminSystem() {
 
   const { data: health, isLoading: healthLoading } = useQuery({
     queryKey: ["/api/admin/system/health"],
-    refetchInterval: 15000, // Refresh every 15 seconds for real-time feel
+    refetchInterval: 60000, // Refresh every 60 seconds (reduced from 15s for performance)
   });
 
   const { data: environment } = useQuery({
@@ -150,12 +150,12 @@ export default function AdminSystem() {
 
   const { data: memory } = useQuery({
     queryKey: ["/api/admin/system/memory"],
-    refetchInterval: 5000, // Refresh every 5 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds (reduced from 5s for performance)
   });
 
   const { data: performance } = useQuery({
     queryKey: ["/api/admin/system/performance"],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 60000, // Refresh every 60 seconds (reduced from 10s for performance)
   });
 
   // Add real-time data collection for charts

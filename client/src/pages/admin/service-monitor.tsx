@@ -53,7 +53,11 @@ export default function ServiceMonitor() {
   // Fetch service statuses
   const { data: services, isLoading: servicesLoading } = useQuery<ServiceStatus[]>({
     queryKey: ['/api/admin/services/status'],
-    refetchInterval: 120000, // Refresh every 2 minutes (reduced from 30s for cost optimization)
+    refetchInterval: () => {
+      // Only poll when page is visible to reduce unnecessary requests
+      return document.visibilityState === 'visible' ? 120000 : false;
+    },
+    refetchOnWindowFocus: false, // Prevent refetch on tab switch
   });
 
   // Fetch service errors

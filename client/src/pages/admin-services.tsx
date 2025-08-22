@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AdminHeader from "@/components/admin-header";
+import { useAdminPolling } from "@/hooks/useAdminPolling";
 
 interface ServiceStatus {
   name: string;
@@ -74,9 +75,10 @@ export default function AdminServices() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const adminPollingConfig = useAdminPolling("/api/admin/services/status", 60000);
   const { data: services, isLoading } = useQuery({
     queryKey: ["/api/admin/services/status"],
-    refetchInterval: 10000, // Refresh every 10 seconds
+    ...adminPollingConfig,
   });
 
   const { data: health } = useQuery<HealthData>({
