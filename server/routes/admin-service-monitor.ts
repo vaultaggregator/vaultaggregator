@@ -557,10 +557,13 @@ router.put("/:service/config", requireAuth, async (req, res) => {
       return res.status(404).json({ error: `Service ${service} not found` });
     }
     
-    console.log(`🔧 Updating ${service} configuration: interval=${interval}min, enabled=${enabled}`);
-    
     // Update service configuration in system monitor
-    await updateServiceConfig(service, { interval, enabled });
+    try {
+      await updateServiceConfig(service, { interval, enabled });
+    } catch (updateError) {
+      console.error(`❌ Failed to update ${service} configuration:`, updateError);
+      throw updateError;
+    }
     
     res.json({
       success: true,
@@ -812,31 +815,8 @@ function calculateNextRun(serviceName: string, intervalMinutes: number): string 
   return nextRun.toISOString();
 }
 
-async function updateServiceConfig(serviceName: string, config: { interval: number; enabled: boolean }) {
-  // Update the in-memory configuration
-  serviceConfigs[serviceName] = config;
-  
-  console.log(`✅ Updated ${serviceName} configuration:`, config);
-  
-  // Update actual service intervals where possible
-  if (serviceName === 'holderDataSync' && config.enabled) {
-    try {
-      console.log(`🔄 Updating holder sync interval to ${config.interval} minutes`);
-      // Note: This would require modifying the service to accept dynamic intervals
-    } catch (error) {
-      console.warn('Could not update holder sync interval:', error);
-    }
-  }
-  
-  if (serviceName === 'poolDataSync' && config.enabled) {
-    try {
-      console.log(`📊 Updating DeFi Llama sync interval to ${config.interval} minutes`);
-      // Note: This would require modifying the scraper manager
-    } catch (error) {
-      console.warn('Could not update scraper interval:', error);
-    }
-  }
-}
+// REMOVED: Duplicate function that was shadowing the imported updateServiceConfig
+// The proper updateServiceConfig is imported from systemMonitorService.ts at line 2
 
 function getServiceStats(serviceName: string, job: any): any {
   // Generate stats based on service name and job details

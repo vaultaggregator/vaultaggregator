@@ -74,18 +74,29 @@ export class ServiceConfigurationService {
     serviceName: string, 
     updates: Partial<Pick<ServiceConfiguration, 'intervalMinutes' | 'isEnabled'>>
   ): Promise<ServiceConfiguration> {
-    const [updated] = await db
-      .update(serviceConfigurations)
-      .set(updates)
-      .where(eq(serviceConfigurations.serviceName, serviceName))
-      .returning();
-    
-    if (!updated) {
-      throw new Error(`Service configuration not found: ${serviceName}`);
+    try {
+      console.log(`📝 Attempting to update ${serviceName} in database with:`, updates);
+      
+      const [updated] = await db
+        .update(serviceConfigurations)
+        .set({
+          intervalMinutes: updates.intervalMinutes,
+          isEnabled: updates.isEnabled,
+          updatedAt: new Date()
+        })
+        .where(eq(serviceConfigurations.serviceName, serviceName))
+        .returning();
+      
+      if (!updated) {
+        throw new Error(`Service configuration not found: ${serviceName}`);
+      }
+      
+      console.log(`✅ Database updated for ${serviceName}: interval=${updated.intervalMinutes}min, enabled=${updated.isEnabled}`);
+      return updated;
+    } catch (error) {
+      console.error(`❌ Database update failed for ${serviceName}:`, error);
+      throw error;
     }
-    
-    console.log(`🔧 Updated service configuration: ${serviceName} - interval: ${updates.intervalMinutes}min, enabled: ${updates.isEnabled}`);
-    return updated;
   }
   
   /**

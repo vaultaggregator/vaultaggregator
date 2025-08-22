@@ -584,16 +584,20 @@ export async function initializeServiceConfigs(): Promise<void> {
 
 // Update service configuration with database persistence
 export async function updateServiceConfig(serviceName: string, config: { interval: number; enabled: boolean }): Promise<void> {
+  console.log(`🔧 Updating ${serviceName} configuration: interval=${config.interval}min, enabled=${config.enabled}`);
+  
   try {
     // Update in database first
-    await serviceConfigService.updateConfiguration(serviceName, {
+    console.log(`📝 Calling database update for ${serviceName}...`);
+    const updated = await serviceConfigService.updateConfiguration(serviceName, {
       intervalMinutes: config.interval,
       isEnabled: config.enabled,
     });
     
+    console.log(`📋 Database updated for ${serviceName}:`, updated);
+    
     // Update memory cache
     serviceConfigs[serviceName] = config;
-    console.log(`🔧 Updating ${serviceName} configuration: interval=${config.interval}min, enabled=${config.enabled}`);
     
     // Apply the configuration change to the running scheduler
     const { databaseScheduler } = await import('./database-scheduler');
@@ -601,6 +605,7 @@ export async function updateServiceConfig(serviceName: string, config: { interva
     console.log(`✅ Updated ${serviceName} configuration: { interval: ${config.interval}, enabled: ${config.enabled} }`);
   } catch (error) {
     console.error(`❌ Failed to update ${serviceName} configuration:`, error);
+    console.error(`Error stack:`, (error as Error).stack);
     throw error;
   }
 }
