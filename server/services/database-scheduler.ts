@@ -6,6 +6,10 @@ class DatabaseScheduler {
 
   start(): void {
     console.log('🚀 Starting database-first scraper scheduler...');
+    
+    // Clear any existing intervals first
+    this.stopAllServices();
+    
     this.startScheduledServices();
 
     // Initial scrape after 10 seconds
@@ -37,17 +41,17 @@ class DatabaseScheduler {
       }
     });
 
-    // Cleanup Service - uses configurable interval
-    this.scheduleService('cleanup', async () => {
-      try {
-        console.log('🧹 Starting scheduled cleanup...');
-        const { performDatabaseCleanup } = await import('./cleanupService');
-        await performDatabaseCleanup();
-        console.log('✅ Scheduled cleanup completed');
-      } catch (error) {
-        console.error('❌ Error in scheduled cleanup:', error);
-      }
-    });
+    // Cleanup Service - disabled by default due to SQL issues
+    // this.scheduleService('cleanup', async () => {
+    //   try {
+    //     console.log('🧹 Starting scheduled cleanup...');
+    //     const { performDatabaseCleanup } = await import('./cleanupService');
+    //     await performDatabaseCleanup();
+    //     console.log('✅ Scheduled cleanup completed');
+    //   } catch (error) {
+    //     console.error('❌ Error in scheduled cleanup:', error);
+    //   }
+    // });
 
     // Morpho API Sync - uses configurable interval
     this.scheduleService('morphoApiSync', async () => {
@@ -116,17 +120,8 @@ class DatabaseScheduler {
         };
         break;
       case 'cleanup':
-        task = async () => {
-          try {
-            console.log('🧹 Starting scheduled cleanup...');
-            const { performDatabaseCleanup } = await import('./cleanupService');
-            await performDatabaseCleanup();
-            console.log('✅ Scheduled cleanup completed');
-          } catch (error) {
-            console.error('❌ Error in scheduled cleanup:', error);
-          }
-        };
-        break;
+        console.log('⚠️ Cleanup service is disabled due to SQL syntax issues');
+        return;
       case 'morphoApiSync':
         task = async () => {
           try {
@@ -156,6 +151,15 @@ class DatabaseScheduler {
 
     this.intervals.clear();
     console.log('✅ Database scheduler stopped');
+  }
+
+  stopAllServices(): void {
+    console.log('🛑 Emergency stop - clearing all running intervals...');
+    this.intervals.forEach((interval, name) => {
+      clearInterval(interval);
+      console.log(`🚫 Force stopped ${name}`);
+    });
+    this.intervals.clear();
   }
 
   async forceUpdate(): Promise<void> {
