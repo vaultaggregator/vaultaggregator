@@ -1,64 +1,66 @@
 import { db } from './server/db';
-import { pools, poolMetricsCurrent, tokenHolders } from './shared/schema';
-import { eq, sql } from 'drizzle-orm';
+import { pools, poolMetricsCurrent } from './shared/schema';
+import { eq } from 'drizzle-orm';
 
 async function checkHolderCounts() {
   try {
-    // Get all pools with their current metrics
-    const allPools = await db
+    // Find Spark USDC Vault
+    const sparkPool = await db
+      .select()
+      .from(pools)
+      .where(eq(pools.name, 'Spark USDC Vault'))
+      .limit(1);
+    
+    if (sparkPool[0]) {
+      console.log('✅ Spark USDC Vault found:');
+      console.log('  - Pool ID:', sparkPool[0].id);
+      console.log('  - Contract:', sparkPool[0].poolAddress);
+      console.log('  - Chain ID:', sparkPool[0].chainId);
+      
+      // Check metrics
+      const metrics = await db
+        .select()
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, sparkPool[0].id))
+        .limit(1);
+      
+      if (metrics[0]) {
+        console.log('  - Holder Count:', metrics[0].holdersCount || 'Not set');
+        console.log('  - Holder Status:', metrics[0].holdersStatus || 'Not set');
+        console.log('  - Last Updated:', metrics[0].updatedAt);
+      } else {
+        console.log('  - No metrics found for this pool');
+      }
+    } else {
+      console.log('❌ Spark USDC Vault not found');
+    }
+    
+    // Check a few other pools for comparison
+    console.log('\n📊 Sample of other pools with holder counts:');
+    const samplePools = await db
       .select({
         id: pools.id,
-        tokenPair: pools.tokenPair,
-        poolAddress: pools.poolAddress,
-        metricsHolderCount: poolMetricsCurrent.holdersCount,
-        storedHolderCount: sql<number>`(SELECT COUNT(*) FROM token_holders WHERE pool_id = ${pools.id})`
+        name: pools.name,
+        address: pools.poolAddress,
+        chainId: pools.chainId
       })
       .from(pools)
-      .leftJoin(poolMetricsCurrent, eq(pools.id, poolMetricsCurrent.poolId))
-      .where(eq(pools.isActive, true));
-
-    console.log('📊 Holder Count Analysis:');
-    console.log('=====================================');
+      .limit(5);
     
-    for (const pool of allPools) {
-      if (pool.poolAddress) {
-        console.log(`\n${pool.tokenPair}:`);
-        console.log(`  Pool ID: ${pool.id}`);
-        console.log(`  Contract: ${pool.poolAddress}`);
-        console.log(`  Metrics Table Count: ${pool.metricsHolderCount || 'NOT SET'}`);
-        console.log(`  Stored Holders: ${pool.storedHolderCount}`);
-        
-        if (pool.metricsHolderCount !== pool.storedHolderCount) {
-          console.log(`  ⚠️ MISMATCH: Metrics shows ${pool.metricsHolderCount}, but only ${pool.storedHolderCount} holders stored`);
-          
-          // Check if this is expected (optimization working correctly)
-          if (pool.storedHolderCount === 100 && pool.metricsHolderCount && pool.metricsHolderCount > 100) {
-            console.log(`  ✅ This is CORRECT - Optimization storing top 100 of ${pool.metricsHolderCount} total holders`);
-          } else if (pool.storedHolderCount === pool.metricsHolderCount) {
-            console.log(`  ✅ This is CORRECT - Pool has less than 100 holders total`);
-          } else {
-            console.log(`  ❌ This needs investigation - unexpected count mismatch`);
-          }
-        }
-      }
+    for (const pool of samplePools) {
+      const metrics = await db
+        .select()
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, pool.id))
+        .limit(1);
+      
+      console.log(`  - ${pool.name}: ${metrics[0]?.holdersCount || 'No count'}`);
     }
     
-    // Find pools with 413 holders specifically
-    const poolsWith413 = allPools.filter(p => 
-      p.metricsHolderCount === 413 || p.storedHolderCount === 413
-    );
-    
-    if (poolsWith413.length > 0) {
-      console.log('\n\n🔍 Found pools with 413 holders:');
-      for (const pool of poolsWith413) {
-        console.log(`  - ${pool.tokenPair}: Metrics=${pool.metricsHolderCount}, Stored=${pool.storedHolderCount}`);
-      }
-    }
-
-    process.exit(0);
   } catch (error) {
-    console.error('Error checking holder counts:', error);
-    process.exit(1);
+    console.error('Error:', error);
+  } finally {
+    process.exit(0);
   }
 }
 

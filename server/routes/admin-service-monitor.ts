@@ -189,28 +189,45 @@ router.post("/refresh", requireAuth, async (req, res) => {
         });
       }
     } else if (serviceName === 'etherscanScraper') {
-      console.log("🔍 Manual Etherscan scraper triggered from admin panel");
+      console.log("🔍 Manual Etherscan/Basescan scraper triggered from admin panel");
       try {
         const { EtherscanHolderScraper } = await import("../services/etherscanHolderScraper");
         const scraper = new EtherscanHolderScraper();
         
-        // Get all pools with pool addresses
-        const { pools, poolMetricsCurrent } = await import("../../shared/schema");
-        const allPools = await db.select().from(pools);
+        // Get all pools with pool addresses and chain info
+        const { pools, poolMetricsCurrent, chains } = await import("../../shared/schema");
+        const allPools = await db.select({
+          pool: pools,
+          chain: chains
+        })
+        .from(pools)
+        .leftJoin(chains, eq(pools.chainId, chains.id));
+        
         let successCount = 0;
         let errorCount = 0;
         
-        for (const pool of allPools) {
-          if (pool.poolAddress) {
+        for (const row of allPools) {
+          if (row.pool.poolAddress) {
             try {
-              const holderCount = await scraper.getHolderCount(pool.poolAddress);
+              // Determine which scanner to use based on chain
+              // Special case: chain ID 19a7e3af-bc9b-4c6a-9df5-0b24b19934a7 is BASE network (Spark USDC Vault)
+              let chainName = 'ethereum';
+              if (row.chain) {
+                chainName = row.chain.name.toLowerCase();
+              } else if (row.pool.chainId === '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7') {
+                // This is the Spark USDC Vault on BASE
+                chainName = 'base';
+              }
+              
+              const holderCount = await scraper.getHolderCount(row.pool.poolAddress, chainName);
+              
               // Update the pool_metrics_current table with the holder count
               await db.update(poolMetricsCurrent)
-                .set({ holderCount: holderCount.toString() })
-                .where(eq(poolMetricsCurrent.poolId, pool.id));
+                .set({ holdersCount: holderCount.toString() })
+                .where(eq(poolMetricsCurrent.poolId, row.pool.id));
               successCount++;
             } catch (error) {
-              console.error(`Failed to update holder count for pool ${pool.id}:`, error);
+              console.error(`Failed to update holder count for pool ${row.pool.id}:`, error);
               errorCount++;
             }
           }

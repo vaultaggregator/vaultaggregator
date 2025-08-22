@@ -9,15 +9,22 @@ import { poolMetricsCurrent } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
 export class EtherscanHolderScraper {
-  private readonly BASE_URL = 'https://etherscan.io';
+  private readonly ETHERSCAN_URL = 'https://etherscan.io';
+  private readonly BASESCAN_URL = 'https://basescan.org';
   
   /**
-   * Get holder count from Etherscan by scraping the token page
+   * Get holder count from Etherscan/Basescan by scraping the token page
+   * @param contractAddress - The contract address to check
+   * @param chain - The chain name ('ethereum' or 'base')
    */
-  async getHolderCount(contractAddress: string): Promise<number> {
+  async getHolderCount(contractAddress: string, chain: string = 'ethereum'): Promise<number> {
     try {
-      const url = `${this.BASE_URL}/token/${contractAddress}`;
-      console.log(`🔍 Fetching holder count from Etherscan for ${contractAddress}...`);
+      // Choose the correct scanner based on chain
+      const baseUrl = chain.toLowerCase() === 'base' ? this.BASESCAN_URL : this.ETHERSCAN_URL;
+      const scannerName = chain.toLowerCase() === 'base' ? 'Basescan' : 'Etherscan';
+      
+      const url = `${baseUrl}/token/${contractAddress}`;
+      console.log(`🔍 Fetching holder count from ${scannerName} for ${contractAddress}...`);
       
       const response = await fetch(url, {
         headers: {
