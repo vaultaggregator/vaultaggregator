@@ -393,6 +393,7 @@ export const pools = pgTable("pools", {
   project: text("project"), // Data source identifier (morpho-blue, lido)
   rawData: jsonb("raw_data"),
   tokenInfoId: varchar("token_info_id").references(() => tokenInfo.id), // Link to token information
+  contractCreatedAt: timestamp("contract_created_at"), // Immutable contract creation date from blockchain
   showUsdInFlow: boolean("show_usd_in_flow").notNull().default(false), // Admin control for USD display in token flow analysis
   isVisible: boolean("is_visible").notNull().default(true),
   isActive: boolean("is_active").notNull().default(true),

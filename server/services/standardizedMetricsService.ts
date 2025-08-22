@@ -231,8 +231,27 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
 
       // Get chain information from database
       const { db } = await import("../db");
-      const { chains } = await import("@shared/schema");
+      const { chains, pools } = await import("@shared/schema");
       const { eq } = await import("drizzle-orm");
+      
+      // First, check if we have a stored contract creation date
+      const [poolWithCreationDate] = await db
+        .select()
+        .from(pools)
+        .where(eq(pools.id, pool.id));
+      
+      if (poolWithCreationDate?.contractCreatedAt) {
+        // Calculate days from stored date (much more efficient!)
+        const creationDate = new Date(poolWithCreationDate.contractCreatedAt);
+        const currentDate = new Date();
+        const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        console.log(`✅ Using stored contract creation date for ${pool.tokenPair}: ${daysDiff} days (created ${creationDate.toISOString().split('T')[0]})`);
+        return { value: daysDiff };
+      }
+      
+      // If no stored date, we need to fetch it (this should only happen once per pool)
+      console.log(`⚠️ No stored contract creation date for ${pool.tokenPair}, fetching from blockchain...`);
       
       const [chainInfo] = await db
         .select()
@@ -356,7 +375,13 @@ class MorphoMetricsCollector implements PlatformMetricsCollector {
                 const currentDate = new Date();
                 const daysDiff = Math.floor((currentDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24));
                 
+                // Store the creation date for future use (one-time operation)
+                await db.update(pools)
+                  .set({ contractCreatedAt: creationDate })
+                  .where(eq(pools.id, pool.id));
+                
                 console.log(`📊 Contract ${pool.poolAddress} on ${chainName} has been operating for ${daysDiff} days`);
+                console.log(`✅ Stored contract creation date for future use: ${creationDate.toISOString().split('T')[0]}`);
                 return { value: daysDiff };
               }
             }
