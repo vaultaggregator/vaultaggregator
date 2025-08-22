@@ -1464,8 +1464,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!chain) {
         console.log("Chain not found for ID:", chainId);
-        const allChains = await db.select().from(networks);
-        console.log("Available chains in DB:", allChains.map(c => ({ id: c.id, name: c.name })));
         return res.status(400).json({ message: "Invalid chain ID" });
       }
 

@@ -4,6 +4,13 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 ## Recent Changes (August 22, 2025)
 
+- **Pool Creation Fix & Spark USDC Vault Activation**: Resolved "Invalid chain ID" error in admin pool creation
+  - Fixed authentication middleware preventing new pool creation through admin interface
+  - Successfully enabled Spark USDC Vault on Base network (6.09% APY, $611M TVL)
+  - Enhanced Morpho scraper with proper Base network chain mapping (chainId: 8453)
+  - Added debugging capabilities for chain/platform validation issues
+  - Successfully created "Usual Boosted USDC" pool (0xd63070114470f685b75B74D60EEc7c1113d33a3D)
+  - System now supports adding new pools on both Ethereum and Base networks
 - **Trash Bin System Fix**: Fixed critical bug in admin trash bin functionality where deleted pools couldn't be displayed
   - Resolved Drizzle ORM query error with LEFT JOINs returning null values
   - Modified getTrashedPools() method to properly handle null platform/chain relationships
