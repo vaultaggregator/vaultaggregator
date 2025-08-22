@@ -33,10 +33,14 @@ export class ScraperManager {
       const { eq, and, isNull, desc } = await import('drizzle-orm');
       
       const poolsResults = await db
-        .select()
+        .select({
+          pool: pools,
+          platform: platforms,
+          chain: chains
+        })
         .from(pools)
         .innerJoin(platforms, eq(pools.platformId, platforms.id))
-        .innerJoin(chains, eq(pools.chainId, chains.id))
+        .leftJoin(chains, eq(pools.chainId, chains.id))
         .where(
           and(
             eq(pools.isActive, true),
@@ -48,9 +52,9 @@ export class ScraperManager {
 
       // Format the results to match Pool type with platform/chain
       const formattedPools = poolsResults.map(result => ({
-        ...result.pools,
-        platform: result.platforms,
-        chain: result.chains,
+        ...result.pool,
+        platform: result.platform,
+        chain: result.chain || { id: '', name: 'Unknown', displayName: 'Unknown' }, // Handle null chains
       }));
 
       console.log(`📊 Found ${formattedPools.length} pools to scrape`);
