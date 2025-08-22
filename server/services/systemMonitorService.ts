@@ -300,13 +300,50 @@ export class SystemMonitorService {
       this.updateCheck('poolDataSync', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
     }
 
-    // Check Holder Data Sync Service (currently disabled)
-    // holderDataSync now works with Etherscan/Basescan scraper
-    this.updateCheck('holderDataSync', 'healthy', 100, 'Using Etherscan/Basescan for holder counts', { 
-      status: 'operational',
-      method: 'Etherscan/Basescan web scraping',
-      info: 'Service operational - fetching holder counts from blockchain explorers'
-    });
+    // Check Holder Data Sync Service - now using Etherscan/Basescan scraper
+    try {
+      // Check if holder data has been recently updated
+      const { db } = await import("../db");
+      const { poolMetricsCurrent } = await import("../../shared/schema");
+      const { desc } = await import("drizzle-orm");
+      
+      const recentHolderUpdates = await db.select()
+        .from(poolMetricsCurrent)
+        .orderBy(desc(poolMetricsCurrent.updatedAt))
+        .limit(1);
+      
+      if (recentHolderUpdates.length > 0) {
+        const lastUpdate = recentHolderUpdates[0].updatedAt?.getTime() || 0;
+        const timeSinceUpdate = now - lastUpdate;
+        const thirtyMinutes = 30 * 60 * 1000;
+        
+        if (timeSinceUpdate < thirtyMinutes * 2) {
+          this.updateCheck('holderDataSync', 'up', 0, undefined, { 
+            status: 'operational',
+            method: 'Etherscan/Basescan web scraping',
+            info: 'Service operational - fetching holder counts from blockchain explorers',
+            lastSync: new Date(lastUpdate),
+            timeSinceSync: timeSinceUpdate
+          });
+        } else {
+          this.updateCheck('holderDataSync', 'warning', 0, 'Holder sync overdue', { 
+            status: 'delayed',
+            method: 'Etherscan/Basescan web scraping',
+            lastSync: new Date(lastUpdate),
+            timeSinceSync: timeSinceUpdate
+          });
+        }
+      } else {
+        // No holder data yet
+        this.updateCheck('holderDataSync', 'up', 0, undefined, { 
+          status: 'operational',
+          method: 'Etherscan/Basescan web scraping',
+          info: 'Service ready - no data collected yet'
+        });
+      }
+    } catch (error) {
+      this.updateCheck('holderDataSync', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
+    }
 
     // Check Etherscan Scraper Service
     try {
