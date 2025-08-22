@@ -2,7 +2,7 @@ import {
   pools, protocols, networks, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
-  poolMetricsHistory, poolMetricsCurrent, tokenHolders,
+  poolMetricsHistory, poolMetricsCurrent, tokenHolders, aiOutlooks, poolHistoricalData, webhookConfigs, tokenTransactions,
   type Pool, type Protocol, type Network, type Chain, type Token, type TokenInfo, type Note,
   type InsertPool, type InsertProtocol, type InsertNetwork, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
@@ -894,8 +894,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deletePool(id: string): Promise<boolean> {
-    const result = await db.delete(pools).where(eq(pools.id, id));
-    return (result.rowCount || 0) > 0;
+    try {
+      // Delete all related data in the correct order to avoid foreign key constraint violations
+      
+      // 1. Delete data that depends on other pool-related tables
+      await db.delete(reviewVotes).where(
+        sql`${reviewVotes.reviewId} IN (SELECT id FROM ${poolReviews} WHERE pool_id = ${id})`
+      );
+      
+      // 2. Delete direct pool relationships
+      await db.delete(notes).where(eq(notes.poolId, id));
+      await db.delete(poolCategories).where(eq(poolCategories.poolId, id));
+      await db.delete(aiOutlooks).where(eq(aiOutlooks.poolId, id));
+      await db.delete(discussions).where(eq(discussions.poolId, id));
+      await db.delete(poolReviews).where(eq(poolReviews.poolId, id));
+      await db.delete(riskScores).where(eq(riskScores.poolId, id));
+      await db.delete(strategyPools).where(eq(strategyPools.poolId, id));
+      await db.delete(userAlerts).where(eq(userAlerts.poolId, id));
+      await db.delete(watchlistPools).where(eq(watchlistPools.poolId, id));
+      await db.delete(poolMetricsCurrent).where(eq(poolMetricsCurrent.poolId, id));
+      await db.delete(poolMetricsHistory).where(eq(poolMetricsHistory.poolId, id));
+      await db.delete(poolHistoricalData).where(eq(poolHistoricalData.poolId, id));
+      await db.delete(tokenHolders).where(eq(tokenHolders.poolId, id));
+      await db.delete(webhookConfigs).where(eq(webhookConfigs.poolId, id));
+      await db.delete(tokenTransactions).where(eq(tokenTransactions.poolId, id));
+      
+      // 3. Finally delete the pool itself
+      const result = await db.delete(pools).where(eq(pools.id, id));
+      
+      console.log(`✅ Pool ${id} and all related data deleted successfully`);
+      return (result.rowCount || 0) > 0;
+    } catch (error) {
+      console.error(`❌ Error deleting pool ${id}:`, error);
+      throw error;
+    }
   }
 
   // Soft delete pool (move to trash)
