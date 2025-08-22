@@ -221,6 +221,14 @@ export class AlchemyService {
   }
 
   /**
+   * Check if Alchemy service is available and ready to use
+   * This is the PUBLIC method that other services check
+   */
+  isAvailable(): boolean {
+    return this.isInitialized && this.alchemy !== null;
+  }
+
+  /**
    * Check if Alchemy is enabled in the database
    */
   private async isAlchemyEnabled(): Promise<boolean> {
