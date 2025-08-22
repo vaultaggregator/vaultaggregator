@@ -865,7 +865,13 @@ export default function AdminPools() {
                       <Label htmlFor="platform" className="text-sm font-medium">Platform *</Label>
                       <Select 
                         value={formData.platformId} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, platformId: value }))}
+                        onValueChange={(value) => {
+                          setFormData(prev => ({ ...prev, platformId: value }));
+                          // Trigger lookup if address is already entered and chain is selected
+                          if (formData.poolAddress.length === 42 && formData.poolAddress.startsWith('0x') && formData.chainId) {
+                            lookupContract(formData.poolAddress, value, formData.chainId);
+                          }
+                        }}
                         required
                       >
                         <SelectTrigger data-testid="select-platform">
@@ -886,9 +892,11 @@ export default function AdminPools() {
                       <Select 
                         value={formData.chainId} 
                         onValueChange={(value) => {
-                          console.log("Chain selected:", value);
-                          console.log("Available chains:", chains);
                           setFormData(prev => ({ ...prev, chainId: value }));
+                          // Trigger lookup if address is already entered and platform is selected
+                          if (formData.poolAddress.length === 42 && formData.poolAddress.startsWith('0x') && formData.platformId) {
+                            lookupContract(formData.poolAddress, formData.platformId, value);
+                          }
                         }}
                         required
                       >
@@ -943,10 +951,15 @@ export default function AdminPools() {
                           const address = e.target.value;
                           setFormData(prev => ({ ...prev, poolAddress: address }));
                           
-                          // Auto-lookup contract when address is entered and platform is selected
-                          if (address.length === 42 && address.startsWith('0x') && formData.platformId) {
-                            console.log(`Attempting contract lookup for: ${address} on platform: ${formData.platformId}`);
+                          // Auto-lookup contract only when address is complete AND both platform and network are selected
+                          if (address.length === 42 && address.startsWith('0x') && formData.platformId && formData.chainId) {
+                            console.log(`Attempting contract lookup for: ${address} on platform: ${formData.platformId}, chain: ${formData.chainId}`);
                             lookupContract(address, formData.platformId, formData.chainId);
+                          } else if (address.length === 42 && address.startsWith('0x') && (!formData.platformId || !formData.chainId)) {
+                            setContractInfo({ 
+                              isLoading: false,
+                              error: "Please select both platform and network first" 
+                            });
                           } else if (address.length < 42) {
                             setContractInfo({ isLoading: false });
                           }
