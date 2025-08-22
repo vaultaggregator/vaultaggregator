@@ -2162,7 +2162,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin chains endpoint
   app.get("/api/admin/chains", requireAuth, async (req, res) => {
     try {
-      const chains = await storage.getChains(); // Get all chains, not just active ones
+      // Use networks table for admin interface to match foreign key constraints
+      const { db } = await import("./db");
+      const { networks } = await import("../shared/schema");
+      const chains = await db.select().from(networks).orderBy(networks.name);
       console.log("Admin chains endpoint returning:", chains.map(c => ({ id: c.id, name: c.name })));
       res.json(chains);
     } catch (error) {
