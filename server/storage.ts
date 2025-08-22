@@ -855,7 +855,86 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPool(pool: InsertPool): Promise<Pool> {
-    const [newPool] = await db.insert(pools).values(pool).returning();
+    // Set default values for new pools
+    const poolWithDefaults = {
+      ...pool,
+      rawData: pool.rawData || { count: 30 }, // Default operating days
+      lastUpdated: new Date()
+    };
+    
+    const [newPool] = await db.insert(pools).values(poolWithDefaults).returning();
+    
+    // Automatically create pool_metrics_current record for new pool
+    try {
+      await db.insert(poolMetricsCurrent).values({
+        poolId: newPool.id,
+        apy: newPool.apy || '0.00',
+        tvl: newPool.tvl || '0',
+        operatingDays: 30, // Default operating days
+        holdersCount: 0, // Will be updated by holder sync service
+        apyStatus: 'pending',
+        tvlStatus: 'pending',
+        daysStatus: 'success',
+        holdersStatus: 'pending',
+        lastCollectionAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      console.log(`✅ Created pool_metrics_current record for pool ${newPool.id}`);
+    } catch (error) {
+      console.error(`⚠️ Failed to create pool_metrics_current for pool ${newPool.id}:`, error);
+      // Don't fail the pool creation if metrics creation fails
+    }
+    
+    // Auto-assign categories based on token pair name
+    try {
+      const tokenPair = newPool.tokenPair?.toLowerCase() || '';
+      let categoryName: string | null = null;
+      
+      if (tokenPair.includes('usdc')) {
+        categoryName = 'USDC';
+      } else if (tokenPair.includes('usdt')) {
+        categoryName = 'USDT';
+      } else if (tokenPair.includes('steth')) {
+        categoryName = 'stETH';
+      } else if (tokenPair.includes('weth') || tokenPair.includes('eth')) {
+        categoryName = 'ETH';
+      } else if (tokenPair.includes('wbtc') || tokenPair.includes('btc')) {
+        categoryName = 'BTC';
+      }
+      
+      if (categoryName) {
+        // Find the category ID
+        const [category] = await db
+          .select()
+          .from(categories)
+          .where(eq(categories.name, categoryName))
+          .limit(1);
+        
+        if (category) {
+          await db.insert(poolCategories).values({
+            poolId: newPool.id,
+            categoryId: category.id
+          });
+          console.log(`✅ Auto-assigned ${categoryName} category to pool ${newPool.id}`);
+        }
+      }
+    } catch (error) {
+      console.error(`⚠️ Failed to auto-assign category for pool ${newPool.id}:`, error);
+      // Don't fail the pool creation if category assignment fails
+    }
+    
+    // Trigger initial data scrape for the new pool
+    setTimeout(async () => {
+      try {
+        const scraperManager = (await import('./scrapers/scraper-manager')).scraperManager;
+        scraperManager.scrapeSpecificPool(newPool.id);
+        console.log(`🔄 Triggered initial scrape for new pool ${newPool.id}`);
+      } catch (error) {
+        console.error(`⚠️ Failed to trigger initial scrape for pool ${newPool.id}:`, error);
+      }
+    }, 1000);
+    
     return newPool;
   }
 

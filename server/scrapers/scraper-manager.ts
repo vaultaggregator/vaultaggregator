@@ -139,6 +139,11 @@ export class ScraperManager {
     }
   }
 
+  // Alias for scrapeSpecificPool for backwards compatibility
+  async scrapePoolById(poolId: string): Promise<ScrapedData | null> {
+    return this.scrapeSpecificPool(poolId);
+  }
+
   getSupportedPlatforms(): string[] {
     return Array.from(this.scrapers.keys());
   }
