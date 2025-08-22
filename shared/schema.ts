@@ -49,6 +49,26 @@ export const apiSettings = pgTable("api_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Service Configuration table for managing service intervals and settings
+export const serviceConfigurations = pgTable("service_configurations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceName: varchar("service_name", { length: 100 }).notNull().unique(),
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  intervalMinutes: integer("interval_minutes").notNull(), // Service interval in minutes
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  category: varchar("category", { length: 50 }).notNull().default("sync"), // sync, cleanup, monitoring, ai
+  priority: integer("priority").notNull().default(1), // 1=high, 2=medium, 3=low
+  lastRun: timestamp("last_run"),
+  nextRun: timestamp("next_run"),
+  runCount: integer("run_count").notNull().default(0),
+  errorCount: integer("error_count").notNull().default(0),
+  lastError: text("last_error"),
+  lastErrorAt: timestamp("last_error_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Cache Settings table for managing cache durations
 export const cacheSettings = pgTable("cache_settings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -887,6 +907,12 @@ export const insertApiSettingsSchema = createInsertSchema(apiSettings).omit({
   updatedAt: true,
 });
 
+export const insertServiceConfigurationSchema = createInsertSchema(serviceConfigurations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertChainSchema = createInsertSchema(chains).omit({
   id: true,
   createdAt: true,
@@ -1092,6 +1118,9 @@ export type InsertApiKeyUsage = z.infer<typeof insertApiKeyUsageSchema>;
 
 export type ApiSettings = typeof apiSettings.$inferSelect;
 export type InsertApiSettings = z.infer<typeof insertApiSettingsSchema>;
+
+export type ServiceConfiguration = typeof serviceConfigurations.$inferSelect;
+export type InsertServiceConfiguration = z.infer<typeof insertServiceConfigurationSchema>;
 
 export type Chain = typeof chains.$inferSelect;
 export type InsertChain = z.infer<typeof insertChainSchema>;

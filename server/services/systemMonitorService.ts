@@ -546,39 +546,62 @@ export class SystemMonitorService {
   }
 }
 
-// Service configuration
-export const serviceConfigs: Record<string, { interval: number; enabled: boolean }> = {
-  poolDataSync: { interval: 5, enabled: true },
-  holderDataSync: { interval: 30, enabled: true },
-  aiOutlookGeneration: { interval: 1440, enabled: true }, // 24 hours
-  cleanup: { interval: 86400, enabled: true }, // 60 days
-  etherscanScraper: { interval: 30, enabled: true },
-  tokenPriceSync: { interval: 10, enabled: true },
-  historicalDataSync: { interval: 60, enabled: true },
-  morphoApiSync: { interval: 3, enabled: true },
-  alchemyHealthCheck: { interval: 2, enabled: true }
-};
+import { serviceConfigService } from './serviceConfigurationService';
 
-// Update service configuration
+// Service configuration - now database-backed
+export const serviceConfigs: Record<string, { interval: number; enabled: boolean }> = {};
+
+// Initialize service configurations from database
+export async function initializeServiceConfigs(): Promise<void> {
+  try {
+    await serviceConfigService.initializeConfigurations();
+    const configs = await serviceConfigService.getAllConfigurations();
+    
+    // Populate memory cache for fast access
+    for (const config of configs) {
+      serviceConfigs[config.serviceName] = {
+        interval: config.intervalMinutes,
+        enabled: config.isEnabled,
+      };
+      console.log(`  📋 ${config.displayName}: ${config.intervalMinutes}min, enabled: ${config.isEnabled}`);
+    }
+    
+    console.log(`🔧 Loaded ${configs.length} service configurations from database`);
+  } catch (error) {
+    console.error("❌ Failed to initialize service configs:", error);
+    // Fallback to default configurations
+    serviceConfigs.poolDataSync = { interval: 5, enabled: true };
+    serviceConfigs.holderDataSync = { interval: 30, enabled: true };
+    serviceConfigs.morphoApiSync = { interval: 3, enabled: true };
+    serviceConfigs.aiOutlookGeneration = { interval: 1440, enabled: true };
+    serviceConfigs.cleanup = { interval: 86400, enabled: false };
+    serviceConfigs.etherscanScraper = { interval: 30, enabled: true };
+    serviceConfigs.tokenPriceSync = { interval: 10, enabled: true };
+    serviceConfigs.historicalDataSync = { interval: 60, enabled: true };
+    serviceConfigs.alchemyHealthCheck = { interval: 2, enabled: true };
+  }
+}
+
+// Update service configuration with database persistence
 export async function updateServiceConfig(serviceName: string, config: { interval: number; enabled: boolean }): Promise<void> {
-  if (serviceConfigs[serviceName]) {
-    const oldConfig = { ...serviceConfigs[serviceName] };
+  try {
+    // Update in database first
+    await serviceConfigService.updateConfiguration(serviceName, {
+      intervalMinutes: config.interval,
+      isEnabled: config.enabled,
+    });
+    
+    // Update memory cache
     serviceConfigs[serviceName] = config;
     console.log(`🔧 Updating ${serviceName} configuration: interval=${config.interval}min, enabled=${config.enabled}`);
     
     // Apply the configuration change to the running scheduler
-    try {
-      const { databaseScheduler } = await import('./database-scheduler');
-      databaseScheduler.updateServiceInterval(serviceName);
-      console.log(`✅ Updated ${serviceName} configuration: { interval: ${config.interval}, enabled: ${config.enabled} }`);
-    } catch (error) {
-      console.error(`❌ Failed to update ${serviceName} configuration:`, error);
-      // Rollback the configuration change
-      serviceConfigs[serviceName] = oldConfig;
-      throw error;
-    }
-  } else {
-    throw new Error(`Service ${serviceName} not found in configuration`);
+    const { databaseScheduler } = await import('./database-scheduler');
+    databaseScheduler.updateServiceInterval(serviceName);
+    console.log(`✅ Updated ${serviceName} configuration: { interval: ${config.interval}, enabled: ${config.enabled} }`);
+  } catch (error) {
+    console.error(`❌ Failed to update ${serviceName} configuration:`, error);
+    throw error;
   }
 }
 

@@ -4,12 +4,18 @@ Vault Aggregator is a streamlined DeFi yield aggregation platform designed to he
 
 ## Recent Changes (August 22, 2025)
 
-- **Service Configuration System Fixed**: Resolved issue where admin interval changes weren't applied to running services
-  - Connected service configuration updates to the actual database scheduler
-  - Added dynamic interval updating that immediately applies changes to running services
-  - Implemented proper service restart mechanism when configuration changes
-  - Admin interface now properly controls actual service timing (poolDataSync, holderDataSync, cleanup, morphoApiSync)
-  - Service intervals now immediately update when changed through admin panel
+- **Service Configuration Database Persistence FIXED**: Completely resolved the service interval persistence issue
+  - Created `service_configurations` database table with proper schema for persistent storage
+  - Implemented ServiceConfigurationService for database-backed configuration management
+  - Admin panel interval changes now persist permanently across server restarts
+  - Service intervals are loaded from database on startup and maintained correctly
+  - Created seeding system with default configurations for all 9 services
+  - Memory cache synchronized with database for optimal performance
+  - System properly loads configuration: poolDataSync maintains custom intervals (tested: 7min → 10min)
+- **Dedicated poolDataSync Monitoring Tools**: Created two specialized console monitors
+  - Interactive monitor: `./monitor-pooldata-only.sh` - Shows status, manual trigger, refresh on demand
+  - Live auto-refresh monitor: `./monitor-pooldata-live.sh` - Real-time status changes and sync detection
+  - Both focus exclusively on poolDataSync service as requested by user
 - **Complete WebSocket Removal**: Successfully removed all WebSocket functionality from the entire platform
   - Deleted WebSocket service files (smartWebSocketService.ts, websocket-status.tsx, useRealtimeApy.ts)
   - Removed all WebSocket imports across 10+ files (header.tsx, home.tsx, pool-detail.tsx, yield-opportunity-card.tsx, admin-services.tsx, etc.)
