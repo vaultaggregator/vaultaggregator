@@ -1635,24 +1635,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log(`🔍 Looking up Morpho contract: ${address}`);
           
-          // Determine the blockchain chain ID based on the chainId from the request
-          let blockchainChainId = 1; // Default to Ethereum mainnet
+          // Determine the chain/network name
+          let networkName = 'ethereum'; // Default
           if (chainId) {
-            // Get chain information to determine the blockchain chain ID
             const chain = await storage.getChainById(chainId);
             if (chain && chain.name.toLowerCase() === 'base') {
-              blockchainChainId = 8453; // Base mainnet chain ID
+              networkName = 'base';
             }
-            console.log(`🔗 Using chain: ${chain?.name || 'Ethereum'} (chainId: ${blockchainChainId})`);
+            console.log(`🔗 Using network: ${networkName}`);
           }
           
-          // First try the Morpho API
+          // Try to get vault data from Morpho API
           let vault = null;
           try {
-            const vaults = await morphoService.getAllVaults(blockchainChainId);
-            vault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
+            let blockchainChainId = networkName === 'base' ? 8453 : 1;
+            console.log(`📡 Fetching vault data from Morpho API for chain ${blockchainChainId}`);
+            
+            // Use morphoService to get vault data
+            const vaultData = await morphoService.getVaultByAddress(address, blockchainChainId);
+            
+            if (vaultData) {
+              vault = {
+                name: vaultData.name,
+                symbol: vaultData.symbol,
+                address: vaultData.address || address
+              };
+              console.log(`✅ Found vault in Morpho API: ${vault.name || vault.symbol || 'Unknown'}`);
+            } else {
+              // Try getting all vaults and finding the match
+              const vaults = await morphoService.getAllVaults(blockchainChainId);
+              const foundVault = vaults.find(v => v.address?.toLowerCase() === address.toLowerCase());
+              if (foundVault) {
+                vault = foundVault;
+                console.log(`✅ Found vault in vault list: ${vault.name || vault.symbol || 'Unknown'}`);
+              }
+            }
           } catch (apiError) {
-            console.log("⚠️ Morpho API unavailable, will try Etherscan API");
+            console.log("⚠️ Morpho API unavailable, will try other sources");
           }
           
           if (vault) {
