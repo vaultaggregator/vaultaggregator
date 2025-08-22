@@ -48,6 +48,11 @@ function startAll(cb) {
 
 const app = express();
 
+// Add status endpoint on root for basic connectivity
+app.get('/status', (_, res) => {
+  res.json({ status: 'PM2 Monitor Server Online', port: PORT, timestamp: new Date() });
+});
+
 app.get('/monitor/status', (_, res) => {
   pm2.list((err, list) => {
     if (err) return res.status(500).json({ error: String(err) });
