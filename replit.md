@@ -2,7 +2,24 @@
 
 Vault Aggregator is a streamlined DeFi yield aggregation platform designed to help users discover, track, and compare yield farming opportunities. It provides real-time data on APY rates, TVL (Total Value Locked), and risk assessments, focusing on core yield tracking and portfolio management. The project's ambition is to provide accurate, reliable DeFi data to empower user investment decisions, focusing on efficiency and a clean architecture by exclusively tracking core yield opportunities for two specific pools (STETH and STEAKUSDC) on two platforms (Lido and Morpho) on the Ethereum chain.
 
-## Recent Changes (August 21, 2025)
+## Recent Changes (August 22, 2025)
+
+- **Trash Bin System Fix**: Fixed critical bug in admin trash bin functionality where deleted pools couldn't be displayed
+  - Resolved Drizzle ORM query error with LEFT JOINs returning null values
+  - Modified getTrashedPools() method to properly handle null platform/chain relationships
+  - Added fallback values for missing joined records to prevent "Cannot convert undefined or null to object" errors
+  - Trash bin now correctly displays deleted pools with 60-day automatic cleanup
+- **Pool Data Sync Repair**: Fixed poolDataSync refresh button in admin services panel
+  - Changed INNER JOIN to LEFT JOIN for chains table to handle mismatched chain IDs
+  - System now successfully scrapes and updates all 44 pools from Morpho/Lido APIs
+  - Manual refresh properly updates APY values from live API data (e.g., MEV Capital USDC: 9.73% → 9.59%)
+- **Complete Cache System Removal**: Eliminated all caching infrastructure from the platform
+  - Removed cache service files (admin-cache.ts, cache-stats.ts, cacheService.ts)
+  - Removed cache routes and references from server/routes.ts  
+  - Removed cacheCleanup service from admin services panel
+  - System now operates 100% cache-free with direct API calls to Morpho, Lido, and Etherscan
+
+## Previous Changes (August 21, 2025)
 
 - **Automatic Holder Sync for New Pools**: Implemented automatic holder data synchronization when pools are created or updated
   - When a new pool is created with a contract address, holder sync automatically triggers via Moralis API

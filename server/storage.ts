@@ -919,58 +919,12 @@ export class DatabaseStorage implements IStorage {
   async getTrashedPools(): Promise<PoolWithRelations[]> {
     const result = await db
       .select({
-        id: pools.id,
-        platformId: pools.platformId,
-        chainId: pools.chainId,
-        tokenPair: pools.tokenPair,
-        apy: pools.apy,
-        tvl: pools.tvl,
-        riskLevel: pools.riskLevel,
-        poolAddress: pools.poolAddress,
-        platform_pool_id: pools.platform_pool_id,
-        project: pools.project,
-        rawData: pools.rawData,
-        tokenInfoId: pools.tokenInfoId,
-        showUsdInFlow: pools.showUsdInFlow,
-        isVisible: pools.isVisible,
-        isActive: pools.isActive,
-        deletedAt: pools.deletedAt,
-        deletedBy: pools.deletedBy,
-        permanentDeleteAt: pools.permanentDeleteAt,
-        lastUpdated: pools.lastUpdated,
-        createdAt: pools.createdAt,
-        platform: {
-          id: protocols.id,
-          protocolId: protocols.protocolId,
-          name: protocols.name,
-          displayName: protocols.displayName,
-          networkId: protocols.networkId,
-          chainId: protocols.chainId,
-          logoUrl: protocols.logoUrl,
-          website: protocols.website,
-          twitter: protocols.twitter,
-          discord: protocols.discord,
-          github: protocols.github,
-          docs: protocols.docs,
-          slug: protocols.slug,
-          visitUrlTemplate: protocols.visitUrlTemplate,
-          showUnderlyingTokens: protocols.showUnderlyingTokens,
-          dataRefreshIntervalMinutes: protocols.dataRefreshIntervalMinutes,
-          isActive: protocols.isActive,
-          createdAt: protocols.createdAt,
-          updatedAt: protocols.updatedAt,
-        },
-        chain: {
-          id: networks.id,
-          chainId: networks.chainId,
-          name: networks.name,
-          displayName: networks.displayName,
-          color: networks.color,
-          iconUrl: networks.iconUrl,
-          isActive: networks.isActive,
-          createdAt: networks.createdAt,
-          updatedAt: networks.updatedAt,
-        }
+        // Pool fields
+        pool: pools,
+        // Platform fields (may be null)
+        platform: protocols,
+        // Chain fields (may be null) 
+        chain: networks
       })
       .from(pools)
       .leftJoin(protocols, eq(pools.platformId, protocols.id))
@@ -978,8 +932,40 @@ export class DatabaseStorage implements IStorage {
       .where(isNotNull(pools.deletedAt))
       .orderBy(desc(pools.deletedAt));
 
-    return result.map(pool => ({
-      ...pool,
+    return result.map(row => ({
+      ...row.pool,
+      platform: row.platform || {
+        id: '',
+        protocolId: null,
+        name: 'Unknown',
+        displayName: 'Unknown Platform',
+        networkId: null,
+        chainId: null,
+        logoUrl: null,
+        website: null,
+        twitter: null,
+        discord: null,
+        github: null,
+        docs: null,
+        slug: null,
+        visitUrlTemplate: null,
+        showUnderlyingTokens: false,
+        dataRefreshIntervalMinutes: 5,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: null,
+      },
+      chain: row.chain || {
+        id: '',
+        chainId: '',
+        name: 'Unknown',
+        displayName: 'Unknown Chain',
+        color: null,
+        iconUrl: null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: null,
+      },
       notes: [],
       categories: [],
       holdersCount: null,
