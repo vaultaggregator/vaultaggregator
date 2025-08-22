@@ -101,6 +101,11 @@ export default function AdminPools() {
     isActive: true,
     categories: []
   });
+  
+  // Debug state changes
+  React.useEffect(() => {
+    console.log("showCreateForm state changed to:", showCreateForm);
+  }, [showCreateForm]);
 
   const [contractInfo, setContractInfo] = useState<{
     tokenPair?: string;
@@ -485,7 +490,11 @@ export default function AdminPools() {
             </div>
           </div>
           <Button 
-            onClick={() => setShowCreateForm(true)}
+            type="button"
+            onClick={() => {
+              console.log("Add Pool button clicked - setting showCreateForm to true");
+              setShowCreateForm(true);
+            }}
             className="bg-blue-600 hover:bg-blue-700"
             data-testid="button-create-pool"
           >
