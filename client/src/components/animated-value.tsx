@@ -47,11 +47,23 @@ export function AnimatedValue({
     const currentNum = typeof currentCompare === 'string' ? parseFloat(currentCompare) : currentCompare;
     const previousNum = typeof previousCompare === 'string' ? parseFloat(previousCompare) : previousCompare;
     
-    // Determine if there's a meaningful change based on compare values
-    const hasChanged = currentCompare !== previousCompare;
+    // Check if both values are valid numbers
+    const isNumericComparison = !isNaN(currentNum as number) && !isNaN(previousNum as number);
     
-    if (hasChanged && !isNaN(currentNum as number) && !isNaN(previousNum as number)) {
-      // Determine direction of change
+    // For numeric values, check if there's a meaningful change (not just rounding differences)
+    let hasNumericChange = false;
+    if (isNumericComparison) {
+      // Use a small epsilon for floating point comparison
+      const epsilon = 0.001;
+      hasNumericChange = Math.abs(currentNum - previousNum) > epsilon;
+    }
+    
+    // For non-numeric values, check for exact change
+    const hasTextChange = !isNumericComparison && currentCompare !== previousCompare;
+    
+    // Only animate if there's an actual change
+    if (hasNumericChange) {
+      // Numeric value changed - animate based on direction
       const direction = currentNum > previousNum ? 'increase' : 'decrease';
       setChangeDirection(direction);
       
@@ -85,8 +97,8 @@ export function AnimatedValue({
         setAnimationClass('');
         setChangeDirection('none');
       }, duration);
-    } else if (hasChanged) {
-      // Non-numeric changes (like text updates)
+    } else if (hasTextChange) {
+      // Non-numeric text changed - simple pulse animation
       setIsAnimating(true);
       setAnimationClass('animate-pulse');
       
@@ -95,6 +107,7 @@ export function AnimatedValue({
         setAnimationClass('');
       }, duration);
     }
+    // If no change, don't animate
     
     // Update previous compare value ref for next comparison
     previousCompareRef.current = currentCompare;
