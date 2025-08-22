@@ -29,18 +29,18 @@ export class ScraperManager {
     try {
       // Get all pools from database - using direct query to avoid SQL array errors
       const { db } = await import('../db');
-      const { pools, platforms, chains } = await import('../../shared/schema');
+      const { pools, protocols, networks } = await import('../../shared/schema');
       const { eq, and, isNull, desc } = await import('drizzle-orm');
       
       const poolsResults = await db
         .select({
           pool: pools,
-          platform: platforms,
-          chain: chains
+          platform: protocols,
+          chain: networks
         })
         .from(pools)
-        .innerJoin(platforms, eq(pools.platformId, platforms.id))
-        .leftJoin(chains, eq(pools.chainId, chains.id))
+        .innerJoin(protocols, eq(pools.platformId, protocols.id))
+        .leftJoin(networks, eq(pools.chainId, networks.id))
         .where(
           and(
             eq(pools.isActive, true),
