@@ -40,7 +40,10 @@ router.get("/status", requireAuth, async (req, res) => {
     // Transform all services into service status format
     const services = await Promise.all(allServices.map(async name => {
       const job = scheduledJobs[name as keyof typeof scheduledJobs];
-      const config = serviceConfigs[name as keyof typeof serviceConfigs] || { interval: 5, enabled: true };
+      // Get config from imported serviceConfigs or load from database
+      const config = serviceConfigs[name as keyof typeof serviceConfigs] || 
+        await serviceConfigService.getServiceConfig(name) || 
+        { interval: 10, enabled: true };
       
       // For services not in scheduled jobs, create default status
       if (!job) {
@@ -646,7 +649,7 @@ router.post("/:service/:action", requireAuth, async (req, res) => {
       console.log(`Service control: ${action} ${service}`);
       res.json({
         success: true,
-        message: `Service ${service} ${action}ed successfully`,
+        message: `Service ${service} ${action === 'stop' ? 'stopped' : action + 'ed'} successfully`,
         service,
         action,
         timestamp: new Date().toISOString()
@@ -683,18 +686,8 @@ router.get("/:service/logs", requireAuth, async (req, res) => {
   }
 });
 
-// Service configuration storage (in a real app, this would be in database)
-const serviceConfigs: { [key: string]: { interval: number; enabled: boolean } } = {
-  poolDataSync: { interval: 5, enabled: true },
-  holderDataSync: { interval: 30, enabled: true },
-  aiOutlookGeneration: { interval: 1440, enabled: true }, // 24 hours
-  cleanup: { interval: 86400, enabled: true }, // 60 days
-  tokenPriceSync: { interval: 15, enabled: true },
-  historicalDataSync: { interval: 60, enabled: true },
-  morphoApiSync: { interval: 10, enabled: true },
-  alchemyHealthCheck: { interval: 5, enabled: true },
-  etherscanScraper: { interval: 30, enabled: true } // 30 minutes
-};
+// REMOVED: Duplicate serviceConfigs that was shadowing the imported one
+// The proper serviceConfigs is imported from systemMonitorService.ts at line 2
 
 // Helper functions
 
