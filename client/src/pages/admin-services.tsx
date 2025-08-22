@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   Activity, 
   Clock, 
@@ -27,7 +33,7 @@ import AdminHeader from "@/components/admin-header";
 interface ServiceStatus {
   name: string;
   displayName: string;
-  status: 'running' | 'stopped' | 'error' | 'warning';
+  status: 'running' | 'stopped' | 'error' | 'warning' | 'active' | 'disabled' | 'unknown';
   uptime: number;
   lastCheck: string;
   nextRun?: string;
@@ -39,6 +45,9 @@ interface ServiceStatus {
   };
   logs?: string[];
   error?: string;
+  lastError?: string;
+  lastErrorTime?: string;
+  hasError?: boolean;
 }
 
 interface HealthData {
@@ -331,8 +340,9 @@ export default function AdminServices() {
   const errorServices = displayServices.filter((s: ServiceStatus) => s.status === 'error' || s.status === 'stopped');
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <AdminHeader />
+    <TooltipProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <AdminHeader />
       
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
@@ -453,6 +463,16 @@ export default function AdminServices() {
                           {getStatusIcon(service.status)}
                           <span className="ml-1">{service.status}</span>
                         </Badge>
+                        {service.hasError && (
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Service has recent errors</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         {service.status === 'running' ? (
@@ -607,9 +627,9 @@ export default function AdminServices() {
                     {service.error && (
                       <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
                         <div>{service.error}</div>
-                        {service.lastError && (
+                        {service.lastErrorTime && (
                           <div className="text-xs text-gray-500 mt-1">
-                            Error occurred: {new Date(service.lastError).toLocaleString()}
+                            Error occurred: {new Date(service.lastErrorTime).toLocaleString()}
                           </div>
                         )}
                       </div>
@@ -706,5 +726,6 @@ export default function AdminServices() {
         </Tabs>
       </div>
     </div>
+    </TooltipProvider>
   );
 }

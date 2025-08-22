@@ -79,12 +79,14 @@ router.get("/status", requireAuth, async (req, res) => {
         totalRuns: job.details?.totalRuns || 0,
         errorCount: job.details?.errorCount || 0,
         lastError: job.error || null,
+        lastErrorTime: job.lastCheck ? new Date(job.lastCheck).toISOString() : null, // Add error timestamp
         description: getServiceDescription(name),
         poolsAffected: getPoolsAffected(name),
         uptime: Date.now() - (job.lastCheck || Date.now()),
         lastCheck: job.lastCheck ? new Date(job.lastCheck).toLocaleTimeString() : 'Never',
         stats: getServiceStats(name, job),
-        error: job.error
+        error: job.error,
+        hasError: !!job.error // Add flag for warning icon
       };
     });
     
@@ -337,8 +339,9 @@ router.post("/:service/:action", requireAuth, async (req, res) => {
       } else if (serviceName === 'etherscanScraper') {
         console.log("🔍 Manual Etherscan scraper triggered from admin panel");
         try {
-          const { simpleHolderCountService } = await import("../services/simpleHolderCountService");
-          await simpleHolderCountService.updateHolderCount();
+          const { SimpleHolderCountService } = await import("../services/simpleHolderCountService");
+          const service = new SimpleHolderCountService();
+          await service.updateAllPoolHolderCounts();
           res.json({
             success: true,
             message: `Etherscan scraper completed successfully`,
