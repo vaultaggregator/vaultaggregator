@@ -75,6 +75,36 @@ app.use((req, res, next) => {
   }, 30 * 60 * 1000);
   console.log("✅ Simple Holder Count Service initialized - updating counts every 30 minutes");
   
+  // Update operating days daily at midnight
+  const updateOperatingDays = async () => {
+    try {
+      const { db } = await import("./db");
+      const { poolMetricsCurrent } = await import("@shared/schema");
+      
+      // Update operating days for all pools with contract creation dates
+      const result = await db.execute(`
+        UPDATE pool_metrics_current pmc
+        SET operating_days = FLOOR(EXTRACT(EPOCH FROM (NOW() - p.contract_created_at)) / 86400),
+            updated_at = NOW()
+        FROM pools p
+        WHERE pmc.pool_id = p.id
+        AND p.contract_created_at IS NOT NULL
+        AND p.is_active = true
+      `);
+      
+      console.log("✅ Daily operating days update completed");
+    } catch (error) {
+      console.error('❌ Failed to update operating days:', error);
+    }
+  };
+  
+  // Run immediately on startup
+  updateOperatingDays();
+  
+  // Then run daily at midnight
+  setInterval(updateOperatingDays, 24 * 60 * 60 * 1000);
+  console.log("✅ Operating Days updater initialized - running daily");
+  
   // Initialize API services from configuration (auto-registration system)
   const { ApiRegistrationService } = await import("./services/apiRegistrationService");
   await ApiRegistrationService.initializeApiServices();
