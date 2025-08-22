@@ -8,8 +8,8 @@
  */
 
 import { db } from "../db";
-import { pools, poolMetricsCurrent } from "../../shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { pools, poolMetricsCurrent, networks } from "../../shared/schema";
+import { eq, and, isNull, sql } from "drizzle-orm";
 
 interface MorphoVaultData {
   id: string;
@@ -28,13 +28,16 @@ export class OptimizedMorphoSync {
   private lastFetchedData = new Map<string, { apy: number; tvl: number }>();
   
   /**
-   * Fetch all Morpho vaults in a single optimized query
-   * This reduces API calls from N pools to 1 call
+   * Fetch all Morpho vaults from both Ethereum and Base networks
+   * This fetches vaults from both chains in parallel
    */
   private async fetchAllMorphoVaults(): Promise<Map<string, MorphoVaultData>> {
     const query = `
-      query GetAllVaults {
-        vaults(first: 500) {
+      query GetVaultsForChain($chainId: [Int!]!) {
+        vaults(
+          where: { chainId_in: $chainId }
+          first: 1000
+        ) {
           items {
             id
             address
@@ -51,37 +54,65 @@ export class OptimizedMorphoSync {
     `;
 
     try {
-      console.log('🔵 Fetching all Morpho vaults in single batch...');
+      console.log('🔵 Fetching Morpho vaults from both Ethereum and Base...');
       
-      const response = await fetch(OptimizedMorphoSync.MORPHO_API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ query }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Morpho API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.errors) {
-        throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
-      }
+      // Fetch from both chains in parallel
+      const [ethereumResponse, baseResponse] = await Promise.all([
+        // Ethereum (chainId: 1)
+        fetch(OptimizedMorphoSync.MORPHO_API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ 
+            query,
+            variables: { chainId: [1] }
+          }),
+        }),
+        // Base (chainId: 8453)
+        fetch(OptimizedMorphoSync.MORPHO_API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ 
+            query,
+            variables: { chainId: [8453] }
+          }),
+        })
+      ]);
 
       const vaultMap = new Map<string, MorphoVaultData>();
       
-      if (data.data?.vaults?.items) {
-        for (const vault of data.data.vaults.items) {
-          // Map by address (lowercase for case-insensitive matching)
-          vaultMap.set(vault.address.toLowerCase(), vault);
+      // Process Ethereum vaults
+      if (ethereumResponse.ok) {
+        const ethData = await ethereumResponse.json();
+        if (ethData.data?.vaults?.items) {
+          for (const vault of ethData.data.vaults.items) {
+            // Include chain identifier in the key for uniqueness
+            const key = `${vault.address.toLowerCase()}_1`;
+            vaultMap.set(key, vault);
+          }
+          console.log(`✅ Fetched ${ethData.data.vaults.items.length} Ethereum vaults`);
         }
-        console.log(`✅ Fetched ${vaultMap.size} Morpho vaults in 1 API call`);
       }
       
+      // Process Base vaults
+      if (baseResponse.ok) {
+        const baseData = await baseResponse.json();
+        if (baseData.data?.vaults?.items) {
+          for (const vault of baseData.data.vaults.items) {
+            // Include chain identifier in the key for uniqueness
+            const key = `${vault.address.toLowerCase()}_8453`;
+            vaultMap.set(key, vault);
+          }
+          console.log(`✅ Fetched ${baseData.data.vaults.items.length} Base vaults`);
+        }
+      }
+      
+      console.log(`✅ Total: ${vaultMap.size} Morpho vaults fetched in 2 parallel API calls`);
       return vaultMap;
     } catch (error) {
       console.error('❌ Failed to fetch Morpho vaults:', error);
@@ -96,10 +127,14 @@ export class OptimizedMorphoSync {
     console.log('🚀 Starting optimized Morpho sync...');
     
     try {
-      // 1. Get all Morpho pools from database
+      // 1. Get all Morpho pools from database with chain information
       const morphoPools = await db
-        .select()
+        .select({
+          pool: pools,
+          chainName: networks.name
+        })
         .from(pools)
+        .leftJoin(networks, eq(pools.chainId, networks.id))
         .where(
           and(
             eq(pools.platformId, (
@@ -119,7 +154,7 @@ export class OptimizedMorphoSync {
 
       console.log(`📊 Found ${morphoPools.length} Morpho pools to sync`);
 
-      // 2. Fetch all vault data in single API call
+      // 2. Fetch all vault data from both chains
       const vaultData = await this.fetchAllMorphoVaults();
       
       if (vaultData.size === 0) {
@@ -131,18 +166,29 @@ export class OptimizedMorphoSync {
       let updatedCount = 0;
       let unchangedCount = 0;
       
-      for (const pool of morphoPools) {
+      for (const { pool, chainName } of morphoPools) {
         if (!pool.poolAddress) continue;
         
-        const vault = vaultData.get(pool.poolAddress.toLowerCase());
+        // Determine chain ID based on network name
+        const chainIdMap: Record<string, number> = {
+          'ethereum': 1,
+          'Ethereum': 1,
+          'base': 8453,
+          'Base': 8453
+        };
+        
+        const chainId = chainIdMap[chainName] || 1;
+        const vaultKey = `${pool.poolAddress.toLowerCase()}_${chainId}`;
+        const vault = vaultData.get(vaultKey);
         
         if (!vault) {
-          console.log(`⚠️ No data for pool ${pool.tokenPair} (${pool.poolAddress})`);
+          console.log(`⚠️ No data for pool ${pool.tokenPair} (${pool.poolAddress}) on chain ${chainId}`);
           continue;
         }
 
-        // Calculate new values
-        const newApy = vault.state.netApy || vault.state.apy || 0;
+        // Calculate new values (convert APY from decimal to percentage)
+        const rawApy = vault.state.netApy || vault.state.apy || 0;
+        const newApy = rawApy * 100; // Convert from decimal (0.0829) to percentage (8.29)
         const newTvl = parseFloat(vault.state.totalAssetsUsd || '0');
         
         // Check if values actually changed (with small epsilon for floating point)
@@ -156,14 +202,13 @@ export class OptimizedMorphoSync {
             .set({ 
               apy: newApy.toFixed(2),
               tvl: newTvl.toString(),
-              updatedAt: new Date()
             })
             .where(eq(pools.id, pool.id));
           
-          // Update metrics
+          // Update metrics (APY is already converted to percentage)
           await db.update(poolMetricsCurrent)
             .set({
-              apy: newApy,
+              apy: newApy.toString(),
               tvl: newTvl,
               updatedAt: new Date()
             })
