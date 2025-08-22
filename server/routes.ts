@@ -1647,20 +1647,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             console.log(`✅ Immediate data collection completed for ${newPool.tokenPair}`);
             
-            // 🔄 AUTOMATIC HOLDER SYNC: Sync holders if pool has a contract address
+            // 🔄 AUTOMATIC HOLDER SYNC: Update holder count for new pool
             if (newPool.poolAddress) {
               try {
-                console.log(`👥 Starting automatic holder sync for new pool: ${newPool.tokenPair} (${newPool.poolAddress})`);
-                const { holderService } = await import("./services/holderService");
-                await holderService.syncPoolHolders(newPool.id);
-                console.log(`✅ Automatic holder sync completed for ${newPool.tokenPair}`);
+                console.log(`👥 Starting automatic holder count update for new pool: ${newPool.tokenPair} (${newPool.poolAddress})`);
                 
-                // Also update pool_metrics_current with holder count
-                const { comprehensiveHolderSyncService } = await import("./services/comprehensiveHolderSyncService");
-                await comprehensiveHolderSyncService.updatePoolMetricsForSinglePool(newPool.id);
-                console.log(`📊 Pool metrics updated with holder count for ${newPool.tokenPair}`);
+                // Use SimpleHolderCountService for all networks
+                const { SimpleHolderCountService } = await import("./services/simpleHolderCountService");
+                const holderCountService = new SimpleHolderCountService();
+                
+                // Determine the chain name for the scraper
+                const chainData = await db.query.chains.findFirst({
+                  where: (chains, { eq }) => eq(chains.id, newPool.chainId)
+                });
+                
+                const chainName = chainData?.name.toLowerCase() || 'ethereum';
+                console.log(`  Network: ${chainName}`);
+                
+                // Update holder count using Etherscan/Basescan
+                const holderCount = await holderCountService.updateHolderCount(newPool.id, newPool.poolAddress, chainName);
+                console.log(`✅ Automatic holder count update completed for ${newPool.tokenPair}: ${holderCount} holders`);
+                
               } catch (holderError) {
-                console.error(`❌ Failed automatic holder sync for pool ${newPool.id}:`, holderError);
+                console.error(`❌ Failed automatic holder count update for pool ${newPool.id}:`, holderError);
+                // Don't fail pool creation, just log the error
               }
             }
             
