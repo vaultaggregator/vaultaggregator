@@ -900,11 +900,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Holder data endpoints
+  // Support both query parameter and path parameter formats for holders
+  app.get("/api/pools/:id/holders/:page/:limit", async (req, res) => {
+    try {
+      const poolId = req.params.id;
+      const page = parseInt(req.params.page) || 1;
+      const limit = Math.min(parseInt(req.params.limit) || 100, 100); // Default to 100, max 100
+
+      // Validate pagination parameters
+      if (page < 1 || limit < 1) {
+        return res.status(400).json({ 
+          message: "Invalid pagination parameters. Page must be >= 1, limit must be >= 1." 
+        });
+      }
+
+      console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
+
+      // Get the actual total holder count from pool_metrics_current
+      const [metrics] = await db
+        .select({ holdersCount: poolMetricsCurrent.holdersCount })
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .limit(1);
+
+      // Get holders from database (all pools uniformly show up to 1000 holders)
+      const result = await storage.getPoolHolders(poolId, page, limit);
+      
+      // Use the real total count from pool_metrics_current if available, otherwise fall back to stored count
+      const actualTotalCount = metrics?.holdersCount || result.total;
+      const actualPages = Math.ceil(actualTotalCount / limit);
+      
+      // Format holder data for frontend with proper number conversion
+      const formattedHolders = result.holders.map(holder => ({
+        address: holder.holderAddress,
+        tokenBalance: holder.tokenBalanceFormatted || holder.tokenBalance,
+        usdValue: parseFloat(holder.usdValue || '0'),
+        walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
+        walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
+        poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
+        rank: holder.rank
+      }));
+
+      res.json({
+        holders: formattedHolders,
+        pagination: {
+          page,
+          limit,
+          total: actualTotalCount,
+          pages: actualPages
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching pool holders:", error);
+      res.status(500).json({ message: "Failed to fetch pool holders" });
+    }
+  });
+
+  // Keep the original query parameter version for backward compatibility
   app.get("/api/pools/:id/holders", async (req, res) => {
     try {
       const poolId = req.params.id;
       const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
+      const limit = parseInt(req.query.limit as string) || 100; // Changed default to 100
 
       // Validate pagination parameters
       if (page < 1 || limit < 1 || limit > 100) {
