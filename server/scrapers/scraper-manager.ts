@@ -1,11 +1,12 @@
 import { BaseScraper, ScrapedData } from './base-scraper';
-import { MorphoScraper } from './morpho-scraper';
+import { MorphoConcurrentScraper } from './morpho-concurrent-scraper';
 import { LidoScraper } from './lido-scraper';
 import { storage } from '../storage';
 import type { Pool, Platform, Chain } from '../../shared/schema';
 
 export class ScraperManager {
   private scrapers: Map<string, BaseScraper> = new Map();
+  private morphoConcurrentScraper: MorphoConcurrentScraper;
   private isRunning: boolean = false;
 
   constructor() {
@@ -13,7 +14,9 @@ export class ScraperManager {
   }
 
   private registerScrapers(): void {
-    this.scrapers.set('Morpho', new MorphoScraper());
+    // Use optimized concurrent scraper for Morpho
+    this.morphoConcurrentScraper = new MorphoConcurrentScraper();
+    this.scrapers.set('Morpho', this.morphoConcurrentScraper);
     this.scrapers.set('Lido', new LidoScraper());
   }
 
@@ -59,20 +62,53 @@ export class ScraperManager {
 
       console.log(`📊 Found ${formattedPools.length} pools to scrape`);
 
-      const results = await Promise.allSettled(
-        formattedPools.map(pool => this.scrapePool(pool))
-      );
+      // Separate Morpho and non-Morpho pools
+      const morphoPools = formattedPools.filter(p => p.platform.name === 'Morpho');
+      const otherPools = formattedPools.filter(p => p.platform.name !== 'Morpho');
+      
+      console.log(`🎯 Optimized scraping: ${morphoPools.length} Morpho pools (1 batch), ${otherPools.length} other pools`);
 
+      // Process Morpho pools concurrently
       let successCount = 0;
       let errorCount = 0;
+      
+      if (morphoPools.length > 0) {
+        try {
+          const morphoResults = await this.morphoConcurrentScraper.scrapePools(morphoPools);
+          
+          // Store Morpho results
+          for (const [poolId, data] of morphoResults) {
+            await storage.updatePool(poolId, {
+              apy: data.apy,
+              tvl: data.tvl || undefined,
+            });
+            console.log(`💾 Updated pool ${poolId} with fresh data: APY ${data.apy}%`);
+            successCount++;
+          }
+          
+          // Count missing pools as errors
+          const missingCount = morphoPools.length - morphoResults.size;
+          if (missingCount > 0) {
+            errorCount += missingCount;
+          }
+        } catch (error) {
+          console.error('❌ Concurrent Morpho scraping failed:', error);
+          errorCount += morphoPools.length;
+        }
+      }
 
-      results.forEach((result, index) => {
+      // Process other pools individually  
+      const otherResults = await Promise.allSettled(
+        otherPools.map(pool => this.scrapePool(pool))
+      );
+
+      otherResults.forEach((result, index) => {
         if (result.status === 'fulfilled' && result.value) {
           successCount++;
         } else {
           errorCount++;
           if (result.status === 'rejected') {
-            console.error(`❌ Failed to scrape pool ${formattedPools[index].id}:`, result.reason);
+            console.error(`❌ Failed to scrape pool ${otherPools[index].id}:`, result.reason);
           }
         }
       });
