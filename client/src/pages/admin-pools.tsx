@@ -212,8 +212,8 @@ export default function AdminPools() {
 
   const createPoolMutation = useMutation({
     mutationFn: async (data: CreatePoolForm) => {
-      // Use proper naming fallback: name -> symbol -> formatted address
-      let poolName = contractInfo.name || contractInfo.symbol;
+      // Use proper naming fallback: tokenPair -> name -> symbol -> formatted address
+      let poolName = contractInfo.tokenPair || contractInfo.name || contractInfo.symbol;
       if (!poolName && data.poolAddress) {
         // Format address as last resort
         const shortAddr = data.poolAddress.substring(0, 6) + '...' + data.poolAddress.substring(data.poolAddress.length - 4);
@@ -911,14 +911,16 @@ export default function AdminPools() {
                     {/* Auto-populated Token Pair */}
                     {contractInfo.tokenPair && (
                       <div>
-                        <Label className="text-sm font-medium">Auto-Detected Token Pair</Label>
+                        <Label className="text-sm font-medium">Auto-Detected Pool Information</Label>
                         <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-md">
                           <p className="text-sm font-medium text-green-800 dark:text-green-200">
                             {contractInfo.tokenPair}
                           </p>
-                          <p className="text-xs text-green-600 dark:text-green-300 mt-1">
-                            {contractInfo.name ? `Full Name: ${contractInfo.name}` : ''}
-                          </p>
+                          {contractInfo.symbol && (
+                            <p className="text-xs text-green-600 dark:text-green-300 mt-1">
+                              Symbol: {contractInfo.symbol}
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}
