@@ -211,12 +211,12 @@ export function registerAdminSystemRoutes(app: Express) {
         arch: process.arch,
         environment: process.env.NODE_ENV || 'development',
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        cpuCount: require('os').cpus().length,
-        totalMemory: require('os').totalmem(),
-        freeMemory: require('os').freemem(),
-        loadAverage: require('os').loadavg(),
-        hostname: require('os').hostname(),
-        uptime: require('os').uptime()
+        cpuCount: os.cpus().length,
+        totalMemory: os.totalmem(),
+        freeMemory: os.freemem(),
+        loadAverage: os.loadavg(),
+        hostname: os.hostname(),
+        uptime: os.uptime()
       };
 
       const formatBytes = (bytes: number) => {
