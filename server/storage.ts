@@ -367,12 +367,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChainByName(name: string): Promise<Network | undefined> {
-    const [chain] = await db.select().from(networks).where(eq(networks.name, name));
+    const [chain] = await db.select().from(chains).where(eq(chains.name, name));
     return chain || undefined;
   }
 
   async getChainById(id: string): Promise<Network | undefined> {
-    const [chain] = await db.select().from(networks).where(eq(networks.id, id));
+    const [chain] = await db.select().from(chains).where(eq(chains.id, id));
     return chain || undefined;
   }
 
