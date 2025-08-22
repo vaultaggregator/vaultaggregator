@@ -1,22 +1,34 @@
 #!/bin/bash
-echo "⚙️ Admin Services Monitor - Service Status Dashboard"
-echo "=================================================="
+echo "⚙️ Admin Services Monitor - Live Dashboard"
+echo "=========================================="
 echo "Monitoring: All background services and scheduled jobs"
 echo "Press Ctrl+C to stop monitoring"
 echo ""
 
 while true; do
+  clear
+  echo "⚙️ Admin Services Dashboard - $(date '+%H:%M:%S')"
+  echo "=============================================="
   echo ""
-  echo "$(date '+%H:%M:%S') - Service Status"
-  echo "===================================="
   
   # Get service status from admin API
-  curl -s http://localhost:5000/api/admin/services/status | jq -r '.[] | "\(.name): \(.status) (Last: \(.lastRun // "N/A"))"' | sed 's/^/  /'
+  echo "🔄 Service Status:"
+  curl -s http://localhost:5000/api/admin/services/status 2>/dev/null | jq -r '.[] | "  \(.displayName): \(.status) - Last: \(.lastRun // "Never")"' || echo "  API not responding"
   
   echo ""
-  echo "Service Errors:"
-  curl -s http://localhost:5000/api/admin/services/errors | jq -r '.[] | "  \(.serviceId): \(.message)"' || echo "  No errors"
+  echo "⚠️ Recent Errors:"
+  errors=$(curl -s http://localhost:5000/api/admin/services/errors 2>/dev/null | jq -r '.[] | "  \(.serviceId): \(.message)"' 2>/dev/null)
+  if [[ -n "$errors" ]]; then
+    echo "$errors"
+  else
+    echo "  ✅ No recent errors"
+  fi
   
-  # Wait 15 seconds before next check
-  sleep 15
+  echo ""
+  echo "📈 System Stats:"
+  curl -s http://localhost:5000/api/stats 2>/dev/null | jq -r '"  Total Pools: \(.totalPools), Active: \(.activePools), Hidden: \(.hiddenPools)"' || echo "  Stats not available"
+  
+  echo ""
+  echo "Next refresh in 10 seconds... (Ctrl+C to stop)"
+  sleep 10
 done

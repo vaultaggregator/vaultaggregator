@@ -1,15 +1,29 @@
 #!/bin/bash
-echo "🖥️ Application Monitor - Main Server Logs"
-echo "========================================"
+echo "🖥️ Application Monitor - Live Server Logs"
+echo "=========================================="
 echo "Monitoring: Express server, API requests, errors"
 echo "Press Ctrl+C to stop monitoring"
 echo ""
 
-# Monitor the main application process
-ps aux | grep -E "(tsx|node)" | grep "server/index.ts" | head -1 | awk '{print "Main Process PID: " $2}'
+# Get the main process PID
+PID=$(pgrep -f "server/index.ts")
+if [[ -n "$PID" ]]; then
+  echo "Main Process PID: $PID"
+  echo "Server Status: ✅ RUNNING"
+else
+  echo "Server Status: ❌ NOT RUNNING"
+fi
 echo ""
 
-# Follow application logs with filtering
-npm run dev 2>&1 | grep -E "(express|Error|WARNING|✅|❌|🚀|⚠️)" --line-buffered | while IFS= read -r line; do
-  echo "$(date '+%H:%M:%S') - $line"
+# Monitor server logs in real-time
+while true; do
+  if pgrep -f "server/index.ts" > /dev/null; then
+    # Follow the actual server process output
+    tail -f /proc/$(pgrep -f "server/index.ts")/fd/1 2>/dev/null | grep -E "(express|Error|WARNING|✅|❌|🚀|⚠️|GET|POST|PUT|DELETE)" --line-buffered | while IFS= read -r line; do
+      echo "$(date '+%H:%M:%S') - $line"
+    done
+  else
+    echo "$(date '+%H:%M:%S') - ⚠️ Server process not found, waiting..."
+    sleep 5
+  fi
 done
