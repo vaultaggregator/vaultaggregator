@@ -210,6 +210,10 @@ export default function AdminPools() {
         categories: data.categories
       };
       
+      console.log("Creating pool with data:", poolData);
+      console.log("ChainId being sent:", data.chainId);
+      console.log("PlatformId being sent:", data.platformId);
+      
       const response = await fetch("/api/admin/pools", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -406,7 +410,16 @@ export default function AdminPools() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("Form submission - Current form data:", formData);
+    console.log("Available chains:", chains);
+    console.log("Available platforms:", platforms);
+    
     if (!formData.platformId || !formData.chainId || !formData.poolAddress) {
+      console.log("Validation failed - Missing fields:", {
+        platformId: formData.platformId || "MISSING",
+        chainId: formData.chainId || "MISSING", 
+        poolAddress: formData.poolAddress || "MISSING"
+      });
       toast({
         title: "Validation Error",
         description: "Platform, Chain, and Pool Address are required.",
