@@ -37,7 +37,7 @@ router.get("/status", requireAuth, async (req, res) => {
     ];
     
     // Transform all services into service status format
-    const services = allServices.map(name => {
+    const services = await Promise.all(allServices.map(async name => {
       const job = scheduledJobs[name];
       const config = serviceConfigs[name as keyof typeof serviceConfigs] || { interval: 5, enabled: true };
       
@@ -57,7 +57,7 @@ router.get("/status", requireAuth, async (req, res) => {
           errorCount: 0,
           lastError: null,
           description: getServiceDescription(name),
-          poolsAffected: getPoolsAffected(name),
+          poolsAffected: await getPoolsAffected(name),
           uptime: 0,
           lastCheck: 'Never',
           stats: getServiceStats(name, null),
@@ -80,14 +80,14 @@ router.get("/status", requireAuth, async (req, res) => {
         lastError: job.error || null,
         lastErrorTime: job.lastCheck ? new Date(job.lastCheck).toISOString() : null, // Add error timestamp
         description: getServiceDescription(name),
-        poolsAffected: getPoolsAffected(name),
+        poolsAffected: await getPoolsAffected(name),
         uptime: Date.now() - (job.lastCheck || Date.now()),
         lastCheck: job.lastCheck ? new Date(job.lastCheck).toLocaleTimeString() : 'Never',
         stats: getServiceStats(name, job),
         error: job.error,
         hasError: !!job.error // Add flag for warning icon
       };
-    });
+    }));
     
     res.json(services);
   } catch (error) {
@@ -149,7 +149,10 @@ router.post("/refresh", requireAuth, async (req, res) => {
         
         // Force immediate scraping of all pools
         await scraperManager.scrapeAllPools();
-        const result = { successful: 44, failed: 0 }; // Based on the logs showing all 44 pools updated
+        
+        // Get actual pool count from database
+        const poolCount = await getPoolsAffected('poolDataSync');
+        const result = { successful: poolCount, failed: 0 };
         
         res.json({
           success: true,
@@ -483,19 +486,63 @@ function getServiceDescription(serviceName: string): string {
   return descriptions[serviceName] || 'Service description not available';
 }
 
-function getPoolsAffected(serviceName: string): number {
-  const poolCounts: { [key: string]: number } = {
-    poolDataSync: 44,
-    holderDataSync: 44,
-    aiOutlookGeneration: 44,
-    cleanup: 0,
-    tokenPriceSync: 156,
-    historicalDataSync: 44,
-    morphoApiSync: 32,
-    alchemyHealthCheck: 0,
-    etherscanScraper: 44
-  };
-  return poolCounts[serviceName] || 0;
+async function getPoolsAffected(serviceName: string): Promise<number> {
+  try {
+    // Dynamically get actual pool count from database
+    const { db } = await import('../db');
+    const { pools } = await import('../../shared/schema');
+    const { count } = await import('drizzle-orm');
+    const { eq, and, isNull } = await import('drizzle-orm');
+    
+    // Count active pools (not deleted)
+    const [result] = await db
+      .select({ count: count() })
+      .from(pools)
+      .where(
+        and(
+          isNull(pools.deletedAt),
+          eq(pools.isActive, true)
+        )
+      );
+    
+    const activePoolCount = Number(result?.count || 0);
+    
+    // Return appropriate count based on service
+    switch(serviceName) {
+      case 'poolDataSync':
+      case 'holderDataSync':
+      case 'aiOutlookGeneration':
+      case 'historicalDataSync':
+      case 'etherscanScraper':
+        return activePoolCount; // These services affect all active pools
+      case 'morphoApiSync':
+        // Count only Morpho pools
+        const { platforms } = await import('../../shared/schema');
+        const [morphoResult] = await db
+          .select({ count: count() })
+          .from(pools)
+          .innerJoin(platforms, eq(pools.platformId, platforms.id))
+          .where(
+            and(
+              isNull(pools.deletedAt),
+              eq(pools.isActive, true),
+              eq(platforms.name, 'Morpho')
+            )
+          );
+        return Number(morphoResult?.count || 0);
+      case 'tokenPriceSync':
+        // Count unique tokens (estimate based on pools * avg tokens per pool)
+        return activePoolCount * 3; // Rough estimate: 3 tokens per pool average
+      case 'cleanup':
+      case 'alchemyHealthCheck':
+        return 0; // These don't directly affect pools
+      default:
+        return 0;
+    }
+  } catch (error) {
+    console.error('Error getting pool count:', error);
+    return 0;
+  }
 }
 
 function calculateSuccessRate(job: any): number {
