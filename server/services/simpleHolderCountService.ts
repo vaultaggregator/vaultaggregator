@@ -79,25 +79,30 @@ export class SimpleHolderCountService {
       
       console.log(`🔄 Updating holder counts for ${pools.length} pools...`);
       
+      // Group pools by network for better logging
+      const poolsByNetwork: { [key: string]: number } = {};
+      
       for (const pool of pools) {
-        if (pool.poolAddress) {
-          // Determine which scanner to use based on chain
-          // Special case: chain ID 19a7e3af-bc9b-4c6a-9df5-0b24b19934a7 is BASE network (Spark USDC Vault)
-          let chainName = 'ethereum';
-          if (pool.chain) {
-            chainName = pool.chain.name.toLowerCase();
-          } else if (pool.chainId === '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7') {
-            // This is the Spark USDC Vault on BASE
-            chainName = 'base';
-          }
+        if (pool.poolAddress && pool.chain) {
+          // Get the chain name from the relationship
+          const chainName = pool.chain.name.toLowerCase();
           
+          // Count pools per network
+          poolsByNetwork[chainName] = (poolsByNetwork[chainName] || 0) + 1;
+          
+          console.log(`  Updating ${pool.tokenPair} on ${chainName}...`);
           await this.updateHolderCount(pool.id, pool.poolAddress, chainName);
+          
           // Respectful delay for Etherscan/Basescan scraping
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
       
-      console.log(`✅ Updated holder counts for all pools`);
+      // Log summary
+      console.log(`✅ Updated holder counts for all pools:`);
+      for (const [network, count] of Object.entries(poolsByNetwork)) {
+        console.log(`   - ${network}: ${count} pools`);
+      }
     } catch (error) {
       console.error('❌ Failed to update all pool holder counts:', error);
     }
