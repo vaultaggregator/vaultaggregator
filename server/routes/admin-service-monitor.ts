@@ -33,7 +33,6 @@ router.get("/status", requireAuth, async (req, res) => {
       'historicalDataSync',
       'morphoApiSync',
       'alchemyHealthCheck',
-      'cacheCleanup',
       'etherscanScraper'
     ];
     
@@ -434,7 +433,6 @@ const serviceConfigs: { [key: string]: { interval: number; enabled: boolean } } 
   historicalDataSync: { interval: 60, enabled: true },
   morphoApiSync: { interval: 10, enabled: true },
   alchemyHealthCheck: { interval: 5, enabled: true },
-  cacheCleanup: { interval: 720, enabled: true }, // 12 hours
   etherscanScraper: { interval: 30, enabled: true } // 30 minutes
 };
 
@@ -465,7 +463,6 @@ function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | '
     historicalDataSync: 'sync',
     morphoApiSync: 'scraper',
     alchemyHealthCheck: 'metrics',
-    cacheCleanup: 'healing',
     etherscanScraper: 'scraper'
   };
   return typeMap[serviceName] || 'sync';
@@ -481,7 +478,6 @@ function getServiceDescription(serviceName: string): string {
     historicalDataSync: 'Collects historical performance data',
     morphoApiSync: 'Syncs data from Morpho protocol',
     alchemyHealthCheck: 'Monitors Alchemy API health and availability',
-    cacheCleanup: 'Clears expired cache entries and optimizes memory',
     etherscanScraper: 'Scrapes token holder counts from Etherscan for accurate holder data'
   };
   return descriptions[serviceName] || 'Service description not available';
@@ -497,7 +493,6 @@ function getPoolsAffected(serviceName: string): number {
     historicalDataSync: 44,
     morphoApiSync: 32,
     alchemyHealthCheck: 0,
-    cacheCleanup: 0,
     etherscanScraper: 44
   };
   return poolCounts[serviceName] || 0;

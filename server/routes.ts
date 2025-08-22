@@ -65,10 +65,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const profileRoutes = (await import("./routes/profile")).default;
   app.use(profileRoutes);
 
-  // Import and register admin cache management routes
-  const adminCacheRoutes = (await import("./routes/admin-cache")).default;
-  app.use("/api/admin", adminCacheRoutes);
-
   // Import and register protocol routes
   const protocolRoutes = (await import("./routes/protocols")).default;
   app.use(protocolRoutes);
@@ -76,10 +72,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import and register admin services routes
   const adminServicesRoutes = (await import("./routes/admin-services")).default;
   app.use('/api', adminServicesRoutes);
-  
-  // Import and register cache stats routes
-  const cacheStatsRoutes = (await import("./routes/cache-stats")).default;
-  app.use(cacheStatsRoutes);
 
   // Add new protocol route for slug-based URLs
   app.get('/api/protocols/:slug', async (req, res) => {
@@ -1161,18 +1153,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Pool not found' });
       }
 
-      // Check cache first for instant response
-      const { IntelligentCacheService } = await import("./services/cacheService");
-      const cache = new IntelligentCacheService();
-      const cacheKey = `metrics:${poolId}`;
-      const cachedMetrics = cache.get(cacheKey);
-      
-      if (cachedMetrics) {
-        console.log(`⚡ Returning cached metrics for ${poolId} (instant response)`);
-        res.json(cachedMetrics);
-        return;
-      }
-
       console.log(`🚀 INSTANT METRICS: Generating lightning-fast response for ${pool.tokenPair} (${pool.platform.displayName})`);
 
       // INSTANT RESPONSE: Use pre-calculated data - NO expensive API calls
@@ -1224,9 +1204,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           responseTime: 'sub-100ms'
         }
       };
-
-      // Cache for 15 minutes
-      cache.set(cacheKey, metricsResponse, 'morpho-metrics', 15 * 60 * 1000);
       
       console.log(`⚡ INSTANT response generated in <100ms for ${pool.tokenPair}`);
       

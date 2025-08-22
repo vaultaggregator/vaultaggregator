@@ -1,5 +1,4 @@
 import { performance } from 'perf_hooks';
-import { cacheService } from './cacheService';
 import { storage } from '../storage';
 
 interface SystemCheck {
@@ -19,11 +18,6 @@ interface SystemHealth {
     used: number;
     total: number;
     percentage: number;
-  };
-  cachePerformance: {
-    hitRate: number;
-    totalEntries: number;
-    memoryUsage: number;
   };
   apiHealth: {
     etherscan: SystemCheck;
@@ -102,7 +96,6 @@ export class SystemMonitorService {
       overall = 'degraded';
     }
 
-    const cacheStats = cacheService.getStats();
     const memUsage = process.memoryUsage();
     
     // Get error rates
@@ -116,11 +109,6 @@ export class SystemMonitorService {
         used: memUsage.heapUsed,
         total: memUsage.heapTotal,
         percentage: (memUsage.heapUsed / memUsage.heapTotal) * 100
-      },
-      cachePerformance: {
-        hitRate: cacheStats.hitRate,
-        totalEntries: cacheStats.totalEntries,
-        memoryUsage: cacheStats.totalMemoryUsage
       },
       apiHealth: {
         etherscan: this.checks.get('etherscan') || this.createUnknownCheck('etherscan'),
