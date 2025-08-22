@@ -386,9 +386,17 @@ router.post("/refresh", requireAuth, async (req, res) => {
         const { scraperManager } = await import("../scrapers/scraper-manager");
         await scraperManager.scrapeAllPools();
         
-        const { pools } = await import("../../shared/schema");
+        const { pools, apiSettings } = await import("../../shared/schema");
         const morphoPools = await db.select().from(pools);
         const morphoCount = morphoPools.filter(p => p.platformPoolId?.includes('morpho')).length;
+        
+        // Update the last_health_check timestamp for morpho_api
+        await db.update(apiSettings)
+          .set({ 
+            lastHealthCheck: new Date(),
+            healthStatus: 'healthy'
+          })
+          .where(eq(apiSettings.serviceName, 'morpho_api'));
         
         res.json({
           success: true,
@@ -398,6 +406,18 @@ router.post("/refresh", requireAuth, async (req, res) => {
         });
       } catch (error) {
         console.error('❌ Morpho API sync failed:', error);
+        
+        // Update the health status to indicate an error
+        const { apiSettings } = await import("../../shared/schema");
+        await db.update(apiSettings)
+          .set({ 
+            lastHealthCheck: new Date(),
+            healthStatus: 'down',
+            errorCount: sql`error_count + 1`,
+            lastErrorAt: new Date()
+          })
+          .where(eq(apiSettings.serviceName, 'morpho_api'));
+        
         res.json({
           success: false,
           message: "Morpho API Sync failed - check system logs",
