@@ -1,0 +1,30 @@
+run = "npm run dev"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "npm run start"]
+build = ["sh", "-c", "npm run build"]
+ignorePorts = false
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[env]
+NODE_ENV = "development"
+
+[packager]
+language = "nodejs"
+
+[languages]
+[languages.javascript]
+pattern = "**/*.{js,jsx}"
+[languages.javascript.languageServer]
+start = "typescript-language-server --stdio"
+
+[languages.typescript]
+pattern = "**/*.{ts,tsx}"
+[languages.typescript.languageServer]
+start = "typescript-language-server --stdio"
