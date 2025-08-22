@@ -21,10 +21,10 @@ export function AnimatedValue({
   children,
   compareValue,
   animationType = 'flash',
-  duration = 600,
+  duration = 1200,
   flashColors = {
-    increase: 'text-green-500',
-    decrease: 'text-red-500'
+    increase: 'animate-flash-increase',
+    decrease: 'animate-flash-decrease'
   }
 }: AnimatedValueProps) {
   // Always use the formatted value for display, never the compareValue
