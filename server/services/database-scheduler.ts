@@ -64,6 +64,18 @@ class DatabaseScheduler {
         console.error('❌ Error in Morpho API sync:', error);
       }
     });
+
+    // Etherscan Scraper - updates holder counts
+    this.scheduleService('etherscanScraper', async () => {
+      try {
+        console.log('🔍 Starting Etherscan holder count update...');
+        const { simpleHolderCountService } = await import('./simpleHolderCountService');
+        await simpleHolderCountService.updateAllPoolHolderCounts();
+        console.log('✅ Etherscan holder count update completed');
+      } catch (error) {
+        console.error('❌ Error in Etherscan holder count update:', error);
+      }
+    });
   }
 
   private scheduleService(serviceName: string, task: () => Promise<void>): void {
@@ -131,6 +143,18 @@ class DatabaseScheduler {
             console.log('✅ Morpho API sync completed');
           } catch (error) {
             console.error('❌ Error in Morpho API sync:', error);
+          }
+        };
+        break;
+      case 'etherscanScraper':
+        task = async () => {
+          try {
+            console.log('🔍 Starting Etherscan holder count update...');
+            const { simpleHolderCountService } = await import('./simpleHolderCountService');
+            await simpleHolderCountService.updateAllPoolHolderCounts();
+            console.log('✅ Etherscan holder count update completed');
+          } catch (error) {
+            console.error('❌ Error in Etherscan holder count update:', error);
           }
         };
         break;

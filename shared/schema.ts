@@ -682,9 +682,9 @@ export const poolsRelations = relations(pools, ({ one, many }) => ({
     fields: [pools.platformId],
     references: [platforms.id],
   }),
-  chain: one(chains, {
+  network: one(networks, {
     fields: [pools.chainId],
-    references: [chains.id],
+    references: [networks.id],
   }),
   tokenInfo: one(tokenInfo, {
     fields: [pools.tokenInfoId],

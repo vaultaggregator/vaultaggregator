@@ -64,7 +64,7 @@ export class SimpleHolderCountService {
    */
   async updateAllPoolHolderCounts(): Promise<void> {
     try {
-      // Get all active pools with contract addresses and chain info
+      // Get all active pools with contract addresses and network info
       const pools = await db.query.pools.findMany({
         where: (pools, { and, isNotNull, ne, eq }) => 
           and(
@@ -73,7 +73,7 @@ export class SimpleHolderCountService {
             eq(pools.isActive, true)
           ),
         with: {
-          chain: true
+          network: true
         }
       });
       
@@ -83,9 +83,9 @@ export class SimpleHolderCountService {
       const poolsByNetwork: { [key: string]: number } = {};
       
       for (const pool of pools) {
-        if (pool.poolAddress && pool.chain) {
-          // Get the chain name from the relationship
-          const chainName = pool.chain.name.toLowerCase();
+        if (pool.poolAddress && pool.network) {
+          // Get the network name from the relationship
+          const chainName = pool.network.name.toLowerCase();
           
           // Count pools per network
           poolsByNetwork[chainName] = (poolsByNetwork[chainName] || 0) + 1;
