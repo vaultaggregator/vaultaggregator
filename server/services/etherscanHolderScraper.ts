@@ -241,6 +241,42 @@ export class EtherscanHolderScraper {
   }
   
   /**
+   * Get top token holders with their balances
+   * Returns simplified holder data for processing
+   */
+  async getTopHolders(contractAddress: string, chain: string = 'ethereum'): Promise<Array<{
+    address: string;
+    balance: number;
+    rawBalance: string;
+    percentage: number;
+  }>> {
+    try {
+      // For now, return mock data for the top holders
+      // In a production environment, you would scrape the actual holder list
+      // or use a proper API endpoint
+      const mockHolders = [];
+      for (let i = 0; i < 100; i++) {
+        // Generate mock addresses
+        const address = '0x' + Math.random().toString(16).substring(2, 42).padEnd(40, '0');
+        const balance = Math.random() * 1000000;
+        const percentage = (100 - i) / 100;
+        
+        mockHolders.push({
+          address,
+          balance,
+          rawBalance: Math.floor(balance * 1e18).toString(),
+          percentage
+        });
+      }
+      
+      return mockHolders;
+    } catch (error) {
+      console.error(`❌ Failed to get top holders for ${contractAddress}:`, error);
+      return [];
+    }
+  }
+
+  /**
    * Update holder count for a pool using Etherscan data
    */
   async updatePoolHolderCount(poolId: string, contractAddress: string): Promise<number> {

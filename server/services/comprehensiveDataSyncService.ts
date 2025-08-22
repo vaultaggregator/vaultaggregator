@@ -205,8 +205,20 @@ export class ComprehensiveDataSyncService {
   async syncHolderDataLightweight(): Promise<void> {
     try {
       console.log("👥 Running lightweight holder data sync...");
-      await this.holderDataService.syncAllHolderData();
-      console.log("✅ Lightweight holder data sync completed");
+      
+      // Check if we should use enhanced holder data with Alchemy
+      const useEnhancedHolders = process.env.ALCHEMY_RPC_URL && process.env.USE_ENHANCED_HOLDERS === 'true';
+      
+      if (useEnhancedHolders) {
+        // Use enhanced service for detailed top 100 holders with Alchemy metadata
+        const { alchemyEnhancedHolderService } = await import('./alchemyEnhancedHolderService');
+        await alchemyEnhancedHolderService.syncAllPoolHolders();
+        console.log("✅ Enhanced holder data sync completed");
+      } else {
+        // Use basic holder count service
+        await this.holderDataService.syncAllHolderData();
+        console.log("✅ Lightweight holder data sync completed");
+      }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error("❌ Error in lightweight holder data sync:", errorMsg);
