@@ -105,8 +105,9 @@ export default function Home() {
         bValue = parseFloat(b.apy);
         break;
       case 'operatingDays':
-        aValue = a.rawData?.count || 0;
-        bValue = b.rawData?.count || 0;
+        // Convert to number to ensure proper numeric sorting
+        aValue = parseInt(a.operatingDays || a.rawData?.count || '0');
+        bValue = parseInt(b.operatingDays || b.rawData?.count || '0');
         break;
       case 'tvl':
         aValue = parseFloat(a.tvl);
