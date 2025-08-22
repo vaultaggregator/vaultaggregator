@@ -1,61 +1,14 @@
 /**
  * Enhanced Alchemy API Routes
- * Exposes Smart WebSockets, Enhanced Transfers, and Token Metadata APIs
+ * Exposes Enhanced Transfers and Token Metadata APIs
  */
 
 import express from 'express';
-import { smartWebSocketService } from '../services/smartWebSocketService';
 import { enhancedTransfersService } from '../services/enhancedTransfersService';
 import { tokenMetadataService } from '../services/tokenMetadataService';
 import { z } from 'zod';
 
 const router = express.Router();
-
-// ===== SMART WEBSOCKET ROUTES =====
-
-/**
- * Get WebSocket connection status
- */
-router.get('/api/websocket/status', (req, res) => {
-  try {
-    const stats = smartWebSocketService.getStats();
-    res.json({
-      success: true,
-      stats,
-      message: '🚀 Smart WebSocket service active with 3x latency improvements'
-    });
-  } catch (error) {
-    console.error('Error getting WebSocket status:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to get WebSocket status' 
-    });
-  }
-});
-
-/**
- * Start real-time monitoring
- */
-router.post('/api/websocket/start', async (req, res) => {
-  try {
-    // DISABLED: Real-time monitoring to prevent excessive Alchemy API usage
-    // This was causing millions of requests by monitoring every block
-    // await smartWebSocketService.startRealTimeMonitoring();
-    
-    res.json({
-      success: false,
-      message: '⚠️ Real-time monitoring temporarily disabled to prevent excessive API usage',
-      reason: 'Monitoring every block on Ethereum + Base was generating millions of API requests',
-      solution: 'Enable only with proper rate limiting and selective monitoring'
-    });
-  } catch (error) {
-    console.error('Error starting WebSocket monitoring:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to start monitoring' 
-    });
-  }
-});
 
 // ===== ENHANCED TRANSFERS ROUTES =====
 

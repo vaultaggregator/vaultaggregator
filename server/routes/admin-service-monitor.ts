@@ -878,13 +878,6 @@ function getServiceStats(serviceName: string, job: any): any {
       processed: 32,
       successRate: 100
     };
-  } else if (serviceName === 'websocketManager') {
-    return {
-      ...baseStats,
-      processed: 12,
-      pending: 3,
-      successRate: 100
-    };
   } else if (serviceName === 'cacheManager') {
     return {
       ...baseStats,

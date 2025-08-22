@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Menu, BarChart3, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { WebSocketStatus } from "@/components/websocket-status";
 
 
 interface HeaderProps {
@@ -38,7 +37,6 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
 
           {/* Actions */}
           <div className="flex items-center space-x-4">
-            <WebSocketStatus variant="compact" />
             <ThemeToggle />
             {/* Mobile Menu Button */}
             <button 

@@ -14,7 +14,6 @@ import { Plus, ChevronUp, ChevronDown, Search, TrendingUp, Shield, Users } from 
 import { YieldCardSkeleton, PoolDataLoading } from "@/components/loading-animations";
 import { CryptoLoader } from "@/components/crypto-loader";
 import { EnhancedSearch } from "@/components/enhanced-search";
-import { useRealtimeApy } from "@/hooks/useRealtimeApy";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
@@ -27,14 +26,6 @@ export default function Home() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const limit = 12;
-  
-  // Initialize WebSocket connection for real-time updates
-  const { isConnected, lastUpdate } = useRealtimeApy();
-  
-  // Debug: Log when WebSocket updates are received
-  useEffect(() => {
-    console.log('🏠 Homepage WebSocket status:', { isConnected, lastUpdate });
-  }, [isConnected, lastUpdate]);
 
   // Set document title when homepage loads
   useEffect(() => {
@@ -46,7 +37,7 @@ export default function Home() {
 
 
   const { data: pools = [], isLoading, error, refetch } = useQuery<YieldOpportunity[]>({
-    queryKey: ['/api/pools', filters, page, lastUpdate], // Include lastUpdate to trigger refetch on WebSocket updates
+    queryKey: ['/api/pools', filters, page],
     queryFn: async () => {
       const params = new URLSearchParams({
         limit: limit.toString(),

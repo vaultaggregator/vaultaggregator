@@ -112,9 +112,6 @@ export class ScraperManager {
         });
 
         console.log(`💾 Updated pool ${pool.id} with fresh data: APY ${scrapedData.apy}%`);
-        
-        // TODO: Trigger WebSocket broadcast when we integrate with the routes system
-        // This will notify clients of database changes
       }
 
       return scrapedData;

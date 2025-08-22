@@ -6,8 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MetricTooltip } from "./metric-tooltip";
 import { RiskBadge } from "@/components/risk-badge";
 import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
-import { useRealtimeApy } from "@/hooks/useRealtimeApy";
-import { WebSocketStatus } from "@/components/websocket-status";
 import type { YieldOpportunity } from "@/types";
 import { getChainIcon } from "@/components/chain-icons";
 import { getPlatformIcon } from "@/components/platform-icons";

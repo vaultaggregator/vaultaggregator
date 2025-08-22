@@ -262,20 +262,6 @@ export default function AdminServices() {
       }
     },
     {
-      name: 'websocketManager',
-      displayName: 'WebSocket Connections',
-      status: 'running',
-      uptime: Date.now() - (Date.now() - 7200000),
-      lastCheck: new Date().toLocaleTimeString(),
-      nextRun: 'Real-time',
-      stats: {
-        processed: 12,
-        failed: 0,
-        pending: 3,
-        successRate: 100
-      }
-    },
-    {
       name: 'cacheManager',
       displayName: 'Cache Management',
       status: 'running',
@@ -514,7 +500,7 @@ export default function AdminServices() {
                                 tokenPriceSync: "Updating token prices from data sources",
                                 historicalDataSync: "Collecting historical data for charts",
                                 morphoApiSync: "Syncing data from Morpho protocol",
-                                websocketManager: "Refreshing WebSocket connections",
+
                                 cacheManager: "Optimizing cache storage",
                                 aiOutlookGeneration: "Starting AI market insights generation",
                                 cleanup: "Running database cleanup process"
@@ -544,7 +530,7 @@ export default function AdminServices() {
                               tokenPriceSync: 4000,
                               historicalDataSync: 6000,
                               morphoApiSync: 3000,
-                              websocketManager: 2000,
+
                               cacheManager: 3000,
                               aiOutlookGeneration: 8000,
                               cleanup: 3000
@@ -616,7 +602,7 @@ export default function AdminServices() {
                           {service.name === 'tokenPriceSync' && 'Updating token prices from multiple data sources.'}
                           {service.name === 'historicalDataSync' && 'Collecting historical APY and TVL data for charts.'}
                           {service.name === 'morphoApiSync' && 'Syncing data from Morpho protocol APIs.'}
-                          {service.name === 'websocketManager' && 'Managing real-time WebSocket connections for live updates.'}
+
                           {service.name === 'cacheManager' && 'Optimizing cache storage and clearing expired entries.'}
                           {service.name === 'aiOutlookGeneration' && 'Generating AI market insights for pools using OpenAI.'}
                           {service.name === 'cleanup' && 'Cleaning up old data from the database.'}

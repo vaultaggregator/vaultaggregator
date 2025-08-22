@@ -26,8 +26,6 @@ import { HoldersSection } from "@/components/holders-section";
 import { VaultActivitySection } from "@/components/vault-activity-section";
 
 import { formatTimeAgo } from "@/lib/utils";
-import { useRealtimeApy } from "@/hooks/useRealtimeApy";
-import { WebSocketStatus } from "@/components/websocket-status";
 import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
 import { formatTvl, formatHolders, formatCurrency, formatNumber } from "@/lib/format";
 
@@ -214,8 +212,7 @@ export default function PoolDetail() {
     params: { poolId, network: params.network, protocol: params.protocol, tokenPair: params.tokenPair }
   });
   
-  // Enable real-time APY updates via WebSocket
-  const { isConnected, lastUpdate } = useRealtimeApy();
+
   
   const { data: pool, isLoading, error } = useQuery<YieldOpportunity>({
     queryKey: [apiEndpoint],
