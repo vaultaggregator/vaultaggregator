@@ -1,34 +1,44 @@
 #!/bin/bash
 echo "🔄 Pool Data Sync Monitor - Live APY/TVL Updates"
 echo "==============================================="
-echo "Monitoring: Morpho API & Lido API scraping every 5 minutes"
+echo "Monitoring: Morpho API & Lido API scraping every 2 minutes"
 echo "Press Ctrl+C to stop monitoring"
 echo ""
-
-# Function to get the main server process
-get_server_process() {
-  pgrep -f "tsx.*server/index.ts"
-}
 
 # Start monitoring
 echo "$(date '+%H:%M:%S') - Starting pool data monitoring..."
 
-# Monitor using journalctl for more reliable log capture
-exec 3< <(journalctl -f --no-pager 2>/dev/null | grep -E "(Updated pool|Successfully scraped|\[Morpho\]|\[Lido\]|APY|TVL|💾|✅|Scraping completed)" --line-buffered)
-
-while IFS= read -r -u 3 line || {
-  # Fallback: monitor server process directly if journalctl fails
-  server_pid=$(get_server_process)
-  if [[ -n "$server_pid" ]]; then
-    exec 3< <(tail -f /proc/$server_pid/fd/1 2>/dev/null | grep -E "(Updated pool|Successfully scraped|\[Morpho\]|\[Lido\]|APY|TVL|💾|✅|Scraping completed)" --line-buffered)
-    continue
+# Monitor by checking pool data changes and service status
+while true; do
+  echo ""
+  echo "$(date '+%H:%M:%S') - Pool Data Status Check"
+  echo "----------------------------------------"
+  
+  # Check service status
+  status_response=$(curl -s http://localhost:5000/api/admin/services/status 2>/dev/null)
+  if [[ $? -eq 0 ]]; then
+    pool_sync_status=$(echo "$status_response" | jq -r '.[] | select(.name=="poolDataSync") | "\(.status) - \(.interval)min intervals"' 2>/dev/null)
+    morpho_sync_status=$(echo "$status_response" | jq -r '.[] | select(.name=="morphoApiSync") | "\(.status) - \(.interval)min intervals"' 2>/dev/null)
+    
+    echo "📊 Pool Data Sync: ${pool_sync_status:-"checking..."}"
+    echo "🔶 Morpho API Sync: ${morpho_sync_status:-"checking..."}"
   else
-    sleep 5
-    echo "$(date '+%H:%M:%S') - Waiting for server process..."
-    continue
+    echo "⚠️  Cannot connect to admin API"
   fi
-}; do
-  if [[ -n "$line" ]]; then
-    echo "$(date '+%H:%M:%S') - $line"
+  
+  # Check recent pool data
+  pools_response=$(curl -s http://localhost:5000/api/pools 2>/dev/null)
+  if [[ $? -eq 0 ]]; then
+    echo "📈 Recent Pool APY Data:"
+    echo "$pools_response" | jq -r '.[0:5][] | "  \(.name): \(.apy // "N/A")%"' 2>/dev/null || echo "  Data format error"
+  else
+    echo "⚠️  Cannot fetch pool data"
   fi
+  
+  # Wait and show countdown
+  for i in {15..1}; do
+    printf "\r⏰ Next check in: %2d seconds" $i
+    sleep 1
+  done
+  printf "\r                              \r"
 done
