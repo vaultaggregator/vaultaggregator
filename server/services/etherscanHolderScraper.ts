@@ -11,6 +11,8 @@ import { eq } from 'drizzle-orm';
 export class EtherscanHolderScraper {
   private readonly ETHERSCAN_URL = 'https://etherscan.io';
   private readonly BASESCAN_URL = 'https://basescan.org';
+  private readonly ETHERSCAN_API_URL = 'https://api.etherscan.io/api';
+  private readonly BASESCAN_API_URL = 'https://api.basescan.org/api';
   
   /**
    * Get holder count from Etherscan/Basescan by scraping the token page
@@ -173,6 +175,68 @@ export class EtherscanHolderScraper {
     } catch (error) {
       console.error(`❌ Failed to scrape Etherscan for ${contractAddress}:`, error);
       return 0;
+    }
+  }
+  
+  /**
+   * Get contract creation date from Etherscan/Basescan
+   * @param contractAddress - The contract address to check
+   * @param chain - The chain name ('ethereum' or 'base')
+   */
+  async getContractCreationDate(contractAddress: string, chain: string = 'ethereum'): Promise<Date | null> {
+    try {
+      const baseUrl = chain.toLowerCase() === 'base' ? this.BASESCAN_URL : this.ETHERSCAN_URL;
+      const scannerName = chain.toLowerCase() === 'base' ? 'Basescan' : 'Etherscan';
+      
+      const url = `${baseUrl}/address/${contractAddress}`;
+      console.log(`🔍 Fetching contract creation date from ${scannerName} for ${contractAddress}...`);
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`${scannerName} returned ${response.status}`);
+      }
+      
+      const html = await response.text();
+      
+      // Look for contract creation patterns like "224 days ago" or specific dates
+      const patterns = [
+        /(\d+)\s+days?\s+ago/i,
+        /(\d+)\s+months?\s+ago/i,
+        /(\d+)\s+hours?\s+ago/i,
+        /Contract\s+Creator.*?at\s+txn.*?(\d{1,3}\s+days?\s+ago)/i
+      ];
+      
+      for (const pattern of patterns) {
+        const match = html.match(pattern);
+        if (match) {
+          const value = parseInt(match[1]);
+          const unit = match[0].toLowerCase();
+          
+          let creationDate = new Date();
+          if (unit.includes('day')) {
+            creationDate.setDate(creationDate.getDate() - value);
+          } else if (unit.includes('month')) {
+            creationDate.setMonth(creationDate.getMonth() - value);
+          } else if (unit.includes('hour')) {
+            creationDate.setHours(creationDate.getHours() - value);
+          }
+          
+          console.log(`✅ Contract created ${match[0]} (${creationDate.toISOString().split('T')[0]})`);
+          return creationDate;
+        }
+      }
+      
+      console.log(`⚠️ Could not find contract creation date on ${scannerName} for ${contractAddress}`);
+      return null;
+      
+    } catch (error) {
+      console.error(`❌ Failed to get contract creation date for ${contractAddress}:`, error);
+      return null;
     }
   }
   
