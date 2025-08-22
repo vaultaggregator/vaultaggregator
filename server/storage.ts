@@ -17,7 +17,8 @@ import {
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
   type HolderHistory, type InsertHolderHistory,
   type PoolMetricsHistory, type InsertPoolMetricsHistory, type PoolMetricsCurrent, type InsertPoolMetricsCurrent,
-  type TokenHolder, type InsertTokenHolder
+  type TokenHolder, type InsertTokenHolder,
+  swrCachedPages, swrCacheSnapshots, type SwrCachedPage, type SwrCacheSnapshot, type InsertSwrCachedPage, type InsertSwrCacheSnapshot
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc, lte } from "drizzle-orm";
@@ -237,6 +238,15 @@ export interface IStorage {
   getAllPoolsForAdmin(): Promise<any[]>;
   updatePool(id: string, updates: Partial<InsertPool>): Promise<Pool | undefined>;
   getAllChainsFromChainsTable(): Promise<Chain[]>;
+
+  // SWR Cache methods
+  getSwrCachedPages(): Promise<SwrCachedPage[]>;
+  getSwrCachedPage(id: string): Promise<SwrCachedPage | undefined>;
+  createSwrCachedPage(page: InsertSwrCachedPage): Promise<SwrCachedPage>;
+  updateSwrCachedPage(id: string, updates: Partial<InsertSwrCachedPage>): Promise<SwrCachedPage | undefined>;
+  deleteSwrCachedPage(id: string): Promise<boolean>;
+  getSwrCacheSnapshots(pageId?: string): Promise<SwrCacheSnapshot[]>;
+  clearSwrCacheSnapshots(pageId?: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2358,6 +2368,75 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(pools.tokenPair);
+  }
+
+  // SWR Cache methods
+  async getSwrCachedPages(): Promise<SwrCachedPage[]> {
+    return await db
+      .select()
+      .from(swrCachedPages)
+      .orderBy(asc(swrCachedPages.priority));
+  }
+
+  async getSwrCachedPage(id: string): Promise<SwrCachedPage | undefined> {
+    const [page] = await db
+      .select()
+      .from(swrCachedPages)
+      .where(eq(swrCachedPages.id, id))
+      .limit(1);
+    return page;
+  }
+
+  async createSwrCachedPage(page: InsertSwrCachedPage): Promise<SwrCachedPage> {
+    const [newPage] = await db
+      .insert(swrCachedPages)
+      .values(page)
+      .returning();
+    return newPage;
+  }
+
+  async updateSwrCachedPage(id: string, updates: Partial<InsertSwrCachedPage>): Promise<SwrCachedPage | undefined> {
+    const [updatedPage] = await db
+      .update(swrCachedPages)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(swrCachedPages.id, id))
+      .returning();
+    return updatedPage;
+  }
+
+  async deleteSwrCachedPage(id: string): Promise<boolean> {
+    const result = await db
+      .delete(swrCachedPages)
+      .where(eq(swrCachedPages.id, id));
+    return true;
+  }
+
+  async getSwrCacheSnapshots(pageId?: string): Promise<SwrCacheSnapshot[]> {
+    if (pageId) {
+      return await db
+        .select()
+        .from(swrCacheSnapshots)
+        .where(eq(swrCacheSnapshots.pageId, pageId))
+        .orderBy(desc(swrCacheSnapshots.createdAt));
+    }
+    return await db
+      .select()
+      .from(swrCacheSnapshots)
+      .orderBy(desc(swrCacheSnapshots.createdAt));
+  }
+
+  async clearSwrCacheSnapshots(pageId?: string): Promise<number> {
+    if (pageId) {
+      await db
+        .delete(swrCacheSnapshots)
+        .where(eq(swrCacheSnapshots.pageId, pageId));
+    } else {
+      await db.delete(swrCacheSnapshots);
+    }
+    return 0;
   }
 }
 

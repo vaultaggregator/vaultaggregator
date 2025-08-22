@@ -538,6 +538,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SWR Cache Management routes
+  app.get('/api/admin/swr-cache/pages', async (req: Request, res: Response) => {
+    try {
+      const pages = await storage.getSwrCachedPages();
+      res.json(pages);
+    } catch (error) {
+      console.error('Error fetching SWR cached pages:', error);
+      res.status(500).json({ error: 'Failed to fetch cached pages' });
+    }
+  });
+
+  app.post('/api/admin/swr-cache/pages', async (req: Request, res: Response) => {
+    try {
+      const newPage = await storage.createSwrCachedPage(req.body);
+      res.json(newPage);
+    } catch (error) {
+      console.error('Error creating SWR cached page:', error);
+      res.status(500).json({ error: 'Failed to create cached page' });
+    }
+  });
+
+  app.patch('/api/admin/swr-cache/pages/:id', async (req: Request, res: Response) => {
+    try {
+      const updatedPage = await storage.updateSwrCachedPage(req.params.id, req.body);
+      if (!updatedPage) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+      res.json(updatedPage);
+    } catch (error) {
+      console.error('Error updating SWR cached page:', error);
+      res.status(500).json({ error: 'Failed to update cached page' });
+    }
+  });
+
+  app.delete('/api/admin/swr-cache/pages/:id', async (req: Request, res: Response) => {
+    try {
+      await storage.deleteSwrCachedPage(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting SWR cached page:', error);
+      res.status(500).json({ error: 'Failed to delete cached page' });
+    }
+  });
+
+  // Manual cache invalidation endpoint
+  app.post('/api/admin/swr-cache/invalidate', async (req: Request, res: Response) => {
+    try {
+      const { cacheKey, pattern } = req.body;
+      const { swrCacheService } = await import('./services/swrCacheService');
+      
+      if (cacheKey) {
+        await swrCacheService.invalidate(cacheKey);
+        res.json({ success: true, message: `Cache key ${cacheKey} invalidated` });
+      } else if (pattern) {
+        await swrCacheService.invalidatePattern(pattern);
+        res.json({ success: true, message: `Cache pattern ${pattern} invalidated` });
+      } else {
+        res.status(400).json({ error: 'Either cacheKey or pattern is required' });
+      }
+    } catch (error) {
+      console.error('Error invalidating cache:', error);
+      res.status(500).json({ error: 'Failed to invalidate cache' });
+    }
+  });
+
+  // Get cache statistics
+  app.get('/api/admin/swr-cache/stats', async (req: Request, res: Response) => {
+    try {
+      const { swrCacheService } = await import('./services/swrCacheService');
+      const stats = await swrCacheService.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching cache stats:', error);
+      res.status(500).json({ error: 'Failed to fetch cache stats' });
+    }
+  });
+
+  // Clear cache snapshots
+  app.delete('/api/admin/swr-cache/snapshots/:pageId?', async (req: Request, res: Response) => {
+    try {
+      const cleared = await storage.clearSwrCacheSnapshots(req.params.pageId);
+      res.json({ success: true, cleared });
+    } catch (error) {
+      console.error('Error clearing cache snapshots:', error);
+      res.status(500).json({ error: 'Failed to clear cache snapshots' });
+    }
+  });
+
   app.get("/api/v1/pools/:id", requireApiKey, async (req, res) => {
     try {
       const pool = await storage.getPoolById(req.params.id);

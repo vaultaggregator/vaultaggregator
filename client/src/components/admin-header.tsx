@@ -35,7 +35,7 @@ export function AdminHeader() {
         { path: "/admin/system", icon: Monitor, label: "System Health", highlight: "system" },
         { path: "/admin/services", icon: Activity, label: "Services", highlight: "service" },
         { path: "/admin/api-settings", icon: Settings, label: "API Settings", highlight: "service" },
-
+        { path: "/admin/swr-cache", icon: Database, label: "SWR Cache", highlight: "cache" },
       ]
     },
     {

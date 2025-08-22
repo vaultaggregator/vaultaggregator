@@ -1252,3 +1252,47 @@ export type WatchlistWithPools = Watchlist & {
 export type UserWithAlerts = User & {
   userAlerts: (UserAlert & { notifications: AlertNotification[] })[];
 };
+
+// SWR Cache Management tables
+export const swrCachedPages = pgTable("swr_cached_pages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  pageName: varchar("page_name", { length: 255 }).notNull().unique(),
+  routePattern: text("route_pattern").notNull(), // e.g., "/api/pools", "/api/chains", etc.
+  displayName: text("display_name").notNull(),
+  description: text("description"),
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  cacheDurationMs: integer("cache_duration_ms").notNull().default(60000), // Default 60 seconds
+  revalidateOnFocus: boolean("revalidate_on_focus").notNull().default(true),
+  revalidateOnReconnect: boolean("revalidate_on_reconnect").notNull().default(true),
+  persistToDisk: boolean("persist_to_disk").notNull().default(true),
+  priority: integer("priority").notNull().default(1), // 1=high, 2=medium, 3=low
+  lastCachedAt: timestamp("last_cached_at"),
+  cacheHitCount: integer("cache_hit_count").notNull().default(0),
+  cacheMissCount: integer("cache_miss_count").notNull().default(0),
+  avgResponseTimeMs: integer("avg_response_time_ms"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const swrCacheSnapshots = pgTable("swr_cache_snapshots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  pageId: varchar("page_id").notNull().references(() => swrCachedPages.id, { onDelete: "cascade" }),
+  cacheKey: text("cache_key").notNull(), // The unique cache key for this snapshot
+  data: jsonb("data").notNull(), // The actual cached data
+  metadata: jsonb("metadata"), // Additional metadata (headers, status, etc.)
+  dataSize: integer("data_size"), // Size of cached data in bytes
+  etag: varchar("etag", { length: 255 }), // ETag for cache validation
+  expiresAt: timestamp("expires_at").notNull(),
+  accessCount: integer("access_count").notNull().default(0),
+  lastAccessedAt: timestamp("last_accessed_at"),
+  isStale: boolean("is_stale").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSwrCachedPageSchema = createInsertSchema(swrCachedPages);
+export type InsertSwrCachedPage = z.infer<typeof insertSwrCachedPageSchema>;
+export type SwrCachedPage = typeof swrCachedPages.$inferSelect;
+
+export const insertSwrCacheSnapshotSchema = createInsertSchema(swrCacheSnapshots);
+export type InsertSwrCacheSnapshot = z.infer<typeof insertSwrCacheSnapshotSchema>;
+export type SwrCacheSnapshot = typeof swrCacheSnapshots.$inferSelect;
