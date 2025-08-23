@@ -77,6 +77,50 @@ class DatabaseScheduler {
       }
     });
 
+    // Token Price Sync - updates token prices using Alchemy API
+    this.scheduleService('tokenPriceSync', async () => {
+      try {
+        console.log('💰 Starting scheduled token price sync...');
+        const { tokenInfo } = await import('../../shared/schema');
+        const { AlchemyService } = await import('./alchemyService');
+        const { db } = await import('../db');
+        const { eq } = await import('drizzle-orm');
+        
+        // Get all tracked tokens from database
+        const trackedTokens = await db.select().from(tokenInfo);
+        console.log(`🔍 Found ${trackedTokens.length} tokens to update prices for`);
+        
+        let updatedCount = 0;
+        const alchemy = new AlchemyService();
+        
+        // Update prices for each token
+        for (const token of trackedTokens) {
+          try {
+            // Get live price using Alchemy (use 'ethereum' as default network)
+            const livePrice = await alchemy.getTokenPrice(token.address, 'ethereum');
+            
+            if (livePrice && livePrice > 0) {
+              // Update token price in database
+              await db.update(tokenInfo)
+                .set({ 
+                  priceUsd: livePrice.toString()
+                })
+                .where(eq(tokenInfo.address, token.address));
+                
+              console.log(`💰 Updated ${token.symbol} price: $${livePrice.toFixed(2)}`);
+              updatedCount++;
+            }
+          } catch (error) {
+            console.log(`⚠️ Failed to update price for ${token.symbol}: ${error}`);
+          }
+        }
+        
+        console.log(`✅ Scheduled token price sync completed: ${updatedCount}/${trackedTokens.length} prices updated`);
+      } catch (error) {
+        console.error('❌ Error in scheduled token price sync:', error);
+      }
+    });
+
   }
 
   private scheduleService(serviceName: string, task: () => Promise<void>): void {
@@ -155,6 +199,50 @@ class DatabaseScheduler {
             console.log('✅ Scheduled holder count scraping completed');
           } catch (error) {
             console.error('❌ Error in scheduled holder count scraping:', error);
+          }
+        };
+        break;
+      case 'tokenPriceSync':
+        task = async () => {
+          try {
+            console.log('💰 Starting scheduled token price sync...');
+            const { tokenInfo } = await import('../../shared/schema');
+            const { AlchemyService } = await import('./alchemyService');
+            const { db } = await import('../db');
+            const { eq } = await import('drizzle-orm');
+            
+            // Get all tracked tokens from database
+            const trackedTokens = await db.select().from(tokenInfo);
+            console.log(`🔍 Found ${trackedTokens.length} tokens to update prices for`);
+            
+            let updatedCount = 0;
+            const alchemy = new AlchemyService();
+            
+            // Update prices for each token
+            for (const token of trackedTokens) {
+              try {
+                // Get live price using Alchemy (use 'ethereum' as default network)
+                const livePrice = await alchemy.getTokenPrice(token.address, 'ethereum');
+                
+                if (livePrice && livePrice > 0) {
+                  // Update token price in database
+                  await db.update(tokenInfo)
+                    .set({ 
+                      priceUsd: livePrice.toString()
+                    })
+                    .where(eq(tokenInfo.address, token.address));
+                    
+                  console.log(`💰 Updated ${token.symbol} price: $${livePrice.toFixed(2)}`);
+                  updatedCount++;
+                }
+              } catch (error) {
+                console.log(`⚠️ Failed to update price for ${token.symbol}: ${error}`);
+              }
+            }
+            
+            console.log(`✅ Scheduled token price sync completed: ${updatedCount}/${trackedTokens.length} prices updated`);
+          } catch (error) {
+            console.error('❌ Error in scheduled token price sync:', error);
           }
         };
         break;

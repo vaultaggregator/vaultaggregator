@@ -174,35 +174,31 @@ const CHAIN_CONFIGS: Record<string, {
   },
 };
 
-// CoinGecko API for token prices
-const COINGECKO_API = 'https://api.coingecko.com/api/v3';
-
-// Calculate TVL from database pools
-
-async function fetchTokenPrice(coingeckoId: string) {
+// Live price API using Coinbase (replacing CoinGecko)
+async function fetchTokenPrice(symbol: string) {
   try {
     const response = await fetch(
-      `${COINGECKO_API}/simple/price?ids=${coingeckoId}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true`
+      `https://api.coinbase.com/v2/exchange-rates?currency=${symbol.toUpperCase()}`
     );
 
     if (!response.ok) {
-      console.log(`CoinGecko API returned ${response.status}`);
+      console.log(`Coinbase API returned ${response.status}`);
       return null;
     }
 
     const data = await response.json();
-    const tokenData = data[coingeckoId];
+    const price = parseFloat(data.data.rates.USD);
 
-    if (!tokenData) return null;
+    if (!price || price <= 0) return null;
 
     return {
-      price: tokenData.usd || 0,
-      price24hChange: tokenData.usd_24h_change || 0,
-      marketCap: tokenData.usd_market_cap || 0,
-      volume24h: tokenData.usd_24h_vol || 0,
+      price: price,
+      price24hChange: 0, // Coinbase doesn't provide 24h change in this endpoint
+      marketCap: 0, // Not available in this endpoint
+      volume24h: 0, // Not available in this endpoint
     };
   } catch (error) {
-    console.error('Error fetching token price from CoinGecko:', error);
+    console.error('Error fetching token price from Coinbase:', error);
     return null;
   }
 }
@@ -333,8 +329,7 @@ export async function getNetworkDetails(req: Request, res: Response) {
         // Handle hardcoded chain config (existing logic)
         // Fetch real-time data in parallel
         const [tokenPriceData, tvlData, metricsData] = await Promise.all([
-          chainConfig.nativeToken.coingeckoId ? 
-            fetchTokenPrice(chainConfig.nativeToken.coingeckoId) : null,
+          fetchTokenPrice(chainConfig.nativeToken.symbol),
           fetchChainTVL(chainConfig.name),
           fetchChainMetrics(chainId),
         ]);

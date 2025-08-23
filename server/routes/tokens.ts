@@ -55,56 +55,43 @@ const ETHERSCAN_APIS: Record<string, { url: string; apiKey?: string }> = {
   'bsc': { url: 'https://api.bscscan.com/api' },
 };
 
-// CoinGecko API base URL
-const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+// Removed CoinGecko API - now using Alchemy
 
-// Removed DefiLlama API - now using direct platform APIs
-
-async function fetchTokenFromCoinGecko(chainId: string, tokenAddress: string) {
+async function fetchTokenFromAlchemy(chainId: string, tokenAddress: string) {
   try {
-    // Map chain IDs to CoinGecko platform IDs
-    const platformMap: Record<string, string> = {
+    // Import Alchemy service
+    const { AlchemyService } = await import('../services/alchemyService');
+    const alchemy = new AlchemyService();
+    
+    // Map chain IDs to network names
+    const networkMap: Record<string, string> = {
       'ethereum': 'ethereum',
       'base': 'base',
-      'arbitrum': 'arbitrum-one',
-      'optimism': 'optimistic-ethereum',
-      'polygon': 'polygon-pos',
-      'bsc': 'binance-smart-chain',
     };
 
-    const platform = platformMap[chainId] || 'ethereum';
-    
-    // Fetch token info from CoinGecko with timeout
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
-    const response = await fetch(
-      `${COINGECKO_API}/coins/${platform}/contract/${tokenAddress.toLowerCase()}`,
-      { signal: controller.signal }
-    ).finally(() => clearTimeout(timeout));
+    const network = networkMap[chainId] || 'ethereum';
 
-    if (!response.ok) {
-      console.log(`CoinGecko API returned ${response.status} for token ${tokenAddress}`);
-      return null;
-    }
+    // Get token metadata from Alchemy
+    const metadata = await alchemy.getTokenMetadata(tokenAddress, network);
+    if (!metadata) return null;
 
-    const data = await response.json();
-    
+    // Get live price using Alchemy service
+    const price = await alchemy.getTokenPrice(tokenAddress, network);
+
     return {
-      name: data.name,
-      symbol: data.symbol?.toUpperCase(),
-      logo: data.image?.large || data.image?.small,
-      price: data.market_data?.current_price?.usd || 0,
-      price24hChange: data.market_data?.price_change_percentage_24h || 0,
-      marketCap: data.market_data?.market_cap?.usd || 0,
-      totalSupply: data.market_data?.total_supply || 0,
-      circulatingSupply: data.market_data?.circulating_supply || 0,
-      description: data.description?.en,
-      website: data.links?.homepage?.[0],
-      coingeckoId: data.id,
+      name: metadata.name || '',
+      symbol: metadata.symbol?.toUpperCase() || '',
+      logo: metadata.logo || '',
+      price: price,
+      price24hChange: 0, // Not available from Alchemy
+      marketCap: 0, // Not available from Alchemy
+      totalSupply: 0, // Not available from Alchemy
+      circulatingSupply: 0, // Not available from Alchemy
+      description: '',
+      website: '',
     };
   } catch (error) {
-    console.error('Error fetching from CoinGecko:', error);
+    console.error('Error fetching from Alchemy:', error);
     return null;
   }
 }
@@ -181,11 +168,11 @@ export async function getTokenDetails(req: Request, res: Response) {
 
     // Fetch token data from multiple sources in parallel
     const [coinGeckoData, etherscanData] = await Promise.all([
-      fetchTokenFromCoinGecko(chainId, tokenAddress),
+      fetchTokenFromAlchemy(chainId, tokenAddress),
       fetchTokenFromEtherscan(chainId, tokenAddress),
     ]);
 
-    // Merge data from different sources (prioritize CoinGecko for most fields)
+    // Merge data from different sources (prioritize Alchemy for most fields)
     const tokenData: any = coinGeckoData || {};
 
     // Override with Etherscan data if available
@@ -236,7 +223,6 @@ export async function getTokenDetails(req: Request, res: Response) {
       protocols,
       description: tokenData.description,
       website: tokenData.website,
-      coingeckoId: tokenData.coingeckoId,
     };
 
     res.json(response);

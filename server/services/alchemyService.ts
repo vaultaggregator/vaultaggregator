@@ -574,20 +574,32 @@ export class AlchemyService {
         return StablecoinDetector.getStablecoinPrice();
       }
       
-      // OPTIMIZATION 3: Static pricing for major tokens (eliminates API calls)
-      const knownPrices: Record<string, number> = {
-        '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': 3200, // stETH
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': 3200, // WETH
-        '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': 65000, // WBTC
-        '0x514910771af9ca656af840dff83e8264ecf986ca': 15, // LINK
-        '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984': 6, // UNI
-        '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9': 90, // AAVE
-      };
-      
-      const staticPrice = knownPrices[tokenAddress.toLowerCase()];
-      if (staticPrice) {
-        console.log(`💵 Using static price for known token: $${staticPrice} (NO API CALL)`);
-        return staticPrice;
+      // LIVE PRICING: Use Alchemy for major tokens with database caching
+      try {
+        const client = this.getAlchemyClient(network);
+        if (client) {
+          // Try to get live price from Alchemy
+          const metadata = await client.core.getTokenMetadata(tokenAddress);
+          if (metadata && metadata.logo) {
+            // For now, use CoinGecko-style API for live ETH price as fallback
+            const ethPrice = await this.getLiveEthPrice();
+            
+            // Map known tokens to live prices
+            const tokenMap: Record<string, () => Promise<number>> = {
+              '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': () => Promise.resolve(ethPrice), // stETH ≈ ETH
+              '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': () => Promise.resolve(ethPrice), // WETH = ETH
+            };
+            
+            const priceGetter = tokenMap[tokenAddress.toLowerCase()];
+            if (priceGetter) {
+              const livePrice = await priceGetter();
+              console.log(`💰 Using live price for ${metadata.symbol || 'token'}: $${livePrice.toFixed(2)}`);
+              return livePrice;
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`⚠️ Live price fetch failed for ${tokenAddress}, using database cache`);
       }
       
       // OPTIMIZATION 4: Database cache check (only if not in static cache)
@@ -605,15 +617,43 @@ export class AlchemyService {
         console.log(`⚠️ Could not check stored price for ${tokenAddress}:`, error);
       }
       
-      // ELIMINATED: API calls to Alchemy for price data
-      // All vault tokens default to $1 for accurate calculations
-      console.log(`⚡ Using optimized default price for vault token ${tokenAddress}: $1.00 (API CALL ELIMINATED)`);
+      // FALLBACK: Default to $1 for vault tokens, database cache, or live ETH price for ETH
+      if (tokenAddress.toLowerCase() === '0x0000000000000000000000000000000000000000' || 
+          tokenAddress.toLowerCase() === 'eth') {
+        const ethPrice = await this.getLiveEthPrice();
+        console.log(`💰 Using live ETH price: $${ethPrice.toFixed(2)}`);
+        return ethPrice;
+      }
+      
+      console.log(`⚡ Using default price for vault token ${tokenAddress}: $1.00`);
       return 1.0;
       
     } catch (error) {
       console.error(`Error in optimized price fetch for ${tokenAddress}:`, error);
       return 1.0;
     }
+  }
+
+  /**
+   * Get live ETH price using a simple external API
+   */
+  private async getLiveEthPrice(): Promise<number> {
+    try {
+      // Use a free ETH price API
+      const response = await fetch('https://api.coinbase.com/v2/exchange-rates?currency=ETH');
+      if (response.ok) {
+        const data = await response.json();
+        const ethPrice = parseFloat(data.data.rates.USD);
+        if (ethPrice > 0) {
+          return ethPrice;
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Failed to fetch live ETH price, using fallback');
+    }
+    
+    // Fallback to a reasonable current price
+    return 3400; // Updated fallback price
   }
 
   /**

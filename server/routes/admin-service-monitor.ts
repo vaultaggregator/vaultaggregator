@@ -333,17 +333,45 @@ router.post("/refresh", requireAuth, async (req, res) => {
     } else if (serviceName === 'tokenPriceSync') {
       console.log("💰 Manual token price sync triggered from admin panel");
       try {
-        // Token price sync logic - placeholder for now
-        const { pools, apiSettings } = await import("../../shared/schema");
-        const allPools = await db.select().from(pools);
+        // Import necessary services and schemas
+        const { tokenInfo, apiSettings } = await import("../../shared/schema");
+        const { AlchemyService } = await import("../services/alchemyService");
         
-        // Update the last_health_check timestamp for token price service
-        // Since there's no specific token_price_api, we'll create a placeholder entry
+        // Get all tracked tokens from database
+        const trackedTokens = await db.select().from(tokenInfo);
+        console.log(`🔍 Found ${trackedTokens.length} tokens to update prices for`);
+        
+        let updatedCount = 0;
+        const alchemy = new AlchemyService();
+        
+        // Update prices for each token
+        for (const token of trackedTokens) {
+          try {
+            // Get live price using Alchemy (use 'ethereum' as default network)
+            const livePrice = await alchemy.getTokenPrice(token.address, 'ethereum');
+            
+            if (livePrice && livePrice > 0) {
+              // Update token price in database
+              await db.update(tokenInfo)
+                .set({ 
+                  priceUsd: livePrice.toString()
+                })
+                .where(eq(tokenInfo.address, token.address));
+                
+              console.log(`💰 Updated ${token.symbol} price: $${livePrice.toFixed(2)}`);
+              updatedCount++;
+            }
+          } catch (error) {
+            console.log(`⚠️ Failed to update price for ${token.symbol}: ${error}`);
+          }
+        }
+        
+        // Update service health status
         await db.insert(apiSettings)
           .values({
             serviceName: 'token_price_sync',
             displayName: 'Token Price Sync',
-            description: 'Updates token prices from multiple sources',
+            description: 'Updates token prices using Alchemy API',
             isEnabled: true,
             category: 'data',
             priority: 2,
@@ -360,9 +388,9 @@ router.post("/refresh", requireAuth, async (req, res) => {
         
         res.json({
           success: true,
-          message: `Token Price Sync completed: ${allPools.length} tokens checked`,
+          message: `Token Price Sync completed: ${updatedCount}/${trackedTokens.length} prices updated`,
           timestamp: new Date().toISOString(),
-          data: { tokensChecked: allPools.length }
+          data: { tokensChecked: trackedTokens.length, tokensUpdated: updatedCount }
         });
       } catch (error) {
         console.error('❌ Token price sync failed:', error);
