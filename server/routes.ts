@@ -77,10 +77,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const adminHardcodeScanRoutes = (await import("./routes/admin-hardcode-scan")).default;
   app.use('/api', adminHardcodeScanRoutes);
 
-  // Import and register top holders routes
-  const topHoldersRoutes = (await import("./routes/topHoldersRoutes")).default;
-  app.use('/api/top-holders', topHoldersRoutes);
-  app.use('/api/revalidate/top-holders', topHoldersRoutes);
 
   // Import and register PM2 monitoring routes
   const pm2MonitorRoutes = (await import("./routes/pm2-monitor")).default;

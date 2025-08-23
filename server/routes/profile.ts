@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../db";
-import { tokenHolders, pools, tokenInfo } from "@shared/schema";
+import { pools, tokenInfo } from "@shared/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
 
 const router = Router();

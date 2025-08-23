@@ -23,7 +23,6 @@ import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
 import { AIInsightsCard } from "@/components/ai-insights-card";
 import { HoldersSection } from "@/components/holders-section";
-import { TopHoldersSection } from "@/components/top-holders-section";
 import { VaultActivitySection } from "@/components/vault-activity-section";
 
 import { formatTimeAgo } from "@/lib/utils";
@@ -800,15 +799,6 @@ export default function PoolDetail() {
           />
         </div>
 
-        {/* Top Holders Section */}
-        <div className="mb-8">
-          <TopHoldersSection 
-            poolId={pool.id}
-            chain={pool.chain?.name?.toLowerCase() || 'ethereum'}
-            protocol={pool.platform?.name?.toLowerCase() || 'morpho'}
-            vault={pool.tokenPair?.toLowerCase()?.replace(/[\/\s-]/g, '-') || 'unknown'}
-          />
-        </div>
 
         {/* Vault Activity Section - Last 5 Transfers */}
         <div className="mb-8">

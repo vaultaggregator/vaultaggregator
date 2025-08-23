@@ -3,7 +3,7 @@ import { systemMonitor, serviceConfigs, updateServiceConfig } from "../services/
 import { serviceConfigService } from "../services/serviceConfigurationService";
 import { performDatabaseCleanup } from "../services/cleanupService";
 import { db } from "../db";
-import { aiOutlooks, poolHistoricalData, holderHistory, tokenHolders, apiSettings as apiSettingsTable } from "@shared/schema";
+import { aiOutlooks, poolHistoricalData, holderHistory, apiSettings as apiSettingsTable } from "@shared/schema";
 import { lt, sql, eq } from "drizzle-orm";
 
 const router = Router();

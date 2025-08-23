@@ -2,7 +2,7 @@ import {
   pools, protocols, networks, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
-  poolMetricsHistory, poolMetricsCurrent, tokenHolders, aiOutlooks, poolHistoricalData, webhookConfigs, tokenTransactions,
+  poolMetricsHistory, poolMetricsCurrent, aiOutlooks, poolHistoricalData, webhookConfigs, tokenTransactions,
   type Pool, type Protocol, type Network, type Chain, type Token, type TokenInfo, type Note,
   type InsertPool, type InsertProtocol, type InsertNetwork, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
@@ -17,7 +17,6 @@ import {
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
   type HolderHistory, type InsertHolderHistory,
   type PoolMetricsHistory, type InsertPoolMetricsHistory, type PoolMetricsCurrent, type InsertPoolMetricsCurrent,
-  type TokenHolder, type InsertTokenHolder,
   swrCachedPages, swrCacheSnapshots, type SwrCachedPage, type SwrCacheSnapshot, type InsertSwrCachedPage, type InsertSwrCacheSnapshot
 } from "@shared/schema";
 import { db, pool } from "./db";
@@ -79,10 +78,7 @@ export interface IStorage {
   }>;
   getLatestHolderHistory(tokenAddress: string): Promise<HolderHistory | undefined>;
 
-  // Token Holders methods
-  getPoolHolders(poolId: string, page: number, limit: number): Promise<{ holders: TokenHolder[], total: number, pages: number }>;
-  insertTokenHolder(holder: InsertTokenHolder): Promise<TokenHolder>;
-  clearPoolHolders(poolId: string): Promise<void>;
+  // Pool methods (general)
   getActivePools(): Promise<Pool[]>;
 
   // Pool methods
