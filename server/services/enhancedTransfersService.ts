@@ -135,8 +135,22 @@ export class EnhancedTransfersService {
 
       console.log(`📊 Fetching transaction history for pool ${pool.tokenPair} on ${network}`);
 
-      // Get both deposits (to pool) and withdrawals (from pool)
-      // Try with fromBlock to get more recent data
+      // ERC4626 Vault Method Signatures
+      const DEPOSIT_SIGNATURES = [
+        '0x6e553f65', // deposit(uint256,address)
+        '0x94bf804d', // mint(uint256,address)
+        '0xb6b55f25', // deposit(uint256)
+        '0x47e7ef24', // deposit(address,uint256)
+      ];
+      
+      const WITHDRAW_SIGNATURES = [
+        '0xba087652', // redeem(uint256,address,address)
+        '0xb460af94', // withdraw(uint256,address,address)
+        '0x2e1a7d4d', // withdraw(uint256)
+        '0x69328dec', // withdraw(uint256,address)
+      ];
+
+      // Get recent transactions
       const latestBlock = await alchemy.core.getBlockNumber();
       const fromBlock = Math.max(0, latestBlock - 50000); // Look back ~50000 blocks (about 7 days)
       
@@ -144,136 +158,87 @@ export class EnhancedTransfersService {
       const isStakehouseUSDC = pool.poolAddress.toLowerCase() === '0xbeef01735c132ada46aa9aa4c54623caa92a64cb';
       const wrapperAddress = '0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b'; // mstkeUSDC wrapper
       
-      // Fetch transfers for main vault
-      const [depositsResponse, withdrawalsResponse] = await Promise.all([
+      // Get contract addresses to monitor
+      const contractAddresses = [pool.poolAddress.toLowerCase()];
+      if (isStakehouseUSDC) {
+        contractAddresses.push(wrapperAddress.toLowerCase());
+        console.log(`📊 Monitoring both vault and wrapper contracts...`);
+      }
+      
+      // Get all transactions TO these contracts (both deposits and withdrawals are TO the contract)
+      const transactionPromises = contractAddresses.map(addr => 
         alchemy.core.getAssetTransfers({
-          toAddress: pool.poolAddress,
+          toAddress: addr,
           fromBlock: `0x${fromBlock.toString(16)}`,
           toBlock: 'latest',
           category: [
-            AssetTransfersCategory.ERC20,
-            AssetTransfersCategory.EXTERNAL
+            AssetTransfersCategory.EXTERNAL // User transactions are EXTERNAL
           ],
-          maxCount: limit,
-          withMetadata: true,
-          order: 'desc'
-        }),
-        alchemy.core.getAssetTransfers({
-          fromAddress: pool.poolAddress,
-          fromBlock: `0x${fromBlock.toString(16)}`,
-          toBlock: 'latest',
-          category: [
-            AssetTransfersCategory.ERC20,
-            AssetTransfersCategory.EXTERNAL
-          ],
-          maxCount: limit,
+          maxCount: limit * 2, // Get more since we'll filter
           withMetadata: true,
           order: 'desc'
         })
-      ]);
+      );
       
-      // For Steakhouse, we need to check both the main vault and wrapper
-      // But we'll deduplicate transactions later
-      let allDeposits = depositsResponse.transfers;
-      let allWithdrawals = withdrawalsResponse.transfers;
-      
-      if (isStakehouseUSDC) {
-        console.log(`📊 Also checking wrapper token (mstkeUSDC) for user transactions...`);
-        // Get transactions involving the wrapper token
-        const [wrapperDeposits, wrapperWithdrawals] = await Promise.all([
-          alchemy.core.getAssetTransfers({
-            toAddress: wrapperAddress,
-            fromBlock: `0x${fromBlock.toString(16)}`,
-            toBlock: 'latest',
-            category: [
-              AssetTransfersCategory.ERC20,
-              AssetTransfersCategory.EXTERNAL
-            ],
-            maxCount: limit,
-            withMetadata: true,
-            order: 'desc'
-          }),
-          alchemy.core.getAssetTransfers({
-            fromAddress: wrapperAddress,
-            fromBlock: `0x${fromBlock.toString(16)}`,
-            toBlock: 'latest',
-            category: [
-              AssetTransfersCategory.ERC20,
-              AssetTransfersCategory.EXTERNAL
-            ],
-            maxCount: limit,
-            withMetadata: true,
-            order: 'desc'
-          })
-        ]);
-        
-        // Combine all transfers
-        allDeposits = [...allDeposits, ...wrapperDeposits.transfers];
-        allWithdrawals = [...allWithdrawals, ...wrapperWithdrawals.transfers];
-      }
+      const responses = await Promise.all(transactionPromises);
+      const allTransfers = responses.flatMap(r => r.transfers);
 
-      // Create a map to deduplicate transactions by hash
+      // Now fetch full transaction details to check method signatures
+      const transactionDetailsPromises = allTransfers.map(async (transfer) => {
+        try {
+          const tx = await alchemy.core.getTransaction(transfer.hash);
+          if (!tx || !tx.data) return null;
+          
+          // Get the method signature (first 10 characters of input data)
+          const methodSig = tx.data.slice(0, 10).toLowerCase();
+          
+          // Determine transaction type based on method signature
+          let type: 'deposit' | 'withdraw' | null = null;
+          
+          if (DEPOSIT_SIGNATURES.includes(methodSig)) {
+            type = 'deposit';
+          } else if (WITHDRAW_SIGNATURES.includes(methodSig)) {
+            type = 'withdraw';
+          }
+          
+          // Skip if not a deposit or withdraw
+          if (!type) return null;
+          
+          // For vault transactions, the user is the FROM address
+          // (they're calling the method)
+          return {
+            ...transfer,
+            type: type as const,
+            direction: type === 'deposit' ? 'in' : 'out',
+            user: transfer.from || '',
+            amount: parseFloat(transfer.value || '0'),
+            amountUSD: parseFloat(transfer.value || '0'),
+            transactionHash: transfer.hash,
+            timestamp: transfer.metadata?.blockTimestamp || new Date().toISOString(),
+            blockNumber: transfer.blockNum,
+            asset: 'USDC', // These vaults use USDC
+            methodSignature: methodSig
+          };
+        } catch (error) {
+          console.error(`Error fetching transaction ${transfer.hash}:`, error);
+          return null;
+        }
+      });
+      
+      const transactionDetails = await Promise.all(transactionDetailsPromises);
+      
+      // Filter out nulls and deduplicate by hash
       const transactionMap = new Map();
-      const vaultAddresses = [pool.poolAddress.toLowerCase()];
-      if (isStakehouseUSDC) {
-        vaultAddresses.push(wrapperAddress.toLowerCase());
+      for (const tx of transactionDetails) {
+        if (tx && !transactionMap.has(tx.transactionHash)) {
+          transactionMap.set(tx.transactionHash, tx);
+        }
       }
       
-      // Combine all transfers and determine actual transaction type
-      const allTransfersRaw = [...allDeposits, ...allWithdrawals];
-      
-      for (const transfer of allTransfersRaw) {
-        const hash = transfer.hash;
-        if (!hash) continue;
-        
-        // Skip if we already have this transaction
-        if (transactionMap.has(hash)) continue;
-        
-        const fromLower = (transfer.from || '').toLowerCase();
-        const toLower = (transfer.to || '').toLowerCase();
-        
-        // Skip internal transfers between vault contracts
-        if (vaultAddresses.includes(fromLower) && vaultAddresses.includes(toLower)) {
-          continue;
-        }
-        
-        // Determine transaction type from user perspective
-        let type: 'deposit' | 'withdraw';
-        let user: string;
-        
-        if (vaultAddresses.includes(toLower) && !vaultAddresses.includes(fromLower)) {
-          // Transfer TO vault from external address = Deposit
-          type = 'deposit';
-          user = transfer.from || '';
-        } else if (vaultAddresses.includes(fromLower) && !vaultAddresses.includes(toLower)) {
-          // Transfer FROM vault to external address = Withdraw  
-          type = 'withdraw';
-          user = transfer.to || '';
-        } else {
-          // Skip any other type of transfer
-          continue;
-        }
-        
-        // Add the transaction
-        transactionMap.set(hash, {
-          ...transfer,
-          type: type as const,
-          direction: type === 'deposit' ? 'in' : 'out',
-          user: user,
-          amount: parseFloat(transfer.value || '0'),
-          amountUSD: parseFloat(transfer.value || '0'),
-          transactionHash: hash,
-          timestamp: transfer.metadata?.blockTimestamp || new Date().toISOString(),
-          blockNumber: transfer.blockNum,
-          asset: transfer.asset || 'USDC'
-        });
-      }
-      
-      // Convert map to array
-      const allTransfers = Array.from(transactionMap.values());
+      const validTransfers = Array.from(transactionMap.values());
 
       // Sort by timestamp (most recent first) and take the limit
-      const sortedTransfers = allTransfers
+      const sortedTransfers = validTransfers
         .sort((a, b) => {
           const dateA = new Date(a.timestamp).getTime();
           const dateB = new Date(b.timestamp).getTime();
