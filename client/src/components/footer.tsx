@@ -82,7 +82,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p data-testid="text-copyright">© 2025 Vault Aggregator. All rights reserved.</p>
+          <p data-testid="text-copyright">© 2026 Vault Aggregator. All rights reserved.</p>
         </div>
       </div>
     </footer>
