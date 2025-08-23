@@ -1,12 +1,192 @@
 {
-  "timestamp": "2025-08-23T01:46:58.273Z",
-  "totalFindings": 3691,
+  "timestamp": "2025-08-23T04:06:53.116Z",
+  "totalFindings": 3607,
   "severityCounts": {
-    "high": 1847,
-    "medium": 1670,
-    "critical": 174
+    "high": 1754,
+    "medium": 1666,
+    "critical": 187
   },
   "findings": [
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 25,
+      "column": 17,
+      "type": "address",
+      "value": "0xA0b86a33E6441527176204E711E4d9C5dD3CE0C8",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 33,
+      "column": 17,
+      "type": "address",
+      "value": "0x742d35Cc6596C44562Ff8C1DB728b58D4e32c50F",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 41,
+      "column": 17,
+      "type": "address",
+      "value": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 49,
+      "column": 17,
+      "type": "address",
+      "value": "0x5A52E96BAcdaBb82fd05763E25335261B270Efcb",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 57,
+      "column": 17,
+      "type": "address",
+      "value": "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 76,
+      "column": 17,
+      "type": "address",
+      "value": "0xA0b86a33E6441527176204E711E4d9C5dD3CE0C8",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 86,
+      "column": 17,
+      "type": "address",
+      "value": "0x742d35Cc6596C44562Ff8C1DB728b58D4e32c50F",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 96,
+      "column": 17,
+      "type": "address",
+      "value": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 106,
+      "column": 17,
+      "type": "address",
+      "value": "0x5A52E96BAcdaBb82fd05763E25335261B270Efcb",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 116,
+      "column": 17,
+      "type": "address",
+      "value": "0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 126,
+      "column": 17,
+      "type": "address",
+      "value": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 136,
+      "column": 17,
+      "type": "address",
+      "value": "0x514910771AF9Ca656af840dff83E8264EcF986CA",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 146,
+      "column": 17,
+      "type": "address",
+      "value": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 156,
+      "column": 17,
+      "type": "address",
+      "value": "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 166,
+      "column": 17,
+      "type": "address",
+      "value": "0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 176,
+      "column": 17,
+      "type": "address",
+      "value": "0xB8c77482e45F1F44dE1745F52C74426C631bDD52",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 186,
+      "column": 17,
+      "type": "address",
+      "value": "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 196,
+      "column": 17,
+      "type": "address",
+      "value": "0x4Fabb145d64652a948d72533023f6E7A623C7C53",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 206,
+      "column": 17,
+      "type": "address",
+      "value": "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 216,
+      "column": 17,
+      "type": "address",
+      "value": "0xE41d2489571d322189246DaFA5ebDe1F4699F498",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
     {
       "file": "/home/runner/workspace/client/src/pages/profile.tsx",
       "line": 34,
@@ -234,7 +414,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1328,
+      "line": 1169,
       "column": 25,
       "type": "address",
       "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
@@ -243,7 +423,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3023,
+      "line": 2864,
       "column": 52,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -252,7 +432,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3024,
+      "line": 2865,
       "column": 52,
       "type": "address",
       "value": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -261,7 +441,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3382,
+      "line": 3223,
       "column": 19,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -270,7 +450,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3383,
+      "line": 3224,
       "column": 23,
       "type": "address",
       "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
@@ -279,7 +459,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3384,
+      "line": 3225,
       "column": 18,
       "type": "address",
       "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -288,7 +468,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3392,
+      "line": 3233,
       "column": 59,
       "type": "address",
       "value": "0x0000000000000000000000000000000000000000",
@@ -297,7 +477,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3400,
+      "line": 3241,
       "column": 52,
       "type": "address",
       "value": "0x0000000000000000000000000000000000000000",
@@ -306,7 +486,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3514,
+      "line": 3355,
       "column": 19,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -315,7 +495,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3515,
+      "line": 3356,
       "column": 23,
       "type": "address",
       "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
@@ -324,7 +504,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3516,
+      "line": 3357,
       "column": 18,
       "type": "address",
       "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
@@ -333,7 +513,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3524,
+      "line": 3365,
       "column": 59,
       "type": "address",
       "value": "0x0000000000000000000000000000000000000000",
@@ -342,7 +522,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3532,
+      "line": 3373,
       "column": 52,
       "type": "address",
       "value": "0x0000000000000000000000000000000000000000",
@@ -351,43 +531,88 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3567,
+      "line": 3408,
       "column": 19,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3409,
+      "column": 23,
+      "type": "address",
+      "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3410,
+      "column": 18,
+      "type": "address",
+      "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3418,
+      "column": 59,
+      "type": "address",
+      "value": "0x0000000000000000000000000000000000000000",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3426,
+      "column": 52,
+      "type": "address",
+      "value": "0x0000000000000000000000000000000000000000",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3550,
+      "column": 19,
+      "type": "address",
+      "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3551,
+      "column": 23,
+      "type": "address",
+      "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3552,
+      "column": 18,
+      "type": "address",
+      "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+      "severity": "critical",
+      "suggestion": "Move to cfg.tokens registry or pool database lookup"
+    },
+    {
+      "file": "/home/runner/workspace/server/routes.ts",
+      "line": 3560,
+      "column": 59,
+      "type": "address",
+      "value": "0x0000000000000000000000000000000000000000",
       "severity": "critical",
       "suggestion": "Move to cfg.tokens registry or pool database lookup"
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
       "line": 3568,
-      "column": 23,
-      "type": "address",
-      "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3569,
-      "column": 18,
-      "type": "address",
-      "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3577,
-      "column": 59,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3585,
       "column": 52,
       "type": "address",
       "value": "0x0000000000000000000000000000000000000000",
@@ -396,52 +621,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3709,
-      "column": 19,
-      "type": "address",
-      "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3710,
-      "column": 23,
-      "type": "address",
-      "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3711,
-      "column": 18,
-      "type": "address",
-      "value": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3719,
-      "column": 59,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3727,
-      "column": 52,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3792,
+      "line": 3633,
       "column": 10,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -450,7 +630,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3793,
+      "line": 3634,
       "column": 10,
       "type": "address",
       "value": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -459,7 +639,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3794,
+      "line": 3635,
       "column": 10,
       "type": "address",
       "value": "0xdac17f958d2ee523a2206206994597c13d831ec7",
@@ -468,7 +648,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3795,
+      "line": 3636,
       "column": 10,
       "type": "address",
       "value": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
@@ -477,7 +657,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3796,
+      "line": 3637,
       "column": 10,
       "type": "address",
       "value": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -486,7 +666,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3849,
+      "line": 3690,
       "column": 12,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -495,7 +675,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3850,
+      "line": 3691,
       "column": 12,
       "type": "address",
       "value": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
@@ -504,7 +684,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3851,
+      "line": 3692,
       "column": 12,
       "type": "address",
       "value": "0x1643e812ae58766192cf7d2cf9567df2c37e9b7f",
@@ -513,7 +693,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3852,
+      "line": 3693,
       "column": 12,
       "type": "address",
       "value": "0x442af784a788a5bd6f989e78c9421f53b84d57d5",
@@ -522,7 +702,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3853,
+      "line": 3694,
       "column": 12,
       "type": "address",
       "value": "0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb",
@@ -531,7 +711,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3854,
+      "line": 3695,
       "column": 12,
       "type": "address",
       "value": "0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f",
@@ -540,7 +720,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3855,
+      "line": 3696,
       "column": 12,
       "type": "address",
       "value": "0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e",
@@ -549,7 +729,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3856,
+      "line": 3697,
       "column": 12,
       "type": "address",
       "value": "0x21e27a5e5513d6e65c4f830167390997aa84843a",
@@ -558,7 +738,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3859,
+      "line": 3700,
       "column": 12,
       "type": "address",
       "value": "0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b",
@@ -567,7 +747,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3861,
+      "line": 3702,
       "column": 12,
       "type": "address",
       "value": "0xcfbf12bc2d27e6964fe977b489b617a7bec1660f",
@@ -576,7 +756,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3862,
+      "line": 3703,
       "column": 12,
       "type": "address",
       "value": "0x79720266dec914247424aeb0f06b8fa5b3ec073e",
@@ -585,7 +765,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3863,
+      "line": 3704,
       "column": 12,
       "type": "address",
       "value": "0xdcee3ae4f82bd085ff147b87a754517d8caaff3b",
@@ -594,7 +774,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3894,
+      "line": 3735,
       "column": 59,
       "type": "address",
       "value": "0x0000000000000000000000000000000000000000",
@@ -603,7 +783,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4239,
+      "line": 4080,
       "column": 41,
       "type": "address",
       "value": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -612,7 +792,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4244,
+      "line": 4085,
       "column": 41,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -1161,7 +1341,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 742,
+      "line": 568,
       "column": 10,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -1170,7 +1350,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 743,
+      "line": 569,
       "column": 10,
       "type": "address",
       "value": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -1179,7 +1359,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 744,
+      "line": 570,
       "column": 10,
       "type": "address",
       "value": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
@@ -1188,7 +1368,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 745,
+      "line": 571,
       "column": 10,
       "type": "address",
       "value": "0x514910771af9ca656af840dff83e8264ecf986ca",
@@ -1197,7 +1377,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 746,
+      "line": 572,
       "column": 10,
       "type": "address",
       "value": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
@@ -1206,7 +1386,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 747,
+      "line": 573,
       "column": 10,
       "type": "address",
       "value": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
@@ -1215,7 +1395,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 800,
+      "line": 626,
       "column": 38,
       "type": "address",
       "value": "0xffd0cb960d0e36a6449b7e2dd2e14db758abeed4",
@@ -1224,7 +1404,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 820,
+      "line": 646,
       "column": 10,
       "type": "address",
       "value": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
@@ -1233,7 +1413,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 821,
+      "line": 647,
       "column": 10,
       "type": "address",
       "value": "0xdac17f958d2ee523a2206206994597c13d831ec7",
@@ -1242,7 +1422,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 822,
+      "line": 648,
       "column": 10,
       "type": "address",
       "value": "0x6b175474e89094c44da98b954eedeac495271d0f",
@@ -1251,7 +1431,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 823,
+      "line": 649,
       "column": 10,
       "type": "address",
       "value": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -1260,7 +1440,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 824,
+      "line": 650,
       "column": 10,
       "type": "address",
       "value": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
@@ -1269,7 +1449,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 825,
+      "line": 651,
       "column": 10,
       "type": "address",
       "value": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
@@ -1278,7 +1458,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 826,
+      "line": 652,
       "column": 10,
       "type": "address",
       "value": "0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741",
@@ -1318,60 +1498,6 @@
       "column": 26,
       "type": "address",
       "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 100,
-      "column": 21,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 105,
-      "column": 19,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 127,
-      "column": 23,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 132,
-      "column": 21,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 176,
-      "column": 10,
-      "type": "address",
-      "value": "0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 266,
-      "column": 8,
-      "type": "address",
-      "value": "0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741",
       "severity": "critical",
       "suggestion": "Move to cfg.tokens registry or pool database lookup"
     },
@@ -1426,15 +1552,6 @@
       "column": 31,
       "type": "address",
       "value": "0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-      "severity": "critical",
-      "suggestion": "Move to cfg.tokens registry or pool database lookup"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 45,
-      "column": 43,
-      "type": "address",
-      "value": "0x0000000000000000000000000000000000000000",
       "severity": "critical",
       "suggestion": "Move to cfg.tokens registry or pool database lookup"
     },
@@ -1746,7 +1863,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 68,
+      "line": 69,
       "column": 35,
       "type": "chainId",
       "value": "10",
@@ -1755,7 +1872,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 68,
+      "line": 69,
       "column": 40,
       "type": "chainId",
       "value": "10",
@@ -1764,7 +1881,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 86,
+      "line": 87,
       "column": 107,
       "type": "chainId",
       "value": "1",
@@ -1773,7 +1890,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 136,
+      "line": 137,
       "column": 99,
       "type": "chainId",
       "value": "10",
@@ -1782,7 +1899,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 169,
+      "line": 170,
       "column": 61,
       "type": "chainId",
       "value": "1",
@@ -1791,7 +1908,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 170,
+      "line": 171,
       "column": 104,
       "type": "chainId",
       "value": "1",
@@ -1800,7 +1917,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 195,
+      "line": 196,
       "column": 65,
       "type": "chainId",
       "value": "1",
@@ -3815,159 +3932,6 @@
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 96,
-      "column": 10,
-      "type": "url",
-      "value": "https://basescan.org/address/${address",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 97,
-      "column": 10,
-      "type": "url",
-      "value": "https://etherscan.io/address/${address",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 54,
-      "column": 71,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 70,
-      "column": 41,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 73,
-      "column": 38,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 119,
-      "column": 43,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 124,
-      "column": 52,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 214,
-      "column": 35,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 222,
-      "column": 51,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 233,
-      "column": 38,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 241,
-      "column": 59,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 259,
-      "column": 42,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 269,
-      "column": 170,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 287,
-      "column": 43,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 301,
-      "column": 43,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 302,
-      "column": 79,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 310,
-      "column": 57,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
       "file": "/home/runner/workspace/client/src/components/interactive-pool-chart.tsx",
       "line": 34,
       "column": 43,
@@ -5796,35 +5760,8 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
-      "line": 125,
-      "column": 45,
-      "type": "url",
-      "value": "https://etherscan.io",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
-      "line": 125,
-      "column": 70,
-      "type": "url",
-      "value": "https://basescan.org",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
-      "line": 120,
-      "column": 46,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
-      "line": 231,
-      "column": 57,
+      "line": 24,
+      "column": 12,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -5832,8 +5769,8 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
-      "line": 234,
-      "column": 61,
+      "line": 29,
+      "column": 13,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -5841,8 +5778,35 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
-      "line": 269,
-      "column": 65,
+      "line": 77,
+      "column": 12,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 90,
+      "column": 12,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 132,
+      "column": 38,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 142,
+      "column": 42,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -8630,6 +8594,33 @@
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 137,
+      "column": 44,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 149,
+      "column": 38,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 272,
+      "column": 63,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
       "file": "/home/runner/workspace/client/src/pages/admin-logo-management.tsx",
       "line": 108,
       "column": 42,
@@ -11115,7 +11106,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 499,
+      "line": 498,
       "column": 42,
       "type": "url",
       "value": "https://basescan.org/token/${pool.poolAddress",
@@ -11124,7 +11115,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 502,
+      "line": 501,
       "column": 42,
       "type": "url",
       "value": "https://etherscan.io/token/${pool.poolAddress",
@@ -11133,7 +11124,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 506,
+      "line": 505,
       "column": 42,
       "type": "url",
       "value": "https://etherscan.io/token/${pool.poolAddress",
@@ -11142,7 +11133,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 65,
+      "line": 64,
       "column": 15,
       "type": "chainId",
       "value": "1",
@@ -11151,7 +11142,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 229,
+      "line": 228,
       "column": 73,
       "type": "chainId",
       "value": "1",
@@ -11160,7 +11151,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 229,
+      "line": 228,
       "column": 81,
       "type": "chainId",
       "value": "1",
@@ -11169,7 +11160,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 247,
+      "line": 246,
       "column": 12,
       "type": "chainId",
       "value": "1",
@@ -11178,7 +11169,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 283,
+      "line": 282,
       "column": 12,
       "type": "chainId",
       "value": "1",
@@ -11187,7 +11178,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 404,
+      "line": 403,
       "column": 38,
       "type": "chainId",
       "value": "1",
@@ -11196,7 +11187,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 405,
+      "line": 404,
       "column": 101,
       "type": "chainId",
       "value": "1",
@@ -11205,7 +11196,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 434,
+      "line": 433,
       "column": 65,
       "type": "chainId",
       "value": "1",
@@ -11214,7 +11205,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 471,
+      "line": 470,
       "column": 59,
       "type": "chainId",
       "value": "1",
@@ -11223,7 +11214,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 476,
+      "line": 475,
       "column": 92,
       "type": "chainId",
       "value": "1",
@@ -11232,7 +11223,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 551,
+      "line": 550,
       "column": 40,
       "type": "chainId",
       "value": "1",
@@ -11241,7 +11232,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 566,
+      "line": 565,
       "column": 90,
       "type": "chainId",
       "value": "1",
@@ -11250,7 +11241,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 591,
+      "line": 590,
       "column": 84,
       "type": "chainId",
       "value": "1",
@@ -11259,7 +11250,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 616,
+      "line": 615,
       "column": 88,
       "type": "chainId",
       "value": "1",
@@ -11268,7 +11259,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 642,
+      "line": 641,
       "column": 88,
       "type": "chainId",
       "value": "1",
@@ -11277,7 +11268,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 659,
+      "line": 658,
       "column": 40,
       "type": "chainId",
       "value": "1",
@@ -11286,7 +11277,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 673,
+      "line": 672,
       "column": 84,
       "type": "chainId",
       "value": "1",
@@ -11295,7 +11286,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 698,
+      "line": 697,
       "column": 86,
       "type": "chainId",
       "value": "1",
@@ -11304,7 +11295,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 718,
+      "line": 717,
       "column": 88,
       "type": "chainId",
       "value": "1",
@@ -11313,7 +11304,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 747,
+      "line": 746,
       "column": 90,
       "type": "chainId",
       "value": "1",
@@ -11322,7 +11313,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 769,
+      "line": 768,
       "column": 40,
       "type": "chainId",
       "value": "1",
@@ -11331,7 +11322,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 834,
+      "line": 824,
       "column": 54,
       "type": "chainId",
       "value": "1",
@@ -11340,8 +11331,8 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 64,
-      "column": 36,
+      "line": 75,
+      "column": 12,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -11349,35 +11340,26 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 106,
+      "line": 80,
+      "column": 13,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 132,
       "column": 16,
       "type": "chainId",
-      "value": "1",
+      "value": "56",
       "severity": "high",
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 106,
-      "column": 34,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 111,
-      "column": 22,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 134,
-      "column": 26,
+      "line": 165,
+      "column": 12,
       "type": "chainId",
       "value": "10",
       "severity": "high",
@@ -11385,35 +11367,8 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 214,
-      "column": 30,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 214,
-      "column": 43,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 241,
-      "column": 59,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 249,
-      "column": 52,
+      "line": 170,
+      "column": 13,
       "type": "chainId",
       "value": "10",
       "severity": "high",
@@ -11421,7 +11376,70 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 260,
+      "line": 209,
+      "column": 19,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 219,
+      "column": 19,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 238,
+      "column": 12,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 251,
+      "column": 12,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 375,
+      "column": 66,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 375,
+      "column": 93,
+      "type": "chainId",
+      "value": "1",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 394,
+      "column": 46,
+      "type": "chainId",
+      "value": "10",
+      "severity": "high",
+      "suggestion": "Replace with cfg.chains[chainName].id"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 395,
       "column": 42,
       "type": "chainId",
       "value": "1",
@@ -11430,116 +11448,17 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 268,
-      "column": 63,
+      "line": 411,
+      "column": 68,
       "type": "chainId",
-      "value": "1",
+      "value": "10",
       "severity": "high",
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 288,
-      "column": 44,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 302,
-      "column": 59,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 314,
-      "column": 61,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 341,
-      "column": 40,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 343,
-      "column": 56,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 346,
-      "column": 57,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 348,
-      "column": 43,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 363,
-      "column": 39,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 364,
-      "column": 46,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 364,
-      "column": 69,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 378,
-      "column": 59,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 392,
-      "column": 57,
+      "line": 412,
+      "column": 48,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -12627,7 +12546,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1223,
+      "line": 1064,
       "column": 20,
       "type": "url",
       "value": "https://api.morpho.org/graphql",
@@ -12636,7 +12555,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1713,
+      "line": 1554,
       "column": 29,
       "type": "url",
       "value": "https://api.basescan.org/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress",
@@ -12645,7 +12564,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1716,
+      "line": 1557,
       "column": 29,
       "type": "url",
       "value": "https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress",
@@ -12654,7 +12573,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1729,
+      "line": 1570,
       "column": 30,
       "type": "url",
       "value": "https://api.basescan.org/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash",
@@ -12663,7 +12582,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1731,
+      "line": 1572,
       "column": 30,
       "type": "url",
       "value": "https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash",
@@ -12672,7 +12591,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1741,
+      "line": 1582,
       "column": 35,
       "type": "url",
       "value": "https://api.basescan.org/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber",
@@ -12681,7 +12600,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1743,
+      "line": 1584,
       "column": 35,
       "type": "url",
       "value": "https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber",
@@ -12690,7 +12609,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1995,
+      "line": 1836,
       "column": 20,
       "type": "url",
       "value": "https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address",
@@ -12699,7 +12618,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 2048,
+      "line": 1889,
       "column": 14,
       "type": "url",
       "value": "https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address",
@@ -12708,7 +12627,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 2078,
+      "line": 1919,
       "column": 14,
       "type": "url",
       "value": "https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address",
@@ -12717,7 +12636,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4239,
+      "line": 4080,
       "column": 17,
       "type": "url",
       "value": "https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png",
@@ -12726,7 +12645,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4244,
+      "line": 4085,
       "column": 17,
       "type": "url",
       "value": "https://tokens.1inch.io/0xae7ab96520de3a18e5e111b5eaab095312d7fe84.png",
@@ -12735,7 +12654,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 100,
+      "line": 96,
       "column": 72,
       "type": "chainId",
       "value": "1",
@@ -12744,7 +12663,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 102,
+      "line": 98,
       "column": 16,
       "type": "chainId",
       "value": "1",
@@ -12753,7 +12672,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 184,
+      "line": 180,
       "column": 16,
       "type": "chainId",
       "value": "1",
@@ -12762,7 +12681,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 224,
+      "line": 220,
       "column": 18,
       "type": "chainId",
       "value": "1",
@@ -12771,7 +12690,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 327,
+      "line": 323,
       "column": 67,
       "type": "chainId",
       "value": "1",
@@ -12780,7 +12699,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 345,
+      "line": 341,
       "column": 42,
       "type": "chainId",
       "value": "1",
@@ -12789,7 +12708,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 417,
+      "line": 413,
       "column": 58,
       "type": "chainId",
       "value": "10",
@@ -12798,7 +12717,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 492,
+      "line": 488,
       "column": 24,
       "type": "chainId",
       "value": "10",
@@ -12807,7 +12726,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 893,
+      "line": 889,
       "column": 16,
       "type": "chainId",
       "value": "1",
@@ -12816,115 +12735,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1004,
-      "column": 49,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1008,
-      "column": 18,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1008,
-      "column": 31,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1010,
-      "column": 68,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1010,
-      "column": 88,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1021,
-      "column": 16,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1060,
-      "column": 58,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1064,
-      "column": 18,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1064,
-      "column": 31,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1066,
-      "column": 68,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1066,
-      "column": 93,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1077,
-      "column": 16,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1245,
+      "line": 1086,
       "column": 44,
       "type": "chainId",
       "value": "1",
@@ -12933,7 +12744,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1263,
+      "line": 1104,
       "column": 34,
       "type": "chainId",
       "value": "1",
@@ -12942,7 +12753,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1264,
+      "line": 1105,
       "column": 36,
       "type": "chainId",
       "value": "1",
@@ -12951,7 +12762,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1265,
+      "line": 1106,
       "column": 34,
       "type": "chainId",
       "value": "1",
@@ -12960,7 +12771,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1352,
+      "line": 1193,
       "column": 18,
       "type": "chainId",
       "value": "1",
@@ -12969,7 +12780,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1377,
+      "line": 1218,
       "column": 25,
       "type": "chainId",
       "value": "1",
@@ -12978,7 +12789,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1392,
+      "line": 1233,
       "column": 25,
       "type": "chainId",
       "value": "1",
@@ -12987,7 +12798,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1408,
+      "line": 1249,
       "column": 25,
       "type": "chainId",
       "value": "1",
@@ -12996,7 +12807,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1429,
+      "line": 1270,
       "column": 25,
       "type": "chainId",
       "value": "1",
@@ -13005,7 +12816,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1451,
+      "line": 1292,
       "column": 25,
       "type": "chainId",
       "value": "1",
@@ -13014,7 +12825,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1641,
+      "line": 1482,
       "column": 18,
       "type": "chainId",
       "value": "1",
@@ -13023,7 +12834,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1663,
+      "line": 1504,
       "column": 16,
       "type": "chainId",
       "value": "1",
@@ -13032,7 +12843,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1723,
+      "line": 1564,
       "column": 38,
       "type": "chainId",
       "value": "1",
@@ -13041,7 +12852,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1911,
+      "line": 1752,
       "column": 62,
       "type": "chainId",
       "value": "8453",
@@ -13050,7 +12861,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1911,
+      "line": 1752,
       "column": 69,
       "type": "chainId",
       "value": "1",
@@ -13059,7 +12870,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 2460,
+      "line": 2301,
       "column": 65,
       "type": "chainId",
       "value": "1",
@@ -13068,7 +12879,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 2531,
+      "line": 2372,
       "column": 62,
       "type": "chainId",
       "value": "1",
@@ -13077,7 +12888,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 2893,
+      "line": 2734,
       "column": 38,
       "type": "chainId",
       "value": "1",
@@ -13086,7 +12897,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3175,
+      "line": 3016,
       "column": 34,
       "type": "chainId",
       "value": "10",
@@ -13095,7 +12906,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3486,
+      "line": 3327,
       "column": 35,
       "type": "chainId",
       "value": "10",
@@ -13104,7 +12915,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3691,
+      "line": 3532,
       "column": 22,
       "type": "chainId",
       "value": "1",
@@ -13113,7 +12924,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3843,
+      "line": 3684,
       "column": 70,
       "type": "chainId",
       "value": "1",
@@ -13122,7 +12933,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3878,
+      "line": 3719,
       "column": 57,
       "type": "chainId",
       "value": "10",
@@ -13131,7 +12942,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3976,
+      "line": 3817,
       "column": 87,
       "type": "chainId",
       "value": "1",
@@ -13140,7 +12951,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3989,
+      "line": 3830,
       "column": 35,
       "type": "chainId",
       "value": "1",
@@ -13149,7 +12960,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4031,
+      "line": 3872,
       "column": 51,
       "type": "chainId",
       "value": "10",
@@ -13158,7 +12969,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4043,
+      "line": 3884,
       "column": 19,
       "type": "chainId",
       "value": "10",
@@ -13167,7 +12978,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4043,
+      "line": 3884,
       "column": 31,
       "type": "chainId",
       "value": "10",
@@ -13176,7 +12987,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4062,
+      "line": 3903,
       "column": 96,
       "type": "chainId",
       "value": "10",
@@ -13185,7 +12996,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4063,
+      "line": 3904,
       "column": 90,
       "type": "chainId",
       "value": "10",
@@ -13194,7 +13005,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4065,
+      "line": 3906,
       "column": 56,
       "type": "chainId",
       "value": "1",
@@ -13203,7 +13014,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4257,
+      "line": 4098,
       "column": 71,
       "type": "chainId",
       "value": "1",
@@ -13212,7 +13023,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4273,
+      "line": 4114,
       "column": 40,
       "type": "chainId",
       "value": "1",
@@ -14831,42 +14642,6 @@
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
-      "file": "/home/runner/workspace/server/services/alchemyEnhancedHolderService.ts",
-      "line": 140,
-      "column": 25,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/alchemyEnhancedHolderService.ts",
-      "line": 180,
-      "column": 14,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/alchemyEnhancedHolderService.ts",
-      "line": 185,
-      "column": 12,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/alchemyEnhancedHolderService.ts",
-      "line": 196,
-      "column": 14,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
       "line": 55,
       "column": 14,
@@ -14949,25 +14724,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 332,
-      "column": 52,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 384,
-      "column": 77,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 664,
+      "line": 490,
       "column": 68,
       "type": "chainId",
       "value": "10",
@@ -14976,7 +14733,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 687,
+      "line": 513,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -14985,7 +14742,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 720,
+      "line": 546,
       "column": 74,
       "type": "chainId",
       "value": "1",
@@ -14994,7 +14751,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 721,
+      "line": 547,
       "column": 18,
       "type": "chainId",
       "value": "1",
@@ -15003,7 +14760,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 773,
+      "line": 599,
       "column": 86,
       "type": "chainId",
       "value": "1",
@@ -15012,7 +14769,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 774,
+      "line": 600,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -15021,7 +14778,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 778,
+      "line": 604,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -15030,7 +14787,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 801,
+      "line": 627,
       "column": 84,
       "type": "chainId",
       "value": "10",
@@ -15039,7 +14796,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 809,
+      "line": 635,
       "column": 70,
       "type": "chainId",
       "value": "10",
@@ -15048,7 +14805,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 820,
+      "line": 646,
       "column": 55,
       "type": "chainId",
       "value": "1",
@@ -15057,7 +14814,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 821,
+      "line": 647,
       "column": 55,
       "type": "chainId",
       "value": "1",
@@ -15066,7 +14823,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 822,
+      "line": 648,
       "column": 55,
       "type": "chainId",
       "value": "1",
@@ -15075,7 +14832,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 841,
+      "line": 667,
       "column": 62,
       "type": "chainId",
       "value": "10",
@@ -15084,7 +14841,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 845,
+      "line": 671,
       "column": 34,
       "type": "chainId",
       "value": "1",
@@ -15093,26 +14850,8 @@
     },
     {
       "file": "/home/runner/workspace/server/services/comprehensiveDataSyncService.ts",
-      "line": 150,
+      "line": 140,
       "column": 84,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/comprehensiveHolderSyncService.ts",
-      "line": 129,
-      "column": 20,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/comprehensiveHolderSyncService.ts",
-      "line": 227,
-      "column": 16,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -15362,141 +15101,6 @@
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 12,
-      "column": 37,
-      "type": "url",
-      "value": "https://etherscan.io",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 13,
-      "column": 36,
-      "type": "url",
-      "value": "https://basescan.org",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 14,
-      "column": 41,
-      "type": "url",
-      "value": "https://api.etherscan.io/api",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 15,
-      "column": 40,
-      "type": "url",
-      "value": "https://api.basescan.org/api",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 33,
-      "column": 50,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 66,
-      "column": 52,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 79,
-      "column": 34,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 102,
-      "column": 40,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 125,
-      "column": 42,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 138,
-      "column": 45,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 158,
-      "column": 38,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 196,
-      "column": 50,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 211,
-      "column": 46,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 217,
-      "column": 40,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/etherscanHolderScraper.ts",
-      "line": 292,
-      "column": 18,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
       "file": "/home/runner/workspace/server/services/etherscanService.ts",
       "line": 81,
       "column": 22,
@@ -15682,150 +15286,6 @@
       "column": 50,
       "type": "chainId",
       "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 35,
-      "column": 103,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 52,
-      "column": 52,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderDataSyncService.ts",
-      "line": 204,
-      "column": 42,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 297,
-      "column": 26,
-      "type": "url",
-      "value": "https://blue-api.morpho.org/vaults?ids=${morphoVaultId",
-      "severity": "high",
-      "suggestion": "Move to cfg.endpoints configuration"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 109,
-      "column": 16,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 169,
-      "column": 71,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 170,
-      "column": 16,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 204,
-      "column": 76,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 205,
-      "column": 14,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 208,
-      "column": 14,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 231,
-      "column": 33,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 341,
-      "column": 47,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 345,
-      "column": 47,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 372,
-      "column": 73,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 390,
-      "column": 19,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderService.ts",
-      "line": 402,
-      "column": 20,
-      "type": "chainId",
-      "value": "1",
       "severity": "high",
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
@@ -16614,7 +16074,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 115,
+      "line": 96,
       "column": 26,
       "type": "chainId",
       "value": "1",
@@ -16679,24 +16139,6 @@
       "file": "/home/runner/workspace/server/services/serviceConfigurationService.ts",
       "line": 123,
       "column": 62,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/simpleHolderCountService.ts",
-      "line": 29,
-      "column": 16,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/simpleHolderCountService.ts",
-      "line": 91,
-      "column": 74,
       "type": "chainId",
       "value": "1",
       "severity": "high",
@@ -17235,7 +16677,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
-      "line": 579,
+      "line": 580,
       "column": 49,
       "type": "chainId",
       "value": "10",
@@ -17441,132 +16883,6 @@
       "suggestion": "Replace with cfg.chains[chainName].id"
     },
     {
-      "file": "/home/runner/workspace/server/services/topHoldersCache.ts",
-      "line": 12,
-      "column": 24,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersCache.ts",
-      "line": 18,
-      "column": 34,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 105,
-      "column": 13,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 144,
-      "column": 44,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 153,
-      "column": 70,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 158,
-      "column": 89,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 197,
-      "column": 13,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 252,
-      "column": 57,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 263,
-      "column": 30,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 301,
-      "column": 28,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 301,
-      "column": 35,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 301,
-      "column": 41,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 301,
-      "column": 45,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersSync.ts",
-      "line": 348,
-      "column": 11,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
       "file": "/home/runner/workspace/server/services/webhookManager.ts",
       "line": 86,
       "column": 16,
@@ -17586,7 +16902,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 354,
+      "line": 347,
       "column": 58,
       "type": "chainId",
       "value": "1",
@@ -17595,7 +16911,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 570,
+      "line": 551,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -17604,7 +16920,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 596,
+      "line": 577,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -17613,7 +16929,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 606,
+      "line": 587,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -17622,7 +16938,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 614,
+      "line": 595,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -17631,7 +16947,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 641,
+      "line": 622,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -17640,7 +16956,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 749,
+      "line": 730,
       "column": 39,
       "type": "chainId",
       "value": "1",
@@ -17649,7 +16965,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 749,
+      "line": 730,
       "column": 41,
       "type": "chainId",
       "value": "1",
@@ -17658,7 +16974,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 922,
+      "line": 903,
       "column": 18,
       "type": "chainId",
       "value": "1",
@@ -17667,7 +16983,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 969,
+      "line": 950,
       "column": 56,
       "type": "chainId",
       "value": "1",
@@ -17676,7 +16992,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1402,
+      "line": 1377,
       "column": 55,
       "type": "chainId",
       "value": "1",
@@ -17685,7 +17001,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1427,
+      "line": 1402,
       "column": 61,
       "type": "chainId",
       "value": "1",
@@ -17694,7 +17010,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1428,
+      "line": 1403,
       "column": 53,
       "type": "chainId",
       "value": "1",
@@ -17703,7 +17019,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1433,
+      "line": 1408,
       "column": 46,
       "type": "chainId",
       "value": "1",
@@ -17712,7 +17028,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1503,
+      "line": 1478,
       "column": 63,
       "type": "chainId",
       "value": "10",
@@ -17721,7 +17037,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1506,
+      "line": 1481,
       "column": 21,
       "type": "chainId",
       "value": "1",
@@ -17730,7 +17046,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1512,
+      "line": 1487,
       "column": 33,
       "type": "chainId",
       "value": "10",
@@ -17739,7 +17055,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1535,
+      "line": 1510,
       "column": 15,
       "type": "chainId",
       "value": "10",
@@ -17748,7 +17064,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1560,
+      "line": 1535,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -17757,7 +17073,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1873,
+      "line": 1848,
       "column": 51,
       "type": "chainId",
       "value": "1",
@@ -17766,7 +17082,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1931,
+      "line": 1906,
       "column": 53,
       "type": "chainId",
       "value": "1",
@@ -17775,7 +17091,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2234,
+      "line": 2209,
       "column": 73,
       "type": "chainId",
       "value": "10",
@@ -17784,34 +17100,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2256,
-      "column": 55,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2257,
-      "column": 28,
-      "type": "chainId",
-      "value": "1",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2284,
-      "column": 34,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2386,
+      "line": 2259,
       "column": 14,
       "type": "chainId",
       "value": "1",
@@ -18081,16 +17370,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 289,
-      "column": 70,
-      "type": "chainId",
-      "value": "10",
-      "severity": "high",
-      "suggestion": "Replace with cfg.chains[chainName].id"
-    },
-    {
-      "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 337,
+      "line": 321,
       "column": 36,
       "type": "chainId",
       "value": "10",
@@ -18099,7 +17379,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 358,
+      "line": 342,
       "column": 36,
       "type": "chainId",
       "value": "10",
@@ -18108,7 +17388,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 388,
+      "line": 372,
       "column": 36,
       "type": "chainId",
       "value": "10",
@@ -18117,7 +17397,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 422,
+      "line": 406,
       "column": 51,
       "type": "chainId",
       "value": "1",
@@ -18126,7 +17406,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 434,
+      "line": 418,
       "column": 56,
       "type": "chainId",
       "value": "1",
@@ -18135,7 +17415,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 435,
+      "line": 419,
       "column": 67,
       "type": "chainId",
       "value": "1",
@@ -18144,7 +17424,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 436,
+      "line": 420,
       "column": 58,
       "type": "chainId",
       "value": "1",
@@ -18153,7 +17433,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 437,
+      "line": 421,
       "column": 56,
       "type": "chainId",
       "value": "1",
@@ -18162,7 +17442,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 438,
+      "line": 422,
       "column": 52,
       "type": "chainId",
       "value": "1",
@@ -18171,7 +17451,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 472,
+      "line": 456,
       "column": 43,
       "type": "chainId",
       "value": "1",
@@ -18180,7 +17460,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 1268,
+      "line": 1237,
       "column": 51,
       "type": "chainId",
       "value": "1",
@@ -18189,7 +17469,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 1268,
+      "line": 1237,
       "column": 58,
       "type": "chainId",
       "value": "1",
@@ -18360,7 +17640,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 61,
+      "line": 62,
       "column": 51,
       "type": "timeConstant",
       "value": "900",
@@ -18369,7 +17649,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 61,
+      "line": 62,
       "column": 99,
       "type": "timeConstant",
       "value": "900",
@@ -18378,7 +17658,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 67,
+      "line": 68,
       "column": 84,
       "type": "timeConstant",
       "value": "300",
@@ -18387,7 +17667,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 73,
+      "line": 74,
       "column": 51,
       "type": "timeConstant",
       "value": "300",
@@ -18396,7 +17676,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 86,
+      "line": 87,
       "column": 59,
       "type": "timeConstant",
       "value": "300",
@@ -18405,7 +17685,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 93,
+      "line": 94,
       "column": 59,
       "type": "timeConstant",
       "value": "900",
@@ -18414,7 +17694,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 107,
+      "line": 108,
       "column": 55,
       "type": "timeConstant",
       "value": "600",
@@ -18423,7 +17703,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 107,
+      "line": 108,
       "column": 72,
       "type": "timeConstant",
       "value": "900",
@@ -18432,7 +17712,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 108,
+      "line": 109,
       "column": 64,
       "type": "timeConstant",
       "value": "900",
@@ -18441,7 +17721,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 108,
+      "line": 109,
       "column": 100,
       "type": "timeConstant",
       "value": "300",
@@ -18450,7 +17730,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 126,
+      "line": 127,
       "column": 61,
       "type": "timeConstant",
       "value": "300",
@@ -18459,7 +17739,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 147,
+      "line": 148,
       "column": 49,
       "type": "timeConstant",
       "value": "300",
@@ -18468,7 +17748,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 153,
+      "line": 154,
       "column": 65,
       "type": "timeConstant",
       "value": "300",
@@ -18477,7 +17757,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 183,
+      "line": 184,
       "column": 42,
       "type": "timeConstant",
       "value": "600",
@@ -18486,7 +17766,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/components/admin-header.tsx",
-      "line": 184,
+      "line": 185,
       "column": 44,
       "type": "timeConstant",
       "value": "300",
@@ -20249,51 +19529,6 @@
       "suggestion": "Replace with cfg.constants.* value"
     },
     {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 60,
-      "column": 26,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 207,
-      "column": 44,
-      "type": "timeConstant",
-      "value": "600",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 207,
-      "column": 108,
-      "type": "timeConstant",
-      "value": "300",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 269,
-      "column": 62,
-      "type": "timeConstant",
-      "value": "600",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/components/holders-section.tsx",
-      "line": 269,
-      "column": 126,
-      "type": "timeConstant",
-      "value": "300",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
       "file": "/home/runner/workspace/client/src/components/interactive-pool-chart.tsx",
       "line": 36,
       "column": 45,
@@ -21460,6 +20695,51 @@
       "column": 64,
       "type": "timeConstant",
       "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 82,
+      "column": 53,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 122,
+      "column": 42,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 122,
+      "column": 106,
+      "type": "timeConstant",
+      "value": "300",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 154,
+      "column": 60,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/components/top-holders-section.tsx",
+      "line": 154,
+      "column": 124,
+      "type": "timeConstant",
+      "value": "300",
       "severity": "medium",
       "suggestion": "Replace with cfg.constants.* value"
     },
@@ -23716,6 +22996,123 @@
     {
       "file": "/home/runner/workspace/client/src/pages/admin-errors.tsx",
       "line": 440,
+      "column": 63,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 58,
+      "column": 26,
+      "type": "timeConstant",
+      "value": "60",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 137,
+      "column": 37,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 152,
+      "column": 65,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 163,
+      "column": 64,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 166,
+      "column": 57,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 174,
+      "column": 67,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 177,
+      "column": 60,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 185,
+      "column": 67,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 188,
+      "column": 60,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 201,
+      "column": 55,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 206,
+      "column": 49,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 217,
+      "column": 64,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx",
+      "line": 288,
       "column": 63,
       "type": "timeConstant",
       "value": "600",
@@ -27981,7 +27378,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 59,
+      "line": 58,
       "column": 61,
       "type": "timeConstant",
       "value": "600",
@@ -27990,7 +27387,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 84,
+      "line": 83,
       "column": 59,
       "type": "timeConstant",
       "value": "600",
@@ -27999,7 +27396,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 94,
+      "line": 93,
       "column": 58,
       "type": "timeConstant",
       "value": "900",
@@ -28008,7 +27405,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 100,
+      "line": 99,
       "column": 58,
       "type": "timeConstant",
       "value": "900",
@@ -28017,7 +27414,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 103,
+      "line": 102,
       "column": 53,
       "type": "timeConstant",
       "value": "600",
@@ -28026,7 +27423,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 114,
+      "line": 113,
       "column": 54,
       "type": "timeConstant",
       "value": "600",
@@ -28035,7 +27432,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 123,
+      "line": 122,
       "column": 54,
       "type": "timeConstant",
       "value": "600",
@@ -28044,7 +27441,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 128,
+      "line": 127,
       "column": 64,
       "type": "timeConstant",
       "value": "600",
@@ -28053,7 +27450,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 133,
+      "line": 132,
       "column": 46,
       "type": "timeConstant",
       "value": "600",
@@ -28062,7 +27459,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 136,
+      "line": 135,
       "column": 46,
       "type": "timeConstant",
       "value": "600",
@@ -28071,7 +27468,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 246,
+      "line": 245,
       "column": 20,
       "type": "timeConstant",
       "value": "60",
@@ -28080,7 +27477,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 282,
+      "line": 281,
       "column": 21,
       "type": "timeConstant",
       "value": "60",
@@ -28089,7 +27486,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 309,
+      "line": 308,
       "column": 51,
       "type": "timeConstant",
       "value": "900",
@@ -28098,8 +27495,17 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 310,
+      "line": 309,
       "column": 56,
+      "type": "timeConstant",
+      "value": "900",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
+      "line": 310,
+      "column": 48,
       "type": "timeConstant",
       "value": "900",
       "severity": "medium",
@@ -28108,15 +27514,6 @@
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
       "line": 311,
-      "column": 48,
-      "type": "timeConstant",
-      "value": "900",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 312,
       "column": 46,
       "type": "timeConstant",
       "value": "900",
@@ -28125,7 +27522,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 328,
+      "line": 327,
       "column": 60,
       "type": "timeConstant",
       "value": "900",
@@ -28134,8 +27531,17 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 342,
+      "line": 341,
       "column": 60,
+      "type": "timeConstant",
+      "value": "900",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
+      "line": 347,
+      "column": 59,
       "type": "timeConstant",
       "value": "900",
       "severity": "medium",
@@ -28144,15 +27550,6 @@
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
       "line": 348,
-      "column": 59,
-      "type": "timeConstant",
-      "value": "900",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 349,
       "column": 39,
       "type": "timeConstant",
       "value": "600",
@@ -28161,7 +27558,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 360,
+      "line": 359,
       "column": 58,
       "type": "timeConstant",
       "value": "900",
@@ -28170,7 +27567,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 405,
+      "line": 404,
       "column": 75,
       "type": "timeConstant",
       "value": "900",
@@ -28179,7 +27576,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 408,
+      "line": 407,
       "column": 53,
       "type": "timeConstant",
       "value": "600",
@@ -28188,7 +27585,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 419,
+      "line": 418,
       "column": 52,
       "type": "timeConstant",
       "value": "600",
@@ -28197,7 +27594,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 438,
+      "line": 437,
       "column": 56,
       "type": "timeConstant",
       "value": "60",
@@ -28206,7 +27603,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 469,
+      "line": 468,
       "column": 95,
       "type": "timeConstant",
       "value": "900",
@@ -28215,7 +27612,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 469,
+      "line": 468,
       "column": 118,
       "type": "timeConstant",
       "value": "900",
@@ -28224,7 +27621,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 473,
+      "line": 472,
       "column": 73,
       "type": "timeConstant",
       "value": "600",
@@ -28233,7 +27630,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 476,
+      "line": 475,
       "column": 65,
       "type": "timeConstant",
       "value": "600",
@@ -28242,7 +27639,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 491,
+      "line": 490,
       "column": 70,
       "type": "timeConstant",
       "value": "900",
@@ -28251,7 +27648,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 524,
+      "line": 523,
       "column": 72,
       "type": "timeConstant",
       "value": "900",
@@ -28260,7 +27657,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 535,
+      "line": 534,
       "column": 72,
       "type": "timeConstant",
       "value": "900",
@@ -28269,7 +27666,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 553,
+      "line": 552,
       "column": 142,
       "type": "timeConstant",
       "value": "900",
@@ -28278,7 +27675,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 555,
+      "line": 554,
       "column": 94,
       "type": "timeConstant",
       "value": "300",
@@ -28287,7 +27684,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 557,
+      "line": 556,
       "column": 68,
       "type": "timeConstant",
       "value": "600",
@@ -28296,7 +27693,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 561,
+      "line": 560,
       "column": 87,
       "type": "timeConstant",
       "value": "600",
@@ -28305,7 +27702,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 566,
+      "line": 565,
       "column": 61,
       "type": "timeConstant",
       "value": "600",
@@ -28314,7 +27711,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 574,
+      "line": 573,
       "column": 50,
       "type": "timeConstant",
       "value": "600",
@@ -28323,7 +27720,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 574,
+      "line": 573,
       "column": 75,
       "type": "timeConstant",
       "value": "300",
@@ -28332,7 +27729,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 578,
+      "line": 577,
       "column": 133,
       "type": "timeConstant",
       "value": "900",
@@ -28341,7 +27738,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 580,
+      "line": 579,
       "column": 88,
       "type": "timeConstant",
       "value": "300",
@@ -28350,7 +27747,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 582,
+      "line": 581,
       "column": 64,
       "type": "timeConstant",
       "value": "600",
@@ -28359,7 +27756,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 583,
+      "line": 582,
       "column": 25,
       "type": "timeConstant",
       "value": "30",
@@ -28368,7 +27765,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 586,
+      "line": 585,
       "column": 81,
       "type": "timeConstant",
       "value": "600",
@@ -28377,7 +27774,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 591,
+      "line": 590,
       "column": 58,
       "type": "timeConstant",
       "value": "600",
@@ -28386,7 +27783,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 599,
+      "line": 598,
       "column": 47,
       "type": "timeConstant",
       "value": "600",
@@ -28395,7 +27792,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 599,
+      "line": 598,
       "column": 69,
       "type": "timeConstant",
       "value": "300",
@@ -28404,7 +27801,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 603,
+      "line": 602,
       "column": 139,
       "type": "timeConstant",
       "value": "900",
@@ -28413,7 +27810,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 605,
+      "line": 604,
       "column": 92,
       "type": "timeConstant",
       "value": "300",
@@ -28422,7 +27819,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 607,
+      "line": 606,
       "column": 65,
       "type": "timeConstant",
       "value": "600",
@@ -28431,7 +27828,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 611,
+      "line": 610,
       "column": 85,
       "type": "timeConstant",
       "value": "600",
@@ -28440,7 +27837,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 616,
+      "line": 615,
       "column": 60,
       "type": "timeConstant",
       "value": "600",
@@ -28449,7 +27846,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 624,
+      "line": 623,
       "column": 49,
       "type": "timeConstant",
       "value": "600",
@@ -28458,7 +27855,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 624,
+      "line": 623,
       "column": 73,
       "type": "timeConstant",
       "value": "300",
@@ -28467,7 +27864,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 629,
+      "line": 628,
       "column": 139,
       "type": "timeConstant",
       "value": "900",
@@ -28476,7 +27873,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 631,
+      "line": 630,
       "column": 92,
       "type": "timeConstant",
       "value": "300",
@@ -28485,7 +27882,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 633,
+      "line": 632,
       "column": 65,
       "type": "timeConstant",
       "value": "600",
@@ -28494,7 +27891,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 637,
+      "line": 636,
       "column": 85,
       "type": "timeConstant",
       "value": "600",
@@ -28503,7 +27900,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 642,
+      "line": 641,
       "column": 60,
       "type": "timeConstant",
       "value": "600",
@@ -28512,7 +27909,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 650,
+      "line": 649,
       "column": 49,
       "type": "timeConstant",
       "value": "600",
@@ -28521,7 +27918,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 650,
+      "line": 649,
       "column": 73,
       "type": "timeConstant",
       "value": "300",
@@ -28530,7 +27927,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 660,
+      "line": 659,
       "column": 133,
       "type": "timeConstant",
       "value": "900",
@@ -28539,7 +27936,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 662,
+      "line": 661,
       "column": 88,
       "type": "timeConstant",
       "value": "300",
@@ -28548,7 +27945,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 664,
+      "line": 663,
       "column": 65,
       "type": "timeConstant",
       "value": "600",
@@ -28557,7 +27954,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 668,
+      "line": 667,
       "column": 81,
       "type": "timeConstant",
       "value": "600",
@@ -28566,7 +27963,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 673,
+      "line": 672,
       "column": 58,
       "type": "timeConstant",
       "value": "600",
@@ -28575,7 +27972,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 681,
+      "line": 680,
       "column": 47,
       "type": "timeConstant",
       "value": "600",
@@ -28584,7 +27981,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 681,
+      "line": 680,
       "column": 69,
       "type": "timeConstant",
       "value": "300",
@@ -28593,7 +27990,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 685,
+      "line": 684,
       "column": 136,
       "type": "timeConstant",
       "value": "900",
@@ -28602,7 +27999,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 687,
+      "line": 686,
       "column": 90,
       "type": "timeConstant",
       "value": "300",
@@ -28611,7 +28008,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 689,
+      "line": 688,
       "column": 64,
       "type": "timeConstant",
       "value": "600",
@@ -28620,7 +28017,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 693,
+      "line": 692,
       "column": 83,
       "type": "timeConstant",
       "value": "600",
@@ -28629,7 +28026,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 698,
+      "line": 697,
       "column": 59,
       "type": "timeConstant",
       "value": "600",
@@ -28638,7 +28035,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 701,
+      "line": 700,
       "column": 48,
       "type": "timeConstant",
       "value": "600",
@@ -28647,7 +28044,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 701,
+      "line": 700,
       "column": 71,
       "type": "timeConstant",
       "value": "300",
@@ -28656,7 +28053,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 705,
+      "line": 704,
       "column": 139,
       "type": "timeConstant",
       "value": "900",
@@ -28665,7 +28062,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 707,
+      "line": 706,
       "column": 92,
       "type": "timeConstant",
       "value": "300",
@@ -28674,7 +28071,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 709,
+      "line": 708,
       "column": 62,
       "type": "timeConstant",
       "value": "600",
@@ -28683,7 +28080,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 713,
+      "line": 712,
       "column": 85,
       "type": "timeConstant",
       "value": "600",
@@ -28692,7 +28089,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 718,
+      "line": 717,
       "column": 60,
       "type": "timeConstant",
       "value": "600",
@@ -28701,7 +28098,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 733,
+      "line": 732,
       "column": 49,
       "type": "timeConstant",
       "value": "600",
@@ -28710,7 +28107,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 733,
+      "line": 732,
       "column": 73,
       "type": "timeConstant",
       "value": "300",
@@ -28719,7 +28116,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 737,
+      "line": 736,
       "column": 139,
       "type": "timeConstant",
       "value": "900",
@@ -28728,7 +28125,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 739,
+      "line": 738,
       "column": 92,
       "type": "timeConstant",
       "value": "300",
@@ -28737,7 +28134,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 741,
+      "line": 740,
       "column": 63,
       "type": "timeConstant",
       "value": "600",
@@ -28746,7 +28143,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 747,
+      "line": 746,
       "column": 62,
       "type": "timeConstant",
       "value": "600",
@@ -28755,7 +28152,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 758,
+      "line": 757,
       "column": 61,
       "type": "timeConstant",
       "value": "600",
@@ -28764,7 +28161,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 761,
+      "line": 760,
       "column": 49,
       "type": "timeConstant",
       "value": "600",
@@ -28773,7 +28170,7 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-detail.tsx",
-      "line": 761,
+      "line": 760,
       "column": 73,
       "type": "timeConstant",
       "value": "300",
@@ -28782,8 +28179,8 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 297,
-      "column": 62,
+      "line": 243,
+      "column": 53,
       "type": "timeConstant",
       "value": "600",
       "severity": "medium",
@@ -28791,8 +28188,35 @@
     },
     {
       "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
-      "line": 297,
-      "column": 126,
+      "line": 411,
+      "column": 118,
+      "type": "timeConstant",
+      "value": "30",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 411,
+      "column": 136,
+      "type": "timeConstant",
+      "value": "30",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 424,
+      "column": 66,
+      "type": "timeConstant",
+      "value": "600",
+      "severity": "medium",
+      "suggestion": "Replace with cfg.constants.* value"
+    },
+    {
+      "file": "/home/runner/workspace/client/src/pages/pool-holders.tsx",
+      "line": 424,
+      "column": 130,
       "type": "timeConstant",
       "value": "300",
       "severity": "medium",
@@ -30690,7 +30114,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 253,
+      "line": 249,
       "column": 19,
       "type": "timeConstant",
       "value": "60",
@@ -30699,7 +30123,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 253,
+      "line": 249,
       "column": 24,
       "type": "timeConstant",
       "value": "60",
@@ -30708,7 +30132,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1344,
+      "line": 1185,
       "column": 84,
       "type": "timeConstant",
       "value": "60",
@@ -30717,7 +30141,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1344,
+      "line": 1185,
       "column": 89,
       "type": "timeConstant",
       "value": "60",
@@ -30726,7 +30150,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1429,
+      "line": 1270,
       "column": 35,
       "type": "timeConstant",
       "value": "30",
@@ -30735,7 +30159,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1758,
+      "line": 1599,
       "column": 94,
       "type": "timeConstant",
       "value": "60",
@@ -30744,7 +30168,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 1758,
+      "line": 1599,
       "column": 99,
       "type": "timeConstant",
       "value": "60",
@@ -30753,7 +30177,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3426,
+      "line": 3267,
       "column": 51,
       "type": "timeConstant",
       "value": "60",
@@ -30762,7 +30186,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3426,
+      "line": 3267,
       "column": 56,
       "type": "timeConstant",
       "value": "60",
@@ -30771,7 +30195,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3816,
+      "line": 3657,
       "column": 28,
       "type": "timeConstant",
       "value": "60",
@@ -30780,7 +30204,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3816,
+      "line": 3657,
       "column": 33,
       "type": "timeConstant",
       "value": "60",
@@ -30789,7 +30213,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3817,
+      "line": 3658,
       "column": 31,
       "type": "timeConstant",
       "value": "60",
@@ -30798,7 +30222,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3817,
+      "line": 3658,
       "column": 36,
       "type": "timeConstant",
       "value": "60",
@@ -30807,7 +30231,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3818,
+      "line": 3659,
       "column": 23,
       "type": "timeConstant",
       "value": "30",
@@ -30816,7 +30240,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3818,
+      "line": 3659,
       "column": 33,
       "type": "timeConstant",
       "value": "60",
@@ -30825,7 +30249,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3818,
+      "line": 3659,
       "column": 38,
       "type": "timeConstant",
       "value": "60",
@@ -30834,7 +30258,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3818,
+      "line": 3659,
       "column": 58,
       "type": "timeConstant",
       "value": "30",
@@ -30843,7 +30267,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3890,
+      "line": 3731,
       "column": 62,
       "type": "timeConstant",
       "value": "60",
@@ -30852,7 +30276,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3890,
+      "line": 3731,
       "column": 67,
       "type": "timeConstant",
       "value": "60",
@@ -30861,7 +30285,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3890,
+      "line": 3731,
       "column": 82,
       "type": "timeConstant",
       "value": "60",
@@ -30870,7 +30294,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3890,
+      "line": 3731,
       "column": 87,
       "type": "timeConstant",
       "value": "60",
@@ -30879,7 +30303,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3891,
+      "line": 3732,
       "column": 61,
       "type": "timeConstant",
       "value": "60",
@@ -30888,7 +30312,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3891,
+      "line": 3732,
       "column": 66,
       "type": "timeConstant",
       "value": "60",
@@ -30897,7 +30321,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3891,
+      "line": 3732,
       "column": 86,
       "type": "timeConstant",
       "value": "60",
@@ -30906,7 +30330,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3891,
+      "line": 3732,
       "column": 91,
       "type": "timeConstant",
       "value": "60",
@@ -30915,7 +30339,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3978,
+      "line": 3819,
       "column": 76,
       "type": "timeConstant",
       "value": "60",
@@ -30924,7 +30348,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3978,
+      "line": 3819,
       "column": 81,
       "type": "timeConstant",
       "value": "60",
@@ -30933,7 +30357,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4012,
+      "line": 3853,
       "column": 70,
       "type": "timeConstant",
       "value": "30",
@@ -30942,7 +30366,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4017,
+      "line": 3858,
       "column": 94,
       "type": "timeConstant",
       "value": "30",
@@ -30951,7 +30375,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4099,
+      "line": 3940,
       "column": 19,
       "type": "timeConstant",
       "value": "30",
@@ -30960,7 +30384,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 4099,
+      "line": 3940,
       "column": 31,
       "type": "timeConstant",
       "value": "30",
@@ -30969,7 +30393,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3382,
+      "line": 3223,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'STETH':",
@@ -30978,7 +30402,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3384,
+      "line": 3225,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'WETH':",
@@ -30987,7 +30411,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3514,
+      "line": 3355,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'STETH':",
@@ -30996,7 +30420,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3516,
+      "line": 3357,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'WETH':",
@@ -31005,7 +30429,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3567,
+      "line": 3408,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'STETH':",
@@ -31014,7 +30438,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3569,
+      "line": 3410,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'WETH':",
@@ -31023,7 +30447,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3709,
+      "line": 3550,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'STETH':",
@@ -31032,7 +30456,7 @@
     },
     {
       "file": "/home/runner/workspace/server/routes.ts",
-      "line": 3711,
+      "line": 3552,
       "column": 9,
       "type": "tokenSymbol",
       "value": "'WETH':",
@@ -31481,15 +30905,6 @@
       "suggestion": "Replace with cfg.constants.* value"
     },
     {
-      "file": "/home/runner/workspace/server/services/alchemyService.ts",
-      "line": 279,
-      "column": 40,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
       "file": "/home/runner/workspace/server/services/cleanupService.ts",
       "line": 29,
       "column": 50,
@@ -31547,24 +30962,6 @@
       "file": "/home/runner/workspace/server/services/cleanupService.ts",
       "line": 47,
       "column": 62,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/comprehensiveHolderSyncService.ts",
-      "line": 36,
-      "column": 42,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/comprehensiveHolderSyncService.ts",
-      "line": 45,
-      "column": 26,
       "type": "timeConstant",
       "value": "60",
       "severity": "medium",
@@ -32003,60 +31400,6 @@
       "suggestion": "Replace with cfg.constants.* value"
     },
     {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 54,
-      "column": 57,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 196,
-      "column": 30,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/historicalHolderAnalysisService.ts",
-      "line": 196,
-      "column": 35,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderDataSyncService.ts",
-      "line": 148,
-      "column": 52,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderDataSyncService.ts",
-      "line": 222,
-      "column": 61,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/holderDataSyncService.ts",
-      "line": 222,
-      "column": 66,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
       "file": "/home/runner/workspace/server/services/morphoHistoricalService.ts",
       "line": 149,
       "column": 58,
@@ -32346,34 +31689,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 72,
-      "column": 6,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 72,
-      "column": 11,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 72,
-      "column": 26,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 115,
+      "line": 96,
       "column": 6,
       "type": "timeConstant",
       "value": "60",
@@ -32382,7 +31698,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 115,
+      "line": 96,
       "column": 11,
       "type": "timeConstant",
       "value": "60",
@@ -32391,7 +31707,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 128,
+      "line": 109,
       "column": 10,
       "type": "timeConstant",
       "value": "60",
@@ -32400,7 +31716,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/scheduler.ts",
-      "line": 139,
+      "line": 120,
       "column": 10,
       "type": "timeConstant",
       "value": "60",
@@ -32653,7 +31969,7 @@
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
       "line": 409,
-      "column": 30,
+      "column": 38,
       "type": "timeConstant",
       "value": "60",
       "severity": "medium",
@@ -32662,7 +31978,7 @@
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
       "line": 409,
-      "column": 35,
+      "column": 43,
       "type": "timeConstant",
       "value": "60",
       "severity": "medium",
@@ -32805,7 +32121,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
-      "line": 574,
+      "line": 575,
       "column": 49,
       "type": "timeConstant",
       "value": "30",
@@ -32814,7 +32130,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
-      "line": 577,
+      "line": 578,
       "column": 42,
       "type": "timeConstant",
       "value": "86400",
@@ -32823,7 +32139,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
-      "line": 578,
+      "line": 579,
       "column": 51,
       "type": "timeConstant",
       "value": "30",
@@ -32832,7 +32148,7 @@
     },
     {
       "file": "/home/runner/workspace/server/services/systemMonitorService.ts",
-      "line": 580,
+      "line": 581,
       "column": 53,
       "type": "timeConstant",
       "value": "60",
@@ -32921,44 +32237,8 @@
       "suggestion": "Use cfg.tokens map or database lookup"
     },
     {
-      "file": "/home/runner/workspace/server/services/topHoldersCache.ts",
-      "line": 18,
-      "column": 15,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersCache.ts",
-      "line": 18,
-      "column": 20,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersCache.ts",
-      "line": 19,
-      "column": 19,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/server/services/topHoldersCache.ts",
-      "line": 19,
-      "column": 24,
-      "type": "timeConstant",
-      "value": "60",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 533,
+      "line": 526,
       "column": 60,
       "type": "timeConstant",
       "value": "60",
@@ -32967,7 +32247,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 533,
+      "line": 526,
       "column": 65,
       "type": "timeConstant",
       "value": "60",
@@ -32976,7 +32256,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 585,
+      "line": 566,
       "column": 57,
       "type": "timeConstant",
       "value": "60",
@@ -32985,7 +32265,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 585,
+      "line": 566,
       "column": 62,
       "type": "timeConstant",
       "value": "60",
@@ -32994,7 +32274,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 586,
+      "line": 567,
       "column": 49,
       "type": "timeConstant",
       "value": "30",
@@ -33003,7 +32283,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 586,
+      "line": 567,
       "column": 59,
       "type": "timeConstant",
       "value": "60",
@@ -33012,7 +32292,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 586,
+      "line": 567,
       "column": 64,
       "type": "timeConstant",
       "value": "60",
@@ -33021,7 +32301,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 871,
+      "line": 852,
       "column": 41,
       "type": "timeConstant",
       "value": "30",
@@ -33030,7 +32310,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 883,
+      "line": 864,
       "column": 24,
       "type": "timeConstant",
       "value": "30",
@@ -33039,7 +32319,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1025,
+      "line": 1006,
       "column": 56,
       "type": "timeConstant",
       "value": "60",
@@ -33048,7 +32328,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1025,
+      "line": 1006,
       "column": 66,
       "type": "timeConstant",
       "value": "60",
@@ -33057,7 +32337,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1025,
+      "line": 1006,
       "column": 71,
       "type": "timeConstant",
       "value": "60",
@@ -33066,7 +32346,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1025,
+      "line": 1006,
       "column": 86,
       "type": "timeConstant",
       "value": "60",
@@ -33075,7 +32355,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1403,
+      "line": 1378,
       "column": 52,
       "type": "timeConstant",
       "value": "60",
@@ -33084,7 +32364,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1403,
+      "line": 1378,
       "column": 57,
       "type": "timeConstant",
       "value": "60",
@@ -33093,7 +32373,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1527,
+      "line": 1502,
       "column": 12,
       "type": "timeConstant",
       "value": "60",
@@ -33102,7 +32382,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1534,
+      "line": 1509,
       "column": 26,
       "type": "timeConstant",
       "value": "60",
@@ -33111,7 +32391,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1574,
+      "line": 1549,
       "column": 55,
       "type": "timeConstant",
       "value": "60",
@@ -33120,7 +32400,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 1574,
+      "line": 1549,
       "column": 60,
       "type": "timeConstant",
       "value": "60",
@@ -33129,7 +32409,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2178,
+      "line": 2153,
       "column": 62,
       "type": "timeConstant",
       "value": "30",
@@ -33138,7 +32418,7 @@
     },
     {
       "file": "/home/runner/workspace/server/storage.ts",
-      "line": 2234,
+      "line": 2209,
       "column": 79,
       "type": "timeConstant",
       "value": "60",
@@ -33174,43 +32454,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 285,
-      "column": 74,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 286,
-      "column": 47,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 287,
-      "column": 64,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 288,
-      "column": 64,
-      "type": "timeConstant",
-      "value": "30",
-      "severity": "medium",
-      "suggestion": "Replace with cfg.constants.* value"
-    },
-    {
-      "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 403,
+      "line": 387,
       "column": 99,
       "type": "timeConstant",
       "value": "60",
@@ -33219,7 +32463,7 @@
     },
     {
       "file": "/home/runner/workspace/shared/schema.ts",
-      "line": 1264,
+      "line": 1233,
       "column": 86,
       "type": "timeConstant",
       "value": "60",
@@ -33228,9 +32472,9 @@
     }
   ],
   "summary": {
-    "criticalCount": 174,
-    "highCount": 1847,
-    "mediumCount": 1670,
+    "criticalCount": 187,
+    "highCount": 1754,
+    "mediumCount": 1666,
     "lowCount": 0
   }
 }

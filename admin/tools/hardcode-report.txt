@@ -1,17 +1,123 @@
 HARDCODE SCAN REPORT
 ===================
 
-Generated: 2025-08-23T01:46:58.273Z
-Total Findings: 3691
+Generated: 2025-08-23T04:06:53.116Z
+Total Findings: 3607
 
 SEVERITY BREAKDOWN:
-  Critical: 174
-  High:     1847
-  Medium:   1670
+  Critical: 187
+  High:     1754
+  Medium:   1666
   Low:      0
 
 FINDINGS:
 ========
+
+📁 /home/runner/workspace/client/src/components/top-holders-section.tsx
+   25:17 [CRITICAL] address: 0xA0b86a33E6441527176204E711E4d9C5dD3CE0C8
+      💡 Move to cfg.tokens registry or pool database lookup
+   33:17 [CRITICAL] address: 0x742d35Cc6596C44562Ff8C1DB728b58D4e32c50F
+      💡 Move to cfg.tokens registry or pool database lookup
+   41:17 [CRITICAL] address: 0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a
+      💡 Move to cfg.tokens registry or pool database lookup
+   49:17 [CRITICAL] address: 0x5A52E96BAcdaBb82fd05763E25335261B270Efcb
+      💡 Move to cfg.tokens registry or pool database lookup
+   57:17 [CRITICAL] address: 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2
+      💡 Move to cfg.tokens registry or pool database lookup
+   24:12 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   29:13 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   77:12 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   90:12 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   132:38 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   142:42 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   82:53 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   122:42 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   122:106 [MEDIUM] timeConstant: 300
+      💡 Replace with cfg.constants.* value
+   154:60 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   154:124 [MEDIUM] timeConstant: 300
+      💡 Replace with cfg.constants.* value
+
+📁 /home/runner/workspace/client/src/pages/pool-holders.tsx
+   76:17 [CRITICAL] address: 0xA0b86a33E6441527176204E711E4d9C5dD3CE0C8
+      💡 Move to cfg.tokens registry or pool database lookup
+   86:17 [CRITICAL] address: 0x742d35Cc6596C44562Ff8C1DB728b58D4e32c50F
+      💡 Move to cfg.tokens registry or pool database lookup
+   96:17 [CRITICAL] address: 0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a
+      💡 Move to cfg.tokens registry or pool database lookup
+   106:17 [CRITICAL] address: 0x5A52E96BAcdaBb82fd05763E25335261B270Efcb
+      💡 Move to cfg.tokens registry or pool database lookup
+   116:17 [CRITICAL] address: 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2
+      💡 Move to cfg.tokens registry or pool database lookup
+   126:17 [CRITICAL] address: 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599
+      💡 Move to cfg.tokens registry or pool database lookup
+   136:17 [CRITICAL] address: 0x514910771AF9Ca656af840dff83E8264EcF986CA
+      💡 Move to cfg.tokens registry or pool database lookup
+   146:17 [CRITICAL] address: 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984
+      💡 Move to cfg.tokens registry or pool database lookup
+   156:17 [CRITICAL] address: 0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72
+      💡 Move to cfg.tokens registry or pool database lookup
+   166:17 [CRITICAL] address: 0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0
+      💡 Move to cfg.tokens registry or pool database lookup
+   176:17 [CRITICAL] address: 0xB8c77482e45F1F44dE1745F52C74426C631bDD52
+      💡 Move to cfg.tokens registry or pool database lookup
+   186:17 [CRITICAL] address: 0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE
+      💡 Move to cfg.tokens registry or pool database lookup
+   196:17 [CRITICAL] address: 0x4Fabb145d64652a948d72533023f6E7A623C7C53
+      💡 Move to cfg.tokens registry or pool database lookup
+   206:17 [CRITICAL] address: 0x0F5D2fB29fb7d3CFeE444a200298f468908cC942
+      💡 Move to cfg.tokens registry or pool database lookup
+   216:17 [CRITICAL] address: 0xE41d2489571d322189246DaFA5ebDe1F4699F498
+      💡 Move to cfg.tokens registry or pool database lookup
+   75:12 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   80:13 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   132:16 [HIGH] chainId: 56
+      💡 Replace with cfg.chains[chainName].id
+   165:12 [HIGH] chainId: 10
+      💡 Replace with cfg.chains[chainName].id
+   170:13 [HIGH] chainId: 10
+      💡 Replace with cfg.chains[chainName].id
+   209:19 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   219:19 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   238:12 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   251:12 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   375:66 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   375:93 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   394:46 [HIGH] chainId: 10
+      💡 Replace with cfg.chains[chainName].id
+   395:42 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   411:68 [HIGH] chainId: 10
+      💡 Replace with cfg.chains[chainName].id
+   412:48 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   243:53 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   411:118 [MEDIUM] timeConstant: 30
+      💡 Replace with cfg.constants.* value
+   411:136 [MEDIUM] timeConstant: 30
+      💡 Replace with cfg.constants.* value
+   424:66 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   424:130 [MEDIUM] timeConstant: 300
+      💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/client/src/pages/profile.tsx
    34:27 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
@@ -164,301 +270,277 @@ FINDINGS:
       💡 Move to cfg.tokens registry or pool database lookup
 
 📁 /home/runner/workspace/server/routes.ts
-   1328:25 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
+   1169:25 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
       💡 Move to cfg.tokens registry or pool database lookup
-   3023:52 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   2864:52 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3024:52 [CRITICAL] address: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+   2865:52 [CRITICAL] address: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
       💡 Move to cfg.tokens registry or pool database lookup
-   3382:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   3223:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3383:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
+   3224:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
       💡 Move to cfg.tokens registry or pool database lookup
-   3384:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+   3225:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   3392:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3233:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3400:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3241:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3514:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   3355:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3515:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
+   3356:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
       💡 Move to cfg.tokens registry or pool database lookup
-   3516:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+   3357:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   3524:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3365:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3532:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3373:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3567:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   3408:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3568:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
+   3409:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
       💡 Move to cfg.tokens registry or pool database lookup
-   3569:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+   3410:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   3577:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3418:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3585:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3426:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3709:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   3550:19 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3710:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
+   3551:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
       💡 Move to cfg.tokens registry or pool database lookup
-   3711:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+   3552:18 [CRITICAL] address: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   3719:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3560:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3727:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3568:52 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   3792:10 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   3633:10 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3793:10 [CRITICAL] address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+   3634:10 [CRITICAL] address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
       💡 Move to cfg.tokens registry or pool database lookup
-   3794:10 [CRITICAL] address: 0xdac17f958d2ee523a2206206994597c13d831ec7
+   3635:10 [CRITICAL] address: 0xdac17f958d2ee523a2206206994597c13d831ec7
       💡 Move to cfg.tokens registry or pool database lookup
-   3795:10 [CRITICAL] address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599
+   3636:10 [CRITICAL] address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599
       💡 Move to cfg.tokens registry or pool database lookup
-   3796:10 [CRITICAL] address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+   3637:10 [CRITICAL] address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   3849:12 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   3690:12 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   3850:12 [CRITICAL] address: 0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0
+   3691:12 [CRITICAL] address: 0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0
       💡 Move to cfg.tokens registry or pool database lookup
-   3851:12 [CRITICAL] address: 0x1643e812ae58766192cf7d2cf9567df2c37e9b7f
+   3692:12 [CRITICAL] address: 0x1643e812ae58766192cf7d2cf9567df2c37e9b7f
       💡 Move to cfg.tokens registry or pool database lookup
-   3852:12 [CRITICAL] address: 0x442af784a788a5bd6f989e78c9421f53b84d57d5
+   3693:12 [CRITICAL] address: 0x442af784a788a5bd6f989e78c9421f53b84d57d5
       💡 Move to cfg.tokens registry or pool database lookup
-   3853:12 [CRITICAL] address: 0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb
+   3694:12 [CRITICAL] address: 0x55032650b14df07b85bf18a3a9ae94a96ba7fdcb
       💡 Move to cfg.tokens registry or pool database lookup
-   3854:12 [CRITICAL] address: 0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f
+   3695:12 [CRITICAL] address: 0xb9d7934878b5fb9610b3fe8a5e441e8fad7e293f
       💡 Move to cfg.tokens registry or pool database lookup
-   3855:12 [CRITICAL] address: 0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e
+   3696:12 [CRITICAL] address: 0xae1c5e497b6b3febe74a57d13baeaa79e4e9b81e
       💡 Move to cfg.tokens registry or pool database lookup
-   3856:12 [CRITICAL] address: 0x21e27a5e5513d6e65c4f830167390997aa84843a
+   3697:12 [CRITICAL] address: 0x21e27a5e5513d6e65c4f830167390997aa84843a
       💡 Move to cfg.tokens registry or pool database lookup
-   3859:12 [CRITICAL] address: 0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b
+   3700:12 [CRITICAL] address: 0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b
       💡 Move to cfg.tokens registry or pool database lookup
-   3861:12 [CRITICAL] address: 0xcfbf12bc2d27e6964fe977b489b617a7bec1660f
+   3702:12 [CRITICAL] address: 0xcfbf12bc2d27e6964fe977b489b617a7bec1660f
       💡 Move to cfg.tokens registry or pool database lookup
-   3862:12 [CRITICAL] address: 0x79720266dec914247424aeb0f06b8fa5b3ec073e
+   3703:12 [CRITICAL] address: 0x79720266dec914247424aeb0f06b8fa5b3ec073e
       💡 Move to cfg.tokens registry or pool database lookup
-   3863:12 [CRITICAL] address: 0xdcee3ae4f82bd085ff147b87a754517d8caaff3b
+   3704:12 [CRITICAL] address: 0xdcee3ae4f82bd085ff147b87a754517d8caaff3b
       💡 Move to cfg.tokens registry or pool database lookup
-   3894:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
+   3735:59 [CRITICAL] address: 0x0000000000000000000000000000000000000000
       💡 Move to cfg.tokens registry or pool database lookup
-   4239:41 [CRITICAL] address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+   4080:41 [CRITICAL] address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
       💡 Move to cfg.tokens registry or pool database lookup
-   4244:41 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   4085:41 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   1223:20 [HIGH] url: https://api.morpho.org/graphql
+   1064:20 [HIGH] url: https://api.morpho.org/graphql
       💡 Move to cfg.endpoints configuration
-   1713:29 [HIGH] url: https://api.basescan.org/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress
+   1554:29 [HIGH] url: https://api.basescan.org/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress
       💡 Move to cfg.endpoints configuration
-   1716:29 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress
+   1557:29 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getcontractcreation&contractaddresses=${newPool.poolAddress
       💡 Move to cfg.endpoints configuration
-   1729:30 [HIGH] url: https://api.basescan.org/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash
+   1570:30 [HIGH] url: https://api.basescan.org/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash
       💡 Move to cfg.endpoints configuration
-   1731:30 [HIGH] url: https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash
+   1572:30 [HIGH] url: https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=${txHash
       💡 Move to cfg.endpoints configuration
-   1741:35 [HIGH] url: https://api.basescan.org/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber
+   1582:35 [HIGH] url: https://api.basescan.org/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber
       💡 Move to cfg.endpoints configuration
-   1743:35 [HIGH] url: https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber
+   1584:35 [HIGH] url: https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${txData.result.blockNumber
       💡 Move to cfg.endpoints configuration
-   1995:20 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address
+   1836:20 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address
       💡 Move to cfg.endpoints configuration
-   2048:14 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address
+   1889:14 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address
       💡 Move to cfg.endpoints configuration
-   2078:14 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address
+   1919:14 [HIGH] url: https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${address
       💡 Move to cfg.endpoints configuration
-   4239:17 [HIGH] url: https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png
+   4080:17 [HIGH] url: https://tokens.1inch.io/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.png
       💡 Move to cfg.endpoints configuration
-   4244:17 [HIGH] url: https://tokens.1inch.io/0xae7ab96520de3a18e5e111b5eaab095312d7fe84.png
+   4085:17 [HIGH] url: https://tokens.1inch.io/0xae7ab96520de3a18e5e111b5eaab095312d7fe84.png
       💡 Move to cfg.endpoints configuration
-   100:72 [HIGH] chainId: 1
+   96:72 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   102:16 [HIGH] chainId: 1
+   98:16 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   184:16 [HIGH] chainId: 1
+   180:16 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   224:18 [HIGH] chainId: 1
+   220:18 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   327:67 [HIGH] chainId: 1
+   323:67 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   345:42 [HIGH] chainId: 1
+   341:42 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   417:58 [HIGH] chainId: 10
+   413:58 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   492:24 [HIGH] chainId: 10
+   488:24 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   893:16 [HIGH] chainId: 1
+   889:16 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1004:49 [HIGH] chainId: 1
+   1086:44 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1008:18 [HIGH] chainId: 1
+   1104:34 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1008:31 [HIGH] chainId: 1
+   1105:36 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1010:68 [HIGH] chainId: 1
+   1106:34 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1010:88 [HIGH] chainId: 1
+   1193:18 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1021:16 [HIGH] chainId: 1
+   1218:25 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1060:58 [HIGH] chainId: 1
+   1233:25 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1064:18 [HIGH] chainId: 1
+   1249:25 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1064:31 [HIGH] chainId: 1
+   1270:25 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1066:68 [HIGH] chainId: 1
+   1292:25 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1066:93 [HIGH] chainId: 1
+   1482:18 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1077:16 [HIGH] chainId: 1
+   1504:16 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1245:44 [HIGH] chainId: 1
+   1564:38 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1263:34 [HIGH] chainId: 1
+   1752:62 [HIGH] chainId: 8453
       💡 Replace with cfg.chains[chainName].id
-   1264:36 [HIGH] chainId: 1
+   1752:69 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1265:34 [HIGH] chainId: 1
+   2301:65 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1352:18 [HIGH] chainId: 1
+   2372:62 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1377:25 [HIGH] chainId: 1
+   2734:38 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1392:25 [HIGH] chainId: 1
+   3016:34 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1408:25 [HIGH] chainId: 1
+   3327:35 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1429:25 [HIGH] chainId: 1
+   3532:22 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1451:25 [HIGH] chainId: 1
+   3684:70 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1641:18 [HIGH] chainId: 1
+   3719:57 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1663:16 [HIGH] chainId: 1
+   3817:87 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1723:38 [HIGH] chainId: 1
+   3830:35 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1911:62 [HIGH] chainId: 8453
+   3872:51 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1911:69 [HIGH] chainId: 1
+   3884:19 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   2460:65 [HIGH] chainId: 1
+   3884:31 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   2531:62 [HIGH] chainId: 1
+   3903:96 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   2893:38 [HIGH] chainId: 1
+   3904:90 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   3175:34 [HIGH] chainId: 10
+   3906:56 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   3486:35 [HIGH] chainId: 10
+   4098:71 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   3691:22 [HIGH] chainId: 1
+   4114:40 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   3843:70 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   3878:57 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   3976:87 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   3989:35 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   4031:51 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   4043:19 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   4043:31 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   4062:96 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   4063:90 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   4065:56 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   4257:71 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   4273:40 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   253:19 [MEDIUM] timeConstant: 60
+   249:19 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   253:24 [MEDIUM] timeConstant: 60
+   249:24 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1344:84 [MEDIUM] timeConstant: 60
+   1185:84 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1344:89 [MEDIUM] timeConstant: 60
+   1185:89 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1429:35 [MEDIUM] timeConstant: 30
+   1270:35 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   1758:94 [MEDIUM] timeConstant: 60
+   1599:94 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1758:99 [MEDIUM] timeConstant: 60
+   1599:99 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3426:51 [MEDIUM] timeConstant: 60
+   3267:51 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3426:56 [MEDIUM] timeConstant: 60
+   3267:56 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3816:28 [MEDIUM] timeConstant: 60
+   3657:28 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3816:33 [MEDIUM] timeConstant: 60
+   3657:33 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3817:31 [MEDIUM] timeConstant: 60
+   3658:31 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3817:36 [MEDIUM] timeConstant: 60
+   3658:36 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3818:23 [MEDIUM] timeConstant: 30
+   3659:23 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   3818:33 [MEDIUM] timeConstant: 60
+   3659:33 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3818:38 [MEDIUM] timeConstant: 60
+   3659:38 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3818:58 [MEDIUM] timeConstant: 30
+   3659:58 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   3890:62 [MEDIUM] timeConstant: 60
+   3731:62 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3890:67 [MEDIUM] timeConstant: 60
+   3731:67 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3890:82 [MEDIUM] timeConstant: 60
+   3731:82 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3890:87 [MEDIUM] timeConstant: 60
+   3731:87 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3891:61 [MEDIUM] timeConstant: 60
+   3732:61 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3891:66 [MEDIUM] timeConstant: 60
+   3732:66 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3891:86 [MEDIUM] timeConstant: 60
+   3732:86 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3891:91 [MEDIUM] timeConstant: 60
+   3732:91 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3978:76 [MEDIUM] timeConstant: 60
+   3819:76 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   3978:81 [MEDIUM] timeConstant: 60
+   3819:81 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   4012:70 [MEDIUM] timeConstant: 30
+   3853:70 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   4017:94 [MEDIUM] timeConstant: 30
+   3858:94 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   4099:19 [MEDIUM] timeConstant: 30
+   3940:19 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   4099:31 [MEDIUM] timeConstant: 30
+   3940:31 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   3382:9 [MEDIUM] tokenSymbol: 'STETH':
+   3223:9 [MEDIUM] tokenSymbol: 'STETH':
       💡 Use cfg.tokens map or database lookup
-   3384:9 [MEDIUM] tokenSymbol: 'WETH':
+   3225:9 [MEDIUM] tokenSymbol: 'WETH':
       💡 Use cfg.tokens map or database lookup
-   3514:9 [MEDIUM] tokenSymbol: 'STETH':
+   3355:9 [MEDIUM] tokenSymbol: 'STETH':
       💡 Use cfg.tokens map or database lookup
-   3516:9 [MEDIUM] tokenSymbol: 'WETH':
+   3357:9 [MEDIUM] tokenSymbol: 'WETH':
       💡 Use cfg.tokens map or database lookup
-   3567:9 [MEDIUM] tokenSymbol: 'STETH':
+   3408:9 [MEDIUM] tokenSymbol: 'STETH':
       💡 Use cfg.tokens map or database lookup
-   3569:9 [MEDIUM] tokenSymbol: 'WETH':
+   3410:9 [MEDIUM] tokenSymbol: 'WETH':
       💡 Use cfg.tokens map or database lookup
-   3709:9 [MEDIUM] tokenSymbol: 'STETH':
+   3550:9 [MEDIUM] tokenSymbol: 'STETH':
       💡 Use cfg.tokens map or database lookup
-   3711:9 [MEDIUM] tokenSymbol: 'WETH':
+   3552:9 [MEDIUM] tokenSymbol: 'WETH':
       💡 Use cfg.tokens map or database lookup
 
 📁 /home/runner/workspace/server/routes/scraper-routes-backup.ts
@@ -594,33 +676,33 @@ FINDINGS:
       💡 Move to cfg.tokens registry or pool database lookup
    162:6 [CRITICAL] address: 0x4f460bb11cf958606c69a963b4a17f9daeeea8b6
       💡 Move to cfg.tokens registry or pool database lookup
-   742:10 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   568:10 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   743:10 [CRITICAL] address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+   569:10 [CRITICAL] address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   744:10 [CRITICAL] address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599
+   570:10 [CRITICAL] address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599
       💡 Move to cfg.tokens registry or pool database lookup
-   745:10 [CRITICAL] address: 0x514910771af9ca656af840dff83e8264ecf986ca
+   571:10 [CRITICAL] address: 0x514910771af9ca656af840dff83e8264ecf986ca
       💡 Move to cfg.tokens registry or pool database lookup
-   746:10 [CRITICAL] address: 0x1f9840a85d5af5bf1d1762f925bdaddc4201f984
+   572:10 [CRITICAL] address: 0x1f9840a85d5af5bf1d1762f925bdaddc4201f984
       💡 Move to cfg.tokens registry or pool database lookup
-   747:10 [CRITICAL] address: 0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9
+   573:10 [CRITICAL] address: 0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9
       💡 Move to cfg.tokens registry or pool database lookup
-   800:38 [CRITICAL] address: 0xffd0cb960d0e36a6449b7e2dd2e14db758abeed4
+   626:38 [CRITICAL] address: 0xffd0cb960d0e36a6449b7e2dd2e14db758abeed4
       💡 Move to cfg.tokens registry or pool database lookup
-   820:10 [CRITICAL] address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+   646:10 [CRITICAL] address: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
       💡 Move to cfg.tokens registry or pool database lookup
-   821:10 [CRITICAL] address: 0xdac17f958d2ee523a2206206994597c13d831ec7
+   647:10 [CRITICAL] address: 0xdac17f958d2ee523a2206206994597c13d831ec7
       💡 Move to cfg.tokens registry or pool database lookup
-   822:10 [CRITICAL] address: 0x6b175474e89094c44da98b954eedeac495271d0f
+   648:10 [CRITICAL] address: 0x6b175474e89094c44da98b954eedeac495271d0f
       💡 Move to cfg.tokens registry or pool database lookup
-   823:10 [CRITICAL] address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
+   649:10 [CRITICAL] address: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2
       💡 Move to cfg.tokens registry or pool database lookup
-   824:10 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
+   650:10 [CRITICAL] address: 0xae7ab96520de3a18e5e111b5eaab095312d7fe84
       💡 Move to cfg.tokens registry or pool database lookup
-   825:10 [CRITICAL] address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599
+   651:10 [CRITICAL] address: 0x2260fac5e5542a773aa44fbcfedf7c193bc2c599
       💡 Move to cfg.tokens registry or pool database lookup
-   826:10 [CRITICAL] address: 0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741
+   652:10 [CRITICAL] address: 0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741
       💡 Move to cfg.tokens registry or pool database lookup
    55:14 [HIGH] url: https://static.alchemyapi.io/images/assets/3408.png
       💡 Move to cfg.endpoints configuration
@@ -640,37 +722,33 @@ FINDINGS:
       💡 Replace with cfg.chains[chainName].id
    182:40 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   332:52 [HIGH] chainId: 1
+   490:68 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   384:77 [HIGH] chainId: 10
+   513:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   664:68 [HIGH] chainId: 10
+   546:74 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   687:14 [HIGH] chainId: 1
+   547:18 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   720:74 [HIGH] chainId: 1
+   599:86 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   721:18 [HIGH] chainId: 1
+   600:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   773:86 [HIGH] chainId: 1
+   604:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   774:14 [HIGH] chainId: 1
+   627:84 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   778:14 [HIGH] chainId: 1
+   635:70 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   801:84 [HIGH] chainId: 10
+   646:55 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   809:70 [HIGH] chainId: 10
+   647:55 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   820:55 [HIGH] chainId: 1
+   648:55 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   821:55 [HIGH] chainId: 1
+   667:62 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   822:55 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   841:62 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   845:34 [HIGH] chainId: 1
+   671:34 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
    166:51 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
@@ -679,8 +757,6 @@ FINDINGS:
    167:50 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
    168:49 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   279:40 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/server/services/dataAnalysisService.ts
@@ -755,58 +831,6 @@ FINDINGS:
    654:24 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
-📁 /home/runner/workspace/server/services/historicalHolderAnalysisService.ts
-   100:21 [CRITICAL] address: 0x0000000000000000000000000000000000000000
-      💡 Move to cfg.tokens registry or pool database lookup
-   105:19 [CRITICAL] address: 0x0000000000000000000000000000000000000000
-      💡 Move to cfg.tokens registry or pool database lookup
-   127:23 [CRITICAL] address: 0x0000000000000000000000000000000000000000
-      💡 Move to cfg.tokens registry or pool database lookup
-   132:21 [CRITICAL] address: 0x0000000000000000000000000000000000000000
-      💡 Move to cfg.tokens registry or pool database lookup
-   35:103 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   52:52 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   54:57 [MEDIUM] timeConstant: 30
-      💡 Replace with cfg.constants.* value
-   196:30 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   196:35 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-
-📁 /home/runner/workspace/server/services/holderService.ts
-   176:10 [CRITICAL] address: 0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741
-      💡 Move to cfg.tokens registry or pool database lookup
-   266:8 [CRITICAL] address: 0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741
-      💡 Move to cfg.tokens registry or pool database lookup
-   297:26 [HIGH] url: https://blue-api.morpho.org/vaults?ids=${morphoVaultId
-      💡 Move to cfg.endpoints configuration
-   109:16 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   169:71 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   170:16 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   204:76 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   205:14 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   208:14 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   231:33 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   341:47 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   345:47 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   372:73 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   390:19 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   402:20 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-
 📁 /home/runner/workspace/server/services/morphoDataMigration.ts
    98:23 [CRITICAL] address: 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB
       💡 Move to cfg.tokens registry or pool database lookup
@@ -871,34 +895,6 @@ FINDINGS:
    306:36 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
    312:54 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-
-📁 /home/runner/workspace/server/services/topHoldersSync.ts
-   45:43 [CRITICAL] address: 0x0000000000000000000000000000000000000000
-      💡 Move to cfg.tokens registry or pool database lookup
-   105:13 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   144:44 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   153:70 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   158:89 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   197:13 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   252:57 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   263:30 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   301:28 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   301:35 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   301:41 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   301:45 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   348:11 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
 
 📁 /home/runner/workspace/server/utils/stablecoinDetector.ts
@@ -1014,49 +1010,49 @@ FINDINGS:
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/client/src/components/admin-header.tsx
-   68:35 [HIGH] chainId: 10
+   69:35 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   68:40 [HIGH] chainId: 10
+   69:40 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   86:107 [HIGH] chainId: 1
+   87:107 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   136:99 [HIGH] chainId: 10
+   137:99 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   169:61 [HIGH] chainId: 1
+   170:61 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   170:104 [HIGH] chainId: 1
+   171:104 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   195:65 [HIGH] chainId: 1
+   196:65 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   61:51 [MEDIUM] timeConstant: 900
+   62:51 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   61:99 [MEDIUM] timeConstant: 900
+   62:99 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   67:84 [MEDIUM] timeConstant: 300
+   68:84 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   73:51 [MEDIUM] timeConstant: 300
+   74:51 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   86:59 [MEDIUM] timeConstant: 300
+   87:59 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   93:59 [MEDIUM] timeConstant: 900
+   94:59 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   107:55 [MEDIUM] timeConstant: 600
+   108:55 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   107:72 [MEDIUM] timeConstant: 900
+   108:72 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   108:64 [MEDIUM] timeConstant: 900
+   109:64 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   108:100 [MEDIUM] timeConstant: 300
+   109:100 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   126:61 [MEDIUM] timeConstant: 300
+   127:61 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   147:49 [MEDIUM] timeConstant: 300
+   148:49 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   153:65 [MEDIUM] timeConstant: 300
+   154:65 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   183:42 [MEDIUM] timeConstant: 600
+   184:42 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   184:44 [MEDIUM] timeConstant: 300
+   185:44 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/client/src/components/admin-panel.tsx
@@ -1925,52 +1921,6 @@ FINDINGS:
    17:26 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
-📁 /home/runner/workspace/client/src/components/holders-section.tsx
-   96:10 [HIGH] url: https://basescan.org/address/${address
-      💡 Move to cfg.endpoints configuration
-   97:10 [HIGH] url: https://etherscan.io/address/${address
-      💡 Move to cfg.endpoints configuration
-   54:71 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   70:41 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   73:38 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   119:43 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   124:52 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   214:35 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   222:51 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   233:38 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   241:59 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   259:42 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   269:170 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   287:43 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   301:43 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   302:79 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   310:57 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   60:26 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   207:44 [MEDIUM] timeConstant: 600
-      💡 Replace with cfg.constants.* value
-   207:108 [MEDIUM] timeConstant: 300
-      💡 Replace with cfg.constants.* value
-   269:62 [MEDIUM] timeConstant: 600
-      💡 Replace with cfg.constants.* value
-   269:126 [MEDIUM] timeConstant: 300
-      💡 Replace with cfg.constants.* value
-
 📁 /home/runner/workspace/client/src/components/interactive-pool-chart.tsx
    34:43 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
@@ -2660,20 +2610,6 @@ FINDINGS:
       💡 Replace with cfg.constants.* value
    192:64 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-
-📁 /home/runner/workspace/client/src/components/top-holders-section.tsx
-   125:45 [HIGH] url: https://etherscan.io
-      💡 Move to cfg.endpoints configuration
-   125:70 [HIGH] url: https://basescan.org
-      💡 Move to cfg.endpoints configuration
-   120:46 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   231:57 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   234:61 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   269:65 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
 
 📁 /home/runner/workspace/client/src/components/ui/accordion.tsx
    29:20 [HIGH] chainId: 1
@@ -3887,6 +3823,40 @@ FINDINGS:
    428:63 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
    440:63 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+
+📁 /home/runner/workspace/client/src/pages/admin-hardcode-scan.tsx
+   137:44 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   149:38 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   272:63 [HIGH] chainId: 1
+      💡 Replace with cfg.chains[chainName].id
+   58:26 [MEDIUM] timeConstant: 60
+      💡 Replace with cfg.constants.* value
+   137:37 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   152:65 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   163:64 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   166:57 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   174:67 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   177:60 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   185:67 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   188:60 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   201:55 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   206:49 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   217:64 [MEDIUM] timeConstant: 600
+      💡 Replace with cfg.constants.* value
+   288:63 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/client/src/pages/admin-logo-management.tsx
@@ -5420,285 +5390,233 @@ FINDINGS:
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/client/src/pages/pool-detail.tsx
-   499:42 [HIGH] url: https://basescan.org/token/${pool.poolAddress
+   498:42 [HIGH] url: https://basescan.org/token/${pool.poolAddress
       💡 Move to cfg.endpoints configuration
-   502:42 [HIGH] url: https://etherscan.io/token/${pool.poolAddress
+   501:42 [HIGH] url: https://etherscan.io/token/${pool.poolAddress
       💡 Move to cfg.endpoints configuration
-   506:42 [HIGH] url: https://etherscan.io/token/${pool.poolAddress
+   505:42 [HIGH] url: https://etherscan.io/token/${pool.poolAddress
       💡 Move to cfg.endpoints configuration
-   65:15 [HIGH] chainId: 1
+   64:15 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   229:73 [HIGH] chainId: 1
+   228:73 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   229:81 [HIGH] chainId: 1
+   228:81 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   247:12 [HIGH] chainId: 1
+   246:12 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   283:12 [HIGH] chainId: 1
+   282:12 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   404:38 [HIGH] chainId: 1
+   403:38 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   405:101 [HIGH] chainId: 1
+   404:101 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   434:65 [HIGH] chainId: 1
+   433:65 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   471:59 [HIGH] chainId: 1
+   470:59 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   476:92 [HIGH] chainId: 1
+   475:92 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   551:40 [HIGH] chainId: 1
+   550:40 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   566:90 [HIGH] chainId: 1
+   565:90 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   591:84 [HIGH] chainId: 1
+   590:84 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   616:88 [HIGH] chainId: 1
+   615:88 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   642:88 [HIGH] chainId: 1
+   641:88 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   659:40 [HIGH] chainId: 1
+   658:40 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   673:84 [HIGH] chainId: 1
+   672:84 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   698:86 [HIGH] chainId: 1
+   697:86 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   718:88 [HIGH] chainId: 1
+   717:88 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   747:90 [HIGH] chainId: 1
+   746:90 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   769:40 [HIGH] chainId: 1
+   768:40 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   834:54 [HIGH] chainId: 1
+   824:54 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   59:61 [MEDIUM] timeConstant: 600
+   58:61 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   84:59 [MEDIUM] timeConstant: 600
+   83:59 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   94:58 [MEDIUM] timeConstant: 900
+   93:58 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   100:58 [MEDIUM] timeConstant: 900
+   99:58 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   103:53 [MEDIUM] timeConstant: 600
+   102:53 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   114:54 [MEDIUM] timeConstant: 600
+   113:54 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   123:54 [MEDIUM] timeConstant: 600
+   122:54 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   128:64 [MEDIUM] timeConstant: 600
+   127:64 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   133:46 [MEDIUM] timeConstant: 600
+   132:46 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   136:46 [MEDIUM] timeConstant: 600
+   135:46 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   246:20 [MEDIUM] timeConstant: 60
+   245:20 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   282:21 [MEDIUM] timeConstant: 60
+   281:21 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   309:51 [MEDIUM] timeConstant: 900
+   308:51 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   310:56 [MEDIUM] timeConstant: 900
+   309:56 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   311:48 [MEDIUM] timeConstant: 900
+   310:48 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   312:46 [MEDIUM] timeConstant: 900
+   311:46 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   328:60 [MEDIUM] timeConstant: 900
+   327:60 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   342:60 [MEDIUM] timeConstant: 900
+   341:60 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   348:59 [MEDIUM] timeConstant: 900
+   347:59 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   349:39 [MEDIUM] timeConstant: 600
+   348:39 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   360:58 [MEDIUM] timeConstant: 900
+   359:58 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   405:75 [MEDIUM] timeConstant: 900
+   404:75 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   408:53 [MEDIUM] timeConstant: 600
+   407:53 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   419:52 [MEDIUM] timeConstant: 600
+   418:52 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   438:56 [MEDIUM] timeConstant: 60
+   437:56 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   469:95 [MEDIUM] timeConstant: 900
+   468:95 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   469:118 [MEDIUM] timeConstant: 900
+   468:118 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   473:73 [MEDIUM] timeConstant: 600
+   472:73 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   476:65 [MEDIUM] timeConstant: 600
+   475:65 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   491:70 [MEDIUM] timeConstant: 900
+   490:70 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   524:72 [MEDIUM] timeConstant: 900
+   523:72 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   535:72 [MEDIUM] timeConstant: 900
+   534:72 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   553:142 [MEDIUM] timeConstant: 900
+   552:142 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   555:94 [MEDIUM] timeConstant: 300
+   554:94 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   557:68 [MEDIUM] timeConstant: 600
+   556:68 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   561:87 [MEDIUM] timeConstant: 600
+   560:87 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   566:61 [MEDIUM] timeConstant: 600
+   565:61 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   574:50 [MEDIUM] timeConstant: 600
+   573:50 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   574:75 [MEDIUM] timeConstant: 300
+   573:75 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   578:133 [MEDIUM] timeConstant: 900
+   577:133 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   580:88 [MEDIUM] timeConstant: 300
+   579:88 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   582:64 [MEDIUM] timeConstant: 600
+   581:64 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   583:25 [MEDIUM] timeConstant: 30
+   582:25 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   586:81 [MEDIUM] timeConstant: 600
+   585:81 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   591:58 [MEDIUM] timeConstant: 600
+   590:58 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   599:47 [MEDIUM] timeConstant: 600
+   598:47 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   599:69 [MEDIUM] timeConstant: 300
+   598:69 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   603:139 [MEDIUM] timeConstant: 900
+   602:139 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   605:92 [MEDIUM] timeConstant: 300
+   604:92 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   607:65 [MEDIUM] timeConstant: 600
+   606:65 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   611:85 [MEDIUM] timeConstant: 600
+   610:85 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   616:60 [MEDIUM] timeConstant: 600
+   615:60 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   624:49 [MEDIUM] timeConstant: 600
+   623:49 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   624:73 [MEDIUM] timeConstant: 300
+   623:73 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   629:139 [MEDIUM] timeConstant: 900
+   628:139 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   631:92 [MEDIUM] timeConstant: 300
+   630:92 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   633:65 [MEDIUM] timeConstant: 600
+   632:65 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   637:85 [MEDIUM] timeConstant: 600
+   636:85 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   642:60 [MEDIUM] timeConstant: 600
+   641:60 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   650:49 [MEDIUM] timeConstant: 600
+   649:49 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   650:73 [MEDIUM] timeConstant: 300
+   649:73 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   660:133 [MEDIUM] timeConstant: 900
+   659:133 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   662:88 [MEDIUM] timeConstant: 300
+   661:88 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   664:65 [MEDIUM] timeConstant: 600
+   663:65 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   668:81 [MEDIUM] timeConstant: 600
+   667:81 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   673:58 [MEDIUM] timeConstant: 600
+   672:58 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   681:47 [MEDIUM] timeConstant: 600
+   680:47 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   681:69 [MEDIUM] timeConstant: 300
+   680:69 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   685:136 [MEDIUM] timeConstant: 900
+   684:136 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   687:90 [MEDIUM] timeConstant: 300
+   686:90 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   689:64 [MEDIUM] timeConstant: 600
+   688:64 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   693:83 [MEDIUM] timeConstant: 600
+   692:83 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   698:59 [MEDIUM] timeConstant: 600
+   697:59 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   701:48 [MEDIUM] timeConstant: 600
+   700:48 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   701:71 [MEDIUM] timeConstant: 300
+   700:71 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   705:139 [MEDIUM] timeConstant: 900
+   704:139 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   707:92 [MEDIUM] timeConstant: 300
+   706:92 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   709:62 [MEDIUM] timeConstant: 600
+   708:62 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   713:85 [MEDIUM] timeConstant: 600
+   712:85 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   718:60 [MEDIUM] timeConstant: 600
+   717:60 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   733:49 [MEDIUM] timeConstant: 600
+   732:49 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   733:73 [MEDIUM] timeConstant: 300
+   732:73 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   737:139 [MEDIUM] timeConstant: 900
+   736:139 [MEDIUM] timeConstant: 900
       💡 Replace with cfg.constants.* value
-   739:92 [MEDIUM] timeConstant: 300
+   738:92 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
-   741:63 [MEDIUM] timeConstant: 600
+   740:63 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   747:62 [MEDIUM] timeConstant: 600
+   746:62 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   758:61 [MEDIUM] timeConstant: 600
+   757:61 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   761:49 [MEDIUM] timeConstant: 600
+   760:49 [MEDIUM] timeConstant: 600
       💡 Replace with cfg.constants.* value
-   761:73 [MEDIUM] timeConstant: 300
-      💡 Replace with cfg.constants.* value
-
-📁 /home/runner/workspace/client/src/pages/pool-holders.tsx
-   64:36 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   106:16 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   106:34 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   111:22 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   134:26 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   214:30 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   214:43 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   241:59 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   249:52 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   260:42 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   268:63 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   288:44 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   302:59 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   314:61 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   341:40 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   343:56 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   346:57 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   348:43 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   363:39 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   364:46 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   364:69 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   378:59 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   392:57 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   297:62 [MEDIUM] timeConstant: 600
-      💡 Replace with cfg.constants.* value
-   297:126 [MEDIUM] timeConstant: 300
+   760:73 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/client/src/pages/pool-transfers.tsx
@@ -6743,29 +6661,9 @@ FINDINGS:
    144:21 [MEDIUM] timeConstant: 300
       💡 Replace with cfg.constants.* value
 
-📁 /home/runner/workspace/server/services/alchemyEnhancedHolderService.ts
-   140:25 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   180:14 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   185:12 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   196:14 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-
 📁 /home/runner/workspace/server/services/comprehensiveDataSyncService.ts
-   150:84 [HIGH] chainId: 1
+   140:84 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-
-📁 /home/runner/workspace/server/services/comprehensiveHolderSyncService.ts
-   129:20 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   227:16 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   36:42 [MEDIUM] timeConstant: 30
-      💡 Replace with cfg.constants.* value
-   45:26 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/server/services/crossPoolAnalysisService.ts
    68:91 [HIGH] chainId: 10
@@ -6837,38 +6735,6 @@ FINDINGS:
    281:42 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
 
-📁 /home/runner/workspace/server/services/etherscanHolderScraper.ts
-   12:37 [HIGH] url: https://etherscan.io
-      💡 Move to cfg.endpoints configuration
-   13:36 [HIGH] url: https://basescan.org
-      💡 Move to cfg.endpoints configuration
-   14:41 [HIGH] url: https://api.etherscan.io/api
-      💡 Move to cfg.endpoints configuration
-   15:40 [HIGH] url: https://api.basescan.org/api
-      💡 Move to cfg.endpoints configuration
-   33:50 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   66:52 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   79:34 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   102:40 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   125:42 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   138:45 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   158:38 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   196:50 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   211:46 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   217:40 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   292:18 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-
 📁 /home/runner/workspace/server/services/etherscanService.ts
    81:22 [HIGH] url: https://api.etherscan.io/api
       💡 Move to cfg.endpoints configuration
@@ -6935,16 +6801,6 @@ FINDINGS:
    71:64 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
    71:69 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-
-📁 /home/runner/workspace/server/services/holderDataSyncService.ts
-   204:42 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   148:52 [MEDIUM] timeConstant: 30
-      💡 Replace with cfg.constants.* value
-   222:61 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   222:66 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/server/services/imageLocalizationService.ts
@@ -7174,23 +7030,17 @@ FINDINGS:
       💡 Replace with cfg.chains[chainName].id
    53:26 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   115:26 [HIGH] chainId: 1
+   96:26 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
    53:11 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   72:6 [MEDIUM] timeConstant: 30
+   96:6 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   72:11 [MEDIUM] timeConstant: 60
+   96:11 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   72:26 [MEDIUM] timeConstant: 30
+   109:10 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   115:6 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   115:11 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   128:10 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   139:10 [MEDIUM] timeConstant: 60
+   120:10 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/server/services/selfHealingService.ts
@@ -7211,12 +7061,6 @@ FINDINGS:
    116:49 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
    123:62 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-
-📁 /home/runner/workspace/server/services/simpleHolderCountService.ts
-   29:16 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   91:74 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
 
 📁 /home/runner/workspace/server/services/standardizedMetricsService.ts
@@ -7378,7 +7222,7 @@ FINDINGS:
       💡 Replace with cfg.chains[chainName].id
    489:20 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   579:49 [HIGH] chainId: 10
+   580:49 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
    47:59 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
@@ -7396,9 +7240,9 @@ FINDINGS:
       💡 Replace with cfg.constants.* value
    363:69 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   409:30 [MEDIUM] timeConstant: 60
+   409:38 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   409:35 [MEDIUM] timeConstant: 60
+   409:43 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
    440:52 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
@@ -7430,13 +7274,13 @@ FINDINGS:
       💡 Replace with cfg.constants.* value
    526:63 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   574:49 [MEDIUM] timeConstant: 30
+   575:49 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   577:42 [MEDIUM] timeConstant: 86400
+   578:42 [MEDIUM] timeConstant: 86400
       💡 Replace with cfg.constants.* value
-   578:51 [MEDIUM] timeConstant: 30
+   579:51 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   580:53 [MEDIUM] timeConstant: 60
+   581:53 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/server/services/tokenMetadataService.ts
@@ -7481,20 +7325,6 @@ FINDINGS:
    320:7 [MEDIUM] tokenSymbol: 'USDT':
       💡 Use cfg.tokens map or database lookup
 
-📁 /home/runner/workspace/server/services/topHoldersCache.ts
-   12:24 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   18:34 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   18:15 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   18:20 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   19:19 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   19:24 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-
 📁 /home/runner/workspace/server/services/webhookManager.ts
    86:16 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
@@ -7502,99 +7332,93 @@ FINDINGS:
       💡 Replace with cfg.chains[chainName].id
 
 📁 /home/runner/workspace/server/storage.ts
-   354:58 [HIGH] chainId: 1
+   347:58 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   570:14 [HIGH] chainId: 1
+   551:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   596:14 [HIGH] chainId: 1
+   577:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   606:14 [HIGH] chainId: 1
+   587:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   614:14 [HIGH] chainId: 1
+   595:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   641:14 [HIGH] chainId: 1
+   622:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   749:39 [HIGH] chainId: 1
+   730:39 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   749:41 [HIGH] chainId: 1
+   730:41 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   922:18 [HIGH] chainId: 1
+   903:18 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   969:56 [HIGH] chainId: 1
+   950:56 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1402:55 [HIGH] chainId: 1
+   1377:55 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1427:61 [HIGH] chainId: 1
+   1402:61 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1428:53 [HIGH] chainId: 1
+   1403:53 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1433:46 [HIGH] chainId: 1
+   1408:46 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1503:63 [HIGH] chainId: 10
+   1478:63 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1506:21 [HIGH] chainId: 1
+   1481:21 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1512:33 [HIGH] chainId: 10
+   1487:33 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1535:15 [HIGH] chainId: 10
+   1510:15 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   1560:14 [HIGH] chainId: 1
+   1535:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1873:51 [HIGH] chainId: 1
+   1848:51 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1931:53 [HIGH] chainId: 1
+   1906:53 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   2234:73 [HIGH] chainId: 10
+   2209:73 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   2256:55 [HIGH] chainId: 1
+   2259:14 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   2257:28 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   2284:34 [HIGH] chainId: 10
-      💡 Replace with cfg.chains[chainName].id
-   2386:14 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   533:60 [MEDIUM] timeConstant: 60
+   526:60 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   533:65 [MEDIUM] timeConstant: 60
+   526:65 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   585:57 [MEDIUM] timeConstant: 60
+   566:57 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   585:62 [MEDIUM] timeConstant: 60
+   566:62 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   586:49 [MEDIUM] timeConstant: 30
+   567:49 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   586:59 [MEDIUM] timeConstant: 60
+   567:59 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   586:64 [MEDIUM] timeConstant: 60
+   567:64 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   871:41 [MEDIUM] timeConstant: 30
+   852:41 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   883:24 [MEDIUM] timeConstant: 30
+   864:24 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   1025:56 [MEDIUM] timeConstant: 60
+   1006:56 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1025:66 [MEDIUM] timeConstant: 60
+   1006:66 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1025:71 [MEDIUM] timeConstant: 60
+   1006:71 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1025:86 [MEDIUM] timeConstant: 60
+   1006:86 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1403:52 [MEDIUM] timeConstant: 60
+   1378:52 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1403:57 [MEDIUM] timeConstant: 60
+   1378:57 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1527:12 [MEDIUM] timeConstant: 60
+   1502:12 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1534:26 [MEDIUM] timeConstant: 60
+   1509:26 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1574:55 [MEDIUM] timeConstant: 60
+   1549:55 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   1574:60 [MEDIUM] timeConstant: 60
+   1549:60 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   2178:62 [MEDIUM] timeConstant: 30
+   2153:62 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   2234:79 [MEDIUM] timeConstant: 60
+   2209:79 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/server/utils/poolInitializer.ts
@@ -7658,45 +7482,35 @@ FINDINGS:
       💡 Replace with cfg.chains[chainName].id
    242:36 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   289:70 [HIGH] chainId: 10
+   321:36 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   337:36 [HIGH] chainId: 10
+   342:36 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   358:36 [HIGH] chainId: 10
+   372:36 [HIGH] chainId: 10
       💡 Replace with cfg.chains[chainName].id
-   388:36 [HIGH] chainId: 10
+   406:51 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   422:51 [HIGH] chainId: 1
+   418:56 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   434:56 [HIGH] chainId: 1
+   419:67 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   435:67 [HIGH] chainId: 1
+   420:58 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   436:58 [HIGH] chainId: 1
+   421:56 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   437:56 [HIGH] chainId: 1
+   422:52 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   438:52 [HIGH] chainId: 1
+   456:43 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   472:43 [HIGH] chainId: 1
+   1237:51 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
-   1268:51 [HIGH] chainId: 1
-      💡 Replace with cfg.chains[chainName].id
-   1268:58 [HIGH] chainId: 1
+   1237:58 [HIGH] chainId: 1
       💡 Replace with cfg.chains[chainName].id
    195:44 [MEDIUM] timeConstant: 30
       💡 Replace with cfg.constants.* value
-   285:74 [MEDIUM] timeConstant: 30
+   387:99 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
-   286:47 [MEDIUM] timeConstant: 30
-      💡 Replace with cfg.constants.* value
-   287:64 [MEDIUM] timeConstant: 30
-      💡 Replace with cfg.constants.* value
-   288:64 [MEDIUM] timeConstant: 30
-      💡 Replace with cfg.constants.* value
-   403:99 [MEDIUM] timeConstant: 60
-      💡 Replace with cfg.constants.* value
-   1264:86 [MEDIUM] timeConstant: 60
+   1233:86 [MEDIUM] timeConstant: 60
       💡 Replace with cfg.constants.* value
 
 📁 /home/runner/workspace/admin/services/holderDataSync.ts

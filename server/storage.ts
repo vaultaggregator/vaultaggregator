@@ -2,7 +2,7 @@ import {
   pools, protocols, networks, chains, tokens, tokenInfo, notes, users, categories, poolCategories, apiKeys, apiKeyUsage,
   riskScores, userAlerts, alertNotifications, poolReviews, reviewVotes, strategies, strategyPools,
   discussions, discussionReplies, watchlists, watchlistPools, apiEndpoints, developerApplications, holderHistory,
-  poolMetricsHistory, poolMetricsCurrent, aiOutlooks, poolHistoricalData, webhookConfigs, tokenTransactions,
+  poolMetricsHistory, poolMetricsCurrent, aiOutlooks, poolHistoricalData, webhookConfigs, tokenTransactions, poolHolders,
   type Pool, type Protocol, type Network, type Chain, type Token, type TokenInfo, type Note,
   type InsertPool, type InsertProtocol, type InsertNetwork, type InsertChain, type InsertToken, type InsertTokenInfo, type InsertNote,
   type PoolWithRelations, type User, type InsertUser,
@@ -15,7 +15,7 @@ import {
   type Discussion, type InsertDiscussion, type DiscussionWithReplies, type DiscussionReply, type InsertDiscussionReply,
   type Watchlist, type InsertWatchlist, type WatchlistWithPools, type WatchlistPool, type InsertWatchlistPool,
   type ApiEndpoint, type InsertApiEndpoint, type DeveloperApplication, type InsertDeveloperApplication,
-  type HolderHistory, type InsertHolderHistory,
+  type HolderHistory, type InsertHolderHistory, type PoolHolder, type InsertPoolHolder,
   type PoolMetricsHistory, type InsertPoolMetricsHistory, type PoolMetricsCurrent, type InsertPoolMetricsCurrent,
   swrCachedPages, swrCacheSnapshots, type SwrCachedPage, type SwrCacheSnapshot, type InsertSwrCachedPage, type InsertSwrCacheSnapshot
 } from "@shared/schema";
@@ -76,6 +76,12 @@ export interface IStorage {
     firstRecordDate: Date | null;
   }>;
   getLatestHolderHistory(tokenAddress: string): Promise<HolderHistory | undefined>;
+  
+  // Pool Holder methods
+  getPoolHolders(poolId: string, limit?: number): Promise<PoolHolder[]>;
+  upsertPoolHolder(poolHolder: InsertPoolHolder): Promise<PoolHolder>;
+  deletePoolHolders(poolId: string): Promise<void>;
+  clearPoolHolders(poolId: string): Promise<void>;
 
   // Pool methods (general)
   getActivePools(): Promise<Pool[]>;
@@ -621,6 +627,43 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(holderHistory.timestamp))
       .limit(1);
     return latestRecord || undefined;
+  }
+
+  // Pool Holder methods
+  async getPoolHolders(poolId: string, limit: number = 15): Promise<PoolHolder[]> {
+    return await db
+      .select()
+      .from(poolHolders)
+      .where(eq(poolHolders.poolId, poolId))
+      .orderBy(asc(poolHolders.rank))
+      .limit(limit);
+  }
+
+  async upsertPoolHolder(poolHolder: InsertPoolHolder): Promise<PoolHolder> {
+    const [result] = await db
+      .insert(poolHolders)
+      .values(poolHolder)
+      .onConflictDoUpdate({
+        target: [poolHolders.poolId, poolHolders.address],
+        set: {
+          balance: poolHolder.balance,
+          balanceUsd: poolHolder.balanceUsd,
+          percentage: poolHolder.percentage,
+          rank: poolHolder.rank,
+          txCount: poolHolder.txCount,
+          lastUpdated: sql`now()`,
+        },
+      })
+      .returning();
+    return result;
+  }
+
+  async deletePoolHolders(poolId: string): Promise<void> {
+    await db.delete(poolHolders).where(eq(poolHolders.poolId, poolId));
+  }
+
+  async clearPoolHolders(poolId: string): Promise<void> {
+    await db.delete(poolHolders).where(eq(poolHolders.poolId, poolId));
   }
 
   async getPools(options: {

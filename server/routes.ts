@@ -3386,6 +3386,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pool holders endpoint - individual holders with addresses and balances
+  app.get("/api/pools/:poolId/holders", async (req, res) => {
+    try {
+      const poolId = req.params.poolId;
+      const limit = Math.min(parseInt(req.query.limit as string) || 15, 15); // Max 15 holders
+      
+      const pool = await storage.getPoolById(poolId);
+      if (!pool || !pool.isVisible) {
+        return res.status(404).json({ error: "Pool not found" });
+      }
+
+      // Import and use the pool holders service
+      const { PoolHoldersService } = await import("./services/pool-holders-service");
+      const holders = await PoolHoldersService.getPoolHolders(poolId, limit);
+      
+      res.json(holders);
+    } catch (error) {
+      console.error("Error fetching pool holders:", error);
+      res.status(500).json({ error: "Failed to fetch pool holders" });
+    }
+  });
+
   app.get("/api/pools/:poolId/holder-history", async (req, res) => {
     try {
       const { days } = req.query;

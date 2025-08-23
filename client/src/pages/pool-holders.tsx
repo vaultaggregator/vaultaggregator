@@ -69,7 +69,13 @@ export default function PoolHoldersPage() {
     enabled: !!(poolId || isNewUrlFormat),
   });
 
-  // Mock holders data - replace with real API call later
+  // Fetch real holders data from API
+  const { data: holders = [], isLoading: holdersLoading } = useQuery<PoolHolder[]>({
+    queryKey: [`/api/pools/${pool?.id}/holders`],
+    enabled: !!pool?.id,
+  });
+
+  // Legacy mock holders data (for fallback reference)
   const mockHolders: PoolHolder[] = [
     {
       id: '1',
@@ -266,7 +272,9 @@ export default function PoolHoldersPage() {
     return `/pool/${poolId}`;
   };
 
-  const filteredHolders = mockHolders.filter(holder =>
+  // Use real holders data if available, fallback to mock for development
+  const displayHolders = holders.length > 0 ? holders : mockHolders;
+  const filteredHolders = displayHolders.filter(holder =>
     holder.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
     holder.rank.toString().includes(searchTerm)
   );
@@ -400,11 +408,23 @@ export default function PoolHoldersPage() {
 
               {/* Holders List */}
               <div className="space-y-2">
-                {filteredHolders.length === 0 ? (
+                {holdersLoading ? (
+                  <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => (
+                      <div key={i} className="grid grid-cols-10 gap-4 items-center py-3 border-b border-border/30 px-2">
+                        <Skeleton className="h-8 w-12" />
+                        <Skeleton className="h-8 col-span-3" />
+                        <Skeleton className="h-8 col-span-2" />
+                        <Skeleton className="h-8 col-span-2" />
+                        <Skeleton className="h-8 col-span-2" />
+                      </div>
+                    ))}
+                  </div>
+                ) : filteredHolders.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No holders found</p>
-                    <p className="text-sm mt-2">Try adjusting your search terms</p>
+                    <p className="text-sm mt-2">{holders.length === 0 ? "Data is being collected..." : "Try adjusting your search terms"}</p>
                   </div>
                 ) : (
                   filteredHolders.map((holder) => (
@@ -447,7 +467,7 @@ export default function PoolHoldersPage() {
               {filteredHolders.length > 0 && (
                 <div className="flex justify-center pt-4">
                   <p className="text-sm text-muted-foreground">
-                    Showing {filteredHolders.length} of {mockHolders.length} holders
+                    Showing {filteredHolders.length} of {displayHolders.length} holders
                   </p>
                 </div>
               )}

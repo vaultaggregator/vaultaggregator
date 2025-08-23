@@ -65,6 +65,18 @@ class DatabaseScheduler {
       }
     });
 
+    // Pool Holders Sync - individual holder addresses and balances from Moralis/Alchemy
+    this.scheduleService('poolHoldersSync', async () => {
+      try {
+        console.log('🔍 Starting scheduled pool holders sync...');
+        const { PoolHoldersService } = await import('./pool-holders-service');
+        await PoolHoldersService.syncAllPoolHolders();
+        console.log('✅ Scheduled pool holders sync completed');
+      } catch (error) {
+        console.error('❌ Error in scheduled pool holders sync:', error);
+      }
+    });
+
     // Etherscan Scraper - updates holder counts
     this.scheduleService('etherscanScraper', async () => {
       try {
@@ -155,6 +167,18 @@ class DatabaseScheduler {
             console.log('✅ Etherscan holder count update completed');
           } catch (error) {
             console.error('❌ Error in Etherscan holder count update:', error);
+          }
+        };
+        break;
+      case 'poolHoldersSync':
+        task = async () => {
+          try {
+            console.log('🔍 Starting scheduled pool holders sync...');
+            const { PoolHoldersService } = await import('./pool-holders-service');
+            await PoolHoldersService.syncAllPoolHolders();
+            console.log('✅ Scheduled pool holders sync completed');
+          } catch (error) {
+            console.error('❌ Error in scheduled pool holders sync:', error);
           }
         };
         break;

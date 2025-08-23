@@ -275,6 +275,20 @@ export const holderHistory = pgTable("holder_history", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+// Pool holders table - stores individual token holders for each pool
+export const poolHolders = pgTable("pool_holders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
+  address: text("address").notNull(), // Wallet address from Moralis
+  balance: decimal("balance", { precision: 30, scale: 18 }).notNull(), // Token balance from Alchemy
+  balanceUsd: decimal("balance_usd", { precision: 20, scale: 2 }), // USD value of balance
+  percentage: decimal("percentage", { precision: 5, scale: 2 }), // Percentage of total supply
+  rank: integer("rank").notNull(), // Rank by balance (1 = largest holder)
+  firstSeen: timestamp("first_seen"), // First time this address was seen holding tokens
+  txCount: integer("tx_count"), // Number of transactions for this address
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
 
 // Token transactions tracking - stores last 100 transactions per pool
 export const tokenTransactions = pgTable("token_transactions", {
@@ -1027,6 +1041,12 @@ export const insertTokenTransactionSchema = createInsertSchema(tokenTransactions
   createdAt: true,
 });
 
+export const insertPoolHolderSchema = createInsertSchema(poolHolders).omit({
+  id: true,
+  lastUpdated: true,
+  createdAt: true,
+});
+
 export const insertWatchlistSchema = createInsertSchema(watchlists).omit({
   id: true,
   createdAt: true,
@@ -1106,6 +1126,8 @@ export type InsertTokenInfo = typeof tokenInfo.$inferInsert;
 export type HolderHistory = typeof holderHistory.$inferSelect;
 export type InsertHolderHistory = z.infer<typeof insertHolderHistorySchema>;
 
+export type PoolHolder = typeof poolHolders.$inferSelect;
+export type InsertPoolHolder = z.infer<typeof insertPoolHolderSchema>;
 
 export type TokenTransaction = typeof tokenTransactions.$inferSelect;
 export type InsertTokenTransaction = z.infer<typeof insertTokenTransactionSchema>;

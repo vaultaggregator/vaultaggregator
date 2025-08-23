@@ -103,4 +103,14 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
     category: "sync",
     priority: 2,
   },
+  
+  poolHoldersSync: {
+    serviceName: "poolHoldersSync",
+    displayName: "Pool Holders Sync", 
+    description: "Fetches individual pool holder addresses from Moralis and balances from Alchemy (max 15 holders per pool)",
+    intervalMinutes: 30,
+    isEnabled: true,
+    category: "sync",
+    priority: 2,
+  },
 };
