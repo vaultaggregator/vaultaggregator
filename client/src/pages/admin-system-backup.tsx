@@ -779,6 +779,47 @@ export default function AdminSystem() {
               ))}
             </div>
           </TabsContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {health && Object.entries(health.scheduledJobs).map(([name, job]) => (
+                <Card key={name}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">
+                        {name.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                      </CardTitle>
+                      <Badge variant={getStatusColor(job.status) as any}>
+                        {getStatusIcon(job.status)}
+                        {job.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Last Check:</span>
+                      <span className="font-medium">
+                        {job.lastCheck ? new Date(job.lastCheck).toLocaleTimeString() : "Never"}
+                      </span>
+                    </div>
+                    {job.error && (
+                      <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                        {job.error}
+                      </div>
+                    )}
+                    {job.details && (
+                      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                        {Object.entries(job.details).map(([key, value]) => (
+                          <div key={key} className="flex justify-between">
+                            <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                            <span>{typeof value === 'object' ? JSON.stringify(value) : String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -912,7 +953,8 @@ export default function AdminSystem() {
                 </CardContent>
               </Card>
             </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          </TabsContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

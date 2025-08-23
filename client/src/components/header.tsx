@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Menu, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Menu, BarChart3, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -28,24 +29,10 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              href="/discover"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            >
-              Discover
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/swap"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            >
-              Swap
-            </Link>
+
+
+
+
           </nav>
 
           {/* Actions */}
@@ -66,27 +53,8 @@ export default function Header({ onAdminClick = () => {} }: HeaderProps) {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4" data-testid="mobile-menu">
             <nav className="space-y-2">
-              <Link
-                href="/discover"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Discover
-              </Link>
-              <Link
-                href="/dashboard"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/swap"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Swap
-              </Link>
+
+
             </nav>
           </div>
         )}
