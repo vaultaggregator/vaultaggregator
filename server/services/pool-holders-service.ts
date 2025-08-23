@@ -24,17 +24,21 @@ export class PoolHoldersService {
     logMessage("🔍 Starting Pool Holders sync...");
     
     const pools = await storage.getActivePools();
+    logMessage(`📊 Found ${pools.length} total pools to process`);
+    
     let success = 0;
     let failed = 0;
 
     for (const pool of pools) {
       try {
+        logMessage(`🔄 Processing pool: ${pool.tokenPair} (${pool.id})`);
         await this.syncPoolHolders(pool.id);
         success++;
         logSuccess(`✅ Updated holders for pool: ${pool.tokenPair}`);
       } catch (error) {
         failed++;
         logError(`❌ Failed to update holders for pool ${pool.tokenPair}:`, error);
+        logError(`❌ Full error details:`, error);
       }
     }
 
@@ -46,47 +50,71 @@ export class PoolHoldersService {
    * Sync holders for a specific pool
    */
   static async syncPoolHolders(poolId: string): Promise<void> {
+    logMessage(`🔍 Starting sync for pool ID: ${poolId}`);
+    
     const pool = await storage.getPoolById(poolId);
     if (!pool?.poolAddress) {
+      logError(`❌ Pool not found or missing address: ${poolId}`);
       throw new Error(`Pool not found or missing address: ${poolId}`);
     }
+
+    logMessage(`📋 Pool details: ${pool.tokenPair}, address: ${pool.poolAddress}, chain: ${pool.chain.name}`);
 
     // Determine network based on chain
     const network = this.getNetworkFromChain(pool.chain.name);
     if (!network) {
+      logError(`❌ Unsupported network: ${pool.chain.name}`);
       throw new Error(`Unsupported network: ${pool.chain.name}`);
     }
 
+    logMessage(`🌐 Network determined: ${network}`);
+
     // Step 1: Get holder addresses from Moralis
+    logMessage(`🔍 Step 1: Getting holder addresses from Moralis...`);
     const holderAddresses = await this.getHolderAddresses(pool.poolAddress, network);
+    logMessage(`📊 Found ${holderAddresses.length} holder addresses`);
+    
+    if (holderAddresses.length === 0) {
+      logMessage(`⚠️ No holders found for pool ${pool.tokenPair}, skipping further processing`);
+      return;
+    }
     
     // Step 2: Get balances from Alchemy
+    logMessage(`🔍 Step 2: Getting balances from Alchemy...`);
     const holdersWithBalances = await this.getHolderBalances(
       holderAddresses,
       pool.poolAddress,
       network
     );
+    logMessage(`📊 Got balances for ${holdersWithBalances.length} holders`);
 
     // Step 3: Calculate USD values and percentages
+    logMessage(`🔍 Step 3: Calculating metrics...`);
     const holdersWithMetrics = await this.calculateHolderMetrics(holdersWithBalances, pool);
+    logMessage(`📊 Calculated metrics for ${holdersWithMetrics.length} holders`);
 
     // Step 4: Clear old data and store new holders
+    logMessage(`🔍 Step 4: Clearing old data and storing new holders...`);
     await storage.clearPoolHolders(poolId);
     
     for (const holder of holdersWithMetrics) {
-      await storage.upsertPoolHolder({
-        poolId,
-        address: holder.address,
-        balance: holder.balance,
-        balanceUsd: holder.balanceUsd,
-        percentage: holder.percentage,
-        rank: holder.rank,
-        txCount: holder.txCount,
-        firstSeen: holder.firstSeen,
-      });
+      try {
+        await storage.upsertPoolHolder({
+          poolId,
+          address: holder.address,
+          balance: holder.balance,
+          balanceUsd: holder.balanceUsd,
+          percentage: holder.percentage,
+          rank: holder.rank,
+          txCount: holder.txCount,
+          firstSeen: holder.firstSeen,
+        });
+      } catch (storageError) {
+        logError(`❌ Failed to store holder ${holder.address}:`, storageError);
+      }
     }
 
-    logMessage(`💾 Stored ${holdersWithMetrics.length} holders for pool ${pool.tokenPair}`);
+    logMessage(`💾 Successfully stored ${holdersWithMetrics.length} holders for pool ${pool.tokenPair}`);
   }
 
   /**
@@ -254,14 +282,19 @@ export class PoolHoldersService {
    * Determine network name from chain info
    */
   private static getNetworkFromChain(chainName: string): string | null {
-    const normalizedChain = chainName.toLowerCase();
+    const normalizedChain = chainName.toLowerCase().trim();
     
-    if (normalizedChain.includes('ethereum') || normalizedChain.includes('mainnet')) {
+    logMessage(`🔍 Chain name mapping: "${chainName}" -> normalized: "${normalizedChain}"`);
+    
+    if (normalizedChain.includes('ethereum') || normalizedChain.includes('mainnet') || normalizedChain === 'eth') {
+      logMessage(`✅ Mapped to: ethereum`);
       return 'ethereum';
-    } else if (normalizedChain.includes('base')) {
+    } else if (normalizedChain.includes('base') || normalizedChain === 'base') {
+      logMessage(`✅ Mapped to: base`);
       return 'base';
     }
     
+    logMessage(`❌ Unknown chain: "${chainName}" -> returning null`);
     return null;
   }
 

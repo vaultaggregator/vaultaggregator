@@ -32,9 +32,8 @@ class DatabaseScheduler {
     this.scheduleService('holderDataSync', async () => {
       try {
         console.log('👥 Starting scheduled holder data sync...');
-        const { HolderDataSyncService } = await import('./holderDataSyncService');
-        const holderSyncService = new HolderDataSyncService();
-        await holderSyncService.syncAllHolderData();
+        const { simpleHolderCountService } = await import('./simpleHolderCountService');
+        await simpleHolderCountService.updateAllPoolHolderCounts();
         console.log('✅ Scheduled holder data sync completed');
       } catch (error) {
         console.error('❌ Error in scheduled holder data sync:', error);
@@ -135,9 +134,8 @@ class DatabaseScheduler {
         task = async () => {
           try {
             console.log('👥 Starting scheduled holder data sync...');
-            const { HolderDataSyncService } = await import('./holderDataSyncService');
-            const holderSyncService = new HolderDataSyncService();
-            await holderSyncService.syncAllHolderData();
+            const { simpleHolderCountService } = await import('./simpleHolderCountService');
+            await simpleHolderCountService.updateAllPoolHolderCounts();
             console.log('✅ Scheduled holder data sync completed');
           } catch (error) {
             console.error('❌ Error in scheduled holder data sync:', error);
