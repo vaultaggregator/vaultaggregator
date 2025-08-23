@@ -651,7 +651,7 @@ export class DatabaseStorage implements IStorage {
           percentage: poolHolder.percentage,
           rank: poolHolder.rank,
           txCount: poolHolder.txCount,
-          lastUpdated: sql`now()`,
+          updatedAt: sql`now()`,
         },
       })
       .returning();

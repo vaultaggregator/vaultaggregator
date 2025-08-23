@@ -1,6 +1,9 @@
 import { storage } from "../storage";
 import type { Pool, InsertPoolHolder } from "@shared/schema";
-import { logMessage, logSuccess, logError } from "../utils/logging";
+// Simple logging helpers (no external dependency)
+const logMessage = (msg: string) => console.log(msg);
+const logSuccess = (msg: string) => console.log(msg);
+const logError = (msg: string, error?: any) => console.error(msg, error);
 
 /**
  * Pool Holders Service - Fetches individual pool holder addresses from Moralis and balances from Alchemy
@@ -269,14 +272,14 @@ export class PoolHoldersService {
     try {
       const holders = await storage.getPoolHolders(poolId, limit);
       return holders.map(holder => ({
+        id: holder.id,
         address: holder.address,
         balance: holder.balance,
-        balanceUsd: holder.balanceUsd ? `$${holder.balanceUsd}` : null,
-        percentage: holder.percentage ? `${holder.percentage}%` : null,
+        balanceUSD: holder.balanceUsd,
+        percentage: holder.percentage,
         rank: holder.rank,
         txCount: holder.txCount,
         firstSeen: holder.firstSeen,
-        lastUpdated: holder.lastUpdated,
       }));
     } catch (error) {
       logError("❌ Error fetching pool holders:", error);

@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+
 // API Keys table for external API access
 export const apiKeys = pgTable("api_keys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -286,7 +287,7 @@ export const poolHolders = pgTable("pool_holders", {
   rank: integer("rank").notNull(), // Rank by balance (1 = largest holder)
   firstSeen: timestamp("first_seen"), // First time this address was seen holding tokens
   txCount: integer("tx_count"), // Number of transactions for this address
-  lastUpdated: timestamp("last_updated").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
