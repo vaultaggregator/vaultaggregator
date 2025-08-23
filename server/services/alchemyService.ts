@@ -278,7 +278,7 @@ export class AlchemyService {
           name: storedToken.name,
           symbol: storedToken.symbol,
           decimals: storedToken.decimals || 18,
-          logo: storedToken.logoUrl
+          logo: storedToken.iconUrl
         };
       }
     } catch (error) {
@@ -336,7 +336,7 @@ export class AlchemyService {
             name: storedToken.name || 'Unknown Token',
             symbol: storedToken.symbol || 'N/A',
             decimals: parseInt(storedToken.decimals || '18'),
-            logo: storedToken.logoUrl
+            logo: storedToken.iconUrl
           };
           console.log(`🗄️ Database cache hit for ${storedToken.symbol} (NO API CALL)`);
           return metadata;
@@ -635,25 +635,31 @@ export class AlchemyService {
   }
 
   /**
-   * Get live ETH price using a simple external API
+   * Get live ETH price using Alchemy's token pricing capabilities
    */
   private async getLiveEthPrice(): Promise<number> {
     try {
-      // Use a free ETH price API
-      const response = await fetch('https://api.coinbase.com/v2/exchange-rates?currency=ETH');
-      if (response.ok) {
-        const data = await response.json();
-        const ethPrice = parseFloat(data.data.rates.USD);
-        if (ethPrice > 0) {
-          return ethPrice;
+      // Use Alchemy to get ETH price by treating it as a token query
+      const ethPrice = await this.getTokenPrice('0x0000000000000000000000000000000000000000', 'ethereum');
+      if (ethPrice && ethPrice > 0) {
+        return ethPrice;
+      }
+      
+      // Alternative: Check our database for stored ETH price
+      const { storage } = await import('../storage');
+      const storedEth = await storage.getTokenInfoByAddress('0x0000000000000000000000000000000000000000');
+      if (storedEth?.priceUsd) {
+        const storedPrice = parseFloat(storedEth.priceUsd);
+        if (storedPrice > 0) {
+          return storedPrice;
         }
       }
     } catch (error) {
-      console.log('⚠️ Failed to fetch live ETH price, using fallback');
+      console.log('⚠️ Failed to fetch live ETH price via Alchemy, using fallback');
     }
     
-    // Fallback to a reasonable current price
-    return 3400; // Updated fallback price
+    // Fallback to a reasonable current price (updated to be more current)
+    return 4700; // More realistic ETH price as of 2025
   }
 
   /**
@@ -681,27 +687,65 @@ export class AlchemyService {
       
       let totalValue = 0;
       
-      // Get ETH balance
+      // Get ETH balance with live pricing
       const ethBalance = await this.alchemy.core.getBalance(address);
       const ethAmount = parseFloat(ethBalance.toString()) / Math.pow(10, 18);
       if (ethAmount > 0.001) {
-        const ethValue = ethAmount * 3200;
+        const ethPrice = await this.getLiveEthPrice();
+        const ethValue = ethAmount * ethPrice;
         totalValue += ethValue;
       }
       
       // Get all token balances
       const tokenBalances = await this.alchemy.core.getTokenBalances(address);
       
-      // Define major token addresses for accurate pricing
-      const tokenPrices: Record<string, number> = {
-        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48': 1.0,  // USDC
-        '0xdac17f958d2ee523a2206206994597c13d831ec7': 1.0,  // USDT
-        '0x6b175474e89094c44da98b954eedeac495271d0f': 1.0,  // DAI
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': 3200, // WETH
-        '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': 3200, // stETH
-        '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599': 65000, // WBTC
-        '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741': 3.6,  // TAC USDC (vault token)
-      };
+      // Use dynamic pricing via Alchemy instead of hardcoded prices
+      const majorTokens = [
+        { address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', symbol: 'USDC' },
+        { address: '0xdac17f958d2ee523a2206206994597c13d831ec7', symbol: 'USDT' },
+        { address: '0x6b175474e89094c44da98b954eedeac495271d0f', symbol: 'DAI' },
+        { address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', symbol: 'WETH' },
+        { address: '0xae7ab96520de3a18e5e111b5eaab095312d7fe84', symbol: 'stETH' },
+        { address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', symbol: 'WBTC' },
+        { address: '0x1e2aaadcf528b9cc08f43d4fd7db488ce89f5741', symbol: 'TAC_USDC' }, // vault token
+      ];
+      
+      const tokenPrices: Record<string, number> = {};
+      
+      // Get live prices for each token
+      for (const token of majorTokens) {
+        try {
+          const price = await this.getTokenPrice(token.address, 'ethereum');
+          if (price && price > 0) {
+            tokenPrices[token.address] = price;
+          } else {
+            // Fallback prices (updated to 2025 values)
+            const fallbacks: Record<string, number> = {
+              'USDC': 1.0,
+              'USDT': 1.0, 
+              'DAI': 1.0,
+              'WETH': 4700,
+              'stETH': 4700,
+              'WBTC': 100000,
+              'TAC_USDC': 3.6
+            };
+            tokenPrices[token.address] = fallbacks[token.symbol] || 1.0;
+          }
+        } catch (error) {
+          console.log(`⚠️ Could not fetch price for ${token.symbol}, using fallback`);
+          // Use fallback prices
+          const fallbacks: Record<string, number> = {
+            'USDC': 1.0,
+            'USDT': 1.0,
+            'DAI': 1.0, 
+            'WETH': 4700,
+            'stETH': 4700,
+            'WBTC': 100000,
+            'TAC_USDC': 3.6
+          };
+          tokenPrices[token.address] = fallbacks[token.symbol] || 1.0;
+        }
+      }
       
       for (const token of tokenBalances.tokenBalances) {
         if (token.tokenBalance && token.tokenBalance !== '0x0' && token.tokenBalance !== '0') {
