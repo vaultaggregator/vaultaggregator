@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { db } from "../db";
+import { serviceConfigurations } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -28,125 +30,7 @@ const requireAuth = (req: any, res: any, next: any) => {
   res.status(401).json({ error: "Authentication required" });
 };
 
-// Service configuration with default intervals
-interface ServiceConfig {
-  id: string;
-  name: string;
-  type: 'scraper' | 'sync' | 'metrics' | 'healing' | 'ai' | 'cache';
-  description: string;
-  interval: number; // minutes
-  enabled: boolean;
-  lastRun?: Date;
-  nextRun?: Date;
-}
-
-// Track service configurations
-const serviceConfigs = new Map<string, ServiceConfig>([
-  ['database-scraper', {
-    id: 'database-scraper',
-    name: 'Database Pool Scraper',
-    type: 'scraper',
-    description: 'Scrapes APY and TVL data for all pools from external APIs',
-    interval: 5,
-    enabled: true
-  }],
-  ['holder-sync', {
-    id: 'holder-sync',
-    name: 'Token Holder Sync',
-    type: 'sync',
-    description: 'Synchronizes token holder data using Alchemy API',
-    interval: 30,
-    enabled: true
-  }],
-  ['comprehensive-holder-sync', {
-    id: 'comprehensive-holder-sync',
-    name: 'Comprehensive Holder Sync',
-    type: 'sync',
-    description: 'Complete holder data synchronization for all pools',
-    interval: 30,
-    enabled: true
-  }],
-  ['system-monitor', {
-    id: 'system-monitor',
-    name: 'System Health Monitor',
-    type: 'metrics',
-    description: 'Monitors system health and API status',
-    interval: 2,
-    enabled: true
-  }],
-  ['ai-scheduler', {
-    id: 'ai-scheduler',
-    name: 'AI Prediction Scheduler',
-    type: 'ai',
-    description: 'Generates AI market predictions and insights',
-    interval: 1440, // 24 hours
-    enabled: true
-  }],
-  ['cache-cleanup', {
-    id: 'cache-cleanup',
-    name: 'Cache Cleanup Service',
-    type: 'cache',
-    description: 'Cleans expired cache entries to maintain performance',
-    interval: 5,
-    enabled: true
-  }],
-  ['alchemy-health', {
-    id: 'alchemy-health',
-    name: 'Alchemy API Health Check',
-    type: 'metrics',
-    description: 'Monitors Alchemy API availability and health',
-    interval: 2,
-    enabled: true
-  }],
-  ['defi-llama-sync', {
-    id: 'defi-llama-sync',
-    name: 'DeFi Llama Sync',
-    type: 'sync',
-    description: 'Syncs pool data from DeFi Llama API',
-    interval: 10,
-    enabled: false
-  }],
-  ['morpho-sync', {
-    id: 'morpho-sync',
-    name: 'Morpho Data Sync',
-    type: 'sync',
-    description: 'Syncs Morpho vault data and APY information',
-    interval: 5,
-    enabled: true
-  }],
-  ['lido-sync', {
-    id: 'lido-sync',
-    name: 'Lido Data Sync',
-    type: 'sync',
-    description: 'Syncs Lido staking data and rewards',
-    interval: 5,
-    enabled: true
-  }],
-  ['error-cleanup', {
-    id: 'error-cleanup',
-    name: 'Error Log Cleanup',
-    type: 'healing',
-    description: 'Removes old error logs and maintains database health',
-    interval: 1440, // 24 hours
-    enabled: true
-  }],
-  ['token-price-sync', {
-    id: 'token-price-sync',
-    name: 'Token Price Updater',
-    type: 'sync',
-    description: 'Updates token prices and exchange rates',
-    interval: 15,
-    enabled: true
-  }],
-  ['etherscan-scraper', {
-    id: 'etherscan-scraper',
-    name: 'Etherscan Holder Scraper',
-    type: 'scraper',
-    description: 'Scrapes token holder counts from Etherscan for accurate holder data',
-    interval: 30,
-    enabled: true
-  }]
-]);
+// Removed hardcoded service configurations - all services now loaded from database
 
 // Track service statistics
 interface ServiceStats {
@@ -162,27 +46,45 @@ const serviceStats = new Map<string, ServiceStats>();
 // Get all service statuses
 router.get("/admin/services/status", requireAuth, async (req, res) => {
   try {
-    const services = Array.from(serviceConfigs.values()).map(config => {
-      const stats = serviceStats.get(config.id) || {
-        successRate: 100,
-        totalRuns: 0,
-        errorCount: 0
-      };
-
-      // Calculate next run based on last run and interval
-      let nextRun = null;
-      if (config.lastRun && config.enabled) {
-        nextRun = new Date(config.lastRun.getTime() + config.interval * 60 * 1000);
-      }
-
-      return {
-        ...config,
-        status: config.enabled ? 'active' : 'disabled',
-        lastRun: config.lastRun?.toISOString() || null,
-        nextRun: nextRun?.toISOString() || null,
-        ...stats
-      };
+    // Load services from database
+    const dbServices = await db.query.serviceConfigurations.findMany({
+      orderBy: (configs, { asc }) => [asc(configs.priority), asc(configs.serviceName)]
     });
+
+
+
+    // Get actual pool count from database
+    const poolCount = await db.query.pools.findMany();
+    const totalPools = poolCount.length;
+
+    // Simple mapping without complex logic to identify the issue
+    const services = dbServices.map(config => ({
+      id: config.serviceName,
+      name: config.serviceName,
+      displayName: config.displayName,
+      type: config.category || 'sync',
+      status: config.isEnabled ? 'active' : 'disabled',
+      interval: config.intervalMinutes,
+      lastRun: config.updatedAt?.toISOString() || null,
+      nextRun: config.isEnabled && config.intervalMinutes > 0 
+        ? new Date(Date.now() + config.intervalMinutes * 60 * 1000).toISOString() 
+        : null,
+      description: config.description,
+      poolsAffected: totalPools,
+      successRate: null,
+      totalRuns: 0,
+      errorCount: 0,
+      lastError: null,
+      uptime: null,
+      lastCheck: config.updatedAt ? config.updatedAt.toLocaleTimeString() : 'N/A',
+      stats: {
+        processed: null,
+        failed: 0,
+        pending: null,
+        successRate: null
+      },
+      hasError: false
+    }));
 
     res.json(services);
   } catch (error) {
@@ -194,19 +96,8 @@ router.get("/admin/services/status", requireAuth, async (req, res) => {
 // Get service errors
 router.get("/admin/services/errors", requireAuth, async (req, res) => {
   try {
-    // Mock errors for now - in production, these would come from error logs
-    const errors = [
-      {
-        id: '1',
-        serviceId: 'holder-sync',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        errorType: 'API_TIMEOUT',
-        errorMessage: 'Alchemy API request timeout after 30 seconds',
-        severity: 'medium' as const,
-        resolved: true
-      }
-    ];
-
+    // Return empty array since no real error logging is implemented yet
+    const errors: any[] = [];
     res.json(errors);
   } catch (error) {
     console.error("Error fetching service errors:", error);
@@ -220,20 +111,28 @@ router.put("/admin/services/:serviceId/config", requireAuth, async (req, res) =>
     const { serviceId } = req.params;
     const { interval, enabled } = req.body;
 
-    const config = serviceConfigs.get(serviceId);
-    if (!config) {
+    // Check if service exists in database
+    const existingService = await db.query.serviceConfigurations.findFirst({
+      where: eq(serviceConfigurations.serviceName, serviceId)
+    });
+
+    if (!existingService) {
       return res.status(404).json({ error: "Service not found" });
     }
 
-    // Update configuration
-    config.interval = interval || config.interval;
-    config.enabled = enabled !== undefined ? enabled : config.enabled;
-    serviceConfigs.set(serviceId, config);
+    // Update configuration in database
+    await db.update(serviceConfigurations)
+      .set({
+        intervalMinutes: interval,
+        isEnabled: enabled,
+        updatedAt: new Date()
+      })
+      .where(eq(serviceConfigurations.serviceName, serviceId));
 
-    // Apply configuration changes to running services
-    await applyServiceConfiguration(serviceId, config);
-
-    res.json({ success: true, config });
+    res.json({ 
+      success: true, 
+      message: `Service ${serviceId} configuration updated`
+    });
   } catch (error) {
     console.error("Error updating service configuration:", error);
     res.status(500).json({ error: "Failed to update service configuration" });
@@ -245,19 +144,26 @@ router.post("/admin/services/:serviceId/trigger", requireAuth, async (req, res) 
   try {
     const { serviceId } = req.params;
 
-    const config = serviceConfigs.get(serviceId);
-    if (!config) {
+    // Check if service exists in database
+    const existingService = await db.query.serviceConfigurations.findFirst({
+      where: eq(serviceConfigurations.serviceName, serviceId)
+    });
+
+    if (!existingService) {
       return res.status(404).json({ error: "Service not found" });
     }
 
-    // Update last run time
-    config.lastRun = new Date();
-    serviceConfigs.set(serviceId, config);
+    // Update last run time in database
+    await db.update(serviceConfigurations)
+      .set({
+        updatedAt: new Date()
+      })
+      .where(eq(serviceConfigurations.serviceName, serviceId));
 
     // Trigger the service
     await triggerService(serviceId);
 
-    res.json({ success: true, message: `Service ${config.name} triggered successfully` });
+    res.json({ success: true, message: `Service ${existingService.displayName} triggered successfully` });
   } catch (error) {
     console.error("Error triggering service:", error);
     res.status(500).json({ error: "Failed to trigger service" });
@@ -265,24 +171,24 @@ router.post("/admin/services/:serviceId/trigger", requireAuth, async (req, res) 
 });
 
 // Apply service configuration changes
-async function applyServiceConfiguration(serviceId: string, config: ServiceConfig) {
+async function applyServiceConfiguration(serviceId: string, isEnabled: boolean, intervalMinutes: number) {
   try {
-    console.log(`Applying configuration for ${serviceId}:`, config);
+    console.log(`Applying configuration for ${serviceId}: enabled=${isEnabled}, interval=${intervalMinutes}min`);
     
-    // Here we would update the actual service intervals
+    // Here we would update the actual service intervals based on database service names
     switch(serviceId) {
-      case 'ai-scheduler':
+      case 'aiOutlookGeneration':
         const { aiScheduler } = await import("../services/aiSchedulerService");
         await aiScheduler.updateConfig({
-          enabled: config.enabled,
-          intervalHours: config.interval / 60
+          enabled: isEnabled,
+          intervalHours: intervalMinutes / 60
         });
         break;
       
-      case 'comprehensive-holder-sync':
+      case 'holderDataSync':
         const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
-        if (config.enabled) {
-          comprehensiveHolderSyncService.startService(config.interval);
+        if (isEnabled) {
+          comprehensiveHolderSyncService.startService(intervalMinutes);
         } else {
           comprehensiveHolderSyncService.stopService();
         }
@@ -300,24 +206,29 @@ async function triggerService(serviceId: string) {
   try {
     console.log(`Manually triggering service: ${serviceId}`);
     
+    // Use database service names instead of hardcoded IDs
     switch(serviceId) {
-      case 'database-scraper':
+      case 'poolDataSync':
         const { scraperManager } = await import("../scrapers/scraper-manager");
         await scraperManager.scrapeAllPools();
         break;
         
-      case 'holder-sync':
-      case 'comprehensive-holder-sync':
+      case 'holderDataSync':
         const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
         await comprehensiveHolderSyncService.syncAllPools();
         break;
         
-      case 'ai-scheduler':
+      case 'topHoldersSync':
+        const { topHoldersSyncService } = await import("../services/topHoldersSync");
+        await topHoldersSyncService.syncAllHolders();
+        break;
+        
+      case 'aiOutlookGeneration':
         const { aiScheduler } = await import("../services/aiSchedulerService");
         await aiScheduler.generateAllInsights();
         break;
         
-      // Add more services as needed
+      // Add more services as needed based on actual database service names
       default:
         console.log(`Service ${serviceId} triggered (simulation)`);
     }

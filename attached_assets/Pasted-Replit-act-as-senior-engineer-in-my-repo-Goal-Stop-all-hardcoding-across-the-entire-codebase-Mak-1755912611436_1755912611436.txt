@@ -1,0 +1,117 @@
+Replit, act as senior engineer in my repo.
+
+Goal
+Stop all hardcoding across the entire codebase. Make every runtime value dynamic. Keep Holder count logic unchanged. Do not mix Holder count with Top holders or any other feature.
+
+Scope
+Frontend Vite with Tailwind
+Backend and services under admin
+Do not touch secrets in code. Use env variables
+
+Policy to enforce now
+No literal contract addresses in code
+No literal RPC or API URLs in code
+No literal token lists or chain ids in code
+No protocol allowlists hardcoded in code
+No magic numbers for time windows or periods
+No page route strings that bake ids
+All of the above must come from a config layer or a data registry
+
+Single source of truth
+Create a config layer that the whole app uses
+Expose at least
+cfg.chains map with id, name, explorer, rpc
+cfg.tokens map with symbol to per chain address
+cfg.protocols map with id, name, icons, tags
+cfg.routes helpers for pool detail and lists
+cfg.endpoints for third party APIs and your internal APIs
+cfg.constants for DAY, WEEK, YEAR, refresh intervals
+Load from import.meta.env and JSON under config or data
+Provide .env.example with placeholders only
+
+Registry
+Create or reuse a pool registry in data or DB
+Every service and page must read token address, chain, protocol, and ids from the registry
+When a new pool is added to the registry the UI and API must pick it up with zero code edits
+
+Refactor targets
+Replace any 0x address literals with cfg.tokens or registry lookups
+Replace any http or ws URLs with cfg.rpc or cfg.endpoints
+Replace chain ids and names with cfg.chains
+Replace magic numbers like 31536000 86400 604800 3600 300 with cfg.constants
+Replace route path strings that bake ids with cfg.routes helpers
+Do not change Holder count code paths or data source
+
+SWR usage
+Wrap expensive API routes with our SWR cache helper
+Pick sane TTLs and hard TTLs per key
+Persist snapshots to disk so restarts stay warm
+Keys example
+pools list
+pool detail
+top holders per chain and token
+admin service status
+
+Scanner service
+Create a new service named hardcodeScan under admin/services
+It must export run
+It scans the repo and reports findings
+Write a JSON report at admin/tools/hardcode-report.json
+Write a human report at admin/tools/hardcode-report.txt
+Include totals and severity counts
+
+Patterns to flag
+0x addresses
+http or https URLs
+ws or wss URLs
+chainId literals
+common token symbols hardcoded in code
+time constants like 31536000 86400 604800 3600 600 300
+api keys or explorer keys in code
+File globs to scan src admin server scripts
+Ignore config data node_modules dist build outputs test files and .env files
+
+Suggested fixes
+Addresses move to cfg.tokens or pool registry
+RPC and API URLs move to cfg.rpc or cfg.endpoints
+Token symbol conditionals move to cfg.tokens map or registry tags
+Chain ids move to cfg.chains
+Time constants move to cfg.constants
+Keys must come only from env at runtime
+
+API for the scanner
+Add GET /api/admin/hardcode-scan that returns the JSON report
+Protect with SWR cache key hardcodeScan with stale 5 seconds and hard 30 seconds
+Add POST /api/admin/hardcode-scan/run that forces a new scan then returns the report
+
+Admin UI
+Add a Hardcode scan card in the admin page
+Show last run time and severity counts
+Render top 20 findings with file links
+Add a Run button that calls POST /api/admin/hardcode-scan/run
+
+Precommit guard
+Add a script that reuses the scanner and exits non zero on any finding
+Add npm scripts lint:hardcode and test:hardcode
+Add a precommit hook to run typecheck lint and lint:hardcode
+Block commits if the scanner finds any hardcoding
+
+Migration plan
+Run the scanner
+For each finding move the value into the config layer or registry
+Refactor callers to read from cfg or registry
+Do not modify Holder count logic
+Re run the scanner until clean
+Build and run in production mode
+Confirm SWR snapshots exist for pools and other heavy endpoints
+
+Acceptance checks
+There are no remaining hardcoded addresses URLs token lists chain ids or time constants in src or admin
+Holder count values and code paths are unchanged
+New config layer covers chains tokens protocols routes endpoints constants
+Pool pages and services work using registry data only
+The scanner reports zero findings
+The precommit hook blocks any new hardcoding
+The app builds and runs
+
+If anything blocks you list the files and the reason. Propose the smallest dynamic change that keeps current behavior.

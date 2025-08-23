@@ -93,4 +93,14 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
     category: "monitoring",
     priority: 1,
   },
+  
+  topHoldersSync: {
+    serviceName: "topHoldersSync",
+    displayName: "Top Holders Sync",
+    description: "Syncs top token holders data using Alchemy API",
+    intervalMinutes: 60,
+    isEnabled: true,
+    category: "sync",
+    priority: 2,
+  },
 };

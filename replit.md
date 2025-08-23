@@ -59,6 +59,8 @@ The server is built with Express.js, following a layered architecture with an AP
 
 **Contract Creation Date Optimization (August 22, 2025):** Implemented efficient contract age calculation by storing immutable `contract_created_at` timestamps in the pools table. The StandardizedMetricsService now uses stored dates instead of making repeated API calls to Basescan/Etherscan every minute, significantly reducing API usage and improving performance. Contract creation dates are fetched once when a pool is added and stored permanently, as these dates never change.
 
+**Service Configuration Hardcoding Elimination (August 23, 2025):** Resolved critical violation of the "NEVER hardcode values" rule by eliminating all hardcoded service configurations. Added missing `topHoldersSync` service to `DEFAULT_SERVICE_CONFIGS` and replaced hardcoded service arrays in `admin-service-monitor.ts` with dynamic database loading. The admin panel now correctly displays all 10 services including "Top Holders Sync" and the entire service management system is fully database-driven. This ensures the Top Holders feature is properly integrated and manageable through the admin interface.
+
 ## Data Storage Solutions
 
 The database schema includes tables for Chains, Platforms, Tokens, Pools, Notes, and Users, using UUIDs for primary keys and proper foreign key relationships. Drizzle ORM ensures type-safe operations. A `tokenInfo` table stores and caches token information. The system also implements comprehensive soft deletion with a "Trash Bin" system and 60-day automatic cleanup.

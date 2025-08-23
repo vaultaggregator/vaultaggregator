@@ -24,18 +24,9 @@ router.get("/status", requireAuth, async (req, res) => {
     // Get scheduled jobs from health
     const scheduledJobs = health.scheduledJobs || {};
     
-    // Define all services including those not in scheduled jobs
-    const allServices = [
-      'poolDataSync',
-      'holderDataSync', 
-      'aiOutlookGeneration',
-      'cleanup',
-      'tokenPriceSync',
-      'historicalDataSync',
-      'morphoApiSync',
-      'alchemyHealthCheck',
-      'etherscanScraper'
-    ];
+    // Get all services dynamically from database (NO HARDCODING)
+    const allServiceConfigs = await serviceConfigService.getAllConfigurations();
+    const allServices = allServiceConfigs.map(config => config.serviceName);
     
     // Transform all services into service status format
     const services = await Promise.all(allServices.map(async name => {

@@ -1,0 +1,99 @@
+Replit, act as senior engineer in my repo.
+
+Goal
+• Stop all hardcoding now. Make values dynamic.
+• Keep Holder count logic as is. Do not change it.
+• Add Top holders as its own data path only if needed by your edits, but prefer not to touch services unless required by the no-hardcoding refactor.
+
+Scope
+• Frontend Vite + Tailwind.
+• API and services under admin/.
+• Do not touch security keys in code. Use env.
+
+Policy to enforce from now on
+• No literal contract addresses in code.
+• No literal RPC or API URLs in code.
+• No literal token lists or chain ids in code.
+• No literal route paths that bake ids. Use helpers.
+• No magic numbers for time windows. Use constants.
+• All of the above must come from config or data sources.
+
+Build a single source of truth
+• Create src/config/index.ts
+• Read from import.meta.env and from JSON under config/
+• Expose:
+cfg.rpc[chain]
+cfg.explorers[chain]
+cfg.tokens[symbol].address[chain]
+cfg.routes.poolDetail(chain, protocol, slug)
+cfg.constants.SECONDS_PER_YEAR, DAY, WEEK
+cfg.endpoints.topHolders
+• Add config/.env.example entries only. No secrets committed.
+
+Refactor code to dynamic reads
+• Replace any hardcoded 0x addresses with cfg.tokens[...] or pool registry data.
+• Replace any hardcoded https or wss URLs with cfg.rpc or cfg.endpoints.
+• Replace chainId numbers with cfg.chains[alias].id.
+• Replace magic numbers 31536000, 86400, 604800 with cfg.constants.
+• Replace hardcoded route strings with cfg.routes helpers.
+• Do not modify Holder count code paths.
+
+Scanner and guardrails
+• Add a scanner script scripts/scan-hardcoded.ts that fails on:
+regexes:
+
+0x[a-fA-F0-9]{40}
+
+https?://[^\s'"]+
+
+wss?://[^\s'"]+
+
+\bchainId\s*:\s*[0-9]{1,6}\b
+
+["'](USDC|USDT|DAI|GHO|ETH|WBTC|wstETH)["']
+
+\b(31536000|86400|604800)\b
+• Ignore matches inside:
+config/, data/, .spec., .test.
+• Add npm scripts:
+"lint:hardcode": "ts-node scripts/scan-hardcoded.ts"
+"test:hardcode": "npm run lint:hardcode"
+• Add ESLint rules:
+
+no-magic-numbers with ignore: [0,1] and numeric enums
+
+no-restricted-syntax with patterns for 0x address and http URLs pointing to use cfg.*
+• Add Husky pre-commit hook to run:
+npm run lint && npm run test:hardcode
+• Fail the commit if scanner finds offenders.
+
+Pool registry
+• Centralize pool metadata. Create data/pools.json or use existing API loader.
+• Every service must read token address, chain, and protocol from the registry, not from literals.
+• When a new pool is added to the registry, pages and services pick it up without code edits.
+
+SWR compatibility
+• Keep ensureFresh.js in place.
+• Any new dynamic reads must use ensureFresh.getFresh with TTLs.
+• Do not alter Holder count SWR key or logic.
+
+Top holders note
+• Do not change Top holders service unless a hardcoded value forces a fix.
+• If you must touch it, move any literals into cfg and keep the service separate.
+• Cache under key topHolders:{chain}:{token}.
+
+Verification steps
+• Run the scanner. Fix every hit by moving the value into cfg or registry.
+• Run unit build. Fix type errors from the refactor.
+• Build production. No scanner failures.
+• Visit a random pool page. No hardcoded addresses in its component or service.
+• Add a new pool to the registry only. Confirm UI and API pick it up with no code change.
+
+Acceptance criteria
+• No remaining hardcoded addresses, URLs, token symbols, chain ids, or time constants in src/** and admin/**.
+• Holder count still works and reads the same source as before.
+• New scanner and ESLint rules block future hardcoding.
+• Pre-commit hook prevents regressions.
+• App builds and runs.
+
+If anything blocks you, list the exact files and the reason. Then propose the smallest change to keep it dynamic without breaking Holder count.
