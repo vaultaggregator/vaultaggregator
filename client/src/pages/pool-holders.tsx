@@ -456,7 +456,7 @@ export default function PoolHoldersPage() {
 
                       <div className="col-span-2">
                         <div className="font-semibold text-sm">
-                          {holder.percentage.toFixed(2)}%
+                          {Number(holder.percentage).toFixed(2)}%
                         </div>
                       </div>
                     </div>
