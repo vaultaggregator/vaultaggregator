@@ -281,7 +281,7 @@ export const poolHolders = pgTable("pool_holders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   poolId: varchar("pool_id").notNull().references(() => pools.id, { onDelete: "cascade" }),
   address: text("address").notNull(), // Wallet address from Moralis
-  balance: decimal("balance", { precision: 30, scale: 18 }).notNull(), // Token balance from Alchemy
+  balance: decimal("balance", { precision: 40, scale: 18 }).notNull(), // Token balance from Alchemy
   balanceUsd: decimal("balance_usd", { precision: 20, scale: 2 }), // USD value of balance
   percentage: decimal("percentage", { precision: 5, scale: 2 }), // Percentage of total supply
   rank: integer("rank").notNull(), // Rank by balance (1 = largest holder)

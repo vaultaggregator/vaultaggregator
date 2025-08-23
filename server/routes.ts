@@ -4288,7 +4288,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
+  // Debug endpoint for testing pool holders sync
+  app.get('/api/debug/test-holders-sync/:poolId', async (req, res) => {
+    try {
+      const { poolId } = req.params;
+      console.log(`🧪 Manual test: syncing holders for pool ${poolId}`);
+      
+      const { PoolHoldersService } = await import('./services/pool-holders-service');
+      await PoolHoldersService.syncPoolHolders(poolId);
+      
+      const holders = await storage.getPoolHolders(poolId);
+      res.json({ 
+        success: true, 
+        message: `Successfully synced ${holders.length} holders`,
+        holders: holders.slice(0, 5) // Return first 5 for preview
+      });
+    } catch (error) {
+      console.error('🧪 Manual test error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        stack: error.stack 
+      });
+    }
+  });
 
   return httpServer;
 }
