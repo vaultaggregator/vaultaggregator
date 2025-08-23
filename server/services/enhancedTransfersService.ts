@@ -183,6 +183,20 @@ export class EnhancedTransfersService {
       // Process and decode event logs
       const processedTransactions = [];
       
+      // Cache for blocks to avoid duplicate API calls
+      const blockCache = new Map<number, any>();
+      
+      // Helper function to get block with caching
+      const getCachedBlock = async (blockNumber: number | string) => {
+        const blockNum = typeof blockNumber === 'string' ? parseInt(blockNumber, 16) : blockNumber;
+        if (blockCache.has(blockNum)) {
+          return blockCache.get(blockNum);
+        }
+        const block = await alchemy.core.getBlock(blockNumber);
+        blockCache.set(blockNum, block);
+        return block;
+      };
+      
       // Process Deposit events
       for (const log of allDepositLogs) {
         try {
@@ -200,8 +214,8 @@ export class EnhancedTransfersService {
           const assets = BigInt('0x' + dataWithoutPrefix.slice(0, 64));
           const shares = BigInt('0x' + dataWithoutPrefix.slice(64, 128));
           
-          // Get block timestamp
-          const block = await alchemy.core.getBlock(log.blockNumber);
+          // Get block timestamp with caching
+          const block = await getCachedBlock(log.blockNumber);
           
           // For deposits, show the owner who receives the shares
           processedTransactions.push({
@@ -243,8 +257,8 @@ export class EnhancedTransfersService {
           const assets = BigInt('0x' + dataWithoutPrefix.slice(0, 64));
           const shares = BigInt('0x' + dataWithoutPrefix.slice(64, 128));
           
-          // Get block timestamp
-          const block = await alchemy.core.getBlock(log.blockNumber);
+          // Get block timestamp with caching
+          const block = await getCachedBlock(log.blockNumber);
           
           // For withdrawals, show the receiver who gets the assets
           processedTransactions.push({
