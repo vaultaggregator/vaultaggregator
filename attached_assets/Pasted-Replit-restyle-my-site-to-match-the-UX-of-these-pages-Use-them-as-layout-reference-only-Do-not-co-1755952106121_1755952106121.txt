@@ -1,0 +1,102 @@
+Replit, restyle my site to match the UX of these pages. Use them as layout reference only. Do not copy code or assets. Save stripped HTML snapshots under references/html for design cues.
+
+[https://app.vaults.fyi/opportunity/mainnet/0xE9cDA459bED6dcfb8AC61CD8cE08E2D52370cB06](https://app.vaults.fyi/opportunity/mainnet/0xE9cDA459bED6dcfb8AC61CD8cE08E2D52370cB06)
+[https://app.vaults.fyi/discover](https://app.vaults.fyi/discover)
+[https://app.vaults.fyi/dashboard](https://app.vaults.fyi/dashboard)
+[https://app.vaults.fyi/swap](https://app.vaults.fyi/swap)
+[https://app.vaults.fyi/terms-of-service](https://app.vaults.fyi/terms-of-service)
+[https://vaults.fyi/](https://vaults.fyi/)
+[https://analytics.vaults.fyi/vaults/mainnet/0x5085Dd6FAd07c12e38fae01bc2a4938d2C08B1Bc](https://analytics.vaults.fyi/vaults/mainnet/0x5085Dd6FAd07c12e38fae01bc2a4938d2C08B1Bc)
+
+Stack
+Vite and Tailwind. Keep my data and APIs as they are. Keep SWR keys. Do not change Holder count logic or any service behavior.
+
+Global style
+Light theme by default. Add a dark toggle.
+Neutral background. Subtle borders. Small text. Tight spacing.
+Primary accent blue. Muted gray text.
+Max content width 1280.
+
+Layout
+Fixed left sidebar. Icons with labels. Items
+Discover
+Dashboard
+Swap
+Admin
+Topbar with search on the right and theme switch.
+
+Vault list page
+Replace cards with a dense table.
+Columns in this order
+Token with icon
+Protocol badge
+Chain badge
+Net APY
+TVL
+Holders
+Risk tag
+Updated at
+Sorting on APY and TVL.
+Filters as pills above the table. Chain. Protocol. Token. Rewards.
+Row click opens the detail page.
+
+Vault detail page
+Header row. Token and vault name on the left. Protocol and chain badges. Net APY. TVL. Updated at.
+Two column body. Left metadata and yield breakdown. Right quick actions box placeholder. No logic change.
+Tabs under the header. Overview. Activity. Holders.
+Overview shows two mini charts. APY and TVL. Height 250.
+Yield breakdown shows base APR, reward APR per token, fee notes. Small badges for reward tokens.
+
+Dashboard page
+Small stats across the top. Total TVL. Average net APY. Count of vaults. Updated at.
+Two panels below. Performance chart. Allocation by protocol. Keep charts minimal.
+
+Swap page
+Simple placeholder form. From. To. Amount. Disabled by default. No routing logic. Match the look only.
+
+Terms page
+Clean static content. Match typography style from the reference. Do not copy text.
+
+Analytics linkout
+From a detail page add a small external link to analytics for that vault. Open in new tab.
+
+Components to add or refactor
+AppShell with Sidebar and Topbar
+DataTable with sorting and pill filters
+Badge and Tag
+MiniChart
+AddressChip with copy
+UpdatedAt label using SWR timestamps
+
+Charts
+Keep current chart library.
+Flat style. 1 px lines. Light grid. Font size 12. No heavy legends.
+
+Responsiveness
+Sidebar collapses on small screens.
+Table scrolls horizontally on narrow widths.
+Touch targets at least 40 px high.
+
+Performance
+Purge unused CSS via Tailwind content globs.
+Lazy load charts on the detail page.
+Do not block on heavy data. Keep SWR behavior.
+
+References handling
+Fetch each reference URL once on the server. Strip scripts and inline styles. Save under references/html. Use for spacing and layout measurements only.
+
+Do not change
+Data fetching
+APY math
+Holder count logic
+Existing services and SWR cache keys
+
+Acceptance
+Homepage loads in light theme and matches the density of vaults.fyi.
+Vault list shows the table with the exact column order and filters.
+Detail page uses the split layout with two mini charts and a yield breakdown block.
+Dashboard shows compact stats and two panels.
+Swap page uses the same visual style as a placeholder.
+Admin keeps working with the new shell.
+All existing routes and data still work.
+No third party code or assets from the reference are copied.
