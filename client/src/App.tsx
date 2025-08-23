@@ -114,6 +114,7 @@ function Router() {
         
         {/* SEO-friendly URL patterns for pool details */}
         <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
+        <Route path="/:network/:protocol/:tokenPair" component={PoolDetail} />
         
         <Route component={NotFound} />
       </Switch>

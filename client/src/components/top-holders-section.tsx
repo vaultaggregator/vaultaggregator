@@ -68,7 +68,8 @@ export function TopHoldersSection({ poolId, chainName }: TopHoldersSectionProps)
   };
 
   // Parse balanceUSD to get numeric value
-  const parseBalanceUSD = (balanceUSD: string): number => {
+  const parseBalanceUSD = (balanceUSD: string | null | undefined): number => {
+    if (!balanceUSD) return 0;
     return parseFloat(balanceUSD.replace(/[^0-9.-]/g, ''));
   };
 
