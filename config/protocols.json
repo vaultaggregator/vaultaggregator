@@ -1,0 +1,37 @@
+{
+  "morpho": {
+    "id": "morpho",
+    "name": "Morpho",
+    "icon": "/icons/morpho.svg",
+    "tags": ["lending", "yield", "ethereum", "base"],
+    "website": "https://morpho.org"
+  },
+  "lido": {
+    "id": "lido", 
+    "name": "Lido",
+    "icon": "/icons/lido.svg",
+    "tags": ["staking", "ethereum", "liquid-staking"],
+    "website": "https://lido.fi"
+  },
+  "compound": {
+    "id": "compound",
+    "name": "Compound",
+    "icon": "/icons/compound.svg", 
+    "tags": ["lending", "yield", "ethereum"],
+    "website": "https://compound.finance"
+  },
+  "aave": {
+    "id": "aave",
+    "name": "Aave",
+    "icon": "/icons/aave.svg",
+    "tags": ["lending", "yield", "ethereum", "polygon"],
+    "website": "https://aave.com"
+  },
+  "uniswap": {
+    "id": "uniswap",
+    "name": "Uniswap",
+    "icon": "/icons/uniswap.svg",
+    "tags": ["dex", "amm", "ethereum", "arbitrum", "base"],
+    "website": "https://uniswap.org"
+  }
+}

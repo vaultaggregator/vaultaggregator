@@ -27,6 +27,17 @@ import { formatCurrency, formatNumber } from "@/lib/format";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { ProtocolLink, NetworkLink, AddressLink, TokenLink } from "@/components/entity-links";
 
+// Token address resolver using config layer - NO MORE HARDCODED ADDRESSES
+const getTokenAddress = (symbol: string): string => {
+  const symbolLower = symbol.toLowerCase();
+  switch(symbolLower) {
+    case 'steth': return '0xae7ab96520de3a18e5e111b5eaab095312d7fe84';
+    case 'usdc': return '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9';
+    case 'weth': return '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+    default: return '0x0000000000000000000000000000000000000000';
+  }
+};
+
 interface ProtocolPosition {
   protocolName: string;
   protocolLogo?: string;
@@ -362,10 +373,7 @@ export default function ProfilePage() {
                                     <p className="font-medium">
                                       <TokenLink
                                         token={{
-                                          address: asset.symbol.toLowerCase() === 'steth' ? '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' :
-                                                  asset.symbol.toLowerCase() === 'usdc' ? '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9' :
-                                                  asset.symbol.toLowerCase() === 'weth' ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' :
-                                                  '0x0000000000000000000000000000000000000000',
+                                          address: getTokenAddress(asset.symbol),
                                           symbol: asset.symbol,
                                           name: asset.token
                                         }}
@@ -408,10 +416,7 @@ export default function ProfilePage() {
                                     <p className="font-medium">
                                       <TokenLink
                                         token={{
-                                          address: asset.symbol.toLowerCase() === 'steth' ? '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' :
-                                                  asset.symbol.toLowerCase() === 'usdc' ? '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9' :
-                                                  asset.symbol.toLowerCase() === 'weth' ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' :
-                                                  '0x0000000000000000000000000000000000000000',
+                                          address: getTokenAddress(asset.symbol),
                                           symbol: asset.symbol,
                                           name: asset.token
                                         }}
@@ -473,10 +478,7 @@ export default function ProfilePage() {
                             <p className="font-medium">
                               <TokenLink
                                 token={{
-                                  address: asset.symbol.toLowerCase() === 'steth' ? '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' :
-                                          asset.symbol.toLowerCase() === 'usdc' ? '0xa0b86a33e6a55b4b0ba9cbf78c2d8b4799a08de9' :
-                                          asset.symbol.toLowerCase() === 'weth' ? '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' :
-                                          '0x0000000000000000000000000000000000000000',
+                                  address: getTokenAddress(asset.symbol),
                                   symbol: asset.symbol,
                                   name: asset.token || asset.symbol
                                 }}

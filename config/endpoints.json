@@ -1,0 +1,35 @@
+{
+  "alchemy": {
+    "base": "${ALCHEMY_BASE_URL}",
+    "key": "${ALCHEMY_API_KEY}",
+    "rateLimit": 100
+  },
+  "etherscan": {
+    "base": "${ETHERSCAN_BASE_URL}",
+    "key": "${ETHERSCAN_API_KEY}",
+    "rateLimit": 5
+  },
+  "basescan": {
+    "base": "${BASESCAN_BASE_URL}",
+    "key": "${BASESCAN_API_KEY}",
+    "rateLimit": 5
+  },
+  "morpho": {
+    "base": "${MORPHO_API_BASE_URL}",
+    "rateLimit": 10
+  },
+  "lido": {
+    "base": "${LIDO_API_BASE_URL}",
+    "rateLimit": 10
+  },
+  "openai": {
+    "base": "${OPENAI_API_BASE_URL}",
+    "key": "${OPENAI_API_KEY}",
+    "rateLimit": 20
+  },
+  "replit": {
+    "base": "${REPLIT_SIDECAR_ENDPOINT}",
+    "sidecar": "${REPLIT_SIDECAR_ENDPOINT}",
+    "storage": "${REPLIT_STORAGE_ENDPOINT}"
+  }
+}

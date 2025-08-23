@@ -1,8 +1,10 @@
 import { Storage, File } from "@google-cloud/storage";
 import { Response } from "express";
 import { randomUUID } from "crypto";
+import { cfg } from "../config";
 
-const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+// Use config layer instead of hardcoded endpoint
+const REPLIT_SIDECAR_ENDPOINT = process.env.REPLIT_SIDECAR_ENDPOINT || "http://127.0.0.1:1106";
 
 // The object storage client is used to interact with the object storage service.
 export const objectStorageClient = new Storage({
@@ -135,7 +137,7 @@ export class ObjectStorageService {
       bucketName,
       objectName,
       method: "PUT",
-      ttlSec: 900,
+      ttlSec: cfg.constants.TTL_UPLOAD,
     });
   }
 
@@ -154,7 +156,7 @@ export class ObjectStorageService {
       bucketName,
       objectName,
       method: "PUT",
-      ttlSec: 900,
+      ttlSec: cfg.constants.TTL_UPLOAD,
     });
   }
 
@@ -178,7 +180,7 @@ export class ObjectStorageService {
       bucketName,
       objectName,
       method: "PUT",
-      ttlSec: 900,
+      ttlSec: cfg.constants.TTL_UPLOAD,
     });
   }
 }

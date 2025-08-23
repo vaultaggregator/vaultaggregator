@@ -1,0 +1,42 @@
+{
+  "ethereum": {
+    "id": "1",
+    "name": "Ethereum",
+    "symbol": "ETH",
+    "explorer": "https://etherscan.io",
+    "rpc": "${ETHEREUM_RPC_URL}",
+    "wsRpc": "${ETHEREUM_WS_URL}"
+  },
+  "base": {
+    "id": "8453", 
+    "name": "Base",
+    "symbol": "ETH",
+    "explorer": "https://basescan.org",
+    "rpc": "${BASE_RPC_URL}",
+    "wsRpc": "${BASE_WS_URL}"
+  },
+  "arbitrum": {
+    "id": "42161",
+    "name": "Arbitrum",
+    "symbol": "ETH", 
+    "explorer": "https://arbiscan.io",
+    "rpc": "${ARBITRUM_RPC_URL}",
+    "wsRpc": "${ARBITRUM_WS_URL}"
+  },
+  "polygon": {
+    "id": "137",
+    "name": "Polygon",
+    "symbol": "MATIC",
+    "explorer": "https://polygonscan.com", 
+    "rpc": "${POLYGON_RPC_URL}",
+    "wsRpc": "${POLYGON_WS_URL}"
+  },
+  "optimism": {
+    "id": "10",
+    "name": "Optimism",
+    "symbol": "ETH",
+    "explorer": "https://optimistic.etherscan.io",
+    "rpc": "${OPTIMISM_RPC_URL}",
+    "wsRpc": "${OPTIMISM_WS_URL}"
+  }
+}
