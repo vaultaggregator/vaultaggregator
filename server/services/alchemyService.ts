@@ -47,6 +47,19 @@ export class AlchemyService {
   private pendingMetadataRequests = new Map<string, Promise<any>>();
   private pendingPriceRequests = new Map<string, Promise<number>>();
   
+  // Vault token detection cache
+  private vaultDetectionCache = new Map<string, {
+    isVault: boolean;
+    underlyingAsset?: string;
+    timestamp: number;
+  }>();
+  
+  // Vault pricing cache
+  private vaultPriceCache = new Map<string, {
+    sharePrice: number;
+    timestamp: number;
+  }>();
+  
   // Static cache of ALL tokens to completely eliminate API calls
   private static readonly COMMON_TOKENS: Record<string, any> = {
     // Major stablecoins
@@ -549,7 +562,14 @@ export class AlchemyService {
   
   private async _fetchTokenPrice(tokenAddress: string, network?: string, priceKey?: string): Promise<number> {
     try {
-      // OPTIMIZATION 1: Static cache with comprehensive vault token pricing (no API calls)
+      // OPTIMIZATION 1: Check for vault tokens and calculate accurate pricing
+      const vaultPrice = await this.getVaultTokenPrice(tokenAddress, network);
+      if (vaultPrice && vaultPrice > 0) {
+        console.log(`🏦 Calculated vault token price for ${tokenAddress}: $${vaultPrice.toFixed(6)}`);
+        return vaultPrice;
+      }
+      
+      // OPTIMIZATION 2: Static cache with comprehensive vault token pricing (no API calls)
       const cachedToken = AlchemyService.COMMON_TOKENS[tokenAddress.toLowerCase()];
       if (cachedToken) {
         // All USD vault tokens should be priced at $1 (eliminates API calls)
@@ -559,7 +579,7 @@ export class AlchemyService {
         }
       }
       
-      // OPTIMIZATION 2: Universal stablecoin detection (eliminates API calls for ALL stablecoins)
+      // OPTIMIZATION 3: Universal stablecoin detection (eliminates API calls for ALL stablecoins)
       const { StablecoinDetector } = await import('../utils/stablecoinDetector');
       
       // Check if token is a stablecoin by address first
@@ -631,6 +651,182 @@ export class AlchemyService {
     } catch (error) {
       console.error(`Error in optimized price fetch for ${tokenAddress}:`, error);
       return 1.0;
+    }
+  }
+
+  /**
+   * Detect if a token is a vault token and get accurate pricing
+   */
+  async getVaultTokenPrice(tokenAddress: string, network?: string): Promise<number | null> {
+    if (!this.alchemy) return null;
+    
+    const cacheKey = `${tokenAddress.toLowerCase()}-${network || 'ethereum'}`;
+    
+    // Check vault detection cache
+    const cached = this.vaultDetectionCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < 300000) { // 5 min cache
+      if (!cached.isVault) return null;
+    }
+    
+    try {
+      // Check if token implements ERC-4626 vault interface
+      const isVault = await this.detectVaultToken(tokenAddress);
+      
+      if (!isVault) {
+        this.vaultDetectionCache.set(cacheKey, {
+          isVault: false,
+          timestamp: Date.now()
+        });
+        return null;
+      }
+      
+      // Get vault share price
+      const sharePrice = await this.getVaultSharePrice(tokenAddress);
+      if (!sharePrice) return null;
+      
+      // Get underlying asset price (for USDC vaults, this should be ~$1.00)
+      const underlyingPrice = await this.getUnderlyingAssetPrice(tokenAddress);
+      
+      // Calculate vault token price = sharePrice * underlyingAssetPrice
+      const vaultTokenPrice = sharePrice * underlyingPrice;
+      
+      // Cache the result
+      this.vaultDetectionCache.set(cacheKey, {
+        isVault: true,
+        timestamp: Date.now()
+      });
+      
+      this.vaultPriceCache.set(cacheKey, {
+        sharePrice: vaultTokenPrice,
+        timestamp: Date.now()
+      });
+      
+      return vaultTokenPrice;
+      
+    } catch (error) {
+      console.log(`⚠️ Could not determine vault pricing for ${tokenAddress}:`, error);
+      return null;
+    }
+  }
+  
+  /**
+   * Detect if a token contract implements vault interfaces
+   */
+  async detectVaultToken(tokenAddress: string): Promise<boolean> {
+    if (!this.alchemy) return false;
+    
+    try {
+      // Check for common vault function signatures
+      const vaultFunctions = [
+        '0x07a2d13a', // convertToAssets(uint256) - ERC-4626
+        '0x99530b06', // pricePerShare() - Yearn style
+        '0x77c7b8fc', // getPricePerFullShare() - Alternative
+        '0xc63d75b6', // convertToShares(uint256) - ERC-4626
+      ];
+      
+      for (const functionSig of vaultFunctions) {
+        try {
+          const result = await this.alchemy.core.call({
+            to: tokenAddress,
+            data: functionSig
+          });
+          
+          // If call succeeds and returns data, likely a vault
+          if (result && result !== '0x' && result.length > 2) {
+            console.log(`🏦 Detected vault token: ${tokenAddress} (has ${functionSig})`);
+            return true;
+          }
+        } catch (e) {
+          // Function doesn't exist, try next one
+          continue;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.log(`⚠️ Error detecting vault for ${tokenAddress}:`, error);
+      return false;
+    }
+  }
+  
+  /**
+   * Get share price from vault contract
+   */
+  async getVaultSharePrice(tokenAddress: string): Promise<number | null> {
+    if (!this.alchemy) return null;
+    
+    try {
+      // Try different vault pricing functions in order of preference
+      const pricingMethods = [
+        { sig: '0x07a2d13a', name: 'convertToAssets', param: '0x0de0b6b3a7640000' }, // 1e18
+        { sig: '0x99530b06', name: 'pricePerShare', param: null },
+        { sig: '0x77c7b8fc', name: 'getPricePerFullShare', param: null },
+      ];
+      
+      for (const method of pricingMethods) {
+        try {
+          const callData = method.param ? method.sig + method.param.slice(2) : method.sig;
+          
+          const result = await this.alchemy.core.call({
+            to: tokenAddress,
+            data: callData
+          });
+          
+          if (result && result !== '0x' && result.length > 2) {
+            // Convert hex result to number
+            const value = parseInt(result, 16);
+            
+            // Convert from wei to decimal (assuming 18 decimals for share price)
+            const sharePrice = value / Math.pow(10, 18);
+            
+            console.log(`🏦 Got ${method.name} for ${tokenAddress}: ${sharePrice}`);
+            return sharePrice;
+          }
+        } catch (e) {
+          console.log(`⚠️ ${method.name} failed for ${tokenAddress}`);
+          continue;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.log(`⚠️ Error getting vault share price for ${tokenAddress}:`, error);
+      return null;
+    }
+  }
+  
+  /**
+   * Get underlying asset price (e.g., USDC price for USDC vault)
+   */
+  async getUnderlyingAssetPrice(tokenAddress: string): Promise<number> {
+    try {
+      // For now, assume most vaults are USDC-based (can be enhanced later)
+      // Check if this is a known USDC vault by name/symbol patterns
+      const metadata = await this.getTokenMetadata(tokenAddress);
+      
+      if (metadata.symbol?.includes('USDC') || metadata.name?.includes('USDC')) {
+        console.log(`💵 Detected USDC vault, using $1.00 underlying price`);
+        return 1.0; // USDC price
+      }
+      
+      if (metadata.symbol?.includes('USDT') || metadata.name?.includes('USDT')) {
+        console.log(`💵 Detected USDT vault, using $1.00 underlying price`);
+        return 1.0; // USDT price
+      }
+      
+      if (metadata.symbol?.includes('DAI') || metadata.name?.includes('DAI')) {
+        console.log(`💵 Detected DAI vault, using $1.00 underlying price`);
+        return 1.0; // DAI price
+      }
+      
+      // For other tokens, could add logic to get underlying asset address and price
+      // For now, default to $1.00 for unknown vault underlying assets
+      console.log(`💵 Unknown vault underlying asset, defaulting to $1.00`);
+      return 1.0;
+      
+    } catch (error) {
+      console.log(`⚠️ Error getting underlying asset price for ${tokenAddress}:`, error);
+      return 1.0; // Safe default
     }
   }
 
