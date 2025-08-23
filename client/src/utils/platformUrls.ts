@@ -25,9 +25,10 @@ export function generatePlatformVisitUrl(pool: Pool): UrlData | null {
   
   if (isMorpho && pool.poolAddress) {
     const chainName = pool.chain?.name?.toLowerCase() || 'ethereum';
-    // Direct link to the vault using the pool address (which is the vault address for Morpho)
+    // Use the correct Morpho URL format with query parameters
+    const network = chainName === 'base' ? 'base' : 'mainnet';
     return {
-      url: `https://app.morpho.org/${chainName}/vault/${pool.poolAddress}`,
+      url: `https://app.morpho.org/vault?vault=${pool.poolAddress}&network=${network}`,
       label: 'View on Morpho'
     };
   }

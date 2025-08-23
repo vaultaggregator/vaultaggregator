@@ -490,26 +490,26 @@ export default function PoolDetail() {
                       className="hover:bg-gray-50 dark:hover:bg-gray-900/20 text-xs sm:text-sm px-4 sm:px-6 w-full lg:w-auto"
                       data-testid="button-etherscan-link"
                       onClick={() => {
-                        const network = pool.chain?.name?.toUpperCase() || 'ETHEREUM';
+                        const network = pool.chain?.name?.toLowerCase() || 'ethereum';
                         let explorerUrl = '';
                         let explorerName = 'Etherscan';
                         
-                        if (network === 'BASE') {
-                          explorerUrl = `https://basescan.org/token/${pool.poolAddress}`;
+                        if (network === 'base') {
+                          explorerUrl = `https://basescan.org/address/${pool.poolAddress}`;
                           explorerName = 'Basescan';
-                        } else if (network === 'ETHEREUM' || network === 'ETH') {
-                          explorerUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+                        } else if (network === 'ethereum' || network === 'eth') {
+                          explorerUrl = `https://etherscan.io/address/${pool.poolAddress}`;
                           explorerName = 'Etherscan';
                         } else {
                           // Default to Etherscan for unknown networks
-                          explorerUrl = `https://etherscan.io/token/${pool.poolAddress}`;
+                          explorerUrl = `https://etherscan.io/address/${pool.poolAddress}`;
                         }
                         
                         window.open(explorerUrl, '_blank', 'noopener,noreferrer');
                       }}
                     >
                       <Globe className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                      View on {pool.chain?.name?.toUpperCase() === 'BASE' ? 'Basescan' : 'Etherscan'}
+                      View on {pool.chain?.name?.toLowerCase() === 'base' ? 'Basescan' : 'Etherscan'}
                     </Button>
                   )}
                   
