@@ -1,0 +1,100 @@
+{
+  "updatedAt": "2025-08-23T02:28:23.110Z",
+  "tokenAddress": "0xbEef047a543E45807105E51A8BBEFCc5950fcfBa",
+  "totalSupply": "92886063249922515213566562",
+  "holders": [
+    {
+      "address": "0x96b22eb7178d116797e57197e586b70fedae8fdd",
+      "balance": "2306415",
+      "pct": 0
+    },
+    {
+      "address": "0x9f177df7ade7375ddf627b955e340f35d6796d62",
+      "balance": "686915",
+      "pct": 0
+    },
+    {
+      "address": "0x09a88356565d689149d901cf2ddf162243e0f3b4",
+      "balance": "183203",
+      "pct": 0
+    },
+    {
+      "address": "0xe97c98703f7d29c3805fec7a87de44cf19352a02",
+      "balance": "78670",
+      "pct": 0
+    },
+    {
+      "address": "0x7a9623360b51580854135dee197b8125ca88902e",
+      "balance": "75691",
+      "pct": 0
+    },
+    {
+      "address": "0x735ac40963714c57dfc4a2433bee44c7b797c6d5",
+      "balance": "27497",
+      "pct": 0
+    },
+    {
+      "address": "0xfcc3b24093d633e242a4446aaa8ffa0bb47ca787",
+      "balance": "5588",
+      "pct": 0
+    },
+    {
+      "address": "0x7396cfd10c18d3e4595e0e1bcdd1ca53e94bcb6b",
+      "balance": "4581",
+      "pct": 0
+    },
+    {
+      "address": "0x714d0821e7753f361c609802222c21f0816a0320",
+      "balance": "1832",
+      "pct": 0
+    },
+    {
+      "address": "0x7a3f627978ee8f6a698e42b5b64067dcd40f8fb6",
+      "balance": "1831",
+      "pct": 0
+    },
+    {
+      "address": "0x04a2a239fe2d14fcbd58a88933c3399097b05ce2",
+      "balance": "382",
+      "pct": 0
+    },
+    {
+      "address": "0x12f4698f77aebd9adceb5dffc2e86bc80c1e24a1",
+      "balance": "106",
+      "pct": 0
+    },
+    {
+      "address": "0x5db8a816b5135d6f5d68b51a334c1c22c5d2e56a",
+      "balance": "78",
+      "pct": 0
+    },
+    {
+      "address": "0xbd64b095a9b49b74d9c229a0bec1e8499104c9fb",
+      "balance": "20",
+      "pct": 0
+    },
+    {
+      "address": "0xa0a8b3e112d6cb2a90537b49b381351b96396218",
+      "balance": "14",
+      "pct": 0
+    },
+    {
+      "address": "0x415cc59f421f4af51dcf4577e158670a29d1defa",
+      "balance": "4",
+      "pct": 0
+    },
+    {
+      "address": "0xf87e6bb0c67d731724f3c0c346f2dc64bf8b8513",
+      "balance": "3",
+      "pct": 0
+    }
+  ],
+  "metadata": {
+    "chainId": "ethereum",
+    "poolId": "e9f7244b-e22b-4f41-b6b5-a479a8435535",
+    "transfersProcessed": 419,
+    "fromBlock": 23150399,
+    "toBlock": 23200799,
+    "processingTimeMs": 819
+  }
+}
