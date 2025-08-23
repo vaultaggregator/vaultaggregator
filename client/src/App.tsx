@@ -43,6 +43,7 @@ const ServiceMonitor = lazy(() => import("@/pages/admin/service-monitor"));
 const AdminApiSettings = lazy(() => import("@/pages/AdminApiSettings"));
 const AdminAnalytics = lazy(() => import("@/pages/admin-analytics"));
 const AdminErrorManagement = lazy(() => import("@/pages/admin-error-management"));
+const AdminHardcodeScan = lazy(() => import("@/pages/admin-hardcode-scan"));
 const HealingDashboard = lazy(() => import("@/pages/healing-dashboard"));
 const CacheMonitor = lazy(() => import("@/pages/admin/cache-monitor").then(m => ({ default: m.CacheMonitor })));
 const AdminSwrCache = lazy(() => import("@/pages/admin-swr-cache"));
@@ -103,6 +104,8 @@ function Router() {
         <Route path="/admin-error-management" component={AdminErrorManagement} />
         <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin-analytics" component={AdminAnalytics} />
+        <Route path="/admin/hardcode-scan" component={AdminHardcodeScan} />
+        <Route path="/admin-hardcode-scan" component={AdminHardcodeScan} />
 
         {/* Pool detail routes - these must come AFTER admin routes */}
         {/* Pool holders and transfers pages - these must come BEFORE the generic pool detail routes */}
