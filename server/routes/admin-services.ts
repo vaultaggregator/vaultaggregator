@@ -210,8 +210,36 @@ async function triggerService(serviceId: string) {
         break;
         
       case 'poolHoldersSync':
-        const { PoolHoldersService } = await import("../services/pool-holders-service");
-        await PoolHoldersService.syncAllPoolHolders();
+        console.log('🔍 Manually triggering Pool Holders Sync...');
+        try {
+          // Try multiple import paths to find the working one
+          let PoolHoldersService;
+          try {
+            const module1 = await import("../services/pool-holders-service");
+            PoolHoldersService = module1.PoolHoldersService;
+            console.log('✅ Successfully imported from .ts path');
+          } catch (e1: any) {
+            console.log('❌ .ts import failed:', e1.message);
+            try {
+              const module2 = await import("../services/pool-holders-service.js");
+              PoolHoldersService = module2.PoolHoldersService;
+              console.log('✅ Successfully imported from .js path');
+            } catch (e2: any) {
+              console.log('❌ .js import failed:', e2.message);
+              throw new Error(`All import paths failed: .ts: ${e1.message}, .js: ${e2.message}`);
+            }
+          }
+          
+          if (!PoolHoldersService) {
+            throw new Error('PoolHoldersService not found in imported module');
+          }
+          
+          const result = await PoolHoldersService.syncAllPoolHolders();
+          console.log('✅ Pool Holders Sync completed:', result);
+        } catch (error) {
+          console.error('❌ Pool Holders Sync failed:', error);
+          throw error;
+        }
         break;
         
       case 'aiOutlookGeneration':
