@@ -1015,41 +1015,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
+      console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Get the actual total holder count from pool_metrics_current
-      const [metrics] = await db
-        .select({ holdersCount: poolMetricsCurrent.holdersCount })
-        .from(poolMetricsCurrent)
-        .where(eq(poolMetricsCurrent.poolId, poolId))
+      // Get pool contract address to fetch live holder data from Alchemy
+      const [pool] = await db
+        .select({ poolAddress: pools.poolAddress, tokenPair: pools.tokenPair })
+        .from(pools)
+        .where(eq(pools.id, poolId))
         .limit(1);
 
-      // Get holders from database (all pools uniformly show up to 1000 holders)
-      const result = await storage.getPoolHolders(poolId, page, limit);
+      if (!pool?.poolAddress) {
+        return res.status(404).json({ message: "Pool contract address not found" });
+      }
+
+      // Import Alchemy service for live holder data
+      const { alchemyService } = await import("./services/alchemyService.js");
+
+      // Fetch live holder data from Alchemy API (not cached database data)
+      console.log(`🔍 Fetching live holder data from Alchemy for ${pool.tokenPair} (${pool.poolAddress})`);
       
-      // Limit the displayed total count to MAX_HOLDERS_DISPLAY to avoid overwhelming users
-      const rawTotalCount = metrics?.holdersCount || result.total;
-      const actualTotalCount = Math.min(rawTotalCount, constants.MAX_HOLDERS_DISPLAY);
-      const actualPages = Math.ceil(actualTotalCount / limit);
-      
-      // Format holder data for frontend with proper number conversion
-      const formattedHolders = result.holders.map(holder => ({
-        address: holder.holderAddress,
-        tokenBalance: holder.tokenBalanceFormatted || holder.tokenBalance,
-        usdValue: parseFloat(holder.usdValue || '0'),
-        walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
-        walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
-        poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
-        rank: holder.rank
+      const liveHolders = await alchemyService.getTopTokenHolders(
+        pool.poolAddress, 
+        constants.MAX_HOLDERS_DISPLAY,
+        'ethereum'
+      );
+
+      // If Alchemy returns no data, show appropriate message instead of fake data
+      if (!liveHolders || liveHolders.length === 0) {
+        console.log('⚠️ No live holder data available from Alchemy API');
+        return res.json({
+          holders: [],
+          pagination: { page: 1, limit, total: 0, pages: 0 },
+          message: "Live holder data not available. Please check Alchemy API configuration."
+        });
+      }
+
+      console.log(`✅ Retrieved ${liveHolders.length} live holders from Alchemy`);
+
+      // Apply pagination to live Alchemy data
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedHolders = liveHolders.slice(startIndex, endIndex);
+
+      // Format live holder data for frontend
+      const formattedHolders = paginatedHolders.map((holder, index) => ({
+        address: holder.address,
+        tokenBalance: holder.tokenBalance || '0',
+        usdValue: parseFloat(holder.usdValue?.toString() || '0'),
+        walletBalanceEth: parseFloat(holder.walletBalanceEth?.toString() || '0'),
+        walletBalanceUsd: parseFloat(holder.walletBalanceUsd?.toString() || '0'),
+        poolSharePercentage: parseFloat(holder.poolSharePercentage?.toString() || '0'),
+        rank: startIndex + index + 1
       }));
+
+      const totalHolders = Math.min(liveHolders.length, constants.MAX_HOLDERS_DISPLAY);
+      const totalPages = Math.ceil(totalHolders / limit);
 
       res.json({
         holders: formattedHolders,
         pagination: {
           page,
           limit,
-          total: actualTotalCount,
-          pages: actualPages
+          total: totalHolders,
+          pages: totalPages
         }
       });
     } catch (error) {
@@ -1076,41 +1104,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
+      console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Get the actual total holder count from pool_metrics_current
-      const [metrics] = await db
-        .select({ holdersCount: poolMetricsCurrent.holdersCount })
-        .from(poolMetricsCurrent)
-        .where(eq(poolMetricsCurrent.poolId, poolId))
+      // Get pool contract address to fetch live holder data from Alchemy
+      const [pool] = await db
+        .select({ poolAddress: pools.poolAddress, tokenPair: pools.tokenPair })
+        .from(pools)
+        .where(eq(pools.id, poolId))
         .limit(1);
 
-      // Get holders from database (all pools uniformly show up to 1000 holders)
-      const result = await storage.getPoolHolders(poolId, page, limit);
+      if (!pool?.poolAddress) {
+        return res.status(404).json({ message: "Pool contract address not found" });
+      }
+
+      // Import Alchemy service for live holder data
+      const { alchemyService } = await import("./services/alchemyService.js");
+
+      // Fetch live holder data from Alchemy API (not cached database data)
+      console.log(`🔍 Fetching live holder data from Alchemy for ${pool.tokenPair} (${pool.poolAddress})`);
       
-      // Limit the displayed total count to MAX_HOLDERS_DISPLAY to avoid overwhelming users
-      const rawTotalCount = metrics?.holdersCount || result.total;
-      const actualTotalCount = Math.min(rawTotalCount, constants.MAX_HOLDERS_DISPLAY);
-      const actualPages = Math.ceil(actualTotalCount / limit);
-      
-      // Format holder data for frontend with proper number conversion
-      const formattedHolders = result.holders.map(holder => ({
-        address: holder.holderAddress,
-        tokenBalance: holder.tokenBalanceFormatted || holder.tokenBalance,
-        usdValue: parseFloat(holder.usdValue || '0'),
-        walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
-        walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
-        poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
-        rank: holder.rank
+      const liveHolders = await alchemyService.getTopTokenHolders(
+        pool.poolAddress, 
+        constants.MAX_HOLDERS_DISPLAY,
+        'ethereum'
+      );
+
+      // If Alchemy returns no data, show appropriate message instead of fake data
+      if (!liveHolders || liveHolders.length === 0) {
+        console.log('⚠️ No live holder data available from Alchemy API');
+        return res.json({
+          holders: [],
+          pagination: { page: 1, limit, total: 0, pages: 0 },
+          message: "Live holder data not available. Please check Alchemy API configuration."
+        });
+      }
+
+      console.log(`✅ Retrieved ${liveHolders.length} live holders from Alchemy`);
+
+      // Apply pagination to live Alchemy data
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const paginatedHolders = liveHolders.slice(startIndex, endIndex);
+
+      // Format live holder data for frontend
+      const formattedHolders = paginatedHolders.map((holder, index) => ({
+        address: holder.address,
+        tokenBalance: holder.tokenBalance || '0',
+        usdValue: parseFloat(holder.usdValue?.toString() || '0'),
+        walletBalanceEth: parseFloat(holder.walletBalanceEth?.toString() || '0'),
+        walletBalanceUsd: parseFloat(holder.walletBalanceUsd?.toString() || '0'),
+        poolSharePercentage: parseFloat(holder.poolSharePercentage?.toString() || '0'),
+        rank: startIndex + index + 1
       }));
+
+      const totalHolders = Math.min(liveHolders.length, constants.MAX_HOLDERS_DISPLAY);
+      const totalPages = Math.ceil(totalHolders / limit);
 
       res.json({
         holders: formattedHolders,
         pagination: {
           page,
           limit,
-          total: actualTotalCount,
-          pages: actualPages
+          total: totalHolders,
+          pages: totalPages
         }
       });
     } catch (error) {
