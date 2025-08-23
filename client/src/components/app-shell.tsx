@@ -42,7 +42,7 @@ export function AppShell({ children }: AppShellProps) {
   };
 
   const navItems = [
-    { href: '/', label: 'Discover', icon: TrendingUp },
+    { href: '/', label: 'Discover', icon: Search },
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/swap', label: 'Swap', icon: ArrowLeftRight },
     { href: '/admin', label: 'Admin', icon: Settings },
@@ -52,7 +52,7 @@ export function AppShell({ children }: AppShellProps) {
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+        "fixed inset-y-0 left-0 z-50 w-[220px] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex h-full flex-col">
@@ -89,7 +89,7 @@ export function AppShell({ children }: AppShellProps) {
                   key={item.href} 
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors",
                     isActive
                       ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -141,14 +141,14 @@ export function AppShell({ children }: AppShellProps) {
 
           <div className="flex items-center space-x-4">
             {/* Search */}
-            <div className="relative w-64 lg:w-96">
+            <div className="relative w-32 sm:w-48 md:w-64 lg:w-96">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
                 placeholder="Search vaults..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-3 h-9 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700"
+                className="pl-10 pr-3 h-9 bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-[13px]"
               />
             </div>
 
@@ -181,6 +181,7 @@ export function AppShell({ children }: AppShellProps) {
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
+          aria-label="Close sidebar"
         />
       )}
     </div>

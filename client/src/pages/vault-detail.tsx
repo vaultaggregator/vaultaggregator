@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnimatedPercentage, AnimatedCurrency } from '@/components/animated-value';
 import { formatTimeAgo, cn } from '@/lib/utils';
+import { prepareChartData } from '@/lib/chart-utils';
 import { formatTvl, formatNumber } from '@/lib/format';
 import { ExternalLink, Copy, ArrowLeft } from 'lucide-react';
 import type { YieldOpportunity } from '@/types';
@@ -114,15 +115,17 @@ export default function VaultDetail() {
   }
 
   // Prepare chart data
-  const apyChartData = historicalData.map(d => ({
+  const rawApyData = historicalData.map(d => ({
     date: new Date(d.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     value: d.apy
   }));
+  const apyChartData = prepareChartData(rawApyData, 600);
 
-  const tvlChartData = historicalData.map(d => ({
+  const rawTvlData = historicalData.map(d => ({
     date: new Date(d.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     value: d.tvl / 1000000 // Convert to millions
   }));
+  const tvlChartData = prepareChartData(rawTvlData, 600);
 
   return (
     <AppShell>

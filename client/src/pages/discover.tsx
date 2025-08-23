@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, useSearch } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/app-shell';
 import { DataTable, DataTableColumn, PillFilter } from '@/components/data-table';
@@ -11,14 +11,29 @@ import type { YieldOpportunity } from '@/types';
 
 export default function Discover() {
   const [, setLocation] = useLocation();
-  const [chainFilter, setChainFilter] = useState<string | null>(null);
-  const [protocolFilter, setProtocolFilter] = useState<string | null>(null);
-  const [tokenFilter, setTokenFilter] = useState<string | null>(null);
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  
+  // Initialize filters from URL
+  const [chainFilter, setChainFilter] = useState<string | null>(searchParams.get('chain'));
+  const [protocolFilter, setProtocolFilter] = useState<string | null>(searchParams.get('protocol'));
+  const [tokenFilter, setTokenFilter] = useState<string | null>(searchParams.get('token'));
 
   // Set document title
   useEffect(() => {
     document.title = 'Discover - Vault Aggregator';
   }, []);
+  
+  // Sync filters to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (chainFilter) params.set('chain', chainFilter);
+    if (protocolFilter) params.set('protocol', protocolFilter);
+    if (tokenFilter) params.set('token', tokenFilter);
+    const newSearch = params.toString();
+    const newUrl = newSearch ? `/?${newSearch}` : '/';
+    window.history.replaceState(null, '', newUrl);
+  }, [chainFilter, protocolFilter, tokenFilter]);
 
   // Fetch pools data
   const { data: pools = [], isLoading } = useQuery<YieldOpportunity[]>({
@@ -222,26 +237,28 @@ export default function Discover() {
           </h1>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <PillFilter
-            label="Chain"
-            options={chainOptions}
-            selected={chainFilter}
-            onChange={setChainFilter}
-          />
-          <PillFilter
-            label="Protocol"
-            options={protocolOptions}
-            selected={protocolFilter}
-            onChange={setProtocolFilter}
-          />
-          <PillFilter
-            label="Token"
-            options={tokenOptions}
-            selected={tokenFilter}
-            onChange={setTokenFilter}
-          />
+        {/* Sticky Filters */}
+        <div className="sticky top-16 z-20 bg-gray-50 dark:bg-gray-900 py-3 -mx-6 px-6 border-b border-gray-200 dark:border-gray-700 mb-6">
+          <div className="flex flex-wrap gap-4">
+            <PillFilter
+              label="Chain"
+              options={chainOptions}
+              selected={chainFilter}
+              onChange={setChainFilter}
+            />
+            <PillFilter
+              label="Protocol"
+              options={protocolOptions}
+              selected={protocolFilter}
+              onChange={setProtocolFilter}
+            />
+            <PillFilter
+              label="Token"
+              options={tokenOptions}
+              selected={tokenFilter}
+              onChange={setTokenFilter}
+            />
+          </div>
         </div>
 
         {/* Data Table */}

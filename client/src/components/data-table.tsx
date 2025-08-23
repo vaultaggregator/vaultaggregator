@@ -61,14 +61,14 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div className={cn("overflow-x-auto", className)}>
-      <table className="w-full">
-        <thead>
+      <table className="w-full min-w-[600px]">
+        <thead className="sticky top-0 bg-white dark:bg-gray-800 z-10">
           <tr className="border-b border-gray-200 dark:border-gray-700">
             {columns.map((column) => (
               <th
                 key={column.key}
                 className={cn(
-                  "text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide",
+                  "text-[11px] font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide",
                   dense ? "px-2 py-1.5" : "px-6 py-3",
                   column.align === 'center' && "text-center",
                   column.align === 'right' && "text-right",
@@ -99,7 +99,7 @@ export function DataTable<T extends Record<string, any>>({
             <tr
               key={index}
               className={cn(
-                "border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors",
+                "border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors h-[44px]",
                 onRowClick && "cursor-pointer"
               )}
               onClick={() => onRowClick?.(item)}
@@ -108,10 +108,10 @@ export function DataTable<T extends Record<string, any>>({
                 <td
                   key={column.key}
                   className={cn(
-                    "text-sm text-gray-900 dark:text-gray-100",
+                    "text-[13px] text-gray-900 dark:text-gray-100",
                     dense ? "px-2 py-1.5" : "px-6 py-4",
                     column.align === 'center' && "text-center",
-                    column.align === 'right' && "text-right",
+                    column.align === 'right' && "text-right tabular-nums",
                     (!column.align || column.align === 'left') && "text-left"
                   )}
                 >
@@ -150,7 +150,7 @@ export function PillFilter({ options, selected, onChange, label }: PillFilterPro
         <button
           onClick={() => onChange(null)}
           className={cn(
-            "px-3 py-1 text-xs rounded-full transition-colors",
+            "px-3 py-1 text-xs rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
             !selected
               ? "bg-blue-600 text-white"
               : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -163,7 +163,7 @@ export function PillFilter({ options, selected, onChange, label }: PillFilterPro
             key={option.value}
             onClick={() => onChange(option.value)}
             className={cn(
-              "px-3 py-1 text-xs rounded-full transition-colors",
+              "px-3 py-1 text-xs rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
               selected === option.value
                 ? "bg-blue-600 text-white"
                 : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
