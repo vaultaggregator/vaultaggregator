@@ -7,6 +7,8 @@ import { ExternalLink, Copy, CheckCircle, XCircle, Clock, ArrowRight, ArrowUpRig
 import { AddressLink } from '@/components/entity-links';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
 
 interface TransactionDetails {
   hash: string;
@@ -169,7 +171,9 @@ export default function TransactionDetail() {
   };
   
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <>
+      <Header />
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">Transaction Details</h1>
@@ -444,5 +448,7 @@ export default function TransactionDetail() {
         </CardContent>
       </Card>
     </div>
+    <Footer />
+    </>
   );
 }
