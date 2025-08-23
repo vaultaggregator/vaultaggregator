@@ -495,14 +495,14 @@ export default function PoolDetail() {
                         let explorerName = 'Etherscan';
                         
                         if (network === 'base') {
-                          explorerUrl = `https://basescan.org/address/${pool.poolAddress}`;
+                          explorerUrl = `https://basescan.org/token/${pool.poolAddress}`;
                           explorerName = 'Basescan';
                         } else if (network === 'ethereum' || network === 'eth') {
-                          explorerUrl = `https://etherscan.io/address/${pool.poolAddress}`;
+                          explorerUrl = `https://etherscan.io/token/${pool.poolAddress}`;
                           explorerName = 'Etherscan';
                         } else {
                           // Default to Etherscan for unknown networks
-                          explorerUrl = `https://etherscan.io/address/${pool.poolAddress}`;
+                          explorerUrl = `https://etherscan.io/token/${pool.poolAddress}`;
                         }
                         
                         window.open(explorerUrl, '_blank', 'noopener,noreferrer');
