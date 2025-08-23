@@ -1,15 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Users, Wallet, Crown } from "lucide-react";
+import { Users, Wallet, Crown, Loader2, AlertCircle } from "lucide-react";
 import { AddressLink } from "@/components/entity-links";
+import { useQuery } from "@tanstack/react-query";
 
-interface TopHolder {
+interface PoolHolder {
   id: string;
   address: string;
-  balance: number;
-  balanceUSD: number;
-  percentage: number;
+  balance: string;
+  balanceUSD: string;
+  percentage: string;
   rank: number;
+  txCount?: number | null;
+  firstSeen?: string | null;
 }
 
 interface TopHoldersSectionProps {
@@ -18,49 +21,15 @@ interface TopHoldersSectionProps {
 }
 
 export function TopHoldersSection({ poolId, chainName }: TopHoldersSectionProps) {
-  // Hardcoded data for now - will be replaced with real API
-  const mockHolders: TopHolder[] = [
-    {
-      id: '1',
-      address: '0xA0b86a33E6441527176204E711E4d9C5dD3CE0C8',
-      balance: 2450000,
-      balanceUSD: 2449800,
-      percentage: 12.45,
-      rank: 1
-    },
-    {
-      id: '2',
-      address: '0x742d35Cc6596C44562Ff8C1DB728b58D4e32c50F',
-      balance: 1890000,
-      balanceUSD: 1889650,
-      percentage: 9.61,
-      rank: 2
-    },
-    {
-      id: '3',
-      address: '0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a',
-      balance: 1520000,
-      balanceUSD: 1519740,
-      percentage: 7.73,
-      rank: 3
-    },
-    {
-      id: '4',
-      address: '0x5A52E96BAcdaBb82fd05763E25335261B270Efcb',
-      balance: 1285000,
-      balanceUSD: 1284710,
-      percentage: 6.53,
-      rank: 4
-    },
-    {
-      id: '5',
-      address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2',
-      balance: 980000,
-      balanceUSD: 979800,
-      percentage: 4.98,
-      rank: 5
-    }
-  ];
+  // Fetch real holder data from the API
+  const { data: holders = [], isLoading, error } = useQuery<PoolHolder[]>({
+    queryKey: [`/api/pools/${poolId}/holders`],
+    enabled: !!poolId,
+    staleTime: 60000, // Cache for 1 minute
+  });
+
+  // Get only the top 5 holders
+  const topHolders = holders.slice(0, 5);
 
   const formatAmount = (amount: number): string => {
     if (amount >= 1000000) {
@@ -98,6 +67,19 @@ export function TopHoldersSection({ poolId, chainName }: TopHoldersSectionProps)
     }
   };
 
+  // Parse balanceUSD to get numeric value
+  const parseBalanceUSD = (balanceUSD: string): number => {
+    return parseFloat(balanceUSD.replace(/[^0-9.-]/g, ''));
+  };
+
+  // Extract token symbol from balance display (usually the last word)
+  const getTokenSymbol = (holder: PoolHolder): string => {
+    // Try to detect token symbol from the balance
+    // For now, default to USDC as most pools are USDC-based
+    // This could be enhanced to get the actual token from pool data
+    return 'USDC';
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -126,53 +108,74 @@ export function TopHoldersSection({ poolId, chainName }: TopHoldersSectionProps)
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-            <div className="col-span-1">Rank</div>
-            <div className="col-span-5">Holder Address</div>
-            <div className="col-span-3">Balance</div>
-            <div className="col-span-3">Percentage</div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">Loading holders...</span>
           </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <AlertCircle className="h-5 w-5 text-destructive mr-2" />
+            <span className="text-sm text-destructive">Failed to load holder data</span>
+          </div>
+        ) : topHolders.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No holder data available for this pool
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+              <div className="col-span-1">Rank</div>
+              <div className="col-span-5">Holder Address</div>
+              <div className="col-span-3">Balance</div>
+              <div className="col-span-3">Percentage</div>
+            </div>
 
-          {/* Holders List */}
-          <div className="space-y-3">
-            {mockHolders.map((holder) => (
-              <div key={holder.id} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors rounded-lg px-2">
-                <div className="col-span-1">
-                  <div className="flex items-center gap-2">
-                    {getRankIcon(holder.rank)}
-                    <Badge variant={getRankBadgeVariant(holder.rank)} className="text-xs">
-                      #{holder.rank}
-                    </Badge>
-                  </div>
-                </div>
+            {/* Holders List */}
+            <div className="space-y-3">
+              {topHolders.map((holder) => {
+                const balanceUSDValue = parseBalanceUSD(holder.balanceUSD);
+                const tokenSymbol = getTokenSymbol(holder);
                 
-                <div className="col-span-5">
-                  <AddressLink 
-                    address={holder.address}
-                    className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                  />
-                </div>
+                return (
+                  <div key={holder.id} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors rounded-lg px-2">
+                    <div className="col-span-1">
+                      <div className="flex items-center gap-2">
+                        {getRankIcon(holder.rank)}
+                        <Badge variant={getRankBadgeVariant(holder.rank)} className="text-xs">
+                          #{holder.rank}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="col-span-5">
+                      <AddressLink 
+                        address={holder.address}
+                        className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                      />
+                    </div>
 
-                <div className="col-span-3">
-                  <div className="font-semibold text-sm">
-                    {formatAmount(holder.balance)} USDC
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    ${formatAmount(holder.balanceUSD)}
-                  </div>
-                </div>
+                    <div className="col-span-3">
+                      <div className="font-semibold text-sm">
+                        {formatAmount(balanceUSDValue)} {tokenSymbol}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        ${formatAmount(balanceUSDValue)}
+                      </div>
+                    </div>
 
-                <div className="col-span-3">
-                  <div className="font-semibold text-sm">
-                    {holder.percentage.toFixed(2)}%
+                    <div className="col-span-3">
+                      <div className="font-semibold text-sm">
+                        {parseFloat(holder.percentage).toFixed(2)}%
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
