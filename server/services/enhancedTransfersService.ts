@@ -116,7 +116,7 @@ export class EnhancedTransfersService {
   }
 
   /**
-   * Get transaction history for a specific pool
+   * Get transaction history for a specific pool using ERC-4626 events
    */
   async getPoolTransactionHistory(poolId: string, limit: number = 15) {
     try {
@@ -133,109 +133,153 @@ export class EnhancedTransfersService {
       const network = pool.chainId === '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7' ? 'base' : 'ethereum';
       const alchemy = network === 'base' ? this.alchemyBase : this.alchemyEth;
 
-      console.log(`📊 Fetching transaction history for pool ${pool.tokenPair} on ${network}`);
+      console.log(`📊 Fetching ERC-4626 events for pool ${pool.tokenPair} on ${network}`);
 
-      // ERC4626 Vault Method Signatures
-      const DEPOSIT_SIGNATURES = [
-        '0x6e553f65', // deposit(uint256,address)
-        '0x94bf804d', // mint(uint256,address)
-        '0xb6b55f25', // deposit(uint256)
-        '0x47e7ef24', // deposit(address,uint256)
-      ];
+      // ERC-4626 Event Signatures (topics)
+      // Deposit(address indexed sender, address indexed owner, uint256 assets, uint256 shares)
+      const DEPOSIT_EVENT_TOPIC = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7';
       
-      const WITHDRAW_SIGNATURES = [
-        '0xba087652', // redeem(uint256,address,address)
-        '0xb460af94', // withdraw(uint256,address,address)
-        '0x2e1a7d4d', // withdraw(uint256)
-        '0x69328dec', // withdraw(uint256,address)
-      ];
+      // Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)
+      const WITHDRAW_EVENT_TOPIC = '0xfbde797d201c681b91056529119e0b02407c7bb96a4a2c75c01fc9667232c8db';
 
-      // Get recent transactions
+      // Get recent blocks
       const latestBlock = await alchemy.core.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 50000); // Look back ~50000 blocks (about 7 days)
+      const fromBlock = Math.max(0, latestBlock - 10000); // Look back ~10000 blocks
       
       // Check if this is Steakhouse USDC vault - it has a wrapper token
       const isStakehouseUSDC = pool.poolAddress.toLowerCase() === '0xbeef01735c132ada46aa9aa4c54623caa92a64cb';
       const wrapperAddress = '0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b'; // mstkeUSDC wrapper
       
       // Get contract addresses to monitor
-      const contractAddresses = [pool.poolAddress.toLowerCase()];
+      // For Steakhouse USDC, users interact with the wrapper, not the vault directly
+      const contractAddresses = isStakehouseUSDC ? [wrapperAddress] : [pool.poolAddress];
       if (isStakehouseUSDC) {
-        contractAddresses.push(wrapperAddress.toLowerCase());
-        console.log(`📊 Monitoring both vault and wrapper contracts...`);
+        console.log(`📊 Monitoring wrapper contract (mstkeUSDC) for user interactions...`);
       }
       
-      // Get all transactions TO these contracts (both deposits and withdrawals are TO the contract)
-      const transactionPromises = contractAddresses.map(addr => 
-        alchemy.core.getAssetTransfers({
-          toAddress: addr,
+      // Fetch ERC-4626 event logs
+      const eventPromises = contractAddresses.map(async (contractAddress) => {
+        // Get Deposit events
+        const depositLogs = await alchemy.core.getLogs({
+          address: contractAddress,
+          topics: [DEPOSIT_EVENT_TOPIC],
           fromBlock: `0x${fromBlock.toString(16)}`,
-          toBlock: 'latest',
-          category: [
-            AssetTransfersCategory.EXTERNAL // User transactions are EXTERNAL
-          ],
-          maxCount: limit * 2, // Get more since we'll filter
-          withMetadata: true,
-          order: 'desc'
-        })
-      );
-      
-      const responses = await Promise.all(transactionPromises);
-      const allTransfers = responses.flatMap(r => r.transfers);
-
-      // Now fetch full transaction details to check method signatures
-      const transactionDetailsPromises = allTransfers.map(async (transfer) => {
-        try {
-          const tx = await alchemy.core.getTransaction(transfer.hash);
-          if (!tx || !tx.data) return null;
-          
-          // Get the method signature (first 10 characters of input data)
-          const methodSig = tx.data.slice(0, 10).toLowerCase();
-          
-          // Determine transaction type based on method signature
-          let type: 'deposit' | 'withdraw' | null = null;
-          
-          if (DEPOSIT_SIGNATURES.includes(methodSig)) {
-            type = 'deposit';
-          } else if (WITHDRAW_SIGNATURES.includes(methodSig)) {
-            type = 'withdraw';
-          }
-          
-          // Skip if not a deposit or withdraw
-          if (!type) return null;
-          
-          // For vault transactions, the user is the FROM address
-          // (they're calling the method)
-          return {
-            ...transfer,
-            type: type as const,
-            direction: type === 'deposit' ? 'in' : 'out',
-            user: transfer.from || '',
-            amount: parseFloat(transfer.value || '0'),
-            amountUSD: parseFloat(transfer.value || '0'),
-            transactionHash: transfer.hash,
-            timestamp: transfer.metadata?.blockTimestamp || new Date().toISOString(),
-            blockNumber: transfer.blockNum,
-            asset: 'USDC', // These vaults use USDC
-            methodSignature: methodSig
-          };
-        } catch (error) {
-          console.error(`Error fetching transaction ${transfer.hash}:`, error);
-          return null;
-        }
+          toBlock: 'latest'
+        });
+        
+        // Get Withdraw events  
+        const withdrawLogs = await alchemy.core.getLogs({
+          address: contractAddress,
+          topics: [WITHDRAW_EVENT_TOPIC],
+          fromBlock: `0x${fromBlock.toString(16)}`,
+          toBlock: 'latest'
+        });
+        
+        return { deposits: depositLogs, withdrawals: withdrawLogs };
       });
       
-      const transactionDetails = await Promise.all(transactionDetailsPromises);
+      const eventResults = await Promise.all(eventPromises);
+      const allDepositLogs = eventResults.flatMap(r => r.deposits);
+      const allWithdrawLogs = eventResults.flatMap(r => r.withdrawals);
+
+      // Process and decode event logs
+      const processedTransactions = [];
       
-      // Filter out nulls and deduplicate by hash
-      const transactionMap = new Map();
-      for (const tx of transactionDetails) {
-        if (tx && !transactionMap.has(tx.transactionHash)) {
-          transactionMap.set(tx.transactionHash, tx);
+      // Process Deposit events
+      for (const log of allDepositLogs) {
+        try {
+          // Decode event data
+          // topics[0] = event signature (already filtered)
+          // topics[1] = sender (indexed)
+          // topics[2] = owner (indexed)
+          // data contains: assets (uint256), shares (uint256)
+          
+          const sender = `0x${log.topics[1]?.slice(26).toLowerCase()}`; // Remove padding
+          const owner = `0x${log.topics[2]?.slice(26).toLowerCase()}`;
+          
+          // Decode non-indexed parameters from data
+          const dataWithoutPrefix = log.data.slice(2); // Remove '0x'
+          const assets = BigInt('0x' + dataWithoutPrefix.slice(0, 64));
+          const shares = BigInt('0x' + dataWithoutPrefix.slice(64, 128));
+          
+          // Get block timestamp
+          const block = await alchemy.core.getBlock(log.blockNumber);
+          
+          // For deposits, the sender is the user making the deposit
+          processedTransactions.push({
+            transactionHash: log.transactionHash,
+            logIndex: log.logIndex,
+            blockNumber: log.blockNumber,
+            timestamp: block ? new Date(block.timestamp * 1000).toISOString() : new Date().toISOString(),
+            type: 'deposit' as const,
+            direction: 'in',
+            user: sender, // The sender who initiated the deposit
+            owner: owner, // The owner who receives the shares (could be different)
+            amount: Number(assets) / 1e6, // USDC has 6 decimals
+            amountUSD: Number(assets) / 1e6,
+            shares: Number(shares) / 1e18, // Shares typically have 18 decimals
+            asset: 'USDC',
+            eventType: 'Deposit'
+          });
+        } catch (error) {
+          console.error('Error processing deposit log:', error);
         }
       }
       
-      const validTransfers = Array.from(transactionMap.values());
+      // Process Withdraw events
+      for (const log of allWithdrawLogs) {
+        try {
+          // Decode event data
+          // topics[0] = event signature (already filtered)
+          // topics[1] = sender (indexed)
+          // topics[2] = receiver (indexed)
+          // topics[3] = owner (indexed)
+          // data contains: assets (uint256), shares (uint256)
+          
+          const sender = `0x${log.topics[1]?.slice(26).toLowerCase()}`;
+          const receiver = `0x${log.topics[2]?.slice(26).toLowerCase()}`;
+          const owner = `0x${log.topics[3]?.slice(26).toLowerCase()}`;
+          
+          // Decode non-indexed parameters from data
+          const dataWithoutPrefix = log.data.slice(2);
+          const assets = BigInt('0x' + dataWithoutPrefix.slice(0, 64));
+          const shares = BigInt('0x' + dataWithoutPrefix.slice(64, 128));
+          
+          // Get block timestamp
+          const block = await alchemy.core.getBlock(log.blockNumber);
+          
+          // For withdrawals, the sender is usually the user initiating the withdrawal
+          processedTransactions.push({
+            transactionHash: log.transactionHash,
+            logIndex: log.logIndex,
+            blockNumber: log.blockNumber,
+            timestamp: block ? new Date(block.timestamp * 1000).toISOString() : new Date().toISOString(),
+            type: 'withdraw' as const,
+            direction: 'out',
+            user: sender, // The sender who initiated the withdrawal
+            receiver: receiver, // The receiver who gets the assets
+            owner: owner, // The owner of the shares being redeemed
+            amount: Number(assets) / 1e6, // USDC has 6 decimals
+            amountUSD: Number(assets) / 1e6,
+            shares: Number(shares) / 1e18,
+            asset: 'USDC',
+            eventType: 'Withdraw'
+          });
+        } catch (error) {
+          console.error('Error processing withdraw log:', error);
+        }
+      }
+      
+      // Deduplicate by txHash + logIndex
+      const uniqueTransactions = new Map();
+      for (const tx of processedTransactions) {
+        const key = `${tx.transactionHash}-${tx.logIndex}`;
+        if (!uniqueTransactions.has(key)) {
+          uniqueTransactions.set(key, tx);
+        }
+      }
+      
+      const validTransfers = Array.from(uniqueTransactions.values());
 
       // Sort by timestamp (most recent first) and take the limit
       const sortedTransfers = validTransfers

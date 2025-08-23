@@ -1,0 +1,53 @@
+What to keep
+
+Use ERC-4626 events only. Deposit and Withdraw.
+
+Ignore ERC20 Transfer rows in the activity UI.
+
+Patch list
+
+Build topics from the ABI at runtime. Do not hardcode hashes. Use your ABI to get the event topics for Deposit and Withdraw.
+
+Filter logs by the vault contract the user hits. If deposits route through a wrapper, listen on the wrapper. Source it from your pool registry.
+
+From block. Use your creation-info block if present. If missing, scan a small recent window, then extend backward only if empty.
+
+Window size. Query logs in 5k to 10k block ranges. One vault at a time to avoid timeouts.
+
+Dedupe by txHash + logIndex. Sort by blockNumber then logIndex.
+
+Decode fields. For Deposit, show owner and assets and shares. For Withdraw, show receiver and assets and shares. Convert assets using the asset decimals, not share decimals.
+
+Label rows. type = deposit or withdraw. ts from block time. Add explorer link for tx.
+
+SWR. Key activity:{chain}:{vaultAddress}. Stale 60s. Hard 10m. Persist snapshot to disk.
+
+Fallback rule
+
+If no 4626 logs exist for a vault you know is active, enable fallback mode for that one vault only.
+
+Fallback includes only Transfer from 0x0 as mint and Transfer to 0x0 as burn. Mark rows as fallback so the UI shows a tag.
+
+Wrappers and proxies
+
+Pick the address users call. If your pool registry has both vault and wrapper, store both. Activity should watch the wrapper first, then the vault if wrapper has no events.
+
+Verification checklist
+
+Choose one vault. Example the 0xBEEF… address you shared on Ethereum.
+
+Count Deposit and Withdraw events in your snapshot. Compare to Morpho’s Activity for the same window.
+
+Spot check one deposit row. assets matches the ERC-4626 event. shares is the minted amount. owner matches the event.
+
+Spot check one withdraw row. assets matches the event. receiver matches the event.
+
+Refresh the page. SWR should serve fast. Background refresh should not duplicate rows.
+
+Perf and safety
+
+Cap concurrency to 1 per vault. Cap global to 2 vaults at a time.
+
+Backoff on rate limit errors. Log the last scanned block per vault. Resume from there.
+
+Guard against reorgs. Treat the last 10 blocks as soft. Reconfirm them next run.
