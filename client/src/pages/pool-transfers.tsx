@@ -286,7 +286,6 @@ export default function PoolTransfersPage() {
                             <div className="flex items-center gap-2">
                               <AddressLink 
                                 address={tx.user} 
-                                chainId={network === 'base' ? '8c22f749-65ca-4340-a4c8-fc837df48928' : '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7'}
                               />
                             </div>
                             <p className="text-sm text-muted-foreground">
