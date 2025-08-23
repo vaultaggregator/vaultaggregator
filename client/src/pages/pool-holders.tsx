@@ -8,7 +8,7 @@ import { ArrowLeft, Users, Crown, Wallet, ExternalLink, RefreshCw, Search } from
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { AddressLink, ProtocolLink, NetworkLink } from "@/components/entity-links";
-import { parseYieldUrl } from "@/lib/pool-url-parser";
+import { parseYieldUrl } from "../lib/pool-url-parser";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
