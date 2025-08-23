@@ -512,6 +512,48 @@ router.post("/refresh", requireAuth, async (req, res) => {
           timestamp: new Date().toISOString()
         });
       }
+    } else if (serviceName === 'topHoldersSync') {
+      console.log("👥 Manual Top Holders sync triggered from admin panel (refresh)");
+      try {
+        const { ComprehensiveDataSyncService } = await import("../services/comprehensiveDataSyncService");
+        const service = new ComprehensiveDataSyncService();
+        await service.syncAllPoolData();
+        console.log('✅ Top Holders sync completed');
+        res.json({
+          success: true,
+          message: `Top Holders sync completed successfully`,
+          timestamp: new Date().toISOString()
+        });
+      } catch (error) {
+        console.error('❌ Top Holders sync failed:', error);
+        res.json({
+          success: false,
+          message: "Top Holders sync failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
+    } else if (serviceName === 'walletHoldersSync') {
+      console.log("💼 Manual Wallet Holders sync triggered from admin panel (refresh)");
+      try {
+        const { PoolHoldersService } = await import("../services/pool-holders-service");
+        const result = await PoolHoldersService.syncAllPoolHolders();
+        console.log('✅ Wallet Holders sync completed:', result);
+        res.json({
+          success: true,
+          message: `Wallet Holders sync completed: ${result.success} success, ${result.failed} failed`,
+          timestamp: new Date().toISOString(),
+          data: result
+        });
+      } catch (error) {
+        console.error('❌ Wallet Holders sync failed:', error);
+        res.json({
+          success: false,
+          message: "Wallet Holders sync failed - check system logs",
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        });
+      }
     } else if (serviceName) {
       // Unknown service requested
       res.json({
@@ -621,6 +663,48 @@ router.post("/:service/:action", requireAuth, async (req, res) => {
           res.json({
             success: false,
             message: "Etherscan scraper failed",
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          });
+        }
+      } else if (serviceName === 'topHoldersSync') {
+        console.log("👥 Manual Top Holders sync triggered from admin panel");
+        try {
+          const { ComprehensiveDataSyncService } = await import("../services/comprehensiveDataSyncService");
+          const service = new ComprehensiveDataSyncService();
+          await service.syncAllPoolData();
+          console.log('✅ Top Holders sync completed');
+          res.json({
+            success: true,
+            message: `Top Holders sync completed successfully`,
+            timestamp: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error('❌ Top Holders sync failed:', error);
+          res.json({
+            success: false,
+            message: "Top Holders sync failed",
+            error: error instanceof Error ? error.message : 'Unknown error',
+            timestamp: new Date().toISOString()
+          });
+        }
+      } else if (serviceName === 'walletHoldersSync') {
+        console.log("💼 Manual Wallet Holders sync triggered from admin panel");
+        try {
+          const { PoolHoldersService } = await import("../services/pool-holders-service");
+          const result = await PoolHoldersService.syncAllPoolHolders();
+          console.log('✅ Wallet Holders sync completed:', result);
+          res.json({
+            success: true,
+            message: `Wallet Holders sync completed: ${result.success} success, ${result.failed} failed`,
+            timestamp: new Date().toISOString(),
+            data: result
+          });
+        } catch (error) {
+          console.error('❌ Wallet Holders sync failed:', error);
+          res.json({
+            success: false,
+            message: "Wallet Holders sync failed",
             error: error instanceof Error ? error.message : 'Unknown error',
             timestamp: new Date().toISOString()
           });
