@@ -23,6 +23,7 @@ const ProtocolDetailPage = lazy(() => import("@/pages/protocol-detail").then(m =
 const TokenDetail = lazy(() => import("@/pages/token-detail"));
 const NetworkDetail = lazy(() => import("@/pages/network-detail"));
 const PoolTransfersPage = lazy(() => import("@/pages/pool-transfers"));
+const PoolHoldersPage = lazy(() => import("@/pages/pool-holders"));
 
 // Admin pages - lazy loaded to reduce initial bundle
 const AdminLogin = lazy(() => import("@/pages/admin-login"));
@@ -107,8 +108,9 @@ function Router() {
         <Route path="/admin-hardcode-scan" component={AdminHardcodeScan} />
 
         {/* Pool detail routes - these must come AFTER admin routes */}
-        {/* Pool transfers pages - these must come BEFORE the generic pool detail routes */}
+        {/* Pool-specific pages - these must come BEFORE the generic pool detail routes */}
         <Route path="/yield/:network/:protocol/:tokenPair/transfers" component={PoolTransfersPage} />
+        <Route path="/yield/:network/:protocol/:tokenPair/holders" component={PoolHoldersPage} />
         
         {/* Primary SEO-friendly URL patterns for pool details */}
         <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
