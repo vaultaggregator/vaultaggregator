@@ -17,7 +17,7 @@ export default function Discover() {
 
   // Set document title
   useEffect(() => {
-    document.title = 'Discover Vaults - Vault Aggregator';
+    document.title = 'Discover - Vault Aggregator';
   }, []);
 
   // Fetch pools data
@@ -59,7 +59,7 @@ export default function Discover() {
     {
       key: 'tokenPair',
       header: 'Token',
-      width: '200px',
+      width: '180px',
       render: (pool) => (
         <div className="flex items-center gap-2">
           {pool.categories && pool.categories.length > 0 && (() => {
@@ -103,7 +103,7 @@ export default function Discover() {
     {
       key: 'platform',
       header: 'Protocol',
-      width: '120px',
+      width: '100px',
       render: (pool) => (
         <Badge variant="secondary" className="text-xs">
           {pool.platform?.displayName}
@@ -140,7 +140,7 @@ export default function Discover() {
     {
       key: 'tvl',
       header: 'TVL',
-      width: '120px',
+      width: '100px',
       align: 'right',
       sortable: true,
       render: (pool) => (
@@ -195,12 +195,12 @@ export default function Discover() {
     },
     {
       key: 'updatedAt',
-      header: 'Updated',
-      width: '100px',
+      header: 'Updated at',
+      width: '90px',
       align: 'right',
       render: (pool) => (
         <span className="text-xs text-gray-500 dark:text-gray-400">
-          {pool.updatedAt ? formatTimeAgo(new Date(pool.updatedAt).getTime()) : 'N/A'}
+          Recently
         </span>
       )
     }
@@ -216,13 +216,10 @@ export default function Discover() {
     <AppShell>
       <div className="p-6">
         {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Discover Vaults
+        <div className="mb-4">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Discover
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Explore DeFi yield opportunities across multiple protocols and chains
-          </p>
         </div>
 
         {/* Filters */}
