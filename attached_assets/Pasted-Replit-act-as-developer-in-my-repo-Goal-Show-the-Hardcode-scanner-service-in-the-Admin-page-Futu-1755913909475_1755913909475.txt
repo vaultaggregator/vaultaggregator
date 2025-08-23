@@ -1,0 +1,97 @@
+Replit, act as developer in my repo.
+
+Goal
+Show the Hardcode scanner service in the Admin page. Future services auto-appear in Admin without manual wiring. Do not touch Holder count logic.
+
+Scope
+Frontend Vite + Tailwind.
+Backend under admin/.
+Keep existing endpoints intact unless stated.
+
+Tasks
+
+Verify service exists
+
+Ensure admin/services/hardcodeScan exports run().
+
+Export optional meta: { id: "hardcodeScan", name: "Hardcode scan", description: "Scan repo for hardcoded values" }.
+
+If missing, create it.
+
+Dynamic discovery
+
+Build a small registry that discovers services at runtime by scanning admin/services for files exporting run().
+
+Ignore non-service files and subfolders like status or utils.
+
+If a service exports meta, use it. Otherwise derive id from filename and name from id.
+
+Backend API for Admin
+
+Add GET /api/admin/services/list that returns discovered services with id, name, description.
+
+Add GET /api/admin/services/status to include lastRun, lastError, and pid if managed.
+
+Add POST /api/admin/services/run/:id to trigger run() once and update lastRun and lastError.
+
+Use SWR cache for list and status. TTL 5 seconds, hard TTL 30 seconds.
+
+Admin UI
+
+In the Admin page, stop any hardcoded array of services.
+
+Fetch /api/admin/services/list and render one card per service.
+
+Each card shows name, description, lastRun, lastError.
+
+Add a Run button per card that posts to /api/admin/services/run/:id.
+
+Add loading and error states. No duplicate requests. Debounce clicks.
+
+Hardcode scanner card
+
+Ensure the Hardcode scan card renders using the discovery data.
+
+Wire the Run button to POST /api/admin/services/run/hardcodeScan.
+
+After run, refresh status with SWR mutate or a refetch.
+
+Auto-appear rule for future services
+
+Any new file under admin/services exporting run() must show up in Admin automatically through /api/admin/services/list.
+
+No manual edit of Admin UI or routes when adding services.
+
+Logging
+
+Log service discovery count at boot.
+
+Log each run start, end, duration, and result.
+
+On error, capture stack and store lastError.
+
+Tests and checks
+
+Add a quick integration test that hits /api/admin/services/list and expects at least hardcodeScan.
+
+Add a UI check that renders a card with name Hardcode scan.
+
+Verify lastRun updates after a manual run.
+
+Constraints
+
+Do not modify Holder count logic anywhere.
+
+Do not break existing Admin routes already used by the site.
+
+Keep styles aligned with current Admin styling.
+
+Acceptance
+
+Admin shows a Hardcode scan card without manual wiring.
+
+Adding a new service file with run() makes it appear in Admin after reload.
+
+Run button triggers the service and updates lastRun.
+
+No hardcoded service lists remain in code.

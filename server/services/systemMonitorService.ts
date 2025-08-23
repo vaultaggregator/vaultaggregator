@@ -406,9 +406,9 @@ export class SystemMonitorService {
       if (recentPredictions.length > 0) {
         const lastPrediction = recentPredictions[0].generatedAt?.getTime() || 0;
         const timeSinceGeneration = now - lastPrediction;
-        const twoHours = 2 * 60 * 60 * 1000;
+        const twentyFiveHours = 25 * 60 * 60 * 1000; // AI service runs every 24h, allow 25h buffer
 
-        if (timeSinceGeneration < twoHours) {
+        if (timeSinceGeneration < twentyFiveHours) {
           this.updateCheck('aiOutlookGeneration', 'up', 0, undefined, {
             lastGeneration: new Date(lastPrediction),
             timeSinceGeneration,
@@ -538,11 +538,12 @@ export class SystemMonitorService {
    * Update service last run time for manual triggers
    */
   async updateServiceLastRun(serviceName: string): Promise<void> {
-    if (this.scheduledJobs[serviceName as keyof typeof this.scheduledJobs]) {
-      this.scheduledJobs[serviceName as keyof typeof this.scheduledJobs].lastCheck = Date.now();
-      this.scheduledJobs[serviceName as keyof typeof this.scheduledJobs].error = null;
-      console.log(`✅ Updated last run time for ${serviceName}`);
-    }
+    // Update the check status to clear any previous errors
+    this.updateCheck(serviceName, 'up', 0, undefined, {
+      status: 'manually_triggered',
+      lastUpdate: new Date()
+    });
+    console.log(`✅ Updated last run time for ${serviceName}`);
   }
 }
 
