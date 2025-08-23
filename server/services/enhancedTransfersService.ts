@@ -14,17 +14,13 @@ export class EnhancedTransfersService {
   private alchemyBase: Alchemy;
   
   private constructor() {
-    // Extract API key from ALCHEMY_RPC_URL
-    const alchemyRpcUrl = process.env.ALCHEMY_RPC_URL;
-    let apiKey: string | undefined;
-    
-    if (alchemyRpcUrl) {
-      const urlMatch = alchemyRpcUrl.match(/\/v2\/([^/]+)$/);
-      apiKey = urlMatch ? urlMatch[1] : undefined;
-    }
+    // Use ALCHEMY_API_KEY from environment
+    const apiKey = process.env.ALCHEMY_API_KEY;
     
     if (!apiKey) {
-      console.warn('⚠️ Alchemy API key not found in ALCHEMY_RPC_URL');
+      console.warn('⚠️ Alchemy API key not found in ALCHEMY_API_KEY environment variable');
+    } else {
+      console.log(`✅ Alchemy API key loaded (length: ${apiKey.length})`);
     }
     
     // Initialize Alchemy SDK for Ethereum
