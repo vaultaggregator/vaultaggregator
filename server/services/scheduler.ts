@@ -1,4 +1,4 @@
-import { HolderDataSyncService } from "./holderDataSyncService";
+// Complex holder analysis removed
 import { ComprehensiveDataSyncService } from "./comprehensiveDataSyncService";
 import { storage } from "../storage";
 
@@ -52,24 +52,7 @@ export function startScheduler(): void {
     }
   }, 10 * 60 * 1000); // 10 minutes
 
-  // Sync holder data every 30 minutes (less frequent as it's more expensive)
-  holderDataInterval = setInterval(async () => {
-    try {
-      console.log("👥 Running scheduled holder data sync...");
-      await comprehensiveDataService.syncHolderDataLightweight();
-      console.log("✅ Scheduled holder data sync completed");
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error("❌ Error in scheduled holder data sync:", errorMsg);
-      await logError(
-        'Scheduled Holder Data Sync Failed',
-        'Scheduled holder data synchronization failed. Holder analytics and growth statistics will not be updated.',
-        errorMsg,
-        'HolderDataSync',
-        'medium'
-      );
-    }
-  }, 30 * 60 * 1000); // 30 minutes
+  // Complex holder data sync removed - basic counts maintained through simple service
 
   // Clean expired outlooks and old data every hour
   cleanupInterval = setInterval(async () => {
@@ -95,10 +78,8 @@ export function startScheduler(): void {
       
 
       
-      // Clean old holder data (keep last 90 days)
-      const holderSyncService = new HolderDataSyncService();
-      const deletedHolderRecords = await holderSyncService.cleanOldHolderData();
-      console.log(`Cleaned ${deletedHolderRecords} old holder history records`);
+      // Complex holder data cleanup removed - only basic counts maintained
+      console.log("Basic holder count functionality preserved");
       
       console.log("Data cleanup tasks completed");
     } catch (error) {
@@ -114,7 +95,7 @@ export function startScheduler(): void {
     }
   }, 60 * 60 * 1000); // 1 hour
 
-  console.log("🚀 Scheduler started - Comprehensive data: 10min, Holder data: 30min, Cleanup: 1h");
+  console.log("🚀 Scheduler started - Comprehensive data: 10min, Cleanup: 1h");
 
   // Initial comprehensive data sync after 2 minutes
   setTimeout(async () => {

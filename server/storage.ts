@@ -21,7 +21,6 @@ import {
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, desc, and, ilike, or, sql, inArray, isNotNull, isNull, asc, lte } from "drizzle-orm";
-import { HistoricalHolderAnalysisService } from "./services/historicalHolderAnalysisService";
 
 // Re-export types that scrapers need
 export type { PoolWithRelations };
@@ -246,10 +245,8 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  private historicalHolderService: HistoricalHolderAnalysisService;
 
   constructor() {
-    this.historicalHolderService = new HistoricalHolderAnalysisService();
   }
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -542,18 +539,6 @@ export class DatabaseStorage implements IStorage {
     changeAllTime: { value: number; percentage: number } | null;
     firstRecordDate: Date | null;
   }> {
-    // First try to get authentic historical data from transfer analysis
-    const historicalAnalysis = await this.historicalHolderService.analyzeHistoricalHolders(tokenAddress);
-    
-    if (historicalAnalysis) {
-      return {
-        current: historicalAnalysis.current,
-        change7d: historicalAnalysis.change7d,
-        change30d: historicalAnalysis.change30d,
-        changeAllTime: historicalAnalysis.changeAllTime,
-        firstRecordDate: historicalAnalysis.snapshots.length > 0 ? historicalAnalysis.snapshots[0].timestamp : null,
-      };
-    }
 
     // Fallback to database records if transfer analysis fails
     
@@ -1151,12 +1136,6 @@ export class DatabaseStorage implements IStorage {
       
       // Trigger holder sync for new pool if it has a contract address
       if (newPool.poolAddress) {
-        console.log(`🔄 Triggering holder sync for new pool ${newPool.tokenPair}`);
-        import('./services/holderService.js').then(({ holderService }) => {
-          holderService.syncPoolHolders(newPool.id).catch(error => {
-            console.error(`❌ Failed to sync holders for new pool ${newPool.id}:`, error);
-          });
-        });
       }
       
       return newPool;

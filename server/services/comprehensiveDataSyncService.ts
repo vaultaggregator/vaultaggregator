@@ -1,7 +1,7 @@
 import { storage } from "../storage";
 import { MorphoService } from "./morphoService";
 import { TokenInfoSyncService } from "./tokenInfoSyncService";
-import { HolderDataSyncService } from "./holderDataSyncService";
+// Complex holder analysis removed
 
 async function logError(title: string, description: string, error: string, service: string, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium') {
   try {
@@ -29,12 +29,12 @@ async function logError(title: string, description: string, error: string, servi
 export class ComprehensiveDataSyncService {
   private morphoService: MorphoService;
   private tokenInfoService: TokenInfoSyncService;
-  private holderDataService: HolderDataSyncService;
+  // Complex holder service removed
 
   constructor() {
     this.morphoService = new MorphoService();
     this.tokenInfoService = new TokenInfoSyncService();
-    this.holderDataService = new HolderDataSyncService();
+    // Complex holder service removed
   }
 
   /**
@@ -103,10 +103,7 @@ export class ComprehensiveDataSyncService {
         // Note: Holder data sync is expensive, so it runs separately less frequently
       ]);
 
-      // Always update lastUpdated timestamp to show sync was attempted
-      await storage.updatePool(poolId, {
-        lastUpdated: new Date()
-      });
+      // Pool sync completed successfully
       
       console.log(`✅ Sync completed for ${pool.tokenPair} (${pool.platform.displayName})`);
 
@@ -114,14 +111,7 @@ export class ComprehensiveDataSyncService {
       const errorMsg = error instanceof Error ? error.message : String(error);
       console.error(`❌ Error syncing pool ${poolId}:`, errorMsg);
       
-      // Even on error, update timestamp to show sync was attempted
-      try {
-        await storage.updatePool(poolId, {
-          lastUpdated: new Date()
-        });
-      } catch (updateError) {
-        console.error(`❌ Failed to update timestamp for pool ${poolId}:`, updateError);
-      }
+      // Pool sync failed, continuing with other pools
       
       throw error;
     }
@@ -210,13 +200,14 @@ export class ComprehensiveDataSyncService {
       const useEnhancedHolders = process.env.ALCHEMY_RPC_URL && process.env.USE_ENHANCED_HOLDERS === 'true';
       
       if (useEnhancedHolders) {
-        // Use enhanced service for detailed top 100 holders with Alchemy metadata
-        const { alchemyEnhancedHolderService } = await import('./alchemyEnhancedHolderService');
-        await alchemyEnhancedHolderService.syncAllPoolHolders();
+        // Use simple holder count service for basic counts only
+        const { simpleHolderCountService } = await import('./simpleHolderCountService');
+        await simpleHolderCountService.updateAllPoolHolderCounts();
         console.log("✅ Enhanced holder data sync completed");
       } else {
-        // Use basic holder count service
-        await this.holderDataService.syncAllHolderData();
+        // Use simple holder count service for basic counts
+        const { simpleHolderCountService } = await import('./simpleHolderCountService');
+        await simpleHolderCountService.updateAllPoolHolderCounts();
         console.log("✅ Lightweight holder data sync completed");
       }
     } catch (error) {
