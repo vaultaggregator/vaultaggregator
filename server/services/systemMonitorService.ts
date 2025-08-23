@@ -146,21 +146,25 @@ export class SystemMonitorService {
    * Check Alchemy API health
    */
   private async checkAlchemyAPI(): Promise<void> {
+    const startTime = performance.now();
+    
     try {
-      // Test with a simple blockNumber request
-      const response = await fetch('http://localhost:5000/api/test/alchemy/blockNumber');
+      // Test with a simple blockNumber request with timeout
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
+      const response = await fetch('http://localhost:5000/api/test/alchemy/blockNumber', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeout);
+      const endTime = performance.now();
+      const responseTime = endTime - startTime;
       
       if (response.ok) {
         const data = await response.json();
         if (data.blockNumber && data.blockNumberDecimal) {
-          // Update database health status
-          await fetch('http://localhost:5000/api/api-settings/alchemy_api/health', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ healthStatus: 'healthy', errorCount: 0 })
-          });
-          
-          this.updateCheck('alchemy', 'up', 0, undefined, {
+          this.updateCheck('alchemy', 'up', responseTime, undefined, {
             blockNumber: data.blockNumberDecimal,
             status: 'healthy'
           });
@@ -171,14 +175,14 @@ export class SystemMonitorService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
-      // Update database health status  
-      await fetch('http://localhost:5000/api/api-settings/alchemy_api/health', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ healthStatus: 'down', errorCount: 1 })
-      });
+      const endTime = performance.now();
+      const responseTime = endTime - startTime;
       
-      this.updateCheck('alchemy', 'down', 0, error instanceof Error ? error.message : 'Unknown error');
+      if (error instanceof Error && error.name === 'AbortError') {
+        this.updateCheck('alchemy', 'down', responseTime, 'Request timeout');
+      } else {
+        this.updateCheck('alchemy', 'down', responseTime, error instanceof Error ? error.message : 'Unknown error');
+      }
     }
   }
 
