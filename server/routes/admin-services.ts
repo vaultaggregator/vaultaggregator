@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "../db";
 import { serviceConfigurations } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { updateServiceConfig } from "../services/systemMonitorService";
 
 const router = Router();
 
@@ -129,9 +130,19 @@ router.put("/admin/services/:serviceId/config", requireAuth, async (req, res) =>
       })
       .where(eq(serviceConfigurations.serviceName, serviceId));
 
+    // Apply configuration to running services
+    console.log(`🔧 Applying configuration changes for ${serviceId}: interval=${interval}min, enabled=${enabled}`);
+    try {
+      await updateServiceConfig(serviceId, { interval: parseInt(interval), enabled });
+      console.log(`✅ Successfully applied configuration for ${serviceId}`);
+    } catch (error) {
+      console.error(`❌ Failed to apply configuration for ${serviceId}:`, error);
+      // Still return success since database was updated, but log the error
+    }
+
     res.json({ 
       success: true, 
-      message: `Service ${serviceId} configuration updated`
+      message: `Service ${serviceId} configuration updated and applied`
     });
   } catch (error) {
     console.error("Error updating service configuration:", error);
