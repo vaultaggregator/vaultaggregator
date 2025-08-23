@@ -8,18 +8,15 @@ import { lazy, Suspense } from "react";
 
 // Core pages - loaded immediately
 import NotFound from "@/pages/not-found";
-import Discover from "@/pages/discover";
-import VaultDashboard from "@/pages/vault-dashboard";
-import SwapPage from "@/pages/swap";
+import Home from "@/pages/home";
+import Dashboard from "@/pages/dashboard";
 import Analytics from "@/pages/analytics";
 import Contact from "@/pages/contact";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import Terms from "@/pages/terms";
-import TermsOfService from "@/pages/terms-of-service";
 import RiskCalculation from "@/pages/risk-calculation";
 
 // Heavy pages - lazy loaded for better performance
-const VaultDetailPage = lazy(() => import("@/pages/vault-detail"));
 const PoolDetail = lazy(() => import("@/pages/pool-detail"));
 const ProfilePage = lazy(() => import("@/pages/profile"));
 const ProtocolDetailPage = lazy(() => import("@/pages/protocol-detail").then(m => ({ default: m.ProtocolDetailPage })));
@@ -67,9 +64,8 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        <Route path="/" component={Discover} />
-        <Route path="/dashboard" component={VaultDashboard} />
-        <Route path="/swap" component={SwapPage} />
+        <Route path="/" component={Home} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/analytics" component={Analytics} />
         <Route path="/risk-calculation" component={RiskCalculation} />
         <Route path="/profile/:address" component={ProfilePage} />
@@ -82,7 +78,6 @@ function Router() {
         <Route path="/contact" component={Contact} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms" component={Terms} />
-        <Route path="/terms-of-service" component={TermsOfService} />
 
         {/* Admin routes MUST come before the catch-all pool route */}
         <Route path="/admin/healing" component={HealingDashboard} />
@@ -121,8 +116,8 @@ function Router() {
         <Route path="/yield/:network/:protocol/:tokenPair/holders" component={PoolHoldersPage} />
         
         {/* SEO-friendly URL patterns for pool details */}
-        <Route path="/yield/:network/:protocol/:tokenPair" component={VaultDetailPage} />
-        <Route path="/:network/:protocol/:tokenPair" component={VaultDetailPage} />
+        <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
+        <Route path="/:network/:protocol/:tokenPair" component={PoolDetail} />
         
         <Route component={NotFound} />
       </Switch>

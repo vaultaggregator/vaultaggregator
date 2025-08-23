@@ -126,11 +126,11 @@ export function TopHoldersSection({ poolId, chainName }: TopHoldersSectionProps)
         ) : (
           <div className="space-y-4">
             {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide border-b pb-2">
+            <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
               <div className="col-span-1">Rank</div>
-              <div className="col-span-4">Address</div>
+              <div className="col-span-5">Holder Address</div>
               <div className="col-span-3">Balance</div>
-              <div className="col-span-4">Percent</div>
+              <div className="col-span-3">Percentage</div>
             </div>
 
             {/* Holders List */}
@@ -140,39 +140,35 @@ export function TopHoldersSection({ poolId, chainName }: TopHoldersSectionProps)
                 const tokenSymbol = getTokenSymbol(holder);
                 
                 return (
-                  <div key={holder.id} className="grid grid-cols-12 gap-4 items-center h-[44px] border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
-                    <div className="col-span-1 text-[13px] text-center">
-                      <span className="font-medium text-gray-600 dark:text-gray-400">
-                        {holder.rank}
-                      </span>
+                  <div key={holder.id} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors rounded-lg px-2">
+                    <div className="col-span-1">
+                      <div className="flex items-center gap-2">
+                        {getRankIcon(holder.rank)}
+                        <Badge variant={getRankBadgeVariant(holder.rank)} className="text-xs">
+                          #{holder.rank}
+                        </Badge>
+                      </div>
                     </div>
                     
-                    <div className="col-span-4">
+                    <div className="col-span-5">
                       <AddressLink 
                         address={holder.address}
-                        className="font-mono text-[13px] text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                        className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                       />
                     </div>
 
-                    <div className="col-span-3 text-[13px] text-right tabular-nums">
-                      <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {formatAmount(balanceUSDValue)}
+                    <div className="col-span-3">
+                      <div className="font-semibold text-sm">
+                        {formatAmount(balanceUSDValue)} {tokenSymbol}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        ${formatAmount(balanceUSDValue)}
                       </div>
                     </div>
 
-                    <div className="col-span-4">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                            <div 
-                              className="bg-blue-500 h-full transition-all duration-300"
-                              style={{ width: `${Math.min(parseFloat(holder.percentage), 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                        <span className="text-[13px] text-gray-900 dark:text-gray-100 tabular-nums min-w-[45px] text-right">
-                          {parseFloat(holder.percentage).toFixed(2)}%
-                        </span>
+                    <div className="col-span-3">
+                      <div className="font-semibold text-sm">
+                        {parseFloat(holder.percentage).toFixed(2)}%
                       </div>
                     </div>
                   </div>
