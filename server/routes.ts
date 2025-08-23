@@ -1001,8 +1001,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pools/:id/holders/:page/:limit", async (req, res) => {
     try {
       const poolId = req.params.id;
+      
+      // Import configuration for holder limits
+      const { constants } = await import("../config/index.js");
+      
       const page = parseInt(req.params.page) || 1;
-      const limit = Math.min(parseInt(req.params.limit) || 100, 100); // Default to 100, max 100
+      const limit = Math.min(parseInt(req.params.limit) || constants.HOLDERS_DEFAULT_LIMIT, constants.MAX_HOLDERS_DISPLAY);
 
       // Validate pagination parameters
       if (page < 1 || limit < 1) {
@@ -1023,8 +1027,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get holders from database (all pools uniformly show up to 1000 holders)
       const result = await storage.getPoolHolders(poolId, page, limit);
       
-      // Use the real total count from pool_metrics_current if available, otherwise fall back to stored count
-      const actualTotalCount = metrics?.holdersCount || result.total;
+      // Limit the displayed total count to MAX_HOLDERS_DISPLAY to avoid overwhelming users
+      const rawTotalCount = metrics?.holdersCount || result.total;
+      const actualTotalCount = Math.min(rawTotalCount, constants.MAX_HOLDERS_DISPLAY);
       const actualPages = Math.ceil(actualTotalCount / limit);
       
       // Format holder data for frontend with proper number conversion
@@ -1057,13 +1062,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/pools/:id/holders", async (req, res) => {
     try {
       const poolId = req.params.id;
+      
+      // Import configuration for holder limits
+      const { constants } = await import("../config/index.js");
+      
       const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 100; // Changed default to 100
+      const limit = parseInt(req.query.limit as string) || constants.HOLDERS_DEFAULT_LIMIT;
 
       // Validate pagination parameters
-      if (page < 1 || limit < 1 || limit > 100) {
+      if (page < 1 || limit < 1 || limit > constants.MAX_HOLDERS_DISPLAY) {
         return res.status(400).json({ 
-          message: "Invalid pagination parameters. Page must be >= 1, limit must be between 1 and 100." 
+          message: `Invalid pagination parameters. Page must be >= 1, limit must be between 1 and ${constants.MAX_HOLDERS_DISPLAY}.` 
         });
       }
 
@@ -1079,8 +1088,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get holders from database (all pools uniformly show up to 1000 holders)
       const result = await storage.getPoolHolders(poolId, page, limit);
       
-      // Use the real total count from pool_metrics_current if available, otherwise fall back to stored count
-      const actualTotalCount = metrics?.holdersCount || result.total;
+      // Limit the displayed total count to MAX_HOLDERS_DISPLAY to avoid overwhelming users
+      const rawTotalCount = metrics?.holdersCount || result.total;
+      const actualTotalCount = Math.min(rawTotalCount, constants.MAX_HOLDERS_DISPLAY);
       const actualPages = Math.ceil(actualTotalCount / limit);
       
       // Format holder data for frontend with proper number conversion

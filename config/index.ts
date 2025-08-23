@@ -60,6 +60,10 @@ export const constants = {
   // Pool limits
   TOP_HOLDERS_LIMIT: 20,
   HOLDER_SYNC_BATCH: 50,
+  
+  // Holder display limits
+  MAX_HOLDERS_DISPLAY: 100,     // Maximum number of holders to show to users (not hardcoded)
+  HOLDERS_DEFAULT_LIMIT: 20,    // Default per-page limit for holder display
 } as const;
 
 // Resolve environment variables in configurations
