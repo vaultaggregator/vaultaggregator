@@ -1017,10 +1017,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Get pool contract address to fetch live holder data from Etherscan
+      // Get pool contract address and chain info for multi-chain support
       const [pool] = await db
-        .select({ poolAddress: pools.poolAddress, tokenPair: pools.tokenPair })
+        .select({ 
+          poolAddress: pools.poolAddress, 
+          tokenPair: pools.tokenPair,
+          chainName: networks.name,
+          chainId: networks.chainId
+        })
         .from(pools)
+        .leftJoin(networks, eq(pools.chainId, networks.id))
         .where(eq(pools.id, poolId))
         .limit(1);
 
@@ -1028,15 +1034,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Pool contract address not found" });
       }
 
-      // HYBRID APPROACH: Use fast Etherscan API instead of slow Alchemy transfer scanning  
-      const { etherscanHolderScraper } = await import("./services/etherscanHolderScraper.js");
+      // HYBRID WEB SCRAPER APPROACH: Free web scraping + Alchemy enrichment
+      const { etherscanWebScraper } = await import("./services/etherscanWebScraper.js");
 
-      // Fetch top holders from Etherscan API (MUCH faster than Alchemy transfer events)
-      console.log(`🚀 HYBRID: Fetching live holder data from Etherscan API for ${pool.tokenPair} (${pool.poolAddress})`);
+      // Determine chain for web scraping (ethereum or base)
+      const chainName = pool.chainName?.toLowerCase() || 'ethereum';
+      console.log(`🕷️ HYBRID WEB SCRAPER: Fetching live holder data from ${chainName} blockchain explorer for ${pool.tokenPair} (${pool.poolAddress})`);
       
-      const liveHolders = await etherscanHolderScraper.getTopHolders(
+      const liveHolders = await etherscanWebScraper.getEnrichedTopHolders(
         pool.poolAddress,
-        'ethereum', 
+        chainName, 
         constants.MAX_HOLDERS_DISPLAY
       );
 
@@ -1106,10 +1113,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Get pool contract address to fetch live holder data from Etherscan
+      // Get pool contract address and chain info for multi-chain support
       const [pool] = await db
-        .select({ poolAddress: pools.poolAddress, tokenPair: pools.tokenPair })
+        .select({ 
+          poolAddress: pools.poolAddress, 
+          tokenPair: pools.tokenPair,
+          chainName: networks.name,
+          chainId: networks.chainId
+        })
         .from(pools)
+        .leftJoin(networks, eq(pools.chainId, networks.id))
         .where(eq(pools.id, poolId))
         .limit(1);
 
@@ -1117,15 +1130,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Pool contract address not found" });
       }
 
-      // HYBRID APPROACH: Use fast Etherscan API instead of slow Alchemy transfer scanning  
-      const { etherscanHolderScraper } = await import("./services/etherscanHolderScraper.js");
+      // HYBRID WEB SCRAPER APPROACH: Free web scraping + Alchemy enrichment
+      const { etherscanWebScraper } = await import("./services/etherscanWebScraper.js");
 
-      // Fetch top holders from Etherscan API (MUCH faster than Alchemy transfer events)
-      console.log(`🚀 HYBRID: Fetching live holder data from Etherscan API for ${pool.tokenPair} (${pool.poolAddress})`);
+      // Determine chain for web scraping (ethereum or base)
+      const chainName = pool.chainName?.toLowerCase() || 'ethereum';
+      console.log(`🕷️ HYBRID WEB SCRAPER: Fetching live holder data from ${chainName} blockchain explorer for ${pool.tokenPair} (${pool.poolAddress})`);
       
-      const liveHolders = await etherscanHolderScraper.getTopHolders(
+      const liveHolders = await etherscanWebScraper.getEnrichedTopHolders(
         pool.poolAddress,
-        'ethereum', 
+        chainName, 
         constants.MAX_HOLDERS_DISPLAY
       );
 
