@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers, Activity, ChevronDown, Menu, X, Shield, TrendingUp, FileText, Eye } from "lucide-react";
+import { LogOut, Home, Database, Key, Settings, Users, Tag, BarChart3, AlertTriangle, Monitor, Layers, Activity, ChevronDown, Menu, X, Shield, TrendingUp, FileText, Eye, Search } from "lucide-react";
 import { useAuth, type User } from "@/hooks/useAuth";
 import { useState } from "react";
 
@@ -36,6 +36,7 @@ export function AdminHeader() {
         { path: "/admin/services", icon: Activity, label: "Services", highlight: "service" },
         { path: "/admin/api-settings", icon: Settings, label: "API Settings", highlight: "service" },
         { path: "/admin/swr-cache", icon: Database, label: "SWR Cache", highlight: "cache" },
+        { path: "/admin/hardcode-scan", icon: Search, label: "Hardcode Scanner", highlight: "scan" },
       ]
     },
     {
