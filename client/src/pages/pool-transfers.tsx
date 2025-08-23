@@ -4,7 +4,6 @@ import { useParams } from "wouter";
 import { 
   Activity, 
   ChevronLeft, 
-  ChevronRight, 
   ArrowUpRight, 
   ArrowDownRight,
   Clock,
@@ -37,42 +36,57 @@ interface PoolData {
 }
 
 interface Transaction {
-  id: string;
   type: 'deposit' | 'withdraw';
   user: string;
   amount: number;
   amountUSD: number;
   transactionHash: string;
-  timestamp: Date;
-  blockNumber?: number;
-  gasFee?: number;
+  timestamp: string;
+  blockNumber?: string;
+  asset?: string;
+  direction?: string;
 }
 
-interface TransfersResponse {
-  transactions: Transaction[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
+interface TransfersAPIResponse {
+  success: boolean;
+  data?: {
+    poolId: string;
+    poolName: string;
+    contractAddress: string;
+    network: string;
+    transactions: Transaction[];
+    summary: {
+      totalDeposits: number;
+      totalWithdrawals: number;
+      totalVolumeUSD: number;
+      depositsVolumeUSD: number;
+      withdrawalsVolumeUSD: number;
+    };
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+    timestamp: Date;
   };
-  summary?: {
-    totalDeposits: number;
-    totalWithdrawals: number;
-    totalVolumeUSD: number;
-  };
+  error?: string;
 }
 
 export default function PoolTransfersPage() {
   const { network, protocol, tokenPair } = useParams();
-  const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<'all' | 'deposit' | 'withdraw'>('all');
-  const limit = 100;
 
   // First fetch pool info to get pool ID
   const { data: poolData, isLoading: poolLoading } = useQuery<PoolData>({
     queryKey: [`/api/pools/find/${network}/${protocol}/${tokenPair}`],
     enabled: !!network && !!protocol && !!tokenPair,
+  });
+
+  // Fetch real transfer data from API (last 15 transfers)
+  const { data: transfersResponse, isLoading: transfersLoading, error: transfersError } = useQuery<TransfersAPIResponse>({
+    queryKey: [`/api/transfers/pool/${poolData?.id}`, poolData?.id],
+    enabled: !!poolData?.id,
   });
 
   // Set browser tab title
@@ -82,36 +96,19 @@ export default function PoolTransfersPage() {
     }
   }, [poolData, tokenPair, protocol, network]);
 
-  // Mock data for transfers - in real implementation, this would come from API
-  const mockTransfers: Transaction[] = Array.from({ length: 100 }, (_, i) => ({
-    id: `tx-${i}`,
-    type: Math.random() > 0.5 ? 'deposit' : 'withdraw',
-    user: `0x${Math.random().toString(16).substr(2, 40)}`,
-    amount: Math.random() * 10000,
-    amountUSD: Math.random() * 10000 * 1.01,
-    transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-    timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-    blockNumber: 15000000 + Math.floor(Math.random() * 100000),
-    gasFee: Math.random() * 0.01
-  }));
+  // Get transactions from response data
+  const allTransfers = transfersResponse?.data?.transactions || [];
 
   // Filter transactions
   const filteredTransfers = filter === 'all' 
-    ? mockTransfers 
-    : mockTransfers.filter(t => t.type === filter);
-
-  // Paginate
-  const totalPages = Math.ceil(filteredTransfers.length / limit);
-  const paginatedTransfers = filteredTransfers.slice(
-    (page - 1) * limit, 
-    page * limit
-  );
+    ? allTransfers 
+    : allTransfers.filter(t => t.type === filter);
 
   // Format functions
   const formatAmount = (amount: number) => {
     if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(2)}M`;
     if (amount >= 1_000) return `${(amount / 1_000).toFixed(2)}K`;
-    return amount.toFixed(2);
+    return amount.toFixed(4);
   };
 
   const formatCurrency = (value: number) => {
@@ -149,16 +146,9 @@ export default function PoolTransfersPage() {
     window.open(`${baseUrl}/tx/${hash}`, '_blank');
   };
 
-  // Handle pagination
-  const handlePreviousPage = () => {
-    if (page > 1) setPage(page - 1);
-  };
+  const isLoading = poolLoading || transfersLoading;
 
-  const handleNextPage = () => {
-    if (page < totalPages) setPage(page + 1);
-  };
-
-  if (poolLoading) {
+  if (isLoading) {
     return (
       <>
         <Header />
@@ -188,13 +178,10 @@ export default function PoolTransfersPage() {
     );
   }
 
-  const startIndex = (page - 1) * limit + 1;
-  const endIndex = Math.min(page * limit, filteredTransfers.length);
-
-  // Calculate summary
-  const deposits = paginatedTransfers.filter(t => t.type === 'deposit');
-  const withdrawals = paginatedTransfers.filter(t => t.type === 'withdraw');
-  const totalVolume = paginatedTransfers.reduce((sum, t) => sum + t.amountUSD, 0);
+  // Get summary from API response or calculate from filtered transfers
+  const deposits = filteredTransfers.filter(t => t.type === 'deposit');
+  const withdrawals = filteredTransfers.filter(t => t.type === 'withdraw');
+  const totalVolume = filteredTransfers.reduce((sum, t) => sum + t.amountUSD, 0);
 
   return (
     <>
@@ -217,7 +204,7 @@ export default function PoolTransfersPage() {
                   <CardTitle>Transfer History</CardTitle>
                 </div>
                 <CardDescription>
-                  {poolData?.name || `${tokenPair} Pool`} on {protocol}
+                  {poolData?.name || `${tokenPair} Pool`} on {protocol} - Last 15 Transfers
                 </CardDescription>
               </div>
               <div className="flex items-center gap-3">
@@ -241,187 +228,121 @@ export default function PoolTransfersPage() {
               </div>
             </div>
 
-            {/* Summary Stats */}
-            <div className="grid grid-cols-3 gap-4 mt-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Deposits</p>
-                      <p className="text-xl font-bold text-green-500">{deposits.length}</p>
+            {/* Summary Stats - Only show if we have data */}
+            {transfersResponse?.data?.summary && (
+              <div className="grid grid-cols-3 gap-4 mt-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Deposits</p>
+                        <p className="text-xl font-bold text-green-500">{deposits.length}</p>
+                      </div>
+                      <ArrowDownRight className="h-5 w-5 text-green-500" />
                     </div>
-                    <ArrowDownRight className="h-5 w-5 text-green-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Withdrawals</p>
-                      <p className="text-xl font-bold text-red-500">{withdrawals.length}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Withdrawals</p>
+                        <p className="text-xl font-bold text-red-500">{withdrawals.length}</p>
+                      </div>
+                      <ArrowUpRight className="h-5 w-5 text-red-500" />
                     </div>
-                    <ArrowUpRight className="h-5 w-5 text-red-500" />
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Page Volume</p>
-                      <p className="text-xl font-bold">{formatCurrency(totalVolume)}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Volume</p>
+                        <p className="text-xl font-bold">{formatCurrency(totalVolume)}</p>
+                      </div>
+                      <DollarSign className="h-5 w-5 text-blue-500" />
                     </div>
-                    <DollarSign className="h-5 w-5 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-                <div className="col-span-2">Time</div>
-                <div className="col-span-2">Type</div>
-                <div className="col-span-2">Amount</div>
-                <div className="col-span-2">USD Value</div>
-                <div className="col-span-2">From/To</div>
-                <div className="col-span-2">Transaction</div>
-              </div>
-
-              {/* Transfers List */}
-              {paginatedTransfers.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Activity className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="mb-2">No transfers found</p>
-                  <p className="text-sm">
-                    {filter !== 'all' ? 'Try changing the filter' : 'Check back later for transfer data'}
-                  </p>
-                </div>
-              ) : (
-                paginatedTransfers.map((transaction) => (
-                  <div 
-                    key={transaction.id} 
-                    className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors rounded-lg px-2"
-                  >
-                    <div className="col-span-2">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        <span>{formatDistanceToNow(transaction.timestamp, { addSuffix: true })}</span>
+            {/* Transactions List - Show last 15 transfers */}
+            <div className="space-y-2">
+              {filteredTransfers.length > 0 ? (
+                filteredTransfers.map((tx, index) => (
+                  <Card key={`${tx.transactionHash}-${index}`} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            {getTransactionIcon(tx.type)}
+                            <Badge variant={getTransactionBadgeVariant(tx.type)}>
+                              {getTransactionTypeLabel(tx.type)}
+                            </Badge>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <AddressLink 
+                                address={tx.user} 
+                                chainId={network === 'base' ? '8c22f749-65ca-4340-a4c8-fc837df48928' : '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7'}
+                              />
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(new Date(tx.timestamp), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="font-semibold">{formatAmount(tx.amount)} {tx.asset || 'USDC'}</p>
+                            <p className="text-sm text-muted-foreground">{formatCurrency(tx.amountUSD)}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEtherscan(tx.transactionHash)}
+                            className="gap-1"
+                          >
+                            {formatTxHash(tx.transactionHash)}
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="col-span-2">
-                      <div className="flex items-center gap-2">
-                        {getTransactionIcon(transaction.type)}
-                        <Badge variant={getTransactionBadgeVariant(transaction.type)} className="text-xs">
-                          {getTransactionTypeLabel(transaction.type)}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="col-span-2">
-                      <div className="font-semibold text-sm flex items-center gap-1">
-                        {transaction.type === 'withdraw' && '-'}
-                        {transaction.type === 'deposit' && '+'}
-                        {formatAmount(transaction.amount)} USDC
-                      </div>
-                    </div>
-
-                    <div className="col-span-2">
-                      <span className="text-sm font-medium">{formatCurrency(transaction.amountUSD)}</span>
-                    </div>
-
-                    <div className="col-span-2">
-                      <AddressLink 
-                        address={transaction.user}
-                        className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <button
-                        onClick={() => openEtherscan(transaction.transactionHash)}
-                        className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex items-center gap-1"
-                        title={`View transaction on ${network === 'base' ? 'Basescan' : 'Etherscan'}`}
-                      >
-                        {formatTxHash(transaction.transactionHash)}
-                        <ExternalLink className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))
-              )}
-
-              {/* Pagination */}
-              {filteredTransfers.length > 0 && (
-                <div className="flex items-center justify-between pt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Showing {startIndex} to {endIndex} of {filteredTransfers.length} transfers
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handlePreviousPage}
-                      disabled={page === 1}
-                    >
-                      <ChevronLeft className="h-4 w-4 mr-1" />
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                        const pageNum = i + 1;
-                        if (totalPages <= 5) {
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={page === pageNum ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setPage(pageNum)}
-                            >
-                              {pageNum}
-                            </Button>
-                          );
-                        }
-                        
-                        // Show smart pagination for many pages
-                        if (pageNum === 1 || pageNum === totalPages || 
-                            (pageNum >= page - 1 && pageNum <= page + 1)) {
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={page === pageNum ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setPage(pageNum)}
-                            >
-                              {pageNum}
-                            </Button>
-                          );
-                        }
-                        
-                        if ((pageNum === 2 && page > 3) || 
-                            (pageNum === totalPages - 1 && page < totalPages - 2)) {
-                          return <span key={pageNum} className="px-2">...</span>;
-                        }
-                        
-                        return null;
-                      })}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNextPage}
-                      disabled={page === totalPages}
-                    >
-                      Next
-                      <ChevronRight className="h-4 w-4 ml-1" />
-                    </Button>
-                  </div>
-                </div>
+              ) : transfersError ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Activity className="h-12 w-12 mx-auto mb-4 text-red-500" />
+                    <p className="text-muted-foreground">
+                      Error loading transfers. Please try again later.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Filter className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      No transfers found for this pool.
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {filter !== 'all' ? 'Try adjusting your filter or check back later.' : 'Check back later for new transactions.'}
+                    </p>
+                  </CardContent>
+                </Card>
               )}
             </div>
+
+            {/* Status Message */}
+            {filteredTransfers.length > 0 && (
+              <div className="text-sm text-muted-foreground text-center mt-4">
+                Showing last {filteredTransfers.length} transfer{filteredTransfers.length !== 1 ? 's' : ''} for this pool
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

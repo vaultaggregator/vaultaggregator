@@ -122,7 +122,7 @@ export class EnhancedTransfersService {
   /**
    * Get transaction history for a specific pool
    */
-  async getPoolTransactionHistory(poolId: string, limit: number = 100) {
+  async getPoolTransactionHistory(poolId: string, limit: number = 15) {
     try {
       const [pool] = await db
         .select()
@@ -134,30 +134,96 @@ export class EnhancedTransfersService {
         throw new Error('Pool not found or has no contract address');
       }
 
-      const network = pool.chainId === '8c22f749-65ca-4340-a4c8-fc837df48928' ? 'base' : 'ethereum';
+      const network = pool.chainId === '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7' ? 'base' : 'ethereum';
       const alchemy = network === 'base' ? this.alchemyBase : this.alchemyEth;
 
-      console.log(`📊 Fetching transaction history for pool ${pool.tokenPair}`);
+      console.log(`📊 Fetching transaction history for pool ${pool.tokenPair} on ${network}`);
 
-      // Get all transfers for the pool contract
-      const transfers = await alchemy.core.getAssetTransfers({
-        contractAddresses: [pool.poolAddress],
-        category: [AssetTransfersCategory.ERC20],
-        maxCount: limit,
-        withMetadata: true,
-      });
+      // Get both deposits (to pool) and withdrawals (from pool)
+      const [depositsResponse, withdrawalsResponse] = await Promise.all([
+        alchemy.core.getAssetTransfers({
+          toAddress: pool.poolAddress,
+          category: [
+            AssetTransfersCategory.ERC20,
+            AssetTransfersCategory.EXTERNAL
+          ],
+          maxCount: Math.ceil(limit / 2),
+          withMetadata: true,
+          order: 'desc'
+        }),
+        alchemy.core.getAssetTransfers({
+          fromAddress: pool.poolAddress,
+          category: [
+            AssetTransfersCategory.ERC20,
+            AssetTransfersCategory.EXTERNAL
+          ],
+          maxCount: Math.ceil(limit / 2),
+          withMetadata: true,
+          order: 'desc'
+        })
+      ]);
 
-      // Analyze transfer patterns
-      const analysis = this.analyzeTransferPatterns(transfers.transfers);
+      // Combine and format transfers
+      const allTransfers = [
+        ...depositsResponse.transfers.map(t => ({
+          ...t,
+          type: 'deposit' as const,
+          direction: 'in',
+          user: t.from || '',
+          amount: parseFloat(t.value || '0'),
+          amountUSD: parseFloat(t.value || '0'), // In production, convert using token price
+          transactionHash: t.hash,
+          timestamp: t.metadata?.blockTimestamp || new Date().toISOString(),
+          blockNumber: t.blockNum,
+          asset: t.asset || 'Unknown'
+        })),
+        ...withdrawalsResponse.transfers.map(t => ({
+          ...t,
+          type: 'withdraw' as const,
+          direction: 'out',
+          user: t.to || '',
+          amount: parseFloat(t.value || '0'),
+          amountUSD: parseFloat(t.value || '0'), // In production, convert using token price
+          transactionHash: t.hash,
+          timestamp: t.metadata?.blockTimestamp || new Date().toISOString(),
+          blockNumber: t.blockNum,
+          asset: t.asset || 'Unknown'
+        }))
+      ];
+
+      // Sort by timestamp (most recent first) and take the limit
+      const sortedTransfers = allTransfers
+        .sort((a, b) => {
+          const dateA = new Date(a.timestamp).getTime();
+          const dateB = new Date(b.timestamp).getTime();
+          return dateB - dateA;
+        })
+        .slice(0, limit);
+
+      // Calculate summary
+      const deposits = sortedTransfers.filter(t => t.type === 'deposit');
+      const withdrawals = sortedTransfers.filter(t => t.type === 'withdraw');
+      const totalVolumeUSD = sortedTransfers.reduce((sum, t) => sum + t.amountUSD, 0);
 
       return {
         poolId,
         poolName: pool.tokenPair,
         contractAddress: pool.poolAddress,
         network,
-        totalTransfers: transfers.transfers.length,
-        transfers: transfers.transfers,
-        analysis,
+        transactions: sortedTransfers,
+        summary: {
+          totalDeposits: deposits.length,
+          totalWithdrawals: withdrawals.length,
+          totalVolumeUSD,
+          depositsVolumeUSD: deposits.reduce((sum, t) => sum + t.amountUSD, 0),
+          withdrawalsVolumeUSD: withdrawals.reduce((sum, t) => sum + t.amountUSD, 0)
+        },
+        pagination: {
+          page: 1,
+          limit,
+          total: sortedTransfers.length,
+          totalPages: 1
+        },
         timestamp: new Date()
       };
     } catch (error) {
@@ -347,7 +413,7 @@ export class EnhancedTransfersService {
       for (const pool of allPools.slice(0, 5)) { // Check first 5 pools for performance
         if (!pool.poolAddress) continue;
 
-        const network = pool.chainId === '8c22f749-65ca-4340-a4c8-fc837df48928' ? 'base' : 'ethereum';
+        const network = pool.chainId === '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7' ? 'base' : 'ethereum';
         const alchemy = network === 'base' ? this.alchemyBase : this.alchemyEth;
 
         const transfers = await alchemy.core.getAssetTransfers({

@@ -58,7 +58,7 @@ router.get('/api/transfers/wallet/:address', async (req, res) => {
 router.get('/api/transfers/pool/:poolId', async (req, res) => {
   try {
     const { poolId } = req.params;
-    const { limit = 100 } = req.query;
+    const { limit = 15 } = req.query;
 
     const history = await enhancedTransfersService.getPoolTransactionHistory(
       poolId,
@@ -67,8 +67,7 @@ router.get('/api/transfers/pool/:poolId', async (req, res) => {
 
     res.json({
       success: true,
-      data: history,
-      message: '📊 Complete transaction history with internal transfers'
+      data: history
     });
   } catch (error) {
     console.error('Error fetching pool history:', error);
