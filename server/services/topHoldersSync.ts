@@ -38,8 +38,8 @@ interface AlchemyResponse {
 
 export class TopHoldersSyncService {
   private static readonly CHAIN_URLS = {
-    'ethereum': process.env.ALCHEMY_RPC_URL,
-    'base': process.env.ALCHEMY_RPC_URL, // Use same URL for now, can be split later if needed
+    'ethereum': process.env.ALCHEMY_ETH_HTTP_URL,
+    'base': process.env.ALCHEMY_BASE_HTTP_URL,
   };
 
   private static readonly ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -107,7 +107,7 @@ export class TopHoldersSyncService {
         method: "alchemy_getAssetTransfers",
         params: [{
           fromBlock: `0x${fromBlock.toString(16)}`,
-          toBlock: toBlock === 'latest' ? 'latest' : `0x${Number(toBlock).toString(16)}`,
+          toBlock: toBlock === 'latest' ? 'latest' : `0x${toBlock.toString(16)}`,
           contractAddresses: [contractAddress],
           category: ["erc20"],
           withMetadata: false,
@@ -164,7 +164,7 @@ export class TopHoldersSyncService {
 
     for (const transfer of transfers) {
       const { from, to, value } = transfer;
-      const amount = BigInt(Math.floor(parseFloat(value || '0')));
+      const amount = BigInt(value || '0');
 
       // Skip zero address and contract itself
       if (from !== this.ZERO_ADDRESS && from.toLowerCase() !== contractAddress.toLowerCase()) {
