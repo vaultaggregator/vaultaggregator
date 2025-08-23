@@ -103,14 +103,4 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
     category: "sync",
     priority: 2,
   },
-
-  hardcodeScan: {
-    serviceName: "hardcodeScan",
-    displayName: "Hardcode Scanner",
-    description: "Scans codebase for hardcoded values and generates compliance reports",
-    intervalMinutes: 1440, // Run daily
-    isEnabled: true,
-    category: "admin",
-    priority: 8,
-  },
 };

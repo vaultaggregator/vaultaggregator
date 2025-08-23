@@ -1008,12 +1008,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const page = parseInt(req.params.page) || 1;
       const limit = Math.min(parseInt(req.params.limit) || constants.HOLDERS_DEFAULT_LIMIT, constants.MAX_HOLDERS_DISPLAY);
 
-      console.log(`ℹ️ Holder data not available for pool ${poolId}`);
+      // Validate pagination parameters
+      if (page < 1 || limit < 1) {
+        return res.status(400).json({ 
+          message: "Invalid pagination parameters. Page must be >= 1, limit must be >= 1." 
+        });
+      }
+
+      console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
+
+      // Get the actual total holder count from pool_metrics_current
+      const [metrics] = await db
+        .select({ holdersCount: poolMetricsCurrent.holdersCount })
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .limit(1);
+
+      // Get holders from database (all pools uniformly show up to 1000 holders)
+      const result = await storage.getPoolHolders(poolId, page, limit);
       
+      // Limit the displayed total count to MAX_HOLDERS_DISPLAY to avoid overwhelming users
+      const rawTotalCount = metrics?.holdersCount || result.total;
+      const actualTotalCount = Math.min(rawTotalCount, constants.MAX_HOLDERS_DISPLAY);
+      const actualPages = Math.ceil(actualTotalCount / limit);
+      
+      // Format holder data for frontend with proper number conversion
+      const formattedHolders = result.holders.map(holder => ({
+        address: holder.holderAddress,
+        tokenBalance: holder.tokenBalanceFormatted || holder.tokenBalance,
+        usdValue: parseFloat(holder.usdValue || '0'),
+        walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
+        walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
+        poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
+        rank: holder.rank
+      }));
+
       res.json({
-        holders: [],
-        pagination: { page: 1, limit, total: 0, pages: 0 },
-        message: "Holder data feature is not available."
+        holders: formattedHolders,
+        pagination: {
+          page,
+          limit,
+          total: actualTotalCount,
+          pages: actualPages
+        }
       });
     } catch (error) {
       console.error("Error fetching pool holders:", error);
@@ -1032,12 +1069,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || constants.HOLDERS_DEFAULT_LIMIT;
 
-      console.log(`ℹ️ Holder data not available for pool ${poolId}`);
+      // Validate pagination parameters
+      if (page < 1 || limit < 1 || limit > constants.MAX_HOLDERS_DISPLAY) {
+        return res.status(400).json({ 
+          message: `Invalid pagination parameters. Page must be >= 1, limit must be between 1 and ${constants.MAX_HOLDERS_DISPLAY}.` 
+        });
+      }
+
+      console.log(`📊 Getting holders for pool ${poolId}, page ${page}, limit ${limit}`);
+
+      // Get the actual total holder count from pool_metrics_current
+      const [metrics] = await db
+        .select({ holdersCount: poolMetricsCurrent.holdersCount })
+        .from(poolMetricsCurrent)
+        .where(eq(poolMetricsCurrent.poolId, poolId))
+        .limit(1);
+
+      // Get holders from database (all pools uniformly show up to 1000 holders)
+      const result = await storage.getPoolHolders(poolId, page, limit);
       
+      // Limit the displayed total count to MAX_HOLDERS_DISPLAY to avoid overwhelming users
+      const rawTotalCount = metrics?.holdersCount || result.total;
+      const actualTotalCount = Math.min(rawTotalCount, constants.MAX_HOLDERS_DISPLAY);
+      const actualPages = Math.ceil(actualTotalCount / limit);
+      
+      // Format holder data for frontend with proper number conversion
+      const formattedHolders = result.holders.map(holder => ({
+        address: holder.holderAddress,
+        tokenBalance: holder.tokenBalanceFormatted || holder.tokenBalance,
+        usdValue: parseFloat(holder.usdValue || '0'),
+        walletBalanceEth: parseFloat(holder.walletBalanceEth || '0'),
+        walletBalanceUsd: parseFloat(holder.walletBalanceUsd || '0'),
+        poolSharePercentage: parseFloat(holder.poolSharePercentage || '0'),
+        rank: holder.rank
+      }));
+
       res.json({
-        holders: [],
-        pagination: { page: 1, limit, total: 0, pages: 0 },
-        message: "Holder data feature is not available."
+        holders: formattedHolders,
+        pagination: {
+          page,
+          limit,
+          total: actualTotalCount,
+          pages: actualPages
+        }
       });
     } catch (error) {
       console.error("Error fetching pool holders:", error);

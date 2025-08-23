@@ -59,13 +59,10 @@ interface HoldersResponse {
   };
 }
 
-// Configuration constants - synchronized with backend config
-const MAX_HOLDERS_DISPLAY = 100; // Maximum number of holders to show to users (matches backend config)
-
 export default function PoolHoldersPage() {
   const { network, protocol, tokenPair } = useParams();
   const [page, setPage] = useState(1);
-  const limit = MAX_HOLDERS_DISPLAY; // Dynamic limit from configuration
+  const limit = 100;
 
   // First fetch pool info to get pool ID
   const { data: poolData, isLoading: poolLoading } = useQuery<PoolData>({
@@ -191,7 +188,7 @@ export default function PoolHoldersPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                <CardTitle>Top {MAX_HOLDERS_DISPLAY} Token Holders</CardTitle>
+                <CardTitle>Top 100 Token Holders</CardTitle>
               </div>
               <CardDescription>
                 {poolData?.name || `${tokenPair} Pool`} on {protocol}
@@ -235,7 +232,7 @@ export default function PoolHoldersPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="h-5 w-5" />
-                  <CardTitle>Top {MAX_HOLDERS_DISPLAY} Token Holders</CardTitle>
+                  <CardTitle>Top 100 Token Holders</CardTitle>
                 </div>
                 <CardDescription>
                   {poolData?.name || `${tokenPair} Pool`} on {protocol}
@@ -245,7 +242,7 @@ export default function PoolHoldersPage() {
                 <Badge variant="secondary">
                   {(lidoNote?.actualTotal || pagination.total).toLocaleString()} Total Holders
                 </Badge>
-                <span className="text-xs text-muted-foreground">Showing top {MAX_HOLDERS_DISPLAY}</span>
+                <span className="text-xs text-muted-foreground">Showing top 100</span>
               </div>
             </div>
             {lidoNote?.isLido && (
@@ -389,7 +386,7 @@ export default function PoolHoldersPage() {
                     variant="outline"
                     size="sm"
                     onClick={handleNextPage}
-                    disabled={page === pagination.pages}
+                    disabled={page === pagination.totalPages}
                   >
                     Next
                     <ChevronRight className="h-4 w-4 ml-1" />

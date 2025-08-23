@@ -6,7 +6,7 @@
 import { db } from '../db';
 import { poolMetricsCurrent } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
-// Web scraper functionality removed
+import { etherscanHolderScraper } from './etherscanHolderScraper';
 
 export class SimpleHolderCountService {
   
@@ -19,8 +19,7 @@ export class SimpleHolderCountService {
    */
   async updateHolderCount(poolId: string, contractAddress: string, chainName: string = 'ethereum'): Promise<number> {
     try {
-      // Web scraper functionality removed - return 0 for now
-      const totalCount = 0;
+      const totalCount = await etherscanHolderScraper.getHolderCount(contractAddress, chainName);
       
       // Update only the holder count in pool_metrics_current
       const existingMetrics = await db
