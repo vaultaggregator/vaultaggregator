@@ -95,4 +95,14 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
     category: "sync",
     priority: 2,
   },
+
+  holderCountScraper: {
+    serviceName: "holderCountScraper",
+    displayName: "Holder Count Scraper", 
+    description: "Scrapes total holder counts from Etherscan/Basescan for accurate holder statistics",
+    intervalMinutes: 60,
+    isEnabled: true,
+    category: "scraper",
+    priority: 2,
+  },
 };

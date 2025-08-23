@@ -216,6 +216,13 @@ async function triggerService(serviceId: string) {
         console.log('✅ Wallet Holders Sync completed:', result);
         break;
         
+      case 'holderCountScraper':
+        console.log('🔍 Manually triggering Holder Count Scraper...');
+        const { EtherscanHolderScraper } = await import("../services/etherscan-holder-scraper");
+        const scraperResult = await EtherscanHolderScraper.scrapeAllPoolHolderCounts();
+        console.log('✅ Holder Count Scraper completed:', scraperResult);
+        break;
+        
       case 'aiOutlookGeneration':
         const { aiScheduler } = await import("../services/aiSchedulerService");
         await aiScheduler.generateAllInsights();

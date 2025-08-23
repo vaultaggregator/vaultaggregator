@@ -65,6 +65,18 @@ class DatabaseScheduler {
       }
     });
 
+    // Holder Count Scraper - total holder counts from Etherscan/Basescan
+    this.scheduleService('holderCountScraper', async () => {
+      try {
+        console.log('🔍 Starting scheduled holder count scraping...');
+        const { EtherscanHolderScraper } = await import('./etherscan-holder-scraper');
+        await EtherscanHolderScraper.scrapeAllPoolHolderCounts();
+        console.log('✅ Scheduled holder count scraping completed');
+      } catch (error) {
+        console.error('❌ Error in scheduled holder count scraping:', error);
+      }
+    });
+
   }
 
   private scheduleService(serviceName: string, task: () => Promise<void>): void {
@@ -131,6 +143,18 @@ class DatabaseScheduler {
             console.log('✅ Scheduled wallet holders sync completed');
           } catch (error) {
             console.error('❌ Error in scheduled wallet holders sync:', error);
+          }
+        };
+        break;
+      case 'holderCountScraper':
+        task = async () => {
+          try {
+            console.log('🔍 Starting scheduled holder count scraping...');
+            const { EtherscanHolderScraper } = await import('./etherscan-holder-scraper');
+            await EtherscanHolderScraper.scrapeAllPoolHolderCounts();
+            console.log('✅ Scheduled holder count scraping completed');
+          } catch (error) {
+            console.error('❌ Error in scheduled holder count scraping:', error);
           }
         };
         break;
