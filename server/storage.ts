@@ -1000,7 +1000,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(poolMetricsCurrent).where(eq(poolMetricsCurrent.poolId, id));
       await db.delete(poolMetricsHistory).where(eq(poolMetricsHistory.poolId, id));
       await db.delete(poolHistoricalData).where(eq(poolHistoricalData.poolId, id));
-      await db.delete(tokenHolders).where(eq(tokenHolders.poolId, id));
+      // Token holders removed from system
       await db.delete(webhookConfigs).where(eq(webhookConfigs.poolId, id));
       await db.delete(tokenTransactions).where(eq(tokenTransactions.poolId, id));
       
@@ -2248,109 +2248,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  // Token Holders methods
-  async getPoolHolders(poolId: string, page: number = 1, limit: number = 20): Promise<{ holders: TokenHolder[], total: number, pages: number }> {
-    const offset = (page - 1) * limit;
-    
-    // Get total count
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(tokenHolders)
-      .where(eq(tokenHolders.poolId, poolId));
-
-    // Get paginated holders
-    const holders = await db
-      .select()
-      .from(tokenHolders)
-      .where(eq(tokenHolders.poolId, poolId))
-      .orderBy(asc(tokenHolders.rank))
-      .limit(limit)
-      .offset(offset);
-
-    // Process holders to convert hex balances if needed
-    const processedHolders = holders.map(holder => {
-      let formattedBalance = holder.tokenBalanceFormatted;
-      
-      // Check if tokenBalance is a hex string and needs conversion
-      if (holder.tokenBalance && holder.tokenBalance.startsWith('0x')) {
-        try {
-          // Convert hex to BigInt then to decimal string
-          const bigIntValue = BigInt(holder.tokenBalance);
-          // Assuming 18 decimals for stETH
-          const divisor = BigInt(10 ** 18);
-          const wholePart = bigIntValue / divisor;
-          const fractionalPart = bigIntValue % divisor;
-          
-          // Format with 8 decimal places
-          const fractionalStr = fractionalPart.toString().padStart(18, '0');
-          formattedBalance = `${wholePart}.${fractionalStr.slice(0, 8)}`;
-          
-          // Recalculate USD value if needed
-          const tokenPrice = 3200; // Approximate ETH/stETH price
-          const numericBalance = parseFloat(formattedBalance);
-          holder.usdValue = (numericBalance * tokenPrice).toFixed(2);
-          
-        } catch (error) {
-          console.log(`Error converting hex balance for holder ${holder.holderAddress}:`, error);
-        }
-      }
-      
-      return {
-        ...holder,
-        tokenBalanceFormatted: formattedBalance
-      };
-    });
-
-    const total = Number(count);
-    const pages = Math.ceil(total / limit);
-
-    return { holders: processedHolders, total, pages };
-  }
-
-  async insertTokenHolder(holder: InsertTokenHolder): Promise<TokenHolder> {
-    const [newHolder] = await db
-      .insert(tokenHolders)
-      .values(holder)
-      .returning();
-    return newHolder;
-  }
-
-  /**
-   * Batch insert multiple token holders for better performance
-   * Splits into chunks to avoid database limits
-   */
-  async batchInsertTokenHolders(holders: InsertTokenHolder[]): Promise<number> {
-    if (holders.length === 0) return 0;
-    
-    const BATCH_SIZE = 100; // Insert 100 holders at a time to avoid timeouts
-    let totalInserted = 0;
-    
-    // Process in chunks
-    for (let i = 0; i < holders.length; i += BATCH_SIZE) {
-      const chunk = holders.slice(i, i + BATCH_SIZE);
-      
-      try {
-        await db.insert(tokenHolders).values(chunk);
-        totalInserted += chunk.length;
-        
-        // Log progress for large batches
-        if (holders.length > 200 && (i + BATCH_SIZE) % 200 === 0) {
-          console.log(`📊 Inserted ${Math.min(i + BATCH_SIZE, holders.length)}/${holders.length} holders...`);
-        }
-      } catch (error) {
-        console.error(`❌ Failed to insert batch at index ${i}:`, error);
-        // Continue with next batch even if one fails
-      }
-    }
-    
-    return totalInserted;
-  }
-
-  async clearPoolHolders(poolId: string): Promise<void> {
-    await db
-      .delete(tokenHolders)
-      .where(eq(tokenHolders.poolId, poolId));
-  }
+  // Token holder functionality removed from system
 
   async getActivePools(): Promise<Pool[]> {
     return await db
