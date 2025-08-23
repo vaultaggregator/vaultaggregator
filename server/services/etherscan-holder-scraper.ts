@@ -27,8 +27,15 @@ export class EtherscanHolderScraper {
           continue;
         }
 
-        console.log(`🔄 Scraping holder count for: ${pool.tokenPair} (${pool.poolAddress})`);
-        const holderCount = await this.scrapeHolderCount(pool.poolAddress, pool.chain.name);
+        // Get chain information for this pool
+        const chain = await storage.getChainById(pool.chainId);
+        if (!chain) {
+          console.log(`⚠️ Skipping pool ${pool.tokenPair} - chain not found`);
+          continue;
+        }
+
+        console.log(`🔄 Scraping holder count for: ${pool.tokenPair} (${pool.poolAddress}) on ${chain.name}`);
+        const holderCount = await this.scrapeHolderCount(pool.poolAddress, chain.name);
         
         if (holderCount !== null) {
           // Store in holder history
@@ -60,10 +67,25 @@ export class EtherscanHolderScraper {
    */
   private static async scrapeHolderCount(tokenAddress: string, chainName: string): Promise<number | null> {
     try {
-      const baseUrl = chainName.toLowerCase() === 'ethereum' ? this.ETHERSCAN_BASE : this.BASESCAN_BASE;
+      // Determine the correct scanner URL based on network
+      let baseUrl: string;
+      let networkName: string;
+      
+      if (chainName.toLowerCase() === 'ethereum') {
+        baseUrl = this.ETHERSCAN_BASE;
+        networkName = 'Etherscan';
+      } else if (chainName.toLowerCase() === 'base') {
+        baseUrl = this.BASESCAN_BASE;
+        networkName = 'Basescan';
+      } else {
+        // Default to Basescan for any other network
+        baseUrl = this.BASESCAN_BASE;
+        networkName = 'Basescan';
+      }
+      
       const url = `${baseUrl}/${tokenAddress}`;
       
-      console.log(`🌐 Fetching: ${url}`);
+      console.log(`🌐 Fetching from ${networkName}: ${url}`);
       
       const response = await fetch(url, {
         headers: {
@@ -119,7 +141,14 @@ export class EtherscanHolderScraper {
       return;
     }
 
-    const holderCount = await this.scrapeHolderCount(pool.poolAddress, pool.chain.name);
+    // Get chain information for this pool
+    const chain = await storage.getChainById(pool.chainId);
+    if (!chain) {
+      console.log(`❌ Chain not found for pool ${poolId}`);
+      return;
+    }
+
+    const holderCount = await this.scrapeHolderCount(pool.poolAddress, chain.name);
     
     if (holderCount !== null) {
       await storage.storeHolderHistory({
