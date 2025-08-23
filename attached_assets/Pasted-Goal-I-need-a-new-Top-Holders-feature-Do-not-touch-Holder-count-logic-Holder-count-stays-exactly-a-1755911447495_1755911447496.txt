@@ -1,0 +1,64 @@
+Goal
+I need a new Top Holders feature. Do not touch Holder count logic. Holder count stays exactly as is. Top holders is a separate dataset and view.
+
+Definitions
+Holder count is the total number of holders used on the homepage and the single pool page. Leave it unchanged.
+Top holders is a ranked list of addresses and balances for each pool’s vault token. This is new. Fetch it from Alchemy. Cache it with our SWR caching. Show it on each pool page. Also backfill when I add a new pool.
+
+What to build
+
+Create a new service named topHoldersSync. Do not piggyback on any existing service. Put it under admin/services.
+
+The service must fetch top holders per pool using Alchemy. Use the Alchemy Transfers API to walk ERC20 Transfer events for the vault token address of each pool. Accumulate per address net balance by adding incoming and subtracting outgoing. Exclude zero address. Exclude the vault contract itself if it appears. Sort and keep top 20 by final balance. Return address, balance, share percent if total supply is available.
+
+Support multiple chains. Base is required. Add a simple map per chain to the right Alchemy HTTP URL. Load each URL from env. Example names ALCHEMY_BASE_HTTP_URL and ALCHEMY_ETH_HTTP_URL. You can add more chains if they exist in pools.
+
+Respect the pool creation block if we have it. If data/creation-info.json exists and has the pool address and block number, start from that block. If not, start from a reasonable recent block and then update the snapshot incrementally on later runs.
+
+Write snapshots per pool to data/snapshots/top-holders/{chain}/{poolId}.json. Include updatedAt, list of { address, balance, pct }, and the token address you used.
+
+SWR caching
+6. Expose an API route that serves and refreshes this data
+GET /api/top-holders/:chain/:protocol/:vault
+Use our SWR cache. Key pattern topHolders:{chain}:{vaultTokenAddress}. Stale TTL 1 hour. Hard TTL 24 hours. Serve snapshot fast. Refresh in background.
+7. If ensureFresh.js exists, use it. If not, add a minimal SWR helper that writes snapshots to disk and prevents concurrent rebuilds for the same key.
+
+Auto populate on new pools
+8. When a user visits a pool page and the top holders snapshot is missing, trigger a background build for that key and serve empty data for that first paint. On the next paint the data should appear. Also add an admin endpoint to force a refresh
+POST /api/revalidate/top-holders/:chain/:protocol/:vault
+
+Admin and testing
+9. Add the new service to the admin services page as Top Holders Sync. Show last run time and last error if any. Provide a Run button that calls the revalidate endpoint for the current pool or for all pools.
+10. Do not change Holder count anywhere. If you see code paths that merge these concepts, split them. Holder count remains the existing source of truth.
+11. Add simple rate limits and a small concurrency cap when calling Alchemy so we do not get throttled. Log how many pages and transfers you processed per run.
+
+UI changes
+12. On each pool page add a Top holders section. Simple table with rank, address short form, balance, percent. Add a timestamp label Updated at.
+13. If there is no data yet, show Loading top holders and start the background refresh. No spinner storm. One request only.
+
+Env and config
+14. Read these env vars from Replit Secrets
+ALCHEMY_BASE_HTTP_URL
+ALCHEMY_ETH_HTTP_URL
+You can add others if we have more chains
+15. Do not commit .env. If needed, add placeholders to .env.example.
+
+Acceptance tests
+16. Visit a Base pool page. Confirm GET /api/top-holders/base/... returns 200 with a top 20 list and an updatedAt. Confirm a snapshot file exists under data/snapshots/top-holders/base.
+17. Add a new pool to the site. Visit its page. Confirm the first hit serves quickly and the second hit within a minute shows top holders. Confirm the snapshot file was created.
+18. Open the admin services page. Confirm Top Holders Sync appears with a last run time. Click Run and see logs update. No other service should change.
+19. Confirm Holder count numbers on homepage and pool page did not change code path or values.
+
+Edge cases
+20. If a token is rebasing, balances derived from transfers can drift. In that case, detect ERC20 balanceOf and totalSupply and do a direct balanceOf sweep on the current top 200 addresses seen in transfers. Fall back to transfer math only if sweeping fails.
+21. If Alchemy returns a pageKey loop, handle pagination until done or until a sane cap to avoid runaway cost. Keep a cursor in the snapshot so next run is incremental.
+
+Deliverables
+22. New service file under admin/services for topHoldersSync with clear exportable run function.
+23. New API routes for GET top holders and POST revalidate.
+24. New snapshot files per pool under data/snapshots/top-holders.
+25. Admin service entry with last run and a test Run action.
+26. Pool page section that renders the table with updated timestamp.
+27. Logs that show chain, pool id, token address, transfers scanned, and duration.
+
+Do not change any holder count logic. Only add the Top holders feature as specified.
