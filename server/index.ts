@@ -65,14 +65,6 @@ app.use((req, res, next) => {
   // Initialize AI scheduler service
   const { aiScheduler } = await import("./services/aiSchedulerService");
   
-  // Initialize simple holder count service (only updates counts, no individual holder storage)
-  const { simpleHolderCountService } = await import("./services/simpleHolderCountService");
-  // Run holder count updates every 30 minutes
-  setInterval(() => {
-    simpleHolderCountService.updateAllPoolHolderCounts().catch(err => 
-      console.error('❌ Scheduled holder count update failed:', err)
-    );
-  }, 30 * 60 * 1000);
   console.log("✅ Simple Holder Count Service initialized - updating counts every 30 minutes");
   
   // Update operating days daily at midnight

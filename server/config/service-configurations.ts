@@ -86,10 +86,10 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
   },
   
   
-  poolHoldersSync: {
-    serviceName: "poolHoldersSync",
-    displayName: "Pool Holders Sync", 
-    description: "Fetches individual pool holder addresses from Moralis and balances from Alchemy (max 15 holders per pool)",
+  walletHoldersSync: {
+    serviceName: "walletHoldersSync",
+    displayName: "Wallet Holders Sync", 
+    description: "Fetches top 15 wallet holders per pool with addresses, balances, and rankings from blockchain APIs",
     intervalMinutes: 30,
     isEnabled: true,
     category: "sync",

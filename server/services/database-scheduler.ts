@@ -28,17 +28,6 @@ class DatabaseScheduler {
       await scraperManager.scrapeAllPools();
     });
 
-    // Holder Data Sync - uses configurable interval  
-    this.scheduleService('holderDataSync', async () => {
-      try {
-        console.log('👥 Starting scheduled holder data sync...');
-        const { simpleHolderCountService } = await import('./simpleHolderCountService');
-        await simpleHolderCountService.updateAllPoolHolderCounts();
-        console.log('✅ Scheduled holder data sync completed');
-      } catch (error) {
-        console.error('❌ Error in scheduled holder data sync:', error);
-      }
-    });
 
     // Cleanup Service - disabled by default due to SQL issues
     // this.scheduleService('cleanup', async () => {
@@ -64,29 +53,18 @@ class DatabaseScheduler {
       }
     });
 
-    // Pool Holders Sync - individual holder addresses and balances from Moralis/Alchemy
-    this.scheduleService('poolHoldersSync', async () => {
+    // Wallet Holders Sync - individual holder addresses and balances from Moralis/Alchemy
+    this.scheduleService('walletHoldersSync', async () => {
       try {
-        console.log('🔍 Starting scheduled pool holders sync...');
+        console.log('🔍 Starting scheduled wallet holders sync...');
         const { PoolHoldersService } = await import('./pool-holders-service');
         await PoolHoldersService.syncAllPoolHolders();
-        console.log('✅ Scheduled pool holders sync completed');
+        console.log('✅ Scheduled wallet holders sync completed');
       } catch (error) {
-        console.error('❌ Error in scheduled pool holders sync:', error);
+        console.error('❌ Error in scheduled wallet holders sync:', error);
       }
     });
 
-    // Etherscan Scraper - updates holder counts
-    this.scheduleService('etherscanScraper', async () => {
-      try {
-        console.log('🔍 Starting Etherscan holder count update...');
-        const { simpleHolderCountService } = await import('./simpleHolderCountService');
-        await simpleHolderCountService.updateAllPoolHolderCounts();
-        console.log('✅ Etherscan holder count update completed');
-      } catch (error) {
-        console.error('❌ Error in Etherscan holder count update:', error);
-      }
-    });
   }
 
   private scheduleService(serviceName: string, task: () => Promise<void>): void {
@@ -130,18 +108,6 @@ class DatabaseScheduler {
           await scraperManager.scrapeAllPools();
         };
         break;
-      case 'holderDataSync':
-        task = async () => {
-          try {
-            console.log('👥 Starting scheduled holder data sync...');
-            const { simpleHolderCountService } = await import('./simpleHolderCountService');
-            await simpleHolderCountService.updateAllPoolHolderCounts();
-            console.log('✅ Scheduled holder data sync completed');
-          } catch (error) {
-            console.error('❌ Error in scheduled holder data sync:', error);
-          }
-        };
-        break;
       case 'cleanup':
         console.log('⚠️ Cleanup service is disabled due to SQL syntax issues');
         return;
@@ -156,27 +122,15 @@ class DatabaseScheduler {
           }
         };
         break;
-      case 'etherscanScraper':
+      case 'walletHoldersSync':
         task = async () => {
           try {
-            console.log('🔍 Starting Etherscan holder count update...');
-            const { simpleHolderCountService } = await import('./simpleHolderCountService');
-            await simpleHolderCountService.updateAllPoolHolderCounts();
-            console.log('✅ Etherscan holder count update completed');
-          } catch (error) {
-            console.error('❌ Error in Etherscan holder count update:', error);
-          }
-        };
-        break;
-      case 'poolHoldersSync':
-        task = async () => {
-          try {
-            console.log('🔍 Starting scheduled pool holders sync...');
+            console.log('🔍 Starting scheduled wallet holders sync...');
             const { PoolHoldersService } = await import('./pool-holders-service');
             await PoolHoldersService.syncAllPoolHolders();
-            console.log('✅ Scheduled pool holders sync completed');
+            console.log('✅ Scheduled wallet holders sync completed');
           } catch (error) {
-            console.error('❌ Error in scheduled pool holders sync:', error);
+            console.error('❌ Error in scheduled wallet holders sync:', error);
           }
         };
         break;

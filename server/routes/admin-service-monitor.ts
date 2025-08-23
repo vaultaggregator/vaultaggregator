@@ -700,7 +700,6 @@ function getNextRun(serviceName: string): string {
 function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | 'healing' {
   const typeMap: { [key: string]: 'scraper' | 'sync' | 'metrics' | 'healing' } = {
     poolDataSync: 'scraper',
-    holderDataSync: 'sync',
     aiOutlookGeneration: 'healing',
     cleanup: 'healing',
     tokenPriceSync: 'sync',
@@ -715,7 +714,6 @@ function getServiceType(serviceName: string): 'scraper' | 'sync' | 'metrics' | '
 function getServiceDescription(serviceName: string): string {
   const descriptions: { [key: string]: string } = {
     poolDataSync: 'Synchronizes APY and TVL data from platform APIs',
-    holderDataSync: 'Updates token holder information and portfolio values',
     aiOutlookGeneration: 'Generates AI-powered market insights and predictions',
     cleanup: 'Performs database maintenance and removes expired data',
     tokenPriceSync: 'Updates token prices from multiple sources',
@@ -751,7 +749,6 @@ async function getPoolsAffected(serviceName: string): Promise<number> {
     // Return appropriate count based on service
     switch(serviceName) {
       case 'poolDataSync':
-      case 'holderDataSync':
       case 'aiOutlookGeneration':
       case 'historicalDataSync':
       case 'etherscanScraper':

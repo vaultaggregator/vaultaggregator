@@ -209,11 +209,11 @@ async function triggerService(serviceId: string) {
         await scraperManager.scrapeAllPools();
         break;
         
-      case 'poolHoldersSync':
-        console.log('🔍 Manually triggering Pool Holders Sync...');
+      case 'walletHoldersSync':
+        console.log('🔍 Manually triggering Wallet Holders Sync...');
         const { PoolHoldersService } = await import("../services/pool-holders-service");
         const result = await PoolHoldersService.syncAllPoolHolders();
-        console.log('✅ Pool Holders Sync completed:', result);
+        console.log('✅ Wallet Holders Sync completed:', result);
         break;
         
       case 'aiOutlookGeneration':
