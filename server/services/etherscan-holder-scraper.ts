@@ -75,7 +75,7 @@ export class EtherscanHolderScraper {
         requestCount++;
         
         if (holderCount !== null) {
-          // Store in holder history
+          // Store in holder history for analytics
           await storage.storeHolderHistory({
             tokenAddress: pool.poolAddress,
             holdersCount: holderCount,
@@ -83,7 +83,15 @@ export class EtherscanHolderScraper {
             marketCapUsd: null,
           });
           
-          console.log(`✅ ${pool.tokenPair}: ${holderCount} total holders`);
+          // IMPORTANT: Also update the pool_metrics_current table so it shows on the website
+          await storage.upsertPoolMetricsCurrent(pool.id, {
+            holdersCount: holderCount,
+            holdersStatus: 'success',
+            lastCollectionAt: new Date(),
+            lastSuccessfulCollectionAt: new Date(),
+          });
+          
+          console.log(`✅ ${pool.tokenPair}: ${holderCount} total holders (updated in pool metrics)`);
           success++;
         } else {
           console.log(`⚠️ Could not get holder count for ${pool.tokenPair} after ${this.MAX_RETRIES + 1} attempts`);
