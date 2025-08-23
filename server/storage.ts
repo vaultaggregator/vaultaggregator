@@ -2327,7 +2327,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(swrCachedPages)
       .where(eq(swrCachedPages.id, id));
-    return true;
+    return (result.rowCount || 0) > 0;
   }
 
   async getSwrCacheSnapshots(pageId?: string): Promise<SwrCacheSnapshot[]> {
