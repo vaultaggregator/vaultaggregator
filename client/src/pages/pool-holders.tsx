@@ -337,14 +337,20 @@ export default function PoolHoldersPage() {
               </h1>
               <p className="text-muted-foreground">
                 <ProtocolLink 
-                  protocolId={pool.platform.id}
-                  protocolName={pool.platform.displayName}
+                  protocol={{
+                    id: pool.platform.id,
+                    name: pool.platform.name,
+                    displayName: pool.platform.displayName
+                  }}
                   className="hover:underline"
                 />
                 {" on "}
                 <NetworkLink 
-                  networkId={pool.chain.id}
-                  networkName={pool.chain.displayName}
+                  network={{
+                    id: pool.chain.id,
+                    name: pool.chain.name,
+                    displayName: pool.chain.displayName
+                  }}
                   className="hover:underline"
                 />
               </p>
