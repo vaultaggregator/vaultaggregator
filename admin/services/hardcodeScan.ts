@@ -308,4 +308,11 @@ function generateHumanReport(report: HardcodeReport): string {
   return lines.join('\n');
 }
 
+// Service metadata for dynamic discovery
+export const meta = {
+  id: "hardcodeScan",
+  name: "Hardcode Scanner",
+  description: "Scan codebase for hardcoded values and generate comprehensive reports"
+};
+
 // Export for CLI usage - removed require.main check for ES modules
