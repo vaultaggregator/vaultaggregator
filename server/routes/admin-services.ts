@@ -2,7 +2,6 @@ import { Router } from "express";
 import { db } from "../db";
 import { serviceConfigurations } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { serviceRegistry } from "../lib/serviceRegistry";
 
 const router = Router();
 
@@ -31,66 +30,6 @@ const requireAuth = (req: any, res: any, next: any) => {
   res.status(401).json({ error: "Authentication required" });
 };
 
-// Dynamic service discovery endpoints
-
-// GET /api/admin/services/list - Get all discovered services
-router.get("/admin/services/list", requireAuth, async (req, res) => {
-  try {
-    const services = serviceRegistry.getServices();
-    console.log(`📋 Serving ${services.length} discovered services`);
-    
-    res.json({
-      success: true,
-      services: services.map(service => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        lastRun: service.lastRun?.toISOString() || null,
-        lastError: service.lastError || null,
-        totalRuns: service.totalRuns,
-        successRate: service.totalRuns > 0 ? (service.successCount / service.totalRuns) * 100 : 100
-      }))
-    });
-  } catch (error) {
-    console.error("❌ Error fetching service list:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Failed to fetch service list" 
-    });
-  }
-});
-
-// POST /api/admin/services/run/:id - Run a service
-router.post("/admin/services/run/:id", requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(`🚀 Manual trigger requested for service: ${id}`);
-    
-    const result = await serviceRegistry.runService(id);
-    
-    if (result.success) {
-      res.json({
-        success: true,
-        message: `Service ${id} executed successfully`,
-        duration: result.duration,
-        result: result.result
-      });
-    } else {
-      res.status(500).json({
-        success: false,
-        error: result.error,
-        duration: result.duration
-      });
-    }
-  } catch (error) {
-    console.error(`❌ Error running service ${req.params.id}:`, error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Failed to run service" 
-    });
-  }
-});
-
 // Removed hardcoded service configurations - all services now loaded from database
 
 // Track service statistics
@@ -104,89 +43,50 @@ interface ServiceStats {
 
 const serviceStats = new Map<string, ServiceStats>();
 
-// Get all service statuses (enhanced with dynamic discovery)
+// Get all service statuses
 router.get("/admin/services/status", requireAuth, async (req, res) => {
   try {
-    // Load scheduled services from database
+    // Load services from database
     const dbServices = await db.query.serviceConfigurations.findMany({
       orderBy: (configs, { asc }) => [asc(configs.priority), asc(configs.serviceName)]
     });
 
-    // Get discovered admin services
-    const discoveredServices = serviceRegistry.getServices();
+
 
     // Get actual pool count from database
     const poolCount = await db.query.pools.findMany();
     const totalPools = poolCount.length;
 
-    // Map scheduled services from database
-    const scheduledServices = dbServices.map(config => {
-      const stats = serviceRegistry.getServiceStats(config.serviceName);
-      
-      return {
-        id: config.serviceName,
-        name: config.serviceName,
-        displayName: config.displayName,
-        type: config.category || 'sync',
-        status: config.isEnabled ? 'active' : 'disabled',
-        interval: config.intervalMinutes,
-        lastRun: stats?.stats.lastRun || config.updatedAt?.toISOString() || null,
-        nextRun: config.isEnabled && config.intervalMinutes > 0 
-          ? new Date(Date.now() + config.intervalMinutes * 60 * 1000).toISOString() 
-          : null,
-        description: config.description,
-        poolsAffected: totalPools,
-        successRate: stats?.stats.successRate || 100,
-        totalRuns: stats?.stats.totalRuns || 0,
-        errorCount: stats?.stats.errorCount || 0,
-        lastError: stats?.stats.lastError || null,
-        uptime: null,
-        lastCheck: config.updatedAt ? config.updatedAt.toLocaleTimeString() : 'Never',
-        stats: {
-          processed: null,
-          failed: stats?.stats.errorCount || 0,
-          pending: null,
-          successRate: stats?.stats.successRate || 100
-        },
-        hasError: Boolean(stats?.stats.lastError),
-        source: 'scheduled'
-      };
-    });
-
-    // Map discovered admin services (one-time run services)
-    const adminServices = discoveredServices.map(service => ({
-      id: service.id,
-      name: service.name,
-      displayName: service.name,
-      type: 'admin',
-      status: 'available',
-      interval: 0, // One-time run services
-      lastRun: service.lastRun?.toISOString() || null,
-      nextRun: null,
-      description: service.description,
-      poolsAffected: 0,
-      successRate: service.totalRuns > 0 ? (service.successCount / service.totalRuns) * 100 : 100,
-      totalRuns: service.totalRuns,
-      errorCount: service.errorCount,
-      lastError: service.lastError || null,
+    // Simple mapping without complex logic to identify the issue
+    const services = dbServices.map(config => ({
+      id: config.serviceName,
+      name: config.serviceName,
+      displayName: config.displayName,
+      type: config.category || 'sync',
+      status: config.isEnabled ? 'active' : 'disabled',
+      interval: config.intervalMinutes,
+      lastRun: config.updatedAt?.toISOString() || null,
+      nextRun: config.isEnabled && config.intervalMinutes > 0 
+        ? new Date(Date.now() + config.intervalMinutes * 60 * 1000).toISOString() 
+        : null,
+      description: config.description,
+      poolsAffected: totalPools,
+      successRate: null,
+      totalRuns: 0,
+      errorCount: 0,
+      lastError: null,
       uptime: null,
-      lastCheck: service.lastRun ? service.lastRun.toLocaleTimeString() : 'Never',
+      lastCheck: config.updatedAt ? config.updatedAt.toLocaleTimeString() : 'N/A',
       stats: {
-        processed: service.successCount,
-        failed: service.errorCount,
+        processed: null,
+        failed: 0,
         pending: null,
-        successRate: service.totalRuns > 0 ? (service.successCount / service.totalRuns) * 100 : 100
+        successRate: null
       },
-      hasError: Boolean(service.lastError),
-      source: 'admin'
+      hasError: false
     }));
 
-    // Combine both types of services
-    const allServices = [...scheduledServices, ...adminServices];
-
-    console.log(`📊 Serving ${scheduledServices.length} scheduled + ${adminServices.length} admin services = ${allServices.length} total`);
-
-    res.json(allServices);
+    res.json(services);
   } catch (error) {
     console.error("Error fetching service statuses:", error);
     res.status(500).json({ error: "Failed to fetch service statuses" });

@@ -113,11 +113,6 @@ app.use((req, res, next) => {
   const { initializeServiceConfigs } = await import("./services/systemMonitorService");
   await initializeServiceConfigs();
   
-  // Initialize service registry for admin services discovery
-  const { serviceRegistry } = await import("./lib/serviceRegistry");
-  await serviceRegistry.initialize();
-  console.log("✅ Service registry initialized");
-  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
