@@ -17,6 +17,10 @@ export class EnhancedTransfersService {
   private blockCache: Map<string, { block: any; timestamp: number }> = new Map();
   private readonly CACHE_TTL = 60 * 60 * 1000; // 1 hour TTL
   
+  // Result cache for pool transaction history
+  private resultCache: Map<string, { result: any; timestamp: number }> = new Map();
+  private readonly RESULT_CACHE_TTL = 5 * 60 * 1000; // 5 minutes TTL
+  
   private constructor() {
     // Use ALCHEMY_API_KEY from environment
     const apiKey = process.env.ALCHEMY_API_KEY;
@@ -191,9 +195,17 @@ export class EnhancedTransfersService {
       // Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)
       const WITHDRAW_EVENT_TOPIC = '0xfbde797d201c681b91056529119e0b02407c7bb96a4a2c75c01fc9667232c8db';
 
-      // Get recent blocks (reduce lookback for better performance)
+      // Check result cache first
+      const cacheKey = `pool-${poolId}-${limit}`;
+      const cached = this.resultCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp) < this.RESULT_CACHE_TTL) {
+        console.log(`⚡ Cache hit for pool ${pool.tokenPair}`);
+        return cached.result;
+      }
+
+      // Get recent blocks (aggressive reduction for performance)
       const latestBlock = await alchemy.core.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 5000); // Look back ~5000 blocks for better performance
+      const fromBlock = Math.max(0, latestBlock - 2000); // Look back only ~2000 blocks for better performance
       
       // Check if this is Steakhouse USDC vault - it has a wrapper token
       const isStakehouseUSDC = pool.poolAddress.toLowerCase() === '0xbeef01735c132ada46aa9aa4c54623caa92a64cb';
@@ -204,30 +216,53 @@ export class EnhancedTransfersService {
       const contractAddresses = [pool.poolAddress];
       console.log(`📊 Monitoring vault contract for activity...`);
       
-      // Fetch ERC-4626 event logs
+      // Fetch ERC-4626 event logs with optimized batching
+      const startTime = Date.now();
       const eventPromises = contractAddresses.map(async (contractAddress) => {
-        // Get Deposit events
-        const depositLogs = await alchemy.core.getLogs({
-          address: contractAddress,
-          topics: [DEPOSIT_EVENT_TOPIC],
-          fromBlock: `0x${fromBlock.toString(16)}`,
-          toBlock: 'latest'
-        });
-        
-        // Get Withdraw events  
-        const withdrawLogs = await alchemy.core.getLogs({
-          address: contractAddress,
-          topics: [WITHDRAW_EVENT_TOPIC],
-          fromBlock: `0x${fromBlock.toString(16)}`,
-          toBlock: 'latest'
-        });
+        // Batch both event types in parallel for each contract
+        const [depositLogs, withdrawLogs] = await Promise.all([
+          alchemy.core.getLogs({
+            address: contractAddress,
+            topics: [DEPOSIT_EVENT_TOPIC],
+            fromBlock: `0x${fromBlock.toString(16)}`,
+            toBlock: 'latest'
+          }),
+          alchemy.core.getLogs({
+            address: contractAddress,
+            topics: [WITHDRAW_EVENT_TOPIC],
+            fromBlock: `0x${fromBlock.toString(16)}`,
+            toBlock: 'latest'
+          })
+        ]);
         
         return { deposits: depositLogs, withdrawals: withdrawLogs };
       });
       
       const eventResults = await Promise.all(eventPromises);
+      const fetchTime = Date.now() - startTime;
+      console.log(`⚡ Event logs fetched in ${fetchTime}ms`);
+      
       const allDepositLogs = eventResults.flatMap(r => r.deposits);
       const allWithdrawLogs = eventResults.flatMap(r => r.withdrawals);
+      
+      // Early termination if no events found
+      const totalEvents = allDepositLogs.length + allWithdrawLogs.length;
+      if (totalEvents === 0) {
+        const emptyResult = {
+          poolId,
+          poolName: pool.tokenPair,
+          contractAddress: pool.poolAddress,
+          network,
+          transactions: [],
+          summary: { totalDeposits: 0, totalWithdrawals: 0, totalVolumeUSD: 0, depositsVolumeUSD: 0, withdrawalsVolumeUSD: 0 },
+          pagination: { page: 1, limit, total: 0, hasMore: false }
+        };
+        
+        // Cache the empty result
+        this.resultCache.set(cacheKey, { result: emptyResult, timestamp: Date.now() });
+        console.log(`⚡ No events found, returning cached empty result`);
+        return emptyResult;
+      }
 
       // Process and decode event logs
       const processedTransactions = [];
@@ -393,7 +428,7 @@ export class EnhancedTransfersService {
       const withdrawals = sortedTransfers.filter(t => t.type === 'withdraw');
       const totalVolumeUSD = sortedTransfers.reduce((sum, t) => sum + t.amountUSD, 0);
 
-      return {
+      const result = {
         poolId,
         poolName: pool.tokenPair,
         contractAddress: pool.poolAddress,
@@ -414,6 +449,12 @@ export class EnhancedTransfersService {
         },
         timestamp: new Date()
       };
+      
+      // Cache the result for 5 minutes
+      this.resultCache.set(cacheKey, { result, timestamp: Date.now() });
+      console.log(`⚡ Cached result for pool ${pool.tokenPair} (${sortedTransfers.length} transactions)`);
+      
+      return result;
     } catch (error) {
       console.error('❌ Error fetching pool transaction history:', error);
       throw error;
