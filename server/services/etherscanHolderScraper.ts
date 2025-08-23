@@ -263,8 +263,16 @@ export class EtherscanHolderScraper {
       
       console.log(`🚀 HYBRID APPROACH: Fetching top ${limit} holders from ${scannerName} API for ${contractAddress}...`);
       
+      // Get API key from environment
+      const apiKey = process.env.ETHERSCAN_API_KEY;
+      if (!apiKey) {
+        throw new Error(`${scannerName} API key not found in environment variables`);
+      }
+      
       // Etherscan tokenholderlist endpoint - much faster than transfer event scanning
-      const url = `${apiUrl}?module=token&action=tokenholderlist&contractaddress=${contractAddress}&page=1&offset=${Math.min(limit, 100)}&sort=desc`;
+      const url = `${apiUrl}?module=token&action=tokenholderlist&contractaddress=${contractAddress}&page=1&offset=${Math.min(limit, 100)}&sort=desc&apikey=${apiKey}`;
+      
+      console.log(`🔑 Using API key: ${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)} (${apiKey.length} chars)`);
       
       const response = await fetch(url, {
         headers: {
@@ -280,6 +288,10 @@ export class EtherscanHolderScraper {
       
       if (data.status !== '1' || !data.result || !Array.isArray(data.result)) {
         console.log(`⚠️ ${scannerName} API response:`, data);
+        if (data.result && data.result.includes && data.result.includes('API Pro endpoint')) {
+          console.log(`💰 ${scannerName} Pro subscription required for tokenholderlist endpoint`);
+          console.log(`🔄 Consider upgrading to Etherscan Pro or reverting to Alchemy approach`);
+        }
         console.log(`🔄 Falling back to cached data instead of fake data`);
         return []; // Return empty array instead of fake data
       }
