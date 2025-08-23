@@ -16,24 +16,42 @@ import {
 } from "@/components/ui/select";
 
 interface VaultTransaction {
-  id: string;
-  type: 'deposit' | 'withdraw' | 'fee';
+  transactionHash: string;
+  logIndex: number;
+  blockNumber: number;
+  timestamp: string;
+  type: 'deposit' | 'withdraw';
+  direction: 'in' | 'out';
+  user: string;
+  sender?: string;
+  owner?: string;
   amount: number;
   amountUSD: number;
-  user: string;
-  transactionHash: string;
-  timestamp: number;
-  blockNumber: number;
+  shares: number;
+  asset: string;
+  eventType: string;
 }
 
 interface VaultActivityResponse {
+  poolId: string;
+  poolName: string;
+  contractAddress: string;
+  network: string;
   transactions: VaultTransaction[];
+  summary: {
+    totalDeposits: number;
+    totalWithdrawals: number;
+    totalVolumeUSD: number;
+    depositsVolumeUSD: number;
+    withdrawalsVolumeUSD: number;
+  };
   pagination: {
     page: number;
     limit: number;
     total: number;
-    pages: number;
+    totalPages: number;
   };
+  timestamp: string;
 }
 
 interface VaultActivitySectionProps {
@@ -45,77 +63,14 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
   const [filter, setFilter] = useState<'all' | 'deposit' | 'withdraw'>('all');
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  const { data: activityData, isLoading, error, refetch } = useQuery<VaultActivityResponse>({
-    queryKey: [`/api/pools/${poolId}/activity`, filter],
+  const { data: activityData, isLoading, error, refetch } = useQuery<{success: boolean; data: VaultActivityResponse}>({
+    queryKey: [`/api/transfers/pool/${poolId}?limit=5`, filter],
     queryFn: async () => {
-      // For now, return mock data - will be replaced with real API
-      const mockTransactions: VaultTransaction[] = [
-        {
-          id: '1',
-          type: 'withdraw',
-          amount: 1622.27,
-          amountUSD: 1622.11,
-          user: '0xEeE5...f4e4',
-          transactionHash: '0xdfd...3f9c',
-          timestamp: Date.now() - 7 * 60 * 1000,
-          blockNumber: 20589765
-        },
-        {
-          id: '2',
-          type: 'deposit',
-          amount: 65000,
-          amountUSD: 64990,
-          user: '0xCa75...5c35',
-          transactionHash: '0x3d7b...8014',
-          timestamp: Date.now() - 17 * 60 * 1000,
-          blockNumber: 20589750
-        },
-        {
-          id: '3',
-          type: 'deposit',
-          amount: 104.86,
-          amountUSD: 104.84,
-          user: '0x0312...1734',
-          transactionHash: '0x10aa...d1a6',
-          timestamp: Date.now() - 19 * 60 * 1000,
-          blockNumber: 20589745
-        },
-        {
-          id: '4',
-          type: 'withdraw',
-          amount: 50,
-          amountUSD: 49.99,
-          user: '0xEeE5...f4e4',
-          transactionHash: '0x35f8...5261',
-          timestamp: Date.now() - 25 * 60 * 1000,
-          blockNumber: 20589700
-        },
-        {
-          id: '5',
-          type: 'deposit',
-          amount: 1600,
-          amountUSD: 1599.84,
-          user: '0xEeE5...f4e4',
-          transactionHash: '0x98b7...8bff',
-          timestamp: Date.now() - 36 * 60 * 1000,
-          blockNumber: 20589650
-        }
-      ];
-
-      // Filter transactions based on selected filter
-      const filteredTransactions = filter === 'all' 
-        ? mockTransactions.slice(0, 5)
-        : mockTransactions.filter(tx => tx.type === filter).slice(0, 5);
-
-      return {
-        transactions: filteredTransactions,
-        pagination: {
-          page: 1,
-          limit: 5,
-          total: filteredTransactions.length,
-          pages: 1
-        }
-      };
+      const response = await fetch(`/api/transfers/pool/${poolId}?limit=5`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transfers: ${response.status}`);
+      }
+      return response.json();
     },
     refetchInterval: autoRefresh ? 30000 : false, // Refetch every 30 seconds if auto-refresh is on
   });
@@ -238,7 +193,7 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
     );
   }
 
-  if (error || !activityData) {
+  if (error || !activityData || !activityData.success) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -261,7 +216,7 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
     );
   }
 
-  const { transactions } = activityData;
+  const { transactions } = activityData.data;
 
   return (
     <Card className="w-full">
@@ -311,11 +266,11 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
               </div>
             ) : (
               transactions.map((transaction) => (
-                <div key={transaction.id} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors rounded-lg px-2">
+                <div key={`${transaction.transactionHash}-${transaction.logIndex}`} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/50 hover:bg-muted/50 transition-colors rounded-lg px-2">
                   <div className="col-span-2">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      <span>{formatDistanceToNow(transaction.timestamp, { addSuffix: true })}</span>
+                      <span>{formatDistanceToNow(new Date(transaction.timestamp), { addSuffix: true })}</span>
                     </div>
                   </div>
                   
@@ -332,7 +287,7 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
                     <div className="font-semibold text-sm flex items-center gap-1">
                       {transaction.type === 'withdraw' && '-'}
                       {transaction.type === 'deposit' && '+'}
-                      {formatAmount(transaction.amount)} USDC
+                      {formatAmount(transaction.amount)} {transaction.asset}
                     </div>
                   </div>
 
