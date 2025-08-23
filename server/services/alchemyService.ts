@@ -166,7 +166,7 @@ export class AlchemyService {
   private readonly METADATA_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours for metadata
   private readonly TRANSFER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes for transfers
   private readonly ETH_BALANCE_CACHE_DURATION = 60 * 1000; // 1 minute for ETH balances
-  private readonly BLOCK_NUMBER_CACHE_DURATION = 10 * 1000; // 10 seconds for block numbers
+  private readonly BLOCK_NUMBER_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes for block numbers
   
   constructor() {
     // Check if we have the ALCHEMY_RPC_URL configured
