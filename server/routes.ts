@@ -1008,84 +1008,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const page = parseInt(req.params.page) || 1;
       const limit = Math.min(parseInt(req.params.limit) || constants.HOLDERS_DEFAULT_LIMIT, constants.MAX_HOLDERS_DISPLAY);
 
-      // Validate pagination parameters
-      if (page < 1 || limit < 1) {
-        return res.status(400).json({ 
-          message: "Invalid pagination parameters. Page must be >= 1, limit must be >= 1." 
-        });
-      }
-
-      console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
-
-      // Get pool contract address and chain info for multi-chain support
-      const [pool] = await db
-        .select({ 
-          poolAddress: pools.poolAddress, 
-          tokenPair: pools.tokenPair,
-          chainName: networks.name,
-          chainId: networks.chainId
-        })
-        .from(pools)
-        .leftJoin(networks, eq(pools.chainId, networks.id))
-        .where(eq(pools.id, poolId))
-        .limit(1);
-
-      if (!pool?.poolAddress) {
-        return res.status(404).json({ message: "Pool contract address not found" });
-      }
-
-      // HYBRID WEB SCRAPER APPROACH: Free web scraping + Alchemy enrichment
-      const { etherscanWebScraper } = await import("./services/etherscanWebScraper.js");
-
-      // Determine chain for web scraping (ethereum or base)
-      const chainName = pool.chainName?.toLowerCase() || 'ethereum';
-      console.log(`🕷️ HYBRID WEB SCRAPER: Fetching live holder data from ${chainName} blockchain explorer for ${pool.tokenPair} (${pool.poolAddress})`);
+      console.log(`ℹ️ Holder data not available for pool ${poolId}`);
       
-      const liveHolders = await etherscanWebScraper.getEnrichedTopHolders(
-        pool.poolAddress,
-        chainName, 
-        constants.MAX_HOLDERS_DISPLAY
-      );
-
-      // If Etherscan returns no data, show appropriate message instead of fake data
-      if (!liveHolders || liveHolders.length === 0) {
-        console.log('⚠️ No live holder data available from Etherscan API');
-        return res.json({
-          holders: [],
-          pagination: { page: 1, limit, total: 0, pages: 0 },
-          message: "Live holder data not available. Please check Etherscan API configuration."
-        });
-      }
-
-      console.log(`✅ HYBRID SUCCESS: Retrieved ${liveHolders.length} live holders from Etherscan API in <1 second`);
-
-      // Apply pagination to live Alchemy data
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedHolders = liveHolders.slice(startIndex, endIndex);
-
-      // Format live holder data for frontend
-      const formattedHolders = paginatedHolders.map((holder, index) => ({
-        address: holder.address,
-        tokenBalance: holder.tokenBalance || '0',
-        usdValue: parseFloat(holder.usdValue?.toString() || '0'),
-        walletBalanceEth: parseFloat(holder.walletBalanceEth?.toString() || '0'),
-        walletBalanceUsd: parseFloat(holder.walletBalanceUsd?.toString() || '0'),
-        poolSharePercentage: parseFloat(holder.poolSharePercentage?.toString() || '0'),
-        rank: startIndex + index + 1
-      }));
-
-      const totalHolders = Math.min(liveHolders.length, constants.MAX_HOLDERS_DISPLAY);
-      const totalPages = Math.ceil(totalHolders / limit);
-
       res.json({
-        holders: formattedHolders,
-        pagination: {
-          page,
-          limit,
-          total: totalHolders,
-          pages: totalPages
-        }
+        holders: [],
+        pagination: { page: 1, limit, total: 0, pages: 0 },
+        message: "Holder data feature is not available."
       });
     } catch (error) {
       console.error("Error fetching pool holders:", error);
@@ -1104,84 +1032,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || constants.HOLDERS_DEFAULT_LIMIT;
 
-      // Validate pagination parameters
-      if (page < 1 || limit < 1 || limit > constants.MAX_HOLDERS_DISPLAY) {
-        return res.status(400).json({ 
-          message: `Invalid pagination parameters. Page must be >= 1, limit must be between 1 and ${constants.MAX_HOLDERS_DISPLAY}.` 
-        });
-      }
-
-      console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
-
-      // Get pool contract address and chain info for multi-chain support
-      const [pool] = await db
-        .select({ 
-          poolAddress: pools.poolAddress, 
-          tokenPair: pools.tokenPair,
-          chainName: networks.name,
-          chainId: networks.chainId
-        })
-        .from(pools)
-        .leftJoin(networks, eq(pools.chainId, networks.id))
-        .where(eq(pools.id, poolId))
-        .limit(1);
-
-      if (!pool?.poolAddress) {
-        return res.status(404).json({ message: "Pool contract address not found" });
-      }
-
-      // HYBRID WEB SCRAPER APPROACH: Free web scraping + Alchemy enrichment
-      const { etherscanWebScraper } = await import("./services/etherscanWebScraper.js");
-
-      // Determine chain for web scraping (ethereum or base)
-      const chainName = pool.chainName?.toLowerCase() || 'ethereum';
-      console.log(`🕷️ HYBRID WEB SCRAPER: Fetching live holder data from ${chainName} blockchain explorer for ${pool.tokenPair} (${pool.poolAddress})`);
+      console.log(`ℹ️ Holder data not available for pool ${poolId}`);
       
-      const liveHolders = await etherscanWebScraper.getEnrichedTopHolders(
-        pool.poolAddress,
-        chainName, 
-        constants.MAX_HOLDERS_DISPLAY
-      );
-
-      // If Etherscan returns no data, show appropriate message instead of fake data
-      if (!liveHolders || liveHolders.length === 0) {
-        console.log('⚠️ No live holder data available from Etherscan API');
-        return res.json({
-          holders: [],
-          pagination: { page: 1, limit, total: 0, pages: 0 },
-          message: "Live holder data not available. Please check Etherscan API configuration."
-        });
-      }
-
-      console.log(`✅ HYBRID SUCCESS: Retrieved ${liveHolders.length} live holders from Etherscan API in <1 second`);
-
-      // Apply pagination to live Alchemy data
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedHolders = liveHolders.slice(startIndex, endIndex);
-
-      // Format live holder data for frontend
-      const formattedHolders = paginatedHolders.map((holder, index) => ({
-        address: holder.address,
-        tokenBalance: holder.tokenBalance || '0',
-        usdValue: parseFloat(holder.usdValue?.toString() || '0'),
-        walletBalanceEth: parseFloat(holder.walletBalanceEth?.toString() || '0'),
-        walletBalanceUsd: parseFloat(holder.walletBalanceUsd?.toString() || '0'),
-        poolSharePercentage: parseFloat(holder.poolSharePercentage?.toString() || '0'),
-        rank: startIndex + index + 1
-      }));
-
-      const totalHolders = Math.min(liveHolders.length, constants.MAX_HOLDERS_DISPLAY);
-      const totalPages = Math.ceil(totalHolders / limit);
-
       res.json({
-        holders: formattedHolders,
-        pagination: {
-          page,
-          limit,
-          total: totalHolders,
-          pages: totalPages
-        }
+        holders: [],
+        pagination: { page: 1, limit, total: 0, pages: 0 },
+        message: "Holder data feature is not available."
       });
     } catch (error) {
       console.error("Error fetching pool holders:", error);
