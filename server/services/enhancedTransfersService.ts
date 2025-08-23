@@ -203,9 +203,9 @@ export class EnhancedTransfersService {
         return cached.result;
       }
 
-      // Get recent blocks (aggressive reduction for performance)
+      // Get recent blocks (ultra-aggressive reduction for performance)
       const latestBlock = await alchemy.core.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 2000); // Look back only ~2000 blocks for better performance
+      const fromBlock = Math.max(0, latestBlock - 1000); // Look back only ~1000 blocks for ultra-fast performance
       
       // Check if this is Steakhouse USDC vault - it has a wrapper token
       const isStakehouseUSDC = pool.poolAddress.toLowerCase() === '0xbeef01735c132ada46aa9aa4c54623caa92a64cb';
@@ -279,7 +279,8 @@ export class EnhancedTransfersService {
       
       // Only process the most recent logs to get the requested number of transactions
       // Since we only need 'limit' transactions, we only need to process recent logs
-      const recentLogs = sortedLogs.slice(0, Math.min(limit * 3, 50)); // Process 3x limit or max 50 events
+      // Be even more aggressive - process only what we need
+      const recentLogs = sortedLogs.slice(0, Math.min(limit * 2, 20)); // Process only 2x limit or max 20 events
       
       const uniqueBlocks = new Set(recentLogs.map(log => {
         return typeof log.blockNumber === 'string' ? parseInt(log.blockNumber, 16) : log.blockNumber;
@@ -304,24 +305,32 @@ export class EnhancedTransfersService {
 
       console.log(`📦 Cache hit: ${blockMap.size}/${uniqueBlocks.size} blocks, fetching ${blocksToFetch.length} new blocks`);
 
-      // Batch fetch missing blocks with concurrency limit
-      const BATCH_SIZE = 10;
-      for (let i = 0; i < blocksToFetch.length; i += BATCH_SIZE) {
-        const batch = blocksToFetch.slice(i, i + BATCH_SIZE);
-        const blockPromises = batch.map(async (blockNum) => {
-          try {
-            const block = await alchemy.core.getBlock(blockNum);
-            const cacheKey = `${network}-${blockNum}`;
-            this.blockCache.set(cacheKey, { block, timestamp: Date.now() });
-            blockMap.set(blockNum, block);
-            return { blockNum, block };
-          } catch (error) {
-            console.error(`❌ Failed to fetch block ${blockNum}:`, error);
-            return { blockNum, block: null };
-          }
-        });
+      // Batch fetch all missing blocks in parallel (more aggressive)
+      if (blocksToFetch.length > 0) {
+        const BATCH_SIZE = 20; // Increase batch size for faster fetching
+        const batches = [];
+        for (let i = 0; i < blocksToFetch.length; i += BATCH_SIZE) {
+          const batch = blocksToFetch.slice(i, i + BATCH_SIZE);
+          batches.push(batch);
+        }
         
-        await Promise.all(blockPromises);
+        // Process all batches in parallel for maximum speed
+        await Promise.all(batches.map(async (batch) => {
+          const blockPromises = batch.map(async (blockNum) => {
+            try {
+              const block = await alchemy.core.getBlock(blockNum);
+              const cacheKey = `${network}-${blockNum}`;
+              this.blockCache.set(cacheKey, { block, timestamp: Date.now() });
+              blockMap.set(blockNum, block);
+              return { blockNum, block };
+            } catch (error) {
+              console.error(`❌ Failed to fetch block ${blockNum}:`, error);
+              return { blockNum, block: null };
+            }
+          });
+          
+          return Promise.all(blockPromises);
+        }));
       }
 
       // Helper function to get block from our fetched map
