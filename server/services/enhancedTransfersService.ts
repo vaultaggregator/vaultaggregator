@@ -267,13 +267,25 @@ export class EnhancedTransfersService {
       // Process and decode event logs
       const processedTransactions = [];
       
-      // Get unique block numbers to batch process
+      // Get unique block numbers but limit processing for performance
       const allLogs = [...allDepositLogs, ...allWithdrawLogs];
-      const uniqueBlocks = new Set(allLogs.map(log => {
+      
+      // Sort logs by block number (latest first) and only process the most recent ones
+      const sortedLogs = allLogs.sort((a, b) => {
+        const blockA = typeof a.blockNumber === 'string' ? parseInt(a.blockNumber, 16) : a.blockNumber;
+        const blockB = typeof b.blockNumber === 'string' ? parseInt(b.blockNumber, 16) : b.blockNumber;
+        return blockB - blockA;
+      });
+      
+      // Only process the most recent logs to get the requested number of transactions
+      // Since we only need 'limit' transactions, we only need to process recent logs
+      const recentLogs = sortedLogs.slice(0, Math.min(limit * 3, 50)); // Process 3x limit or max 50 events
+      
+      const uniqueBlocks = new Set(recentLogs.map(log => {
         return typeof log.blockNumber === 'string' ? parseInt(log.blockNumber, 16) : log.blockNumber;
       }));
 
-      console.log(`⚡ Processing ${allLogs.length} events across ${uniqueBlocks.size} unique blocks`);
+      console.log(`⚡ Processing ${recentLogs.length}/${allLogs.length} recent events across ${uniqueBlocks.size} unique blocks (optimized for limit=${limit})`);
 
       // Batch fetch missing blocks
       const blocksToFetch: number[] = [];
@@ -318,8 +330,12 @@ export class EnhancedTransfersService {
         return blockMap.get(blockNum);
       };
       
-      // Process Deposit events
-      for (const log of allDepositLogs) {
+      // Process only the recent Deposit events
+      const recentDepositLogs = recentLogs.filter(log => 
+        allDepositLogs.some(d => d.transactionHash === log.transactionHash && d.logIndex === log.logIndex)
+      );
+      
+      for (const log of recentDepositLogs) {
         try {
           // Decode event data
           // topics[0] = event signature (already filtered)
@@ -359,8 +375,12 @@ export class EnhancedTransfersService {
         }
       }
       
-      // Process Withdraw events
-      for (const log of allWithdrawLogs) {
+      // Process only the recent Withdraw events  
+      const recentWithdrawLogs = recentLogs.filter(log => 
+        allWithdrawLogs.some(w => w.transactionHash === log.transactionHash && w.logIndex === log.logIndex)
+      );
+      
+      for (const log of recentWithdrawLogs) {
         try {
           // Decode event data
           // topics[0] = event signature (already filtered)
