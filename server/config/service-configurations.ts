@@ -14,15 +14,6 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
     priority: 1,
   },
   
-  holderDataSync: {
-    serviceName: "holderDataSync", 
-    displayName: "Holder Data Sync",
-    description: "Updates token holder counts using Alchemy API",
-    intervalMinutes: 30,
-    isEnabled: true,
-    category: "sync",
-    priority: 2,
-  },
   
   morphoApiSync: {
     serviceName: "morphoApiSync",
@@ -94,15 +85,6 @@ export const DEFAULT_SERVICE_CONFIGS: Record<string, Omit<InsertServiceConfigura
     priority: 1,
   },
   
-  topHoldersSync: {
-    serviceName: "topHoldersSync",
-    displayName: "Top Holders Sync",
-    description: "Syncs top token holders data using Alchemy API",
-    intervalMinutes: 60,
-    isEnabled: true,
-    category: "sync",
-    priority: 2,
-  },
   
   poolHoldersSync: {
     serviceName: "poolHoldersSync",

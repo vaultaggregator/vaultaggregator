@@ -185,13 +185,9 @@ async function applyServiceConfiguration(serviceId: string, isEnabled: boolean, 
         });
         break;
       
-      case 'holderDataSync':
-        const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
-        if (isEnabled) {
-          comprehensiveHolderSyncService.startService(intervalMinutes);
-        } else {
-          comprehensiveHolderSyncService.stopService();
-        }
+      case 'poolHoldersSync':
+        // Pool Holders Sync configuration is handled via database scheduler
+        console.log(`Pool Holders Sync configuration updated: enabled=${isEnabled}, interval=${intervalMinutes}min`);
         break;
         
       // Add more services as needed
@@ -213,14 +209,9 @@ async function triggerService(serviceId: string) {
         await scraperManager.scrapeAllPools();
         break;
         
-      case 'holderDataSync':
-        const { comprehensiveHolderSyncService } = await import("../services/comprehensiveHolderSyncService");
-        await comprehensiveHolderSyncService.syncAllPools();
-        break;
-        
-      case 'topHoldersSync':
-        const { topHoldersSyncService } = await import("../services/topHoldersSync");
-        await topHoldersSyncService.syncAllHolders();
+      case 'poolHoldersSync':
+        const { PoolHoldersService } = await import("../services/pool-holders-service");
+        await PoolHoldersService.syncAllPoolHolders();
         break;
         
       case 'aiOutlookGeneration':
