@@ -13,6 +13,10 @@ export class EnhancedTransfersService {
   private alchemyEth: Alchemy;
   private alchemyBase: Alchemy;
   
+  // Persistent block cache with timestamps
+  private blockCache: Map<string, { block: any; timestamp: number }> = new Map();
+  private readonly CACHE_TTL = 60 * 60 * 1000; // 1 hour TTL
+  
   private constructor() {
     // Use ALCHEMY_API_KEY from environment
     const apiKey = process.env.ALCHEMY_API_KEY;
@@ -41,6 +45,51 @@ export class EnhancedTransfersService {
       this.instance = new EnhancedTransfersService();
     }
     return this.instance;
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  getCacheStats() {
+    const now = Date.now();
+    let validEntries = 0;
+    let expiredEntries = 0;
+    
+    for (const [key, value] of this.blockCache.entries()) {
+      if ((now - value.timestamp) < this.CACHE_TTL) {
+        validEntries++;
+      } else {
+        expiredEntries++;
+      }
+    }
+    
+    return {
+      totalEntries: this.blockCache.size,
+      validEntries,
+      expiredEntries,
+      hitRate: validEntries / Math.max(1, this.blockCache.size)
+    };
+  }
+
+  /**
+   * Clear expired cache entries
+   */
+  cleanupCache() {
+    const now = Date.now();
+    let removed = 0;
+    
+    for (const [key, value] of this.blockCache.entries()) {
+      if ((now - value.timestamp) >= this.CACHE_TTL) {
+        this.blockCache.delete(key);
+        removed++;
+      }
+    }
+    
+    if (removed > 0) {
+      console.log(`🧹 Cleaned ${removed} expired block cache entries`);
+    }
+    
+    return removed;
   }
 
   /**
@@ -142,9 +191,9 @@ export class EnhancedTransfersService {
       // Withdraw(address indexed sender, address indexed receiver, address indexed owner, uint256 assets, uint256 shares)
       const WITHDRAW_EVENT_TOPIC = '0xfbde797d201c681b91056529119e0b02407c7bb96a4a2c75c01fc9667232c8db';
 
-      // Get recent blocks
+      // Get recent blocks (reduce lookback for better performance)
       const latestBlock = await alchemy.core.getBlockNumber();
-      const fromBlock = Math.max(0, latestBlock - 10000); // Look back ~10000 blocks
+      const fromBlock = Math.max(0, latestBlock - 5000); // Look back ~5000 blocks for better performance
       
       // Check if this is Steakhouse USDC vault - it has a wrapper token
       const isStakehouseUSDC = pool.poolAddress.toLowerCase() === '0xbeef01735c132ada46aa9aa4c54623caa92a64cb';
@@ -183,18 +232,55 @@ export class EnhancedTransfersService {
       // Process and decode event logs
       const processedTransactions = [];
       
-      // Cache for blocks to avoid duplicate API calls
-      const blockCache = new Map<number, any>();
-      
-      // Helper function to get block with caching
-      const getCachedBlock = async (blockNumber: number | string) => {
-        const blockNum = typeof blockNumber === 'string' ? parseInt(blockNumber, 16) : blockNumber;
-        if (blockCache.has(blockNum)) {
-          return blockCache.get(blockNum);
+      // Get unique block numbers to batch process
+      const allLogs = [...allDepositLogs, ...allWithdrawLogs];
+      const uniqueBlocks = new Set(allLogs.map(log => {
+        return typeof log.blockNumber === 'string' ? parseInt(log.blockNumber, 16) : log.blockNumber;
+      }));
+
+      console.log(`⚡ Processing ${allLogs.length} events across ${uniqueBlocks.size} unique blocks`);
+
+      // Batch fetch missing blocks
+      const blocksToFetch: number[] = [];
+      const blockMap = new Map<number, any>();
+
+      for (const blockNum of uniqueBlocks) {
+        const cacheKey = `${network}-${blockNum}`;
+        const cached = this.blockCache.get(cacheKey);
+        
+        if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+          blockMap.set(blockNum, cached.block);
+        } else {
+          blocksToFetch.push(blockNum);
         }
-        const block = await alchemy.core.getBlock(blockNumber);
-        blockCache.set(blockNum, block);
-        return block;
+      }
+
+      console.log(`📦 Cache hit: ${blockMap.size}/${uniqueBlocks.size} blocks, fetching ${blocksToFetch.length} new blocks`);
+
+      // Batch fetch missing blocks with concurrency limit
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < blocksToFetch.length; i += BATCH_SIZE) {
+        const batch = blocksToFetch.slice(i, i + BATCH_SIZE);
+        const blockPromises = batch.map(async (blockNum) => {
+          try {
+            const block = await alchemy.core.getBlock(blockNum);
+            const cacheKey = `${network}-${blockNum}`;
+            this.blockCache.set(cacheKey, { block, timestamp: Date.now() });
+            blockMap.set(blockNum, block);
+            return { blockNum, block };
+          } catch (error) {
+            console.error(`❌ Failed to fetch block ${blockNum}:`, error);
+            return { blockNum, block: null };
+          }
+        });
+        
+        await Promise.all(blockPromises);
+      }
+
+      // Helper function to get block from our fetched map
+      const getCachedBlock = (blockNumber: number | string) => {
+        const blockNum = typeof blockNumber === 'string' ? parseInt(blockNumber, 16) : blockNumber;
+        return blockMap.get(blockNum);
       };
       
       // Process Deposit events
