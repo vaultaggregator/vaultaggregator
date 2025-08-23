@@ -1,0 +1,13 @@
+{
+  "updatedAt": "2025-08-23T03:01:48.651Z",
+  "tokenAddress": "0x616a4E1db48e22028f6bbf20444Cd3b8e3273738",
+  "holders": [],
+  "metadata": {
+    "chainId": "base",
+    "poolId": "883cad38-7b18-45af-8fc5-4a50400cd6fe",
+    "transfersProcessed": 0,
+    "fromBlock": 22898566,
+    "toBlock": 23200966,
+    "processingTimeMs": 736
+  }
+}
