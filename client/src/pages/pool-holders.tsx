@@ -391,12 +391,11 @@ export default function PoolHoldersPage() {
           <CardContent>
             <div className="space-y-4">
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+              <div className="grid grid-cols-10 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
                 <div className="col-span-1">Rank</div>
                 <div className="col-span-4">Holder Address</div>
                 <div className="col-span-3">Balance</div>
                 <div className="col-span-2">Percentage</div>
-                <div className="col-span-2">Activity</div>
               </div>
 
               {/* Holders List */}
@@ -409,7 +408,7 @@ export default function PoolHoldersPage() {
                   </div>
                 ) : (
                   filteredHolders.map((holder) => (
-                    <div key={holder.id} className="grid grid-cols-12 gap-4 items-center py-3 border-b border-border/30 hover:bg-muted/30 transition-colors rounded-lg px-2">
+                    <div key={holder.id} className="grid grid-cols-10 gap-4 items-center py-3 border-b border-border/30 hover:bg-muted/30 transition-colors rounded-lg px-2">
                       <div className="col-span-1">
                         <div className="flex items-center gap-2">
                           {getRankIcon(holder.rank)}
@@ -438,13 +437,6 @@ export default function PoolHoldersPage() {
                       <div className="col-span-2">
                         <div className="font-semibold text-sm">
                           {holder.percentage.toFixed(2)}%
-                        </div>
-                      </div>
-
-                      <div className="col-span-2">
-                        <div className="text-xs text-muted-foreground">
-                          <div>Since {holder.firstSeen}</div>
-                          <div>{holder.txCount} transactions</div>
                         </div>
                       </div>
                     </div>
