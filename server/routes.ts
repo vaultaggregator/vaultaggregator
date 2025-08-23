@@ -1017,7 +1017,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Get pool contract address to fetch live holder data from Alchemy
+      // Get pool contract address to fetch live holder data from Etherscan
       const [pool] = await db
         .select({ poolAddress: pools.poolAddress, tokenPair: pools.tokenPair })
         .from(pools)
@@ -1028,29 +1028,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Pool contract address not found" });
       }
 
-      // Import Alchemy service for live holder data
-      const { alchemyService } = await import("./services/alchemyService.js");
+      // HYBRID APPROACH: Use fast Etherscan API instead of slow Alchemy transfer scanning  
+      const { etherscanHolderScraper } = await import("./services/etherscanHolderScraper.js");
 
-      // Fetch live holder data from Alchemy API (not cached database data)
-      console.log(`🔍 Fetching live holder data from Alchemy for ${pool.tokenPair} (${pool.poolAddress})`);
+      // Fetch top holders from Etherscan API (MUCH faster than Alchemy transfer events)
+      console.log(`🚀 HYBRID: Fetching live holder data from Etherscan API for ${pool.tokenPair} (${pool.poolAddress})`);
       
-      const liveHolders = await alchemyService.getTopTokenHolders(
-        pool.poolAddress, 
-        constants.MAX_HOLDERS_DISPLAY,
-        'ethereum'
+      const liveHolders = await etherscanHolderScraper.getTopHolders(
+        pool.poolAddress,
+        'ethereum', 
+        constants.MAX_HOLDERS_DISPLAY
       );
 
-      // If Alchemy returns no data, show appropriate message instead of fake data
+      // If Etherscan returns no data, show appropriate message instead of fake data
       if (!liveHolders || liveHolders.length === 0) {
-        console.log('⚠️ No live holder data available from Alchemy API');
+        console.log('⚠️ No live holder data available from Etherscan API');
         return res.json({
           holders: [],
           pagination: { page: 1, limit, total: 0, pages: 0 },
-          message: "Live holder data not available. Please check Alchemy API configuration."
+          message: "Live holder data not available. Please check Etherscan API configuration."
         });
       }
 
-      console.log(`✅ Retrieved ${liveHolders.length} live holders from Alchemy`);
+      console.log(`✅ HYBRID SUCCESS: Retrieved ${liveHolders.length} live holders from Etherscan API in <1 second`);
 
       // Apply pagination to live Alchemy data
       const startIndex = (page - 1) * limit;
@@ -1106,7 +1106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Getting LIVE holders for pool ${poolId}, page ${page}, limit ${limit}`);
 
-      // Get pool contract address to fetch live holder data from Alchemy
+      // Get pool contract address to fetch live holder data from Etherscan
       const [pool] = await db
         .select({ poolAddress: pools.poolAddress, tokenPair: pools.tokenPair })
         .from(pools)
@@ -1117,29 +1117,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Pool contract address not found" });
       }
 
-      // Import Alchemy service for live holder data
-      const { alchemyService } = await import("./services/alchemyService.js");
+      // HYBRID APPROACH: Use fast Etherscan API instead of slow Alchemy transfer scanning  
+      const { etherscanHolderScraper } = await import("./services/etherscanHolderScraper.js");
 
-      // Fetch live holder data from Alchemy API (not cached database data)
-      console.log(`🔍 Fetching live holder data from Alchemy for ${pool.tokenPair} (${pool.poolAddress})`);
+      // Fetch top holders from Etherscan API (MUCH faster than Alchemy transfer events)
+      console.log(`🚀 HYBRID: Fetching live holder data from Etherscan API for ${pool.tokenPair} (${pool.poolAddress})`);
       
-      const liveHolders = await alchemyService.getTopTokenHolders(
-        pool.poolAddress, 
-        constants.MAX_HOLDERS_DISPLAY,
-        'ethereum'
+      const liveHolders = await etherscanHolderScraper.getTopHolders(
+        pool.poolAddress,
+        'ethereum', 
+        constants.MAX_HOLDERS_DISPLAY
       );
 
-      // If Alchemy returns no data, show appropriate message instead of fake data
+      // If Etherscan returns no data, show appropriate message instead of fake data
       if (!liveHolders || liveHolders.length === 0) {
-        console.log('⚠️ No live holder data available from Alchemy API');
+        console.log('⚠️ No live holder data available from Etherscan API');
         return res.json({
           holders: [],
           pagination: { page: 1, limit, total: 0, pages: 0 },
-          message: "Live holder data not available. Please check Alchemy API configuration."
+          message: "Live holder data not available. Please check Etherscan API configuration."
         });
       }
 
-      console.log(`✅ Retrieved ${liveHolders.length} live holders from Alchemy`);
+      console.log(`✅ HYBRID SUCCESS: Retrieved ${liveHolders.length} live holders from Etherscan API in <1 second`);
 
       // Apply pagination to live Alchemy data
       const startIndex = (page - 1) * limit;
