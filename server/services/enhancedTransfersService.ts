@@ -151,11 +151,9 @@ export class EnhancedTransfersService {
       const wrapperAddress = '0x334f5d28a71432f8fc21c7b2b6f5dbbcd8b32a7b'; // mstkeUSDC wrapper
       
       // Get contract addresses to monitor
-      // For Steakhouse USDC, users interact with the wrapper, not the vault directly
-      const contractAddresses = isStakehouseUSDC ? [wrapperAddress] : [pool.poolAddress];
-      if (isStakehouseUSDC) {
-        console.log(`📊 Monitoring wrapper contract (mstkeUSDC) for user interactions...`);
-      }
+      // Monitor the main vault for events - the wrapper will show up as the user
+      const contractAddresses = [pool.poolAddress];
+      console.log(`📊 Monitoring vault contract for activity...`);
       
       // Fetch ERC-4626 event logs
       const eventPromises = contractAddresses.map(async (contractAddress) => {
@@ -205,7 +203,7 @@ export class EnhancedTransfersService {
           // Get block timestamp
           const block = await alchemy.core.getBlock(log.blockNumber);
           
-          // For deposits, the sender is the user making the deposit
+          // For deposits, show the owner who receives the shares
           processedTransactions.push({
             transactionHash: log.transactionHash,
             logIndex: log.logIndex,
@@ -213,8 +211,8 @@ export class EnhancedTransfersService {
             timestamp: block ? new Date(block.timestamp * 1000).toISOString() : new Date().toISOString(),
             type: 'deposit' as const,
             direction: 'in',
-            user: sender, // The sender who initiated the deposit
-            owner: owner, // The owner who receives the shares (could be different)
+            user: owner, // The owner who receives the shares
+            sender: sender, // The sender who initiated (could be wrapper)
             amount: Number(assets) / 1e6, // USDC has 6 decimals
             amountUSD: Number(assets) / 1e6,
             shares: Number(shares) / 1e18, // Shares typically have 18 decimals
@@ -248,7 +246,7 @@ export class EnhancedTransfersService {
           // Get block timestamp
           const block = await alchemy.core.getBlock(log.blockNumber);
           
-          // For withdrawals, the sender is usually the user initiating the withdrawal
+          // For withdrawals, show the receiver who gets the assets
           processedTransactions.push({
             transactionHash: log.transactionHash,
             logIndex: log.logIndex,
@@ -256,8 +254,8 @@ export class EnhancedTransfersService {
             timestamp: block ? new Date(block.timestamp * 1000).toISOString() : new Date().toISOString(),
             type: 'withdraw' as const,
             direction: 'out',
-            user: sender, // The sender who initiated the withdrawal
-            receiver: receiver, // The receiver who gets the assets
+            user: receiver, // The receiver who gets the assets
+            sender: sender, // The sender who initiated (could be wrapper)
             owner: owner, // The owner of the shares being redeemed
             amount: Number(assets) / 1e6, // USDC has 6 decimals
             amountUSD: Number(assets) / 1e6,
