@@ -102,6 +102,9 @@ export class EtherscanHolderScraper {
       
       // Look for holder count patterns in the HTML
       const holderPatterns = [
+        // Meta description pattern for Basescan/Etherscan
+        /Holders?:\s*(\d{1,3}(?:,\d{3})*)/i,
+        // Original patterns
         /<span[^>]*>(\d{1,3}(?:,\d{3})*)\s*(?:addresses|holders?)/i,
         /Holders?[^>]*>(\d{1,3}(?:,\d{3})*)/i,
         /(\d{1,3}(?:,\d{3})*)\s*addresses/i,
