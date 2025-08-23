@@ -470,34 +470,45 @@ export class AlchemyService {
   }
 
   /**
-   * Get ETH balance for an address with caching
+   * Get ETH balance for an address with caching (supports multiple networks)
    */
-  async getEthBalance(address: string): Promise<number> {
+  async getEthBalance(address: string, network?: 'ethereum' | 'base'): Promise<number> {
+    // Create cache key with network
+    const cacheKey = `${address.toLowerCase()}-${network || 'ethereum'}`;
+    
     // Check cache first
-    const cached = this.ethBalanceCache.get(address.toLowerCase());
+    const cached = this.ethBalanceCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp < this.ETH_BALANCE_CACHE_DURATION)) {
       return cached.balance;
     }
+    
     // Check if Alchemy is enabled
     const isEnabled = await this.isAlchemyEnabled();
-    if (!isEnabled || !this.isInitialized || !this.alchemy) {
+    if (!isEnabled || !this.isInitialized) {
       console.log('⚠️ Alchemy API disabled or not initialized - skipping ETH balance fetch');
       return 0;
     }
     
+    // Get the appropriate client based on network
+    const client = this.getAlchemyClient(network);
+    if (!client) {
+      console.log(`⚠️ No Alchemy client for network: ${network}`);
+      return 0;
+    }
+    
     try {
-      const balance = await this.alchemy.core.getBalance(address);
+      const balance = await client.core.getBalance(address);
       const ethBalance = parseFloat(balance.toString()) / Math.pow(10, 18);
       
-      // Cache the balance
-      this.ethBalanceCache.set(address.toLowerCase(), {
+      // Cache the balance with network-specific key
+      this.ethBalanceCache.set(cacheKey, {
         balance: ethBalance,
         timestamp: Date.now()
       });
       
       return ethBalance;
     } catch (error) {
-      console.error(`Error fetching ETH balance for ${address}:`, error);
+      console.error(`Error fetching ETH balance for ${address} on ${network || 'ethereum'}:`, error);
       return 0;
     }
   }

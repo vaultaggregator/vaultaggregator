@@ -50,7 +50,8 @@ router.get("/api/profile/:address", async (req, res) => {
       protocols: [], // N/A for basic wallet view - showing tracked tokens only
       walletAssets,
       trackedTokenCount: walletProfile.tokenCount,
-      chainInfo: walletProfile.chainInfo
+      chainInfo: walletProfile.chainInfo,
+      networks: walletProfile.networks // Include network breakdown
     };
 
     console.log(`✅ Returning profile for ${address}: ${walletAssets.length} assets, $${walletProfile.totalValueUsd.toFixed(2)} total`);

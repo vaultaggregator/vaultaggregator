@@ -72,6 +72,16 @@ interface WalletAsset {
   change24h?: number;
 }
 
+interface NetworkBalance {
+  chainId: string;
+  chainName: string;
+  nativeBalance: number;
+  nativeValueUsd: number;
+  tokenValueUsd: number;
+  totalValueUsd: number;
+  tokenCount: number;
+}
+
 interface PortfolioData {
   address: string;
   totalValueUsd: number;
@@ -84,6 +94,7 @@ interface PortfolioData {
   protocols: ProtocolPosition[];
   walletAssets: WalletAsset[];
   historicalData?: Array<{ date: string; value: number }>;
+  networks?: NetworkBalance[]; // Network breakdown
 }
 
 // Mock historical data generator for chart
@@ -107,6 +118,7 @@ export default function ProfilePage() {
   const address = params.address as string;
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("portfolio");
+  const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
 
   // Set browser tab title
   useEffect(() => {
@@ -293,6 +305,63 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Network Balance Cards (DeBank Style) */}
+          {portfolio?.networks && portfolio.networks.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Balances by Network</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {portfolio.networks.map((network) => (
+                  <Card 
+                    key={network.chainId}
+                    className={`cursor-pointer transition-all hover:shadow-lg ${
+                      selectedNetwork === network.chainId ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    onClick={() => setSelectedNetwork(
+                      selectedNetwork === network.chainId ? null : network.chainId
+                    )}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">
+                              {network.chainName.slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-medium">{network.chainName}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {network.tokenCount} {network.tokenCount === 1 ? 'token' : 'tokens'}
+                            </p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-gray-400" />
+                      </div>
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-2xl font-bold">
+                          {formatCurrency(network.totalValueUsd)}
+                        </p>
+                        <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                          {network.nativeBalance > 0 && (
+                            <span>ETH: {network.nativeBalance.toFixed(4)}</span>
+                          )}
+                          {network.tokenValueUsd > 0 && (
+                            <span>Tokens: {formatCurrency(network.tokenValueUsd)}</span>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              {selectedNetwork && (
+                <p className="text-sm text-blue-500 mt-3">
+                  Showing assets from {portfolio.networks.find(n => n.chainId === selectedNetwork)?.chainName}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -465,12 +534,27 @@ export default function ProfilePage() {
           <TabsContent value="wallet" className="mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Wallet Assets</CardTitle>
+                <CardTitle>
+                  Wallet Assets
+                  {selectedNetwork && portfolio?.networks && (
+                    <span className="ml-2 text-sm font-normal text-gray-500">
+                      - {portfolio.networks.find(n => n.chainId === selectedNetwork)?.chainName}
+                    </span>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                {portfolio?.walletAssets && portfolio.walletAssets.length > 0 ? (
+                {(() => {
+                  const filteredAssets = selectedNetwork && portfolio?.networks
+                    ? portfolio?.walletAssets?.filter(asset => {
+                        const networkName = portfolio.networks?.find(n => n.chainId === selectedNetwork)?.chainName;
+                        return asset.chain?.toLowerCase() === networkName?.toLowerCase();
+                      })
+                    : portfolio?.walletAssets;
+                  
+                  return filteredAssets && filteredAssets.length > 0 ? (
                   <div className="space-y-2">
-                    {portfolio.walletAssets.map((asset, index) => (
+                    {filteredAssets.map((asset, index) => (
                       <div key={index} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600" />
@@ -483,14 +567,14 @@ export default function ProfilePage() {
                                   name: asset.token || asset.symbol
                                 }}
                                 chain={{
-                                  id: '164641ea-b9e1-49a0-b655-334a73efabec',
-                                  name: 'ethereum'
+                                  id: asset.chain?.toLowerCase() === 'base' ? '19a7e3af-bc9b-4c6a-9df5-0b24b19934a7' : '164641ea-b9e1-49a0-b655-334a73efabec',
+                                  name: asset.chain?.toLowerCase() || 'ethereum'
                                 }}
                                 className="font-medium hover:text-blue-500"
                               />
                             </p>
                             <p className="text-sm text-gray-500">
-                              {formatNumber(asset.balance)} • ${asset.price.toFixed(2)}
+                              {formatNumber(asset.balance)} • ${asset.price.toFixed(2)} • {asset.chain}
                             </p>
                           </div>
                         </div>
@@ -507,11 +591,25 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                    No wallet assets found
+                    {selectedNetwork && portfolio?.networks 
+                      ? `No assets found on ${portfolio.networks.find(n => n.chainId === selectedNetwork)?.chainName}`
+                      : "No wallet assets found"}
                   </p>
-                )}
+                );
+                })()}
               </CardContent>
             </Card>
+            {selectedNetwork && (
+              <div className="mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedNetwork(null)}
+                  className="gap-2"
+                >
+                  Clear network filter
+                </Button>
+              </div>
+            )}
           </TabsContent>
 
           {/* History Tab */}

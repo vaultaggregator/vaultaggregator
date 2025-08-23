@@ -21,6 +21,16 @@ export interface WalletToken {
   change24h?: number;
 }
 
+export interface NetworkBalance {
+  chainId: string;
+  chainName: string;
+  nativeBalance: number;
+  nativeValueUsd: number;
+  tokenValueUsd: number;
+  totalValueUsd: number;
+  tokenCount: number;
+}
+
 export interface WalletProfileData {
   address: string;
   totalValueUsd: number;
@@ -33,6 +43,7 @@ export interface WalletProfileData {
     name: string;
     displayName: string;
   };
+  networks?: NetworkBalance[]; // Network breakdown like DeBank
 }
 
 export class WalletProfileService {
@@ -43,11 +54,11 @@ export class WalletProfileService {
   }
 
   /**
-   * Get comprehensive wallet profile showing only tracked tokens
+   * Get comprehensive wallet profile showing balances across multiple chains
    */
   async getWalletProfile(walletAddress: string): Promise<WalletProfileData> {
     try {
-      console.log(`📊 Fetching comprehensive wallet profile for ${walletAddress}`);
+      console.log(`📊 Fetching multi-chain wallet profile for ${walletAddress}`);
       
       // 1. Get all tracked tokens from our database
       const trackedTokens = await storage.getActiveTokens();
@@ -58,78 +69,113 @@ export class WalletProfileService {
         return this.createEmptyProfile(walletAddress);
       }
 
-      // 2. Get ETH balance
-      const ethBalance = await this.alchemyService.getEthBalance(walletAddress);
-      const ethPrice = 3200; // Static ETH price for now
-      const ethValueUsd = ethBalance * ethPrice;
+      // Network configurations
+      const networks = [
+        { id: 'ethereum', name: 'Ethereum', nativeSymbol: 'ETH', nativePrice: 3200 },
+        { id: 'base', name: 'Base', nativeSymbol: 'ETH', nativePrice: 3200 }
+      ];
 
-      // 3. Get token balances for tracked tokens only
       const walletTokens: WalletToken[] = [];
-      let totalTokenValueUsd = 0;
+      const networkBalances: NetworkBalance[] = [];
+      let totalValueUsd = 0;
 
-      for (const token of trackedTokens) {
-        try {
-          console.log(`🔍 Checking balance for tracked token: ${token.symbol} (${token.address})`);
-          
-          // Get token balance using Alchemy's batch method for single token
-          const balanceMap = await this.alchemyService.batchGetTokenBalances(
-            [walletAddress],
-            token.address,
-            'ethereum' // For now, focusing on Ethereum
-          );
-          
-          const balance = balanceMap.get(walletAddress.toLowerCase());
+      // Process each network
+      for (const network of networks) {
+        console.log(`🌐 Fetching balances for ${network.name}...`);
+        
+        // Get native balance (ETH) for this network
+        const nativeBalance = await this.alchemyService.getEthBalance(walletAddress, network.id as 'ethereum' | 'base');
+        const nativeValueUsd = nativeBalance * network.nativePrice;
+        
+        let networkTokenValueUsd = 0;
+        let networkTokenCount = 0;
 
-          if (balance && balance !== '0') {
-            // Calculate formatted balance
-            const rawBalance = BigInt(balance);
-            const formattedBalance = Number(rawBalance) / Math.pow(10, token.decimals);
+        // Get token balances for this network
+        for (const token of trackedTokens) {
+          try {
+            console.log(`🔍 [${network.name}] Checking token: ${token.symbol}`);
+            
+            // Get token balance using Alchemy's batch method
+            const balanceMap = await this.alchemyService.batchGetTokenBalances(
+              [walletAddress],
+              token.address,
+              network.id as 'ethereum' | 'base'
+            );
+            
+            const balance = balanceMap.get(walletAddress.toLowerCase());
 
-            if (formattedBalance > 0) {
-              // Get token price
-              const tokenPrice = await this.alchemyService.getTokenPrice(token.address, 'ethereum');
-              const usdValue = formattedBalance * tokenPrice;
+            if (balance && balance !== '0') {
+              // Calculate formatted balance
+              const rawBalance = BigInt(balance);
+              const formattedBalance = Number(rawBalance) / Math.pow(10, token.decimals);
 
-              console.log(`💰 Found balance: ${formattedBalance} ${token.symbol} = $${usdValue.toFixed(2)}`);
+              if (formattedBalance > 0.0001) { // Only show meaningful balances
+                // Get token price
+                const tokenPrice = await this.alchemyService.getTokenPrice(token.address, network.id as 'ethereum' | 'base');
+                const usdValue = formattedBalance * tokenPrice;
 
-              walletTokens.push({
-                address: token.address,
-                symbol: token.symbol,
-                name: token.name,
-                balance: balance,
-                formattedBalance,
-                usdValue,
-                price: tokenPrice,
-                decimals: token.decimals,
-                chain: 'Ethereum',
-                change24h: 0 // TODO: Could fetch from price API if needed
-              });
+                console.log(`💰 [${network.name}] Found: ${formattedBalance} ${token.symbol} = $${usdValue.toFixed(2)}`);
 
-              totalTokenValueUsd += usdValue;
+                walletTokens.push({
+                  address: token.address,
+                  symbol: token.symbol,
+                  name: token.name,
+                  balance: balance,
+                  formattedBalance,
+                  usdValue,
+                  price: tokenPrice,
+                  decimals: token.decimals,
+                  chain: network.name,
+                  change24h: 0
+                });
+
+                networkTokenValueUsd += usdValue;
+                networkTokenCount++;
+              }
             }
+          } catch (error) {
+            console.log(`⚠️ [${network.name}] Error fetching ${token.symbol}:`, error);
+            // Continue with other tokens
           }
-        } catch (error) {
-          console.log(`⚠️ Error fetching balance for ${token.symbol}:`, error);
-          // Continue with other tokens
         }
+
+        // Add network balance summary
+        const networkTotalUsd = nativeValueUsd + networkTokenValueUsd;
+        if (networkTotalUsd > 0 || nativeBalance > 0) {
+          networkBalances.push({
+            chainId: network.id,
+            chainName: network.name,
+            nativeBalance,
+            nativeValueUsd,
+            tokenValueUsd: networkTokenValueUsd,
+            totalValueUsd: networkTotalUsd,
+            tokenCount: networkTokenCount
+          });
+        }
+
+        totalValueUsd += networkTotalUsd;
       }
 
-      const totalValueUsd = ethValueUsd + totalTokenValueUsd;
+      // Get the primary ETH balance (from Ethereum network)
+      const ethNetworkBalance = networkBalances.find(n => n.chainId === 'ethereum');
+      const ethBalance = ethNetworkBalance?.nativeBalance || 0;
+      const ethValueUsd = ethNetworkBalance?.nativeValueUsd || 0;
 
-      console.log(`✅ Wallet profile complete: ${walletTokens.length} tokens found, total value: $${totalValueUsd.toFixed(2)}`);
+      console.log(`✅ Multi-chain profile complete: ${walletTokens.length} tokens across ${networkBalances.length} networks, total: $${totalValueUsd.toFixed(2)}`);
 
       return {
         address: walletAddress,
         totalValueUsd,
-        ethBalance,
-        ethValueUsd,
+        ethBalance, // Keep for backward compatibility
+        ethValueUsd, // Keep for backward compatibility
         tokenCount: walletTokens.length,
         trackedTokens: walletTokens,
         lastUpdated: new Date().toLocaleTimeString(),
         chainInfo: {
-          name: 'ethereum',
-          displayName: 'Ethereum'
-        }
+          name: 'multi-chain',
+          displayName: 'Multi-Chain'
+        },
+        networks: networkBalances
       };
 
     } catch (error) {
