@@ -1648,7 +1648,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log(`👥 Starting automatic holder count update for new pool: ${newPool.tokenPair} (${newPool.poolAddress})`);
                 
                 // Use SimpleHolderCountService for all networks
-                const { SimpleHolderCountService } = await import("./services/simpleHolderCountService");
+                const { EtherscanHolderScraper } = await import("./services/etherscan-holder-scraper");
                 const holderCountService = new SimpleHolderCountService();
                 
                 // Determine the chain name for the scraper

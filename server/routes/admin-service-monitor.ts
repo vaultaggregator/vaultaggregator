@@ -609,9 +609,9 @@ router.post("/:service/:action", requireAuth, async (req, res) => {
       } else if (serviceName === 'etherscanScraper') {
         console.log("🔍 Manual Etherscan scraper triggered from admin panel");
         try {
-          const { SimpleHolderCountService } = await import("../services/simpleHolderCountService");
-          const service = new SimpleHolderCountService();
-          await service.updateAllPoolHolderCounts();
+          const { EtherscanHolderScraper } = await import("../services/etherscan-holder-scraper");
+          const result = await EtherscanHolderScraper.scrapeAllPoolHolderCounts();
+          console.log('✅ Etherscan scraper completed:', result);
           res.json({
             success: true,
             message: `Etherscan scraper completed successfully`,

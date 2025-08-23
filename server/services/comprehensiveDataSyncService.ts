@@ -201,13 +201,13 @@ export class ComprehensiveDataSyncService {
       
       if (useEnhancedHolders) {
         // Use simple holder count service for basic counts only
-        const { simpleHolderCountService } = await import('./simpleHolderCountService');
-        await simpleHolderCountService.updateAllPoolHolderCounts();
+        const { EtherscanHolderScraper } = await import('./etherscan-holder-scraper');
+        await EtherscanHolderScraper.scrapeAllPoolHolderCounts();
         console.log("✅ Enhanced holder data sync completed");
       } else {
         // Use simple holder count service for basic counts
-        const { simpleHolderCountService } = await import('./simpleHolderCountService');
-        await simpleHolderCountService.updateAllPoolHolderCounts();
+        const { EtherscanHolderScraper } = await import('./etherscan-holder-scraper');
+        await EtherscanHolderScraper.scrapeAllPoolHolderCounts();
         console.log("✅ Lightweight holder data sync completed");
       }
     } catch (error) {

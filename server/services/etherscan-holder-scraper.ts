@@ -27,7 +27,7 @@ export class EtherscanHolderScraper {
           continue;
         }
 
-        // Get chain information for this pool
+        // Get chain information for this pool (use getChainById which queries networks table)
         const chain = await storage.getChainById(pool.chainId);
         if (!chain) {
           console.log(`⚠️ Skipping pool ${pool.tokenPair} - chain not found`);
@@ -144,7 +144,7 @@ export class EtherscanHolderScraper {
       return;
     }
 
-    // Get chain information for this pool
+    // Get chain information for this pool (use getChainById which queries networks table)
     const chain = await storage.getChainById(pool.chainId);
     if (!chain) {
       console.log(`❌ Chain not found for pool ${poolId}`);
