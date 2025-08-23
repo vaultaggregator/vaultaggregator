@@ -20,10 +20,6 @@ export function generateYieldUrl(opportunity: YieldOpportunity): string {
   return `/yield/${network}/${protocol}/${tokenPair}`;
 }
 
-// Generate fallback legacy URL
-export function generateLegacyUrl(poolId: string): string {
-  return `/pool/${poolId}`;
-}
 
 // Parse SEO URL parameters
 export function parseYieldUrl(params: {

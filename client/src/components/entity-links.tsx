@@ -140,6 +140,12 @@ interface PoolLinkProps {
   pool: {
     id: string;
     tokenPair: string;
+    chain?: {
+      name: string;
+    };
+    platform?: {
+      name: string;
+    };
   };
   className?: string;
   children?: React.ReactNode;
@@ -147,10 +153,26 @@ interface PoolLinkProps {
 
 export function PoolLink({ pool, className, children }: PoolLinkProps) {
   const displayText = children || pool.tokenPair;
-  const href = `/pool/${pool.id}`;
+  
+  // Generate SEO-friendly URL if we have full pool data, otherwise show tokenPair only
+  let href: string;
+  
+  if (pool.chain && pool.platform) {
+    // Generate SEO-friendly URL
+    const network = pool.chain.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const protocol = pool.platform.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const tokenPair = pool.tokenPair.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    
+    href = `/yield/${network}/${protocol}/${tokenPair}`;
+  } else {
+    // For now, display as text only until we can update the data passed to this component
+    href = '#';
+    console.warn(`PoolLink missing chain/platform data for pool: ${pool.id} - ${pool.tokenPair}`);
+  }
+  
   const inClickableContainer = useInClickableContainer();
   
-  if (inClickableContainer) {
+  if (inClickableContainer || href === '#') {
     return (
       <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted", className)}>
         {displayText}

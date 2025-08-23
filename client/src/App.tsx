@@ -112,14 +112,9 @@ function Router() {
         <Route path="/yield/:network/:protocol/:tokenPair/transfers" component={PoolTransfersPage} />
         <Route path="/yield/:network/:protocol/:tokenPair/holders" component={PoolHoldersPage} />
         
-        {/* Primary SEO-friendly URL patterns for pool details */}
+        {/* SEO-friendly URL patterns for pool details */}
         <Route path="/yield/:network/:protocol/:tokenPair" component={PoolDetail} />
-        <Route path="/pools/:network/:protocol/:tokenPair" component={PoolDetail} />
         
-        {/* Legacy UUID-based routes for backward compatibility */}
-        <Route path="/pool/:poolId" component={PoolDetail} />
-        <Route path="/pools/:poolId" component={PoolDetail} />
-        <Route path="/:poolId" component={PoolDetail} /> {/* Direct UUID support - MUST be last */}
         <Route component={NotFound} />
       </Switch>
     </Suspense>
