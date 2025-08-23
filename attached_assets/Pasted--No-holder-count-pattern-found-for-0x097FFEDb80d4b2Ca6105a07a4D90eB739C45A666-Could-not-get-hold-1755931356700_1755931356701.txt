@@ -1,0 +1,38 @@
+ No holder count pattern found for 0x097FFEDb80d4b2Ca6105a07a4D90eB739C45A666
+⚠️ Could not get holder count for Steakhouse USDT Lite
+🔄 Scraping holder count for: Steakhouse infiniFi USDC (0xBEeF1f5Bd88285E5B239B6AAcb991d38ccA23Ac9) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0xBEeF1f5Bd88285E5B239B6AAcb991d38ccA23Ac9
+⚠️ No holder count pattern found for 0xBEeF1f5Bd88285E5B239B6AAcb991d38ccA23Ac9
+⚠️ Could not get holder count for Steakhouse infiniFi USDC
+🔄 Scraping holder count for: SwissBorg Morpho USDC (0x4Ff4186188f8406917293A9e01A1ca16d3cf9E59) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0x4Ff4186188f8406917293A9e01A1ca16d3cf9E59
+⚠️ No holder count pattern found for 0x4Ff4186188f8406917293A9e01A1ca16d3cf9E59
+⚠️ Could not get holder count for SwissBorg Morpho USDC
+🔄 Scraping holder count for: TAC USDC (0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741
+⚠️ No holder count pattern found for 0x1E2aAaDcF528b9cC08F43d4fd7db488cE89F5741
+⚠️ Could not get holder count for TAC USDC
+🔄 Scraping holder count for: Usual Boosted USDC (0xd63070114470f685b75B74D60EEc7c1113d33a3D) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0xd63070114470f685b75B74D60EEc7c1113d33a3D
+⚠️ No holder count pattern found for 0xd63070114470f685b75B74D60EEc7c1113d33a3D
+⚠️ Could not get holder count for Usual Boosted USDC
+🔄 Scraping holder count for: Vault Bridge USDC (0xBEefb9f61CC44895d8AEc381373555a64191A9c4) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0xBEefb9f61CC44895d8AEc381373555a64191A9c4
+⚠️ No holder count pattern found for 0xBEefb9f61CC44895d8AEc381373555a64191A9c4
+⚠️ Could not get holder count for Vault Bridge USDC
+🔄 Scraping holder count for: Vault Bridge USDT (0xc54b4E08C1Dcc199fdd35c6b5Ab589ffD3428a8d) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0xc54b4E08C1Dcc199fdd35c6b5Ab589ffD3428a8d
+⚠️ No holder count pattern found for 0xc54b4E08C1Dcc199fdd35c6b5Ab589ffD3428a8d
+⚠️ Could not get holder count for Vault Bridge USDT
+🔄 Scraping holder count for: Yearn Degen USDC (0xdC2Dd5189F70Fe2832D9caf7b17d27AA3D79dbE1) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0xdC2Dd5189F70Fe2832D9caf7b17d27AA3D79dbE1
+⚠️ No holder count pattern found for 0xdC2Dd5189F70Fe2832D9caf7b17d27AA3D79dbE1
+⚠️ Could not get holder count for Yearn Degen USDC
+🔄 Scraping holder count for: Yearn OG USDC (0xF9bdDd4A9b3A45f980e11fDDE96e16364dDBEc49) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0xF9bdDd4A9b3A45f980e11fDDE96e16364dDBEc49
+⚠️ No holder count pattern found for 0xF9bdDd4A9b3A45f980e11fDDE96e16364dDBEc49
+⚠️ Could not get holder count for Yearn OG USDC
+🔄 Scraping holder count for: f(x) Protocol Morpho USDC (0x4F460bb11cf958606C69A963B4A17f9DaEEea8b6) on ethereum
+🌐 Fetching from Etherscan: https://etherscan.io/token/0x4F460bb11cf958606C69A963B4A17f9DaEEea8b6
+⚠️ No holder count pattern found for 0x4F460bb11cf958606C69A963B4A17f9DaEEea8b6
+⚠️ Could not get holder count for f(x) Protocol Morpho USDC
