@@ -85,7 +85,7 @@ export default function PoolTransfersPage() {
 
   // Fetch real transfer data from API (last 15 transfers)
   const { data: transfersResponse, isLoading: transfersLoading, error: transfersError } = useQuery<TransfersAPIResponse>({
-    queryKey: [`/api/transfers/pool/${poolData?.id}`, poolData?.id],
+    queryKey: [`/api/transfers/pool/${poolData?.id}?limit=15`],
     enabled: !!poolData?.id,
   });
 
