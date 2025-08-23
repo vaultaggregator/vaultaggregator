@@ -1,0 +1,115 @@
+{
+  "updatedAt": "2025-08-23T02:32:15.781Z",
+  "tokenAddress": "0x62fE596d59fB077c2Df736dF212E0AFfb522dC78",
+  "totalSupply": "3801159175046076350690338",
+  "holders": [
+    {
+      "address": "0x91e9a7920d71d74c860c8fb1fa7182b30de13748",
+      "balance": "483218",
+      "pct": 0
+    },
+    {
+      "address": "0x088bbfeaf3350604dae077f7ee0625b412bc9518",
+      "balance": "391966",
+      "pct": 0
+    },
+    {
+      "address": "0x4364c1c57696e63d81778beec50c6fe20fd3ab1a",
+      "balance": "341842",
+      "pct": 0
+    },
+    {
+      "address": "0xeb528631afefd84c69a20e6d270adf9bebbd4e38",
+      "balance": "297089",
+      "pct": 0
+    },
+    {
+      "address": "0x9892e7d8cf0865d655ffc54d41a1852ee629f47d",
+      "balance": "292910",
+      "pct": 0
+    },
+    {
+      "address": "0x5938c0ba851af6cc0a4dc4d024f12738685138f1",
+      "balance": "192974",
+      "pct": 0
+    },
+    {
+      "address": "0xfa494a7cff881853de5f0f482458072649858a94",
+      "balance": "126270",
+      "pct": 0
+    },
+    {
+      "address": "0xcd0c8c94743717f3fb4f1b91396e36fc8e0d4e01",
+      "balance": "97656",
+      "pct": 0
+    },
+    {
+      "address": "0x7186642a34b058f0d9e8faba7493a2ac375efcc2",
+      "balance": "69472",
+      "pct": 0
+    },
+    {
+      "address": "0xc76111158165e664b2e437d5e642bcc68b405d6a",
+      "balance": "60426",
+      "pct": 0
+    },
+    {
+      "address": "0x52431b9fe6bf0a4e108828cb3a509c84c59ee082",
+      "balance": "50064",
+      "pct": 0
+    },
+    {
+      "address": "0x839bf0cf6a34a74a6d3c79dce45635d8b904fe54",
+      "balance": "28980",
+      "pct": 0
+    },
+    {
+      "address": "0x07b884d349de0c0a4fd6c2f189d9636c23ab6a22",
+      "balance": "19468",
+      "pct": 0
+    },
+    {
+      "address": "0x02e6b1c1e78a7c71798262ef34386182c553ba8c",
+      "balance": "14648",
+      "pct": 0
+    },
+    {
+      "address": "0x96e441373ce4e557488be2a87d6bad52c3e64d3e",
+      "balance": "9768",
+      "pct": 0
+    },
+    {
+      "address": "0x2d9a09584daa5ffaeeb19c05af61b2da008d6054",
+      "balance": "9534",
+      "pct": 0
+    },
+    {
+      "address": "0x0290e9ce53972b7a9cc59ccc11224dfb16612271",
+      "balance": "8915",
+      "pct": 0
+    },
+    {
+      "address": "0xb5693b3fe31603dc8e83bfadf52c00fa294ddc17",
+      "balance": "2239",
+      "pct": 0
+    },
+    {
+      "address": "0x1a5f1e992b553d3a3cb869b7e7b517b3287909ed",
+      "balance": "2128",
+      "pct": 0
+    },
+    {
+      "address": "0x7df7e444cbc55c046a2614b9d62037af07ea11a3",
+      "balance": "977",
+      "pct": 0
+    }
+  ],
+  "metadata": {
+    "chainId": "ethereum",
+    "poolId": "4a67a650-9078-4db9-aafe-688806d2510d",
+    "transfersProcessed": 88,
+    "fromBlock": 23150419,
+    "toBlock": 23200819,
+    "processingTimeMs": 723
+  }
+}
