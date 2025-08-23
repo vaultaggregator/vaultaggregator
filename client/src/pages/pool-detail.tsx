@@ -23,6 +23,7 @@ import { TokenInfo } from "@/components/token-info";
 import { PoolChart } from "@/components/PoolChart";
 import { AIInsightsCard } from "@/components/ai-insights-card";
 import { VaultActivitySection } from "@/components/vault-activity-section";
+import { TopHoldersSection } from "@/components/top-holders-section";
 
 import { formatTimeAgo } from "@/lib/utils";
 import { AnimatedPercentage, AnimatedCurrency, AnimatedNumber } from "@/components/animated-value";
@@ -790,6 +791,14 @@ export default function PoolDetail() {
         </div>
 
 
+
+        {/* Top 5 Holders Section */}
+        <div className="mb-8">
+          <TopHoldersSection 
+            poolId={pool.id}
+            chainName={pool.chain?.name}
+          />
+        </div>
 
         {/* Vault Activity Section - Last 5 Transfers */}
         <div className="mb-8">
