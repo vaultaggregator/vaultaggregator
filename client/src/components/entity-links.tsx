@@ -218,3 +218,40 @@ export function AddressLink({ address, className, children, showShortened = true
     </Link>
   );
 }
+
+// Transaction Link Component
+interface TransactionLinkProps {
+  txHash: string;
+  network?: 'ethereum' | 'base';
+  className?: string;
+  children?: React.ReactNode;
+  showIcon?: boolean;
+}
+
+export function TransactionLink({ 
+  txHash, 
+  network = 'ethereum', 
+  className = '', 
+  children, 
+  showIcon = false 
+}: TransactionLinkProps) {
+  const href = network === 'ethereum' ? `/tx/${txHash}` : `/tx/${network}/${txHash}`;
+  const shortHash = children || `${txHash.slice(0, 6)}...${txHash.slice(-4)}`;
+  const inClickableContainer = useInClickableContainer();
+  
+  if (inClickableContainer) {
+    return (
+      <span className={cn("text-blue-400 cursor-pointer transition-colors underline decoration-dotted font-mono", className)}>
+        {shortHash}
+      </span>
+    );
+  }
+  
+  return (
+    <Link href={href}>
+      <span className={cn("hover:text-blue-400 cursor-pointer transition-colors underline decoration-dotted font-mono", className)}>
+        {shortHash}
+      </span>
+    </Link>
+  );
+}

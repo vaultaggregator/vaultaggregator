@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { TokenLink } from "@/components/entity-links";
+import { TokenLink, TransactionLink } from "@/components/entity-links";
 import { 
   Info, 
   DollarSign, 
@@ -262,15 +262,17 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Creation Tx:</span>
-                    <a 
-                      href={`https://etherscan.io/tx/${contractInfo?.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      {contractInfo?.txHash ? formatAddress(contractInfo.txHash) : "Unknown"}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    {contractInfo?.txHash ? (
+                      <TransactionLink
+                        txHash={contractInfo.txHash}
+                        network="ethereum"
+                        className="font-mono"
+                      >
+                        {formatAddress(contractInfo.txHash)}
+                      </TransactionLink>
+                    ) : (
+                      <span className="font-mono text-gray-600">Unknown</span>
+                    )}
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">Verification Status:</span>
@@ -353,15 +355,14 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
                         <span className="text-gray-600 dark:text-gray-400">
                           {new Date(parseInt(transfer.timeStamp) * 1000).toLocaleString()}
                         </span>
-                        <a
-                          href={`https://etherscan.io/tx/${transfer.hash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline flex items-center gap-1"
+                        <TransactionLink
+                          txHash={transfer.hash}
+                          network="ethereum"
+                          className="flex items-center gap-1"
                         >
                           <Hash className="w-3 h-3" />
                           {formatAddress(transfer.hash)}
-                        </a>
+                        </TransactionLink>
                       </div>
                       <div className="flex items-center gap-2 text-xs">
                         <span className="font-mono">{formatAddress(transfer.from)}</span>
@@ -477,14 +478,12 @@ export function TokenInfo({ poolId }: TokenInfoProps) {
                           <span className="font-mono text-gray-600 dark:text-gray-400">
                             Block #{event.blockNumber}
                           </span>
-                          <a
-                            href={`https://etherscan.io/tx/${event.transactionHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                          <TransactionLink
+                            txHash={event.transactionHash}
+                            network="ethereum"
                           >
                             {formatAddress(event.transactionHash)}
-                          </a>
+                          </TransactionLink>
                         </div>
                         <div className="font-mono text-gray-500">
                           Event: {event.eventName}

@@ -24,6 +24,7 @@ const TokenDetail = lazy(() => import("@/pages/token-detail"));
 const NetworkDetail = lazy(() => import("@/pages/network-detail"));
 const PoolTransfersPage = lazy(() => import("@/pages/pool-transfers"));
 const PoolHoldersPage = lazy(() => import("@/pages/pool-holders"));
+const TransactionDetail = lazy(() => import("@/pages/transaction-detail"));
 
 // Admin pages - lazy loaded to reduce initial bundle
 const AdminLogin = lazy(() => import("@/pages/admin-login"));
@@ -72,6 +73,8 @@ function Router() {
         <Route path="/protocol/:slug" component={ProtocolDetailPage} />
         <Route path="/token/:chainName/:tokenAddress" component={TokenDetail} />
         <Route path="/network/:name" component={NetworkDetail} />
+        <Route path="/tx/:txHash" component={TransactionDetail} />
+        <Route path="/tx/:network/:txHash" component={TransactionDetail} />
         <Route path="/contact" component={Contact} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms" component={Terms} />

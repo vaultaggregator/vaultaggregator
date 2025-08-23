@@ -4313,5 +4313,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Transaction details endpoint
+  app.get('/api/transaction/:txHash', async (req, res) => {
+    try {
+      const { txHash } = req.params;
+      const { network = 'ethereum' } = req.query;
+      
+      console.log(`🔍 Fetching transaction details for ${txHash} on ${network}`);
+      
+      const { transactionService } = await import('./services/transactionService');
+      const transaction = await transactionService.getTransactionDetails(
+        txHash, 
+        network as 'ethereum' | 'base'
+      );
+      
+      if (!transaction) {
+        return res.status(404).json({ error: 'Transaction not found' });
+      }
+      
+      res.json(transaction);
+    } catch (error) {
+      console.error('❌ Error fetching transaction details:', error);
+      res.status(500).json({ error: 'Failed to fetch transaction details' });
+    }
+  });
+
   return httpServer;
 }

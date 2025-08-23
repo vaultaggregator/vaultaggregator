@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, ArrowUpRight, ArrowDownRight, Activity, Clock, DollarSign, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { AddressLink } from "@/components/entity-links";
+import { AddressLink, TransactionLink } from "@/components/entity-links";
 import {
   Select,
   SelectContent,
@@ -112,12 +112,7 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
     }).format(amount);
   };
 
-  const openEtherscan = (txHash: string) => {
-    const explorerUrl = chainName?.toLowerCase() === 'base' 
-      ? `https://basescan.org/tx/${txHash}`
-      : `https://etherscan.io/tx/${txHash}`;
-    window.open(explorerUrl, '_blank');
-  };
+  // Function removed - now using internal TransactionLink component
 
   const getTransactionTypeLabel = (type: string) => {
     switch (type) {
@@ -299,14 +294,13 @@ export function VaultActivitySection({ poolId, chainName }: VaultActivitySection
                   </div>
 
                   <div className="col-span-2">
-                    <button
-                      onClick={() => openEtherscan(transaction.transactionHash)}
-                      className="font-mono text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors flex items-center gap-1"
-                      title={`View transaction on ${chainName === 'base' ? 'Basescan' : 'Etherscan'}`}
+                    <TransactionLink
+                      txHash={transaction.transactionHash}
+                      network={chainName?.toLowerCase() === 'base' ? 'base' : 'ethereum'}
+                      className="text-sm"
                     >
                       {formatTxHash(transaction.transactionHash)}
-                      <ExternalLink className="h-3 w-3" />
-                    </button>
+                    </TransactionLink>
                   </div>
                 </div>
               ))
